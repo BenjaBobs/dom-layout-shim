@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@chenglou/pretext':
+        specifier: ^0.0.6
+        version: 0.0.6
       lightningcss:
         specifier: ^1.32.0
         version: 1.32.0
+      taffy-layout:
+        specifier: ^2.0.3
+        version: 2.0.3
     devDependencies:
       '@playwright/test':
         specifier: ^1.59.1
@@ -35,6 +41,9 @@ importers:
         version: 4.1.5(@types/node@25.6.0)(happy-dom@20.9.0)(vite@8.0.10(@types/node@25.6.0))
 
 packages:
+
+  '@chenglou/pretext@0.0.6':
+    resolution: {integrity: sha512-U10s4tFeyu3oVHfXuNWwZSKqHXefhaigpcBkGj60qQFRJ+yUoQ+ez3cGJelP7BWDAB58HCgjcTSmOcg+77afBQ==}
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -392,6 +401,10 @@ packages:
   std-env@4.1.0:
     resolution: {integrity: sha512-Rq7ybcX2RuC55r9oaPVEW7/xu3tj8u4GeBYHBWCychFtzMIr86A7e3PPEBPT37sHStKX3+TiX/Fr/ACmJLVlLQ==}
 
+  taffy-layout@2.0.3:
+    resolution: {integrity: sha512-gKR7T3GvdI1itN8ZvMACk739aVXS3bWdNVYfDcKJej02Fl448+hjd8TszlMzV942BtsgHYiGcjSpVjZafeXs8g==}
+    engines: {node: '>=12'}
+
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
@@ -528,6 +541,8 @@ packages:
         optional: true
 
 snapshots:
+
+  '@chenglou/pretext@0.0.6': {}
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -823,6 +838,8 @@ snapshots:
   stackback@0.0.2: {}
 
   std-env@4.1.0: {}
+
+  taffy-layout@2.0.3: {}
 
   tinybench@2.9.0: {}
 

@@ -16,9 +16,10 @@ export type BorderStyles = {
 }
 
 export type SupportedStyle = {
-  display: 'block' | 'none'
+  display: 'block' | 'flex' | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
+  flexDirection: 'row' | 'column'
   width?: number
   height?: number
   minWidth?: number
@@ -54,6 +55,7 @@ export function createDefaultStyle(): SupportedStyle {
     display: 'block',
     position: 'static',
     boxSizing: 'content-box',
+    flexDirection: 'row',
     zIndex: 0,
     pointerEvents: 'auto',
     visibility: 'visible',
@@ -84,7 +86,7 @@ export function applyDeclaration(
 
   switch (normalizedProperty) {
     case 'display':
-      applyKeyword(style, 'display', normalizedValue, ['block', 'none'], normalizedProperty, value, context)
+      applyKeyword(style, 'display', normalizedValue, ['block', 'flex', 'none'], normalizedProperty, value, context)
       return
     case 'position':
       applyKeyword(
@@ -103,6 +105,17 @@ export function applyDeclaration(
         'boxSizing',
         normalizedValue,
         ['content-box', 'border-box'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
+    case 'flex-direction':
+      applyKeyword(
+        style,
+        'flexDirection',
+        normalizedValue,
+        ['row', 'column'],
         normalizedProperty,
         value,
         context,

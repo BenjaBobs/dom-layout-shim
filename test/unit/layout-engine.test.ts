@@ -472,6 +472,57 @@ describe('layout engine attachment', () => {
     })
   })
 
+  it('can opt into Taffy layout for flex rows', async () => {
+    document.body.innerHTML = `
+      <div id="parent" style="display:flex; width:200px; height:50px">
+        <div id="first" style="width:40px; height:20px"></div>
+        <div id="second" style="width:40px; height:20px"></div>
+      </div>
+    `
+
+    await attach({
+      layoutBackend: 'taffy',
+      viewport: { width: 300, height: 200 },
+    })
+
+    expectRect(requiredElement('#parent').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 200,
+      height: 50,
+    })
+    expectRect(requiredElement('#first').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 40,
+      height: 20,
+    })
+    expectRect(requiredElement('#second').getBoundingClientRect(), {
+      left: 40,
+      top: 0,
+      width: 40,
+      height: 20,
+    })
+  })
+
+  it('can opt into Pretext measurement for Taffy text leaves', async () => {
+    document.body.innerHTML = `
+      <div id="text" style="width:100px; font-size:20px; line-height:30px">Hello</div>
+    `
+
+    await attach({
+      layoutBackend: 'taffy',
+      viewport: { width: 300, height: 200 },
+    })
+
+    expectRect(requiredElement('#text').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 30,
+    })
+  })
+
   it('throws on unknown CSS by default', async () => {
     document.body.innerHTML = `
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transform:translateX(10px)"></div>

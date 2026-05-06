@@ -33,6 +33,8 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "lightningcss": "^1.32.0"
+    "@chenglou/pretext": "^0.0.6",
+    "lightningcss": "^1.32.0",
+    "taffy-layout": "^2.0.3"
   }
 }
