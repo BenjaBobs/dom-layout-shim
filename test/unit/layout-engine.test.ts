@@ -1,11 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayoutEngine, type DocumentAttachment } from '../../src/index.ts'
-
-let attachment: DocumentAttachment | undefined
+import { Window } from 'happy-dom'
+import { attachLayoutEngine, debugLayout, type AttachLayoutEngineOptions } from '../../src/index.ts'
 
 afterEach(() => {
-  attachment?.detach()
-  attachment = undefined
   document.body.innerHTML = ''
 })
 
@@ -24,7 +21,7 @@ describe('layout engine attachment', () => {
       <button id="save">Save</button>
     `
 
-    attachment = await attach()
+    await attach()
 
     const save = requiredElement('#save')
     const rect = save.getBoundingClientRect()
@@ -60,7 +57,7 @@ describe('layout engine attachment', () => {
       <div id="back"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#front'))
     expect(document.elementsFromPoint(50, 50)).toEqual([
@@ -75,7 +72,7 @@ describe('layout engine attachment', () => {
       <div id="second" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#second'))
   })
@@ -86,7 +83,7 @@ describe('layout engine attachment', () => {
       <div id="two" style="width:80px; height:40px"></div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#one').getBoundingClientRect(), {
       left: 10,
@@ -109,7 +106,7 @@ describe('layout engine attachment', () => {
       </div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#child').getBoundingClientRect(), {
       left: 10,
@@ -126,7 +123,7 @@ describe('layout engine attachment', () => {
       <div id="hidden" style="position:absolute; left:0; top:0; width:100px; height:100px; z-index:20; visibility:hidden"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#target'))
   })
@@ -137,10 +134,10 @@ describe('layout engine attachment', () => {
       <div id="overlay" style="position:absolute; inset:0; z-index:10"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(attachment.receivesPointerAtCenter(requiredElement('#save'))).toBe(false)
-    expect(attachment.receivesPointerAtCenter(requiredElement('#overlay'))).toBe(true)
+    expect(receivesPointerAtCenter(requiredElement('#save'))).toBe(false)
+    expect(receivesPointerAtCenter(requiredElement('#overlay'))).toBe(true)
   })
 
   it('debug output identifies the element blocking another element at its center', async () => {
@@ -149,9 +146,9 @@ describe('layout engine attachment', () => {
       <div id="overlay" style="position:absolute; inset:0; z-index:10"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(attachment.debug()).toContain('button#save x=10 y=10 w=100 h=40 z=0 BLOCKED_BY=div#overlay')
+    expect(debugLayout(window)).toContain('button#save x=10 y=10 w=100 h=40 z=0 BLOCKED_BY=div#overlay')
   })
 
   it('computes right and bottom positioned boxes', async () => {
@@ -159,7 +156,7 @@ describe('layout engine attachment', () => {
       <div id="box" style="position:absolute; right:25px; bottom:30px; width:50px; height:40px"></div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.left).toBe(225)
@@ -173,7 +170,7 @@ describe('layout engine attachment', () => {
       <div id="box" style="position:fixed; inset:10px 20px"></div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.left).toBe(20)
@@ -187,7 +184,7 @@ describe('layout engine attachment', () => {
       <div id="box" style="display:none; position:absolute; left:10px; top:20px; width:30px; height:40px"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.left).toBe(0)
@@ -203,7 +200,7 @@ describe('layout engine attachment', () => {
       </div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#box').getBoundingClientRect(), {
       left: 0,
@@ -227,7 +224,7 @@ describe('layout engine attachment', () => {
       ></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.left).toBe(10)
@@ -244,7 +241,7 @@ describe('layout engine attachment', () => {
       ></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     const box = requiredElement('#box') as HTMLElement
     expect(box.offsetWidth).toBe(128)
@@ -261,7 +258,7 @@ describe('layout engine attachment', () => {
       ></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.width).toBe(100)
@@ -274,7 +271,7 @@ describe('layout engine attachment', () => {
       <div id="max" style="position:absolute; left:100px; top:0; width:90px; height:60px; max-width:70px; max-height:30px"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#min').getBoundingClientRect(), {
       left: 0,
@@ -296,7 +293,7 @@ describe('layout engine attachment', () => {
       <div id="border-box" style="position:absolute; left:0; top:40px; box-sizing:border-box; width:100px; height:60px; max-width:80px; max-height:30px; padding:5px; border-style:solid; border-width:2px"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#content-box').getBoundingClientRect(), {
       left: 0,
@@ -320,7 +317,7 @@ describe('layout engine attachment', () => {
       ></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     const rect = requiredElement('#box').getBoundingClientRect()
     expect(rect.width).toBe(100)
@@ -333,7 +330,7 @@ describe('layout engine attachment', () => {
       <div id="two" style="width:80px; height:40px"></div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#one').getBoundingClientRect(), {
       left: 0,
@@ -356,7 +353,7 @@ describe('layout engine attachment', () => {
       </div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#parent').getBoundingClientRect(), {
       left: 0,
@@ -379,7 +376,7 @@ describe('layout engine attachment', () => {
       </div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#child').getBoundingClientRect(), {
       left: 1,
@@ -395,7 +392,7 @@ describe('layout engine attachment', () => {
       <div id="text" style="width:100px">Hello</div>
     `
 
-    attachment = await attach({
+    await attach({
       textMeasurer: {
         measure() {
           return { width: 25, height: 30 }
@@ -413,7 +410,7 @@ describe('layout engine attachment', () => {
       <div id="text" style="max-width:50px">Hello world</div>
     `
 
-    attachment = await attach({
+    await attach({
       viewport: { width: 300, height: 200 },
       textMeasurer: {
         measure(input) {
@@ -435,7 +432,7 @@ describe('layout engine attachment', () => {
       <div id="text" style="position:absolute; left:10px; top:20px; font-size:20px; line-height:30px; white-space:nowrap">Hello</div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#text').getBoundingClientRect(), {
       left: 10,
@@ -450,7 +447,7 @@ describe('layout engine attachment', () => {
       <img id="logo" width="24" height="16" alt="">
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#logo').getBoundingClientRect(), {
       left: 0,
@@ -465,7 +462,7 @@ describe('layout engine attachment', () => {
       <div id="icon" data-layout-width="32" data-layout-height="18"></div>
     `
 
-    attachment = await attach({ viewport: { width: 300, height: 200 } })
+    await attach({ viewport: { width: 300, height: 200 } })
 
     expectRect(requiredElement('#icon').getBoundingClientRect(), {
       left: 0,
@@ -480,9 +477,9 @@ describe('layout engine attachment', () => {
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transform:translateX(10px)"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(() => attachment?.recompute()).toThrow(/Unsupported CSS unknown-property/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unknown-property/)
   })
 
   it('can ignore unknown CSS through policy', async () => {
@@ -490,7 +487,7 @@ describe('layout engine attachment', () => {
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transition:opacity 100ms"></div>
     `
 
-    attachment = await attach({
+    await attach({
       unsupportedCss: {
         default: 'throw',
         properties: {
@@ -521,7 +518,7 @@ describe('layout engine attachment', () => {
       <div id="two"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(document.elementFromPoint(20, 20)).toBe(requiredElement('#two'))
   })
@@ -544,7 +541,7 @@ describe('layout engine attachment', () => {
       <div id="box" class="box"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(requiredElement('#box').getBoundingClientRect().left).toBe(10)
   })
@@ -567,7 +564,7 @@ describe('layout engine attachment', () => {
       <div id="box" class="box"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expect(requiredElement('#box').getBoundingClientRect().left).toBe(100)
   })
@@ -603,7 +600,7 @@ describe('layout engine attachment', () => {
       </div>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#button').getBoundingClientRect(), {
       left: 40,
@@ -645,7 +642,7 @@ describe('layout engine attachment', () => {
       <button id="button" data-state="open" data-tags="primary action" data-name="save-button"></button>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#button').getBoundingClientRect(), {
       left: 30,
@@ -669,9 +666,9 @@ describe('layout engine attachment', () => {
       <button id="button" data-state="OPEN"></button>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(() => attachment?.recompute()).toThrow(/Unsupported CSS unsupported-rule/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
   })
 
   it('supports where is and not pseudo selectors in stylesheets', async () => {
@@ -696,7 +693,7 @@ describe('layout engine attachment', () => {
       <button id="button" data-state="open" data-priority="high"></button>
     `
 
-    attachment = await attach()
+    await attach()
 
     expectRect(requiredElement('#button').getBoundingClientRect(), {
       left: 30,
@@ -716,7 +713,7 @@ describe('layout engine attachment', () => {
       <div id="box" class="box"></div>
     `
 
-    attachment = await attach({
+    await attach({
       stylesheets: [
         `
           .box {
@@ -743,7 +740,7 @@ describe('layout engine attachment', () => {
       <div id="box" class="box" style="left:60px"></div>
     `
 
-    attachment = await attach({
+    await attach({
       stylesheets: [
         `
           .box {
@@ -765,7 +762,7 @@ describe('layout engine attachment', () => {
       <div id="box"></div>
     `
 
-    attachment = await attach({
+    await attach({
       stylesheets: [
         `
           @media (min-width: 1px) {
@@ -781,7 +778,7 @@ describe('layout engine attachment', () => {
       ],
     })
 
-    expect(() => attachment?.recompute()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
   })
 
   it('routes unsupported at-rules through the unsupported CSS policy', async () => {
@@ -800,9 +797,9 @@ describe('layout engine attachment', () => {
       <div id="box"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(() => attachment?.recompute()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
   })
 
   it('routes unsupported selectors through the unsupported CSS policy', async () => {
@@ -815,9 +812,9 @@ describe('layout engine attachment', () => {
       <div id="box" class="box"></div>
     `
 
-    attachment = await attach()
+    await attach()
 
-    expect(() => attachment?.recompute()).toThrow(/Unsupported CSS unsupported-rule/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
   })
 
   it('marks layout dirty when inline styles change', async () => {
@@ -825,7 +822,7 @@ describe('layout engine attachment', () => {
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
     `
 
-    attachment = await attach()
+    await attach()
     expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
 
     requiredElement('#box').setAttribute(
@@ -843,7 +840,7 @@ describe('layout engine attachment', () => {
       <div id="box" hidden style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
     `
 
-    attachment = await attach()
+    await attach()
     expect(document.elementFromPoint(50, 50)).toBe(null)
 
     requiredElement('#box').removeAttribute('hidden')
@@ -857,7 +854,7 @@ describe('layout engine attachment', () => {
       <div id="box" class="left"></div>
     `
 
-    attachment = await attach({
+    await attach({
       stylesheets: [
         `
           .left,
@@ -892,8 +889,8 @@ describe('layout engine attachment', () => {
       <button id="save" style="position:absolute; left:0; top:0; width:100px; height:40px"></button>
     `
 
-    attachment = await attach()
-    expect(attachment.receivesPointerAtCenter(requiredElement('#save'))).toBe(true)
+    await attach()
+    expect(receivesPointerAtCenter(requiredElement('#save'))).toBe(true)
 
     document.body.insertAdjacentHTML(
       'beforeend',
@@ -901,31 +898,37 @@ describe('layout engine attachment', () => {
     )
     await waitForMutationDelivery()
 
-    expect(attachment.receivesPointerAtCenter(requiredElement('#save'))).toBe(false)
+    expect(receivesPointerAtCenter(requiredElement('#save'))).toBe(false)
   })
 
-  it('restores patched DOM APIs on detach', async () => {
-    document.body.innerHTML = `
-      <div id="box" style="position:absolute; left:10px; top:20px; width:30px; height:40px"></div>
-    `
+  it('isolates layout attachments by happy-dom window', async () => {
+    const narrowWindow = new Window({ width: 100, height: 100 })
+    const wideWindow = new Window({ width: 300, height: 100 })
 
-    const originalElementFromPoint = document.elementFromPoint
-    const originalOffsetWidth = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'offsetWidth')
-    attachment = await attach()
-    expect(document.elementFromPoint).not.toBe(originalElementFromPoint)
+    try {
+      narrowWindow.document.body.innerHTML = '<div id="box" style="position:fixed; inset:0"></div>'
+      wideWindow.document.body.innerHTML = '<div id="box" style="position:fixed; inset:0"></div>'
 
-    attachment.detach()
-    attachment = undefined
+      await attachLayoutEngine({
+        window: narrowWindow,
+        viewport: { width: 100, height: 100 },
+      })
+      await attachLayoutEngine({
+        window: wideWindow,
+        viewport: { width: 300, height: 100 },
+      })
 
-    expect(document.elementFromPoint).toBe(originalElementFromPoint)
-    expect(Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'offsetWidth')).toEqual(originalOffsetWidth)
+      expect(narrowWindow.document.getElementById('box')?.getBoundingClientRect().width).toBe(100)
+      expect(wideWindow.document.getElementById('box')?.getBoundingClientRect().width).toBe(300)
+    } finally {
+      narrowWindow.close()
+      wideWindow.close()
+    }
   })
 })
 
-async function attach(config: Parameters<typeof createLayoutEngine>[0] = {}): Promise<DocumentAttachment> {
-  const engine = createLayoutEngine(config)
-  await engine.initialize()
-  return engine.attachTo(document)
+async function attach(config: Omit<AttachLayoutEngineOptions, 'window'> = {}): Promise<void> {
+  await attachLayoutEngine({ window, ...config })
 }
 
 async function waitForMutationDelivery(): Promise<void> {
@@ -940,6 +943,13 @@ function requiredElement(selector: string): Element {
   }
 
   return element
+}
+
+function receivesPointerAtCenter(element: Element): boolean {
+  const rect = element.getBoundingClientRect()
+  const top = element.ownerDocument.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+
+  return top === element || Boolean(top && element.contains(top))
 }
 
 function expectRect(

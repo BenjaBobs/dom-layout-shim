@@ -12,7 +12,7 @@ unsupported properties through `unsupportedCss`.
 Supported:
 
 - Inline `style=""` declaration blocks.
-- Configured CSS text through `createLayoutEngine({ stylesheets })`.
+- Configured CSS text through `attachLayoutEngine({ stylesheets })`.
 - `<style>` elements parsed with Lightning CSS.
 - HTML `hidden` attributes as display suppression.
 - Selector lists in `<style>` rules, for example `#one, #two`.
@@ -114,7 +114,8 @@ Notes:
 Default behavior:
 
 ```ts
-const engine = createLayoutEngine({
+await attachLayoutEngine({
+  window,
   unsupportedCss: {
     default: 'throw',
   },
@@ -124,7 +125,8 @@ const engine = createLayoutEngine({
 Ignoring known-irrelevant declarations:
 
 ```ts
-const engine = createLayoutEngine({
+await attachLayoutEngine({
+  window,
   unsupportedCss: {
     default: 'throw',
     properties: {
@@ -138,7 +140,8 @@ const engine = createLayoutEngine({
 Custom properties can be ignored with a callback:
 
 ```ts
-const engine = createLayoutEngine({
+await attachLayoutEngine({
+  window,
   unsupportedCss: {
     default: 'throw',
     property(property, context) {

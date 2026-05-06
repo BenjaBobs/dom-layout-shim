@@ -9,7 +9,7 @@ coverage where relevant.
 Cases:
 
 - Package entry point and build output.
-- Engine initialization and document attachment lifecycle.
+- Window-level layout engine attachment lifecycle.
 - DOM API patching and restoration.
 - `offsetWidth`, `offsetHeight`, `clientWidth`, and `clientHeight` patching.
 - Happy DOM unit tests.

@@ -1,7 +1,7 @@
 import { chromium, type Browser } from '@playwright/test'
-import { Window } from 'happy-dom'
+import { Window as HappyDomWindow } from 'happy-dom'
 import { expect, inject } from 'vitest'
-import { createLayoutEngine, type DocumentAttachment } from '../../src/index.ts'
+import { attachLayoutEngine } from '../../src/index.ts'
 
 export type PointQuery = {
   type: 'point'
@@ -57,6 +57,14 @@ type SerializedDimensions = {
   clientHeight: number
 }
 
+type QueryWindow = {
+  document: {
+    querySelector(selector: string): Element | null
+    elementFromPoint(x: number, y: number): Element | null
+    elementsFromPoint(x: number, y: number): Element[]
+  }
+}
+
 let browserPromise: Promise<Browser> | undefined
 
 export async function expectChromiumParity(fixture: BrowserParityFixture): Promise<void> {
@@ -82,69 +90,17 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
   try {
     await page.setContent(fixture.html)
 
-    return await page.evaluate((queries) => {
-      return queries.map((query) => {
-        if (query.type === 'point') {
-          return {
-            elementFromPoint: describeElement(document.elementFromPoint(query.x, query.y)),
-            elementsFromPoint: document
-              .elementsFromPoint(query.x, query.y)
-              .map(describeElement)
-              .filter((value): value is string => value !== null),
-          }
-        }
+    return await page.evaluate(
+      ({ queries, runQueriesSource }) => {
+        const runQueries = new Function(`return (${runQueriesSource})`)() as (
+          windowLike: QueryWindow,
+          queries: BrowserParityQuery[],
+        ) => QueryResult[]
 
-        const element = document.querySelector(query.selector)
-
-        if (!element) {
-          throw new Error(`Missing element: ${query.selector}`)
-        }
-
-        const rect = element.getBoundingClientRect()
-
-        if (query.type === 'rect') {
-          return {
-            rect: serializeRect(rect),
-          }
-        }
-
-        if (query.type === 'dimensions') {
-          const htmlElement = element as HTMLElement
-
-          return {
-            dimensions: {
-              offsetWidth: htmlElement.offsetWidth,
-              offsetHeight: htmlElement.offsetHeight,
-              clientWidth: htmlElement.clientWidth,
-              clientHeight: htmlElement.clientHeight,
-            },
-          }
-        }
-
-        const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
-
-        return {
-          receivesPointerAtCenter: top === element || Boolean(top && element.contains(top)),
-        }
-      })
-
-      function describeElement(element: Element | null): string | null {
-        return element?.id ? `#${element.id}` : null
-      }
-
-      function serializeRect(rect: DOMRect): SerializedRect {
-        return {
-          left: normalizeNumber(rect.left),
-          top: normalizeNumber(rect.top),
-          width: normalizeNumber(rect.width),
-          height: normalizeNumber(rect.height),
-        }
-      }
-
-      function normalizeNumber(value: number): number {
-        return Object.is(value, -0) ? 0 : Number(value.toFixed(4))
-      }
-    }, fixture.queries)
+        return runQueries(window as unknown as QueryWindow, queries)
+      },
+      { queries: fixture.queries, runQueriesSource: runQueries.toString() },
+    )
   } finally {
     await page.close().catch(() => {})
   }
@@ -157,7 +113,7 @@ async function getChromiumBrowser(): Promise<Browser> {
 }
 
 async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult[]> {
-  const window = new Window({
+  const window = new HappyDomWindow({
     url: 'http://localhost/',
     width: fixture.viewport.width,
     height: fixture.viewport.height,
@@ -165,80 +121,80 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   const document = window.document
   document.body.innerHTML = fixture.html
 
-  const engine = createLayoutEngine({ viewport: fixture.viewport })
-  await engine.initialize()
-  const attachment = engine.attachTo(document)
+  await attachLayoutEngine({ window, viewport: fixture.viewport })
 
-  try {
-    return fixture.queries.map((query) => runHappyDomQuery(document, attachment, query))
-  } finally {
-    attachment.detach()
-    window.close()
-  }
-}
+  const results = runQueries(window as unknown as QueryWindow, fixture.queries)
+  window.close()
 
-function runHappyDomQuery(
-  document: Window['document'],
-  attachment: DocumentAttachment,
-  query: BrowserParityQuery,
-): QueryResult {
-  if (query.type === 'point') {
-    return {
-      elementFromPoint: describeElement(attachment.elementFromPoint(query.x, query.y)),
-      elementsFromPoint: attachment
-        .elementsFromPoint(query.x, query.y)
-        .map(describeElement)
-        .filter((value): value is string => value !== null),
-    }
-  }
-
-  const element = document.querySelector(query.selector)
-
-  if (!element) {
-    throw new Error(`Missing element: ${query.selector}`)
-  }
-
-  if (query.type === 'rect') {
-    return {
-      rect: serializeRect(attachment.getBoundingClientRect(element as unknown as Element)),
-    }
-  }
-
-  if (query.type === 'dimensions') {
-    const htmlElement = element as unknown as HTMLElement
-
-    return {
-      dimensions: {
-        offsetWidth: htmlElement.offsetWidth,
-        offsetHeight: htmlElement.offsetHeight,
-        clientWidth: htmlElement.clientWidth,
-        clientHeight: htmlElement.clientHeight,
-      },
-    }
-  }
-
-  return {
-    receivesPointerAtCenter: attachment.receivesPointerAtCenter(element as unknown as Element),
-  }
-}
-
-function describeElement(element: Element | null): string | null {
-  return element?.id ? `#${element.id}` : null
+  return results
 }
 
 function describeQuery(query: BrowserParityQuery): string {
   return JSON.stringify(query)
 }
 
-function serializeRect(rect: DOMRect): SerializedRect {
-  return {
-    left: normalizeNumber(rect.left),
-    top: normalizeNumber(rect.top),
-    width: normalizeNumber(rect.width),
-    height: normalizeNumber(rect.height),
-  }
-}
+function runQueries(windowLike: QueryWindow, queries: BrowserParityQuery[]): QueryResult[] {
+  const document = windowLike.document
 
-function normalizeNumber(value: number): number {
-  return Object.is(value, -0) ? 0 : Number(value.toFixed(4))
+  return queries.map((query) => {
+    if (query.type === 'point') {
+      return {
+        elementFromPoint: describeElement(document.elementFromPoint(query.x, query.y)),
+        elementsFromPoint: document
+          .elementsFromPoint(query.x, query.y)
+          .map(describeElement)
+          .filter((value): value is string => value !== null),
+      }
+    }
+
+    const element = document.querySelector(query.selector)
+
+    if (!element) {
+      throw new Error(`Missing element: ${query.selector}`)
+    }
+
+    const rect = element.getBoundingClientRect()
+
+    if (query.type === 'rect') {
+      return {
+        rect: serializeRect(rect),
+      }
+    }
+
+    if (query.type === 'dimensions') {
+      const htmlElement = element as HTMLElement
+
+      return {
+        dimensions: {
+          offsetWidth: htmlElement.offsetWidth,
+          offsetHeight: htmlElement.offsetHeight,
+          clientWidth: htmlElement.clientWidth,
+          clientHeight: htmlElement.clientHeight,
+        },
+      }
+    }
+
+    const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+
+    return {
+      receivesPointerAtCenter: top === element || Boolean(top && element.contains(top)),
+    }
+  })
+
+  function describeElement(element: Element | null): string | null {
+    return element?.id ? `#${element.id}` : null
+  }
+
+  function serializeRect(rect: DOMRect): SerializedRect {
+    return {
+      left: normalizeNumber(rect.left),
+      top: normalizeNumber(rect.top),
+      width: normalizeNumber(rect.width),
+      height: normalizeNumber(rect.height),
+    }
+  }
+
+  function normalizeNumber(value: number): number {
+    return Object.is(value, -0) ? 0 : Number(value.toFixed(4))
+  }
 }

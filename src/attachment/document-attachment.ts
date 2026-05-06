@@ -6,7 +6,7 @@ import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testin
 import { computeDocumentLayout } from '../layout/document-layout-source.ts'
 import type { LayoutSnapshot } from '../layout/layout-source.ts'
 import type { TextMeasurer } from '../text/text-measurer.ts'
-import { patchDomApis, type DomApiPatch } from './patch-dom-apis.ts'
+import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
 
 export type DocumentAttachmentOptions = {
   document: Document
@@ -26,7 +26,6 @@ export class DocumentAttachment {
   private dirty = true
   private detached = false
   private snapshot: LayoutSnapshot | undefined
-  private patch: DomApiPatch | undefined
   private mutationObserver: MutationObserver | undefined
 
   constructor(options: DocumentAttachmentOptions) {
@@ -35,7 +34,7 @@ export class DocumentAttachment {
     this.unsupportedCss = options.unsupportedCss
     this.textMeasurer = options.textMeasurer
     this.stylesheets = options.stylesheets
-    this.patch = patchDomApis(this)
+    patchDomApis(this)
     this.mutationObserver = observeMutations(this.document, () => {
       this.dirty = true
     })
@@ -48,8 +47,7 @@ export class DocumentAttachment {
 
     this.mutationObserver?.disconnect()
     this.mutationObserver = undefined
-    this.patch?.restore()
-    this.patch = undefined
+    unpatchDomApis(this)
     this.detached = true
   }
 

@@ -1,10 +1,9 @@
 import type { DocumentAttachment } from './document-attachment.ts'
 
-export type DomApiPatch = {
-  restore(): void
-}
+const attachedDocuments = new WeakMap<Document, DocumentAttachment>()
+const patchedWindows = new WeakSet<object>()
 
-export function patchDomApis(attachment: DocumentAttachment): DomApiPatch {
+export function patchDomApis(attachment: DocumentAttachment): void {
   const document = attachment.document
   const view = document.defaultView
 
@@ -12,106 +11,96 @@ export function patchDomApis(attachment: DocumentAttachment): DomApiPatch {
     throw new Error('Cannot attach layout engine to a document without defaultView')
   }
 
-  const elementPrototype = view.Element.prototype
-  const htmlElementPrototype = view.HTMLElement.prototype
-  const originalGetBoundingClientRect = elementPrototype.getBoundingClientRect
-  const originalOffsetWidth = Object.getOwnPropertyDescriptor(htmlElementPrototype, 'offsetWidth')
-  const originalOffsetHeight = Object.getOwnPropertyDescriptor(htmlElementPrototype, 'offsetHeight')
-  const originalClientWidth = Object.getOwnPropertyDescriptor(htmlElementPrototype, 'clientWidth')
-  const originalClientHeight = Object.getOwnPropertyDescriptor(htmlElementPrototype, 'clientHeight')
-  const originalElementFromPoint = document.elementFromPoint
-  const originalElementsFromPoint = document.elementsFromPoint
+  const existingAttachment = attachedDocuments.get(document)
 
-  Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
-    configurable: true,
-    value(this: Element) {
-      return attachment.getBoundingClientRect(this)
-    },
-  })
+  existingAttachment?.detach()
+  attachedDocuments.set(document, attachment)
 
   Object.defineProperty(document, 'elementFromPoint', {
     configurable: true,
-    value(x: number, y: number) {
-      return attachment.elementFromPoint(x, y)
+    value(this: Document, x: number, y: number) {
+      return attachmentForDocument(this).elementFromPoint(x, y)
     },
   })
 
   Object.defineProperty(document, 'elementsFromPoint', {
     configurable: true,
-    value(x: number, y: number) {
-      return attachment.elementsFromPoint(x, y)
+    value(this: Document, x: number, y: number) {
+      return attachmentForDocument(this).elementsFromPoint(x, y)
+    },
+  })
+
+  if (patchedWindows.has(view)) {
+    return
+  }
+
+  patchedWindows.add(view)
+
+  const elementPrototype = view.Element.prototype
+  const htmlElementPrototype = view.HTMLElement.prototype
+
+  Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
+    configurable: true,
+    value(this: Element) {
+      return attachmentForElement(this).getBoundingClientRect(this)
     },
   })
 
   Object.defineProperty(htmlElementPrototype, 'offsetWidth', {
     configurable: true,
     get(this: Element) {
-      return attachment.offsetWidth(this)
+      return attachmentForElement(this).offsetWidth(this)
     },
   })
 
   Object.defineProperty(htmlElementPrototype, 'offsetHeight', {
     configurable: true,
     get(this: Element) {
-      return attachment.offsetHeight(this)
+      return attachmentForElement(this).offsetHeight(this)
     },
   })
 
   Object.defineProperty(htmlElementPrototype, 'clientWidth', {
     configurable: true,
     get(this: Element) {
-      return attachment.clientWidth(this)
+      return attachmentForElement(this).clientWidth(this)
     },
   })
 
   Object.defineProperty(htmlElementPrototype, 'clientHeight', {
     configurable: true,
     get(this: Element) {
-      return attachment.clientHeight(this)
+      return attachmentForElement(this).clientHeight(this)
     },
   })
+}
 
-  return {
-    restore() {
-      Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
-        configurable: true,
-        value: originalGetBoundingClientRect,
-      })
-      restoreProperty(htmlElementPrototype, 'offsetWidth', originalOffsetWidth)
-      restoreProperty(htmlElementPrototype, 'offsetHeight', originalOffsetHeight)
-      restoreProperty(htmlElementPrototype, 'clientWidth', originalClientWidth)
-      restoreProperty(htmlElementPrototype, 'clientHeight', originalClientHeight)
+export function debugLayout(window: { document: Document }): string {
+  return attachmentForDocument(window.document).debug()
+}
 
-      if (originalElementFromPoint) {
-        Object.defineProperty(document, 'elementFromPoint', {
-          configurable: true,
-          value: originalElementFromPoint,
-        })
-      } else {
-        delete (document as Partial<Document>).elementFromPoint
-      }
-
-      if (originalElementsFromPoint) {
-        Object.defineProperty(document, 'elementsFromPoint', {
-          configurable: true,
-          value: originalElementsFromPoint,
-        })
-      } else {
-        delete (document as Partial<Document>).elementsFromPoint
-      }
-    },
+export function unpatchDomApis(attachment: DocumentAttachment): void {
+  if (attachedDocuments.get(attachment.document) === attachment) {
+    attachedDocuments.delete(attachment.document)
   }
 }
 
-function restoreProperty(
-  prototype: HTMLElement,
-  property: 'offsetWidth' | 'offsetHeight' | 'clientWidth' | 'clientHeight',
-  descriptor: PropertyDescriptor | undefined,
-): void {
-  if (descriptor) {
-    Object.defineProperty(prototype, property, descriptor)
-    return
+function attachmentForElement(element: Element): DocumentAttachment {
+  const document = element.ownerDocument
+
+  if (!document) {
+    throw new Error('Cannot query layout for an element without ownerDocument')
   }
 
-  delete (prototype as Partial<Record<typeof property, unknown>>)[property]
+  return attachmentForDocument(document)
+}
+
+function attachmentForDocument(document: Document): DocumentAttachment {
+  const attachment = attachedDocuments.get(document)
+
+  if (!attachment) {
+    throw new Error('No layout engine is attached to this document')
+  }
+
+  return attachment
 }

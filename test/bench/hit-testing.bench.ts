@@ -1,6 +1,6 @@
 import { Bench } from 'tinybench'
 import { Window } from 'happy-dom'
-import { createLayoutEngine } from '../../src/index.ts'
+import { attachLayoutEngine } from '../../src/index.ts'
 
 const window = new Window()
 const document = window.document
@@ -20,21 +20,16 @@ document.body.innerHTML = `
   }).join('')}
 `
 
-const engine = createLayoutEngine({
+await attachLayoutEngine({
+  window,
   viewport: { width: 800, height: 600 },
 })
 
-await engine.initialize()
-const attachment = engine.attachTo(document)
-attachment.recompute()
+document.getElementById('box-150')?.getBoundingClientRect()
 
 const bench = new Bench({ time: 100 })
 
 bench
-  .add('recompute 200 absolute boxes', () => {
-    attachment.markDirty()
-    attachment.recompute()
-  })
   .add('getBoundingClientRect', () => {
     document.getElementById('box-150')?.getBoundingClientRect()
   })
@@ -54,5 +49,4 @@ for (const task of bench.tasks) {
   console.log(`${task.name}: ${hz} ops/sec, ${mean} ms mean`)
 }
 
-attachment.detach()
 window.close()
