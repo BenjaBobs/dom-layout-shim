@@ -1,0 +1,39 @@
+{
+  "name": "test-layout",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:browser-parity": "PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
+    "bench": "tsx test/bench/hit-testing.bench.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "happy-dom": "^20.9.0",
+    "tinybench": "^6.0.1",
+    "tsx": "^4.21.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "lightningcss": "^1.32.0"
+  }
+}

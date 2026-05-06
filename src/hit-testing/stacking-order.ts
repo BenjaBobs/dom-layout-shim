@@ -1,0 +1,9 @@
+import type { HitBox } from './hit-box'
+
+export function compareHitOrder(a: HitBox, b: HitBox): number {
+  if (a.zIndex !== b.zIndex) {
+    return b.zIndex - a.zIndex
+  }
+
+  return b.domOrder - a.domOrder
+}
