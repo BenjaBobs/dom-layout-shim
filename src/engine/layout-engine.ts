@@ -1,7 +1,7 @@
-import { attachToDocument } from '../attachment/attach-to-document'
-import type { DocumentAttachment } from '../attachment/document-attachment'
-import type { DocumentLike } from '../browser-dom/document-like'
-import { normalizeConfig, type LayoutEngineConfig, type NormalizedLayoutEngineConfig } from './layout-engine-config'
+import { attachToDocument } from '../attachment/attach-to-document.ts'
+import type { DocumentAttachment } from '../attachment/document-attachment.ts'
+import type { DocumentLike } from '../browser-dom/document-like.ts'
+import { normalizeConfig, type LayoutEngineConfig, type NormalizedLayoutEngineConfig } from './layout-engine-config.ts'
 
 export class LayoutEngine {
   private readonly config: NormalizedLayoutEngineConfig

@@ -1,6 +1,6 @@
 import { transform } from 'lightningcss'
-import { applyDeclaration, type SupportedStyle } from './supported-declaration'
-import { handleUnsupportedCss, type UnsupportedCssPolicy } from './unsupported-css-policy'
+import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
+import { handleUnsupportedCss, type UnsupportedCssPolicy } from './unsupported-css-policy.ts'
 
 export type StyleRule = {
   selector: string

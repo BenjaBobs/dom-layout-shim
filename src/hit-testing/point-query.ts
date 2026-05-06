@@ -1,6 +1,6 @@
-import { containsPoint } from '../geometry/box'
-import type { HitBox } from './hit-box'
-import { compareHitOrder } from './stacking-order'
+import { containsPoint } from '../geometry/box.ts'
+import type { HitBox } from './hit-box.ts'
+import { compareHitOrder } from './stacking-order.ts'
 
 export function elementsFromPointInBoxes(boxes: readonly HitBox[], x: number, y: number): Element[] {
   return boxes

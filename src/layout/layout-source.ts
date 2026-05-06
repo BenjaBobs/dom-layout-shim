@@ -1,5 +1,5 @@
-import type { Box } from '../geometry/box'
-import type { HitBox } from '../hit-testing/hit-box'
+import type { Box } from '../geometry/box.ts'
+import type { HitBox } from '../hit-testing/hit-box.ts'
 
 export type LayoutSnapshot = {
   boxes: HitBox[]

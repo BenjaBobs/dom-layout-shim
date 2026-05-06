@@ -1,12 +1,12 @@
-import { applyInlineStyle } from '../css/inline-style-source'
-import { createDefaultStyle, type Edges, type SupportedStyle } from '../css/supported-declaration'
-import { applyStyleRules, readStyleRules } from '../css/stylesheet-source'
-import type { UnsupportedCssPolicy } from '../css/unsupported-css-policy'
-import type { Viewport } from '../engine/layout-engine-config'
-import type { Box } from '../geometry/box'
-import type { HitBox } from '../hit-testing/hit-box'
-import type { TextMeasurer, TextMeasureResult } from '../text/text-measurer'
-import type { LayoutSnapshot } from './layout-source'
+import { applyInlineStyle } from '../css/inline-style-source.ts'
+import { createDefaultStyle, type Edges, type SupportedStyle } from '../css/supported-declaration.ts'
+import { applyStyleRules, readStyleRules } from '../css/stylesheet-source.ts'
+import type { UnsupportedCssPolicy } from '../css/unsupported-css-policy.ts'
+import type { Viewport } from '../engine/layout-engine-config.ts'
+import type { Box } from '../geometry/box.ts'
+import type { HitBox } from '../hit-testing/hit-box.ts'
+import type { TextMeasurer, TextMeasureResult } from '../text/text-measurer.ts'
+import type { LayoutSnapshot } from './layout-source.ts'
 
 type LayoutState = {
   boxes: HitBox[]

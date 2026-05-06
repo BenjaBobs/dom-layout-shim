@@ -1,4 +1,4 @@
-import type { DocumentAttachment } from './document-attachment'
+import type { DocumentAttachment } from './document-attachment.ts'
 
 export type DomApiPatch = {
   restore(): void

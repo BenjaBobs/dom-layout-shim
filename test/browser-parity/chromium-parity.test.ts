@@ -1,12 +1,12 @@
 import { chromium, type Browser } from '@playwright/test'
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { createLayoutEngine, type DocumentAttachment } from '../../src'
+import { createLayoutEngine, type DocumentAttachment } from '../../src/index.ts'
 import {
   browserParityFixtures,
   type BrowserParityFixture,
   type BrowserParityQuery,
-} from './fixtures/fixtures'
+} from './fixtures/fixtures.ts'
 
 type QueryResult = {
   elementFromPoint?: string | null

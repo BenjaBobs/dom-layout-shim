@@ -1,6 +1,6 @@
 import { Bench } from 'tinybench'
 import { Window } from 'happy-dom'
-import { createLayoutEngine } from '../../src'
+import { createLayoutEngine } from '../../src/index.ts'
 
 const window = new Window()
 const document = window.document

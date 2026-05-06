@@ -1,5 +1,5 @@
-import { handleUnsupportedCss, type UnsupportedCssPolicy, type UnsupportedCssSource } from './unsupported-css-policy'
-import type { WhiteSpace } from '../text/text-measurer'
+import { handleUnsupportedCss, type UnsupportedCssPolicy, type UnsupportedCssSource } from './unsupported-css-policy.ts'
+import type { WhiteSpace } from '../text/text-measurer.ts'
 
 export type Edges = {
   top: number

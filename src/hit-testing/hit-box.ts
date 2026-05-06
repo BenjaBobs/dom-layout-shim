@@ -1,4 +1,4 @@
-import type { Box } from '../geometry/box'
+import type { Box } from '../geometry/box.ts'
 
 export type HitBox = Box & {
   element: Element

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayoutEngine, type DocumentAttachment } from '../../src'
+import { createLayoutEngine, type DocumentAttachment } from '../../src/index.ts'
 
 let attachment: DocumentAttachment | undefined
 

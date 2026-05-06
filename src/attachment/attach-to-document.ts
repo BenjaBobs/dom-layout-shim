@@ -1,6 +1,6 @@
-import type { NormalizedLayoutEngineConfig } from '../engine/layout-engine-config'
-import type { DocumentLike } from '../browser-dom/document-like'
-import { DocumentAttachment } from './document-attachment'
+import type { NormalizedLayoutEngineConfig } from '../engine/layout-engine-config.ts'
+import type { DocumentLike } from '../browser-dom/document-like.ts'
+import { DocumentAttachment } from './document-attachment.ts'
 
 export function attachToDocument(document: DocumentLike, config: NormalizedLayoutEngineConfig): DocumentAttachment {
   return new DocumentAttachment({

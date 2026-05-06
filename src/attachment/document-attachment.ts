@@ -1,12 +1,12 @@
-import type { UnsupportedCssPolicy } from '../css/unsupported-css-policy'
-import type { Viewport } from '../engine/layout-engine-config'
-import { createDomRect } from '../geometry/dom-rect'
-import { zeroBox } from '../geometry/box'
-import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testing/point-query'
-import { computeDocumentLayout } from '../layout/document-layout-source'
-import type { LayoutSnapshot } from '../layout/layout-source'
-import type { TextMeasurer } from '../text/text-measurer'
-import { patchDomApis, type DomApiPatch } from './patch-dom-apis'
+import type { UnsupportedCssPolicy } from '../css/unsupported-css-policy.ts'
+import type { Viewport } from '../engine/layout-engine-config.ts'
+import { createDomRect } from '../geometry/dom-rect.ts'
+import { zeroBox } from '../geometry/box.ts'
+import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testing/point-query.ts'
+import { computeDocumentLayout } from '../layout/document-layout-source.ts'
+import type { LayoutSnapshot } from '../layout/layout-source.ts'
+import type { TextMeasurer } from '../text/text-measurer.ts'
+import { patchDomApis, type DomApiPatch } from './patch-dom-apis.ts'
 
 export type DocumentAttachmentOptions = {
   document: Document
