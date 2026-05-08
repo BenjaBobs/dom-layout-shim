@@ -1,3 +1,10 @@
+import {
+  layout as layoutText,
+  measureLineStats,
+  measureNaturalWidth,
+  prepareWithSegments,
+} from '@chenglou/pretext'
+
 export type WhiteSpace = 'normal' | 'pre-wrap' | 'nowrap'
 
 export type TextMeasureInput = {
@@ -19,6 +26,32 @@ export type TextMeasurer = {
 }
 
 export function createDefaultTextMeasurer(): TextMeasurer {
+  return createPretextTextMeasurer({
+    fallback: createDeterministicTextMeasurer(),
+  })
+}
+
+export function createPretextTextMeasurer(options: { fallback?: TextMeasurer } = {}): TextMeasurer {
+  let pretextAvailable = true
+  const fallback = options.fallback
+
+  return {
+    measure(input) {
+      if (!pretextAvailable) {
+        return measureWithFallback(input, fallback)
+      }
+
+      try {
+        return measureWithPretext(input)
+      } catch {
+        pretextAvailable = false
+        return measureWithFallback(input, fallback)
+      }
+    },
+  }
+}
+
+export function createDeterministicTextMeasurer(): TextMeasurer {
   return {
     measure(input) {
       const lines = breakTextIntoLines(input)
@@ -31,6 +64,45 @@ export function createDefaultTextMeasurer(): TextMeasurer {
       }
     },
   }
+}
+
+function measureWithPretext(input: TextMeasureInput): TextMeasureResult {
+  const maxWidth = input.whiteSpace === 'nowrap'
+    ? Number.MAX_SAFE_INTEGER
+    : input.maxWidth ?? Number.MAX_SAFE_INTEGER
+  const options = {
+    whiteSpace: input.whiteSpace === 'pre-wrap' ? 'pre-wrap' as const : 'normal' as const,
+  }
+
+  if (input.whiteSpace === 'nowrap') {
+    const prepared = prepareWithSegments(input.text, fontShorthand(input), options)
+
+    return {
+      width: measureNaturalWidth(prepared),
+      height: input.lineHeight,
+    }
+  }
+
+  const prepared = prepareWithSegments(input.text, fontShorthand(input), options)
+  const laidOut = layoutText(prepared, maxWidth, input.lineHeight)
+  const lineStats = measureLineStats(prepared, maxWidth)
+
+  return {
+    width: lineStats.maxLineWidth,
+    height: laidOut.height,
+  }
+}
+
+function measureWithFallback(input: TextMeasureInput, fallback: TextMeasurer | undefined): TextMeasureResult {
+  if (!fallback) {
+    throw new Error('Pretext text measurement is unavailable in this runtime')
+  }
+
+  return fallback.measure(input)
+}
+
+function fontShorthand(input: TextMeasureInput): string {
+  return `${input.fontSize}px ${input.fontFamily}`
 }
 
 function breakTextIntoLines(input: TextMeasureInput): string[] {

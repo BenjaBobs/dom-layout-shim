@@ -15,11 +15,24 @@ export type BorderStyles = {
   left: 'none' | 'solid'
 }
 
+export type AlignItemsValue = 'flex-start' | 'flex-end' | 'center' | 'stretch'
+export type JustifyContentValue =
+  | 'flex-start'
+  | 'flex-end'
+  | 'center'
+  | 'space-between'
+  | 'space-around'
+  | 'space-evenly'
+
 export type SupportedStyle = {
   display: 'block' | 'flex' | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
   flexDirection: 'row' | 'column'
+  alignItems?: AlignItemsValue
+  justifyContent?: JustifyContentValue
+  flexGrow: number
+  flexShrink: number
   width?: number
   height?: number
   minWidth?: number
@@ -35,6 +48,8 @@ export type SupportedStyle = {
   visibility: 'visible' | 'hidden'
   margin: Edges
   padding: Edges
+  rowGap: number
+  columnGap: number
   borderWidth: Edges
   borderStyle: BorderStyles
   fontFamily: string
@@ -56,11 +71,15 @@ export function createDefaultStyle(): SupportedStyle {
     position: 'static',
     boxSizing: 'content-box',
     flexDirection: 'row',
+    flexGrow: 0,
+    flexShrink: 1,
     zIndex: 0,
     pointerEvents: 'auto',
     visibility: 'visible',
     margin: zeroEdges(),
     padding: zeroEdges(),
+    rowGap: 0,
+    columnGap: 0,
     borderWidth: zeroEdges(),
     borderStyle: {
       top: 'none',
@@ -120,6 +139,34 @@ export function applyDeclaration(
         value,
         context,
       )
+      return
+    case 'align-items':
+      applyKeyword(
+        style,
+        'alignItems',
+        normalizedValue,
+        ['flex-start', 'flex-end', 'center', 'stretch'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
+    case 'justify-content':
+      applyKeyword(
+        style,
+        'justifyContent',
+        normalizedValue,
+        ['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
+    case 'flex-grow':
+      applyNumber(style, 'flexGrow', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'flex-shrink':
+      applyNumber(style, 'flexShrink', normalizedValue, normalizedProperty, value, context)
       return
     case 'pointer-events':
       applyKeyword(
@@ -186,6 +233,15 @@ export function applyDeclaration(
     case 'margin-bottom':
     case 'margin-left':
       applyEdge(style.margin, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
+      return
+    case 'gap':
+      applyGap(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'row-gap':
+      applyGapLength(style, 'rowGap', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'column-gap':
+      applyGapLength(style, 'columnGap', normalizedValue, normalizedProperty, value, context)
       return
     case 'border-width':
       applyEdges(style.borderWidth, normalizedValue, normalizedProperty, value, context)
@@ -411,6 +467,31 @@ function applyLength(
   style[key] = length
 }
 
+function applyNumber(
+  style: SupportedStyle,
+  key: 'flexGrow' | 'flexShrink',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const number = Number(value)
+
+  if (!Number.isFinite(number) || number < 0) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = number
+}
+
 function applyInset(
   style: SupportedStyle,
   value: string,
@@ -452,6 +533,71 @@ function applyInset(
   style.right = right
   style.bottom = bottom
   style.left = left
+}
+
+function applyGap(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split(/\s+/).filter(Boolean)
+
+  if (parts.length < 1 || parts.length > 2) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const lengths = parts.map(parseNonNegativePxLength)
+
+  if (lengths.some((length) => length === undefined)) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const [rowGap, columnGap = rowGap] = lengths as number[]
+  style.rowGap = rowGap
+  style.columnGap = columnGap
+}
+
+function applyGapLength(
+  style: SupportedStyle,
+  key: 'rowGap' | 'columnGap',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const length = parseNonNegativePxLength(value)
+
+  if (length === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = length
 }
 
 function applyBorderStyles(
@@ -541,6 +687,11 @@ function parsePxLength(value: string): number | undefined {
 
   const match = /^(-?\d+(?:\.\d+)?)px$/.exec(value)
   return match ? Number(match[1]) : undefined
+}
+
+function parseNonNegativePxLength(value: string): number | undefined {
+  const length = parsePxLength(value)
+  return length !== undefined && length >= 0 ? length : undefined
 }
 
 function parseEdgeLengths(

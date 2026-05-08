@@ -11,9 +11,7 @@ export async function attachLayoutEngine(options: AttachLayoutEngineOptions): Pr
   const { window, ...config } = options
   const normalizedConfig = normalizeConfig(config)
 
-  if (normalizedConfig.layoutBackend === 'taffy') {
-    await loadTaffyBackend()
-  }
+  await loadTaffyBackend()
 
   attachToDocument(window.document, normalizedConfig)
 }

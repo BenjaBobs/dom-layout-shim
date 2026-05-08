@@ -45,11 +45,19 @@ and source order.
 Supported values:
 
 ```txt
-display: block | none
+display: block | flex | none
+flex-direction: row | column
+flex-grow: <number>
+flex-shrink: <number>
+align-items: flex-start | flex-end | center | stretch
+justify-content: flex-start | flex-end | center | space-between | space-around | space-evenly
 position: static | relative | absolute | fixed
 box-sizing: content-box | border-box
 margin: <px>{1,4}
 margin-top/right/bottom/left: <px>
+gap: <px>{1,2}
+row-gap: <px>
+column-gap: <px>
 padding: <px>{1,4}
 padding-top/right/bottom/left: <px>
 border-style: none | solid
@@ -78,8 +86,8 @@ white-space: normal | pre-wrap | nowrap
 
 Notes:
 
-- `display: flex` and `display: grid` are parsed, but still unsupported by the
-  layout engine.
+- `display: flex` uses Taffy's flexbox algorithm for row and column layout.
+- `display: grid` is not supported yet.
 - Elements with a present `hidden` attribute and their descendants receive zero
   rects and are excluded from hit testing.
 - Lengths are currently pixels only, plus literal `0`.
@@ -87,6 +95,8 @@ Notes:
 - `padding` and `border-width` support the normal 1-4 value shorthand, with
   pixel lengths only.
 - `margin` supports the normal 1-4 value shorthand, with pixel lengths only.
+- `gap` supports the normal 1-2 value shorthand, with non-negative pixel
+  lengths only.
 - Margin collapse is not supported. Fixtures that rely on margins should avoid
   collapse-sensitive cases for now, for example by using parent padding/border.
 - Border widths only affect geometry for edges with `border-style: solid`.
@@ -102,8 +112,9 @@ Notes:
   while preserving its normal-flow space.
 - Absolutely positioned elements use the nearest positioned ancestor's padding
   box as their containing block. Fixed positioning remains viewport-relative.
-- Text-only leaf elements contribute to auto height through a deterministic
-  text measurer. This is intentionally not browser-font-accurate.
+- Text-only leaf elements contribute to auto height through the configured text
+  measurer. The default uses Pretext when canvas measurement is available and
+  falls back to deterministic measurement otherwise.
 - Positioned text-only leaf elements can use text measurement for auto
   width/height.
 - Replaced elements can use `width`/`height` attributes, or explicit

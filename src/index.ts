@@ -5,4 +5,9 @@ export { debugLayout } from './attachment/patch-dom-apis.ts'
 export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './css/unsupported-css-policy.ts'
 export type { Box } from './geometry/box.ts'
 export type { HitBox } from './hit-testing/hit-box.ts'
+export {
+  createDefaultTextMeasurer,
+  createDeterministicTextMeasurer,
+  createPretextTextMeasurer,
+} from './text/text-measurer.ts'
 export type { TextMeasureInput, TextMeasureResult, TextMeasurer } from './text/text-measurer.ts'

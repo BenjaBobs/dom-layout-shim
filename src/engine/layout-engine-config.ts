@@ -7,7 +7,11 @@ export type Viewport = {
 }
 
 export type LayoutEngineConfig = {
-  layoutBackend?: 'legacy' | 'taffy'
+  /**
+   * @deprecated Taffy is the only active backend. This option is accepted as a
+   * compatibility no-op for callers that previously opted into Taffy.
+   */
+  layoutBackend?: 'taffy'
   viewport?: Viewport
   unsupportedCss?: UnsupportedCssPolicy
   textMeasurer?: TextMeasurer
@@ -15,7 +19,6 @@ export type LayoutEngineConfig = {
 }
 
 export type NormalizedLayoutEngineConfig = {
-  layoutBackend: 'legacy' | 'taffy'
   viewport: Viewport
   unsupportedCss: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
@@ -24,7 +27,6 @@ export type NormalizedLayoutEngineConfig = {
 
 export function normalizeConfig(config: LayoutEngineConfig = {}): NormalizedLayoutEngineConfig {
   return {
-    layoutBackend: config.layoutBackend ?? 'legacy',
     viewport: config.viewport ?? { width: 1280, height: 720 },
     unsupportedCss: config.unsupportedCss ?? { default: 'throw' },
     textMeasurer: config.textMeasurer ?? createDefaultTextMeasurer(),

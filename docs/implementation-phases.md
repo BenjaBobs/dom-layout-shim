@@ -98,21 +98,27 @@ Cases:
 - Replaced element metadata for images and SVGs.
 
 Status: partially implemented. A deterministic text measurer is configurable,
-text-only leaves can contribute to auto height, positioned text-only leaves can
-use measured auto width/height, and replaced elements can use width/height
-attributes or `data-layout-*` metadata.
+the default measurer uses Pretext when canvas measurement is available and falls
+back to deterministic measurement otherwise, text-only leaves can contribute to
+auto height, positioned text-only leaves can use measured auto width/height, and
+replaced elements can use width/height attributes or `data-layout-*` metadata.
 
-## Phase 6: Taffy Layout Adapter
+## Phase 6: Taffy Pipeline
 
 Cases:
 
 - Taffy initialization behind engine lifecycle.
 - Adapter-owned Taffy tree construction.
+- Taffy-backed block layout.
 - Flexbox.
 - Grid subset.
 - Gap and alignment properties supported by Taffy.
+- Text and replaced element measurement through Taffy measure callbacks.
+- Snapshot collection for DOM APIs and hit testing.
 
-Status: not started.
+Status: in progress. The target architecture is documented in
+`docs/taffy-pipeline-roadmap.md`. Taffy is now the default backend. The adapter
+is the only active runtime layout path.
 
 ## Phase 7: Clipping and Scroll
 

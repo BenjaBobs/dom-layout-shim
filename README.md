@@ -3,7 +3,10 @@
 Deterministic layout and hit testing for fast DOM test harnesses.
 
 This package is an early proof of concept. The core is framework agnostic and
-attaches to DOM-like documents such as happy-dom documents.
+attaches to DOM-like documents such as happy-dom documents. Layout is computed
+through a Taffy-backed pipeline, with text measurement supplied through Pretext
+when the runtime supports canvas measurement. DOM API patching and hit testing
+are derived from the resulting layout snapshot.
 
 ```ts
 import { attachLayoutEngine } from 'test-layout'
@@ -22,11 +25,16 @@ const clickable = top === button || Boolean(top && button.contains(top))
 ```
 
 The current implementation uses Lightning CSS for `<style>` parsing and supports
-a small CSS subset for proof-of-concept absolute and fixed-positioned fixtures.
-Unsupported CSS throws by default unless explicitly ignored by policy.
+a small CSS subset for proof-of-concept block, flex, absolute, and fixed
+positioned fixtures. Unsupported CSS throws by default unless explicitly ignored
+by policy. Text measurement falls back to a deterministic approximation in
+Node-like runtimes without canvas text measurement.
 
 See [docs/supported-css.md](docs/supported-css.md) for the current supported
 CSS contract.
 
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.
+
+See [docs/taffy-pipeline-roadmap.md](docs/taffy-pipeline-roadmap.md) for the
+Taffy pipeline contract and migration roadmap.

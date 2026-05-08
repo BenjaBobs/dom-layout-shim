@@ -3,7 +3,6 @@ import type { Viewport } from '../engine/layout-engine-config.ts'
 import { createDomRect } from '../geometry/dom-rect.ts'
 import { zeroBox } from '../geometry/box.ts'
 import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testing/point-query.ts'
-import { computeDocumentLayout } from '../layout/document-layout-source.ts'
 import type { LayoutSnapshot } from '../layout/layout-source.ts'
 import { computeTaffyDocumentLayout } from '../layout/taffy-layout-source.ts'
 import type { TextMeasurer } from '../text/text-measurer.ts'
@@ -11,7 +10,6 @@ import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
 
 export type DocumentAttachmentOptions = {
   document: Document
-  layoutBackend: 'legacy' | 'taffy'
   viewport: Viewport
   unsupportedCss?: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
@@ -21,7 +19,6 @@ export type DocumentAttachmentOptions = {
 export class DocumentAttachment {
   readonly document: Document
 
-  private readonly layoutBackend: 'legacy' | 'taffy'
   private readonly viewport: Viewport
   private readonly unsupportedCss: UnsupportedCssPolicy | undefined
   private readonly textMeasurer: TextMeasurer
@@ -33,7 +30,6 @@ export class DocumentAttachment {
 
   constructor(options: DocumentAttachmentOptions) {
     this.document = options.document
-    this.layoutBackend = options.layoutBackend
     this.viewport = options.viewport
     this.unsupportedCss = options.unsupportedCss
     this.textMeasurer = options.textMeasurer
@@ -62,12 +58,7 @@ export class DocumentAttachment {
 
   recompute(): void {
     this.assertAttached()
-    this.snapshot = this.layoutBackend === 'taffy' ? computeTaffyDocumentLayout(
-      this.document,
-      this.viewport,
-      this.unsupportedCss,
-      this.stylesheets,
-    ) : computeDocumentLayout(
+    this.snapshot = computeTaffyDocumentLayout(
       this.document,
       this.viewport,
       this.unsupportedCss,

@@ -26,7 +26,24 @@ Follow the existing style: two-space indentation, no semicolons, single quotes, 
 
 ## Testing Guidelines
 
-Add unit tests in `test/unit/**/*.test.ts` for engine behavior and DOM API patching. Add browser parity cases in `test/browser-parity/` when behavior depends on real Chromium layout, hit-testing, or CSS semantics. Name cases by behavior, for example `absolute-overlap` or `pointer-events-none`.
+Use both unit tests and Chromium parity tests, but keep their responsibilities
+separate. Browser parity tests should own browser-observable layout, CSS, and
+hit-testing behavior that this package claims to support, such as block flow,
+flex placement, positioning, box sizing, text line height, dimensions, and point
+queries. Unit tests should own engine mechanics and package-specific contracts,
+such as attachment lifecycle, DOM API patching, mutation invalidation, custom
+`textMeasurer` behavior, unsupported CSS policy, `data-layout-*` metadata,
+multi-window isolation, and debug output.
+
+Avoid duplicating the same layout assertion in both suites. If a parity test
+already proves that a CSS/layout behavior matches Chromium, keep unit coverage
+only when it exercises a distinct non-parity concern, for example an injected
+measurer or an inline-parser edge.
+
+Add unit tests in `test/unit/**/*.test.ts` for engine behavior and DOM API
+patching. Add browser parity cases in `test/browser-parity/` when behavior
+depends on real Chromium layout, hit-testing, or CSS semantics. Name cases by
+behavior, for example `absolute-overlap` or `pointer-events-none`.
 
 Run `pnpm test` for normal changes. Run `pnpm run test:browser-parity` for CSS, layout, geometry, or hit-testing changes. Run `pnpm run build` before publishing-facing changes.
 

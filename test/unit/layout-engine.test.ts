@@ -442,21 +442,6 @@ describe('layout engine attachment', () => {
     })
   })
 
-  it('uses replaced element width and height attributes as intrinsic dimensions', async () => {
-    document.body.innerHTML = `
-      <img id="logo" width="24" height="16" alt="">
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#logo').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 24,
-      height: 16,
-    })
-  })
-
   it('uses data layout metadata as intrinsic dimensions', async () => {
     document.body.innerHTML = `
       <div id="icon" data-layout-width="32" data-layout-height="18"></div>
@@ -472,54 +457,62 @@ describe('layout engine attachment', () => {
     })
   })
 
-  it('can opt into Taffy layout for flex rows', async () => {
+  it('uses measured text as flex item intrinsic size', async () => {
     document.body.innerHTML = `
-      <div id="parent" style="display:flex; width:200px; height:50px">
-        <div id="first" style="width:40px; height:20px"></div>
-        <div id="second" style="width:40px; height:20px"></div>
+      <div id="parent" style="display:flex; width:200px">
+        <div id="label">Measured label</div>
+        <div id="box" style="width:40px; height:10px"></div>
       </div>
     `
 
     await attach({
-      layoutBackend: 'taffy',
       viewport: { width: 300, height: 200 },
+      textMeasurer: {
+        measure(input) {
+          return input.text.includes('Measured') ? { width: 70, height: 24 } : { width: 1, height: 1 }
+        },
+      },
     })
 
+    expectRect(requiredElement('#label').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 70,
+      height: 24,
+    })
+    expectRect(requiredElement('#box').getBoundingClientRect(), {
+      left: 70,
+      top: 0,
+      width: 40,
+      height: 10,
+    })
     expectRect(requiredElement('#parent').getBoundingClientRect(), {
       left: 0,
       top: 0,
       width: 200,
-      height: 50,
-    })
-    expectRect(requiredElement('#first').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 40,
-      height: 20,
-    })
-    expectRect(requiredElement('#second').getBoundingClientRect(), {
-      left: 40,
-      top: 0,
-      width: 40,
-      height: 20,
+      height: 24,
     })
   })
 
-  it('can opt into Pretext measurement for Taffy text leaves', async () => {
+  it('uses the configured text measurer for Taffy text leaves', async () => {
     document.body.innerHTML = `
-      <div id="text" style="width:100px; font-size:20px; line-height:30px">Hello</div>
+      <div id="text" style="width:100px">Hello</div>
     `
 
     await attach({
-      layoutBackend: 'taffy',
       viewport: { width: 300, height: 200 },
+      textMeasurer: {
+        measure(input) {
+          return input.maxWidth === 100 ? { width: 20, height: 45 } : { width: 10, height: 15 }
+        },
+      },
     })
 
     expectRect(requiredElement('#text').getBoundingClientRect(), {
       left: 0,
       top: 0,
       width: 100,
-      height: 30,
+      height: 45,
     })
   })
 

@@ -365,6 +365,9 @@ function stringifyCssValue(property: string, value: unknown): string {
   switch (property) {
     case 'display':
       return stringifyDisplay(value)
+    case 'align-items':
+    case 'justify-content':
+      return stringifyAlignment(value)
     case 'position':
       return typeof value.type === 'string' ? value.type : JSON.stringify(value)
     case 'left':
@@ -379,9 +382,13 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'max-height':
     case 'font-size':
     case 'line-height':
+    case 'flex-grow':
+    case 'flex-shrink':
       return stringifyLengthLike(value)
     case 'inset':
       return stringifyInset(value)
+    case 'gap':
+      return stringifyGap(value)
     case 'padding':
     case 'margin':
     case 'border-width':
@@ -395,6 +402,8 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'margin-right':
     case 'margin-bottom':
     case 'margin-left':
+    case 'row-gap':
+    case 'column-gap':
     case 'border-top-width':
     case 'border-right-width':
     case 'border-bottom-width':
@@ -424,6 +433,18 @@ function stringifyDisplay(value: Record<string, unknown>): string {
     }
 
     return String(value.outside)
+  }
+
+  return JSON.stringify(value)
+}
+
+function stringifyAlignment(value: Record<string, unknown>): string {
+  if (typeof value.value === 'string') {
+    return value.value
+  }
+
+  if (typeof value.type === 'string') {
+    return value.type
   }
 
   return JSON.stringify(value)
@@ -534,6 +555,21 @@ function stringifyInset(value: Record<string, unknown>): string {
 }
 
 function stringifyInsetSide(value: unknown): string {
+  return isRecord(value) ? stringifyLengthLike(value) : JSON.stringify(value)
+}
+
+function stringifyGap(value: Record<string, unknown>): string {
+  const row = stringifyGapSide(value.row)
+  const column = stringifyGapSide(value.column)
+
+  return row === column ? row : `${row} ${column}`
+}
+
+function stringifyGapSide(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
+  }
+
   return isRecord(value) ? stringifyLengthLike(value) : JSON.stringify(value)
 }
 
