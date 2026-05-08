@@ -56,3 +56,8 @@ Pull requests should include a brief description, commands run, and notes about 
 ## Agent-Specific Notes
 
 Do not commit generated directories such as `.cache`, `.tmp`, `.pnpm-store`, `.playwright-browsers`, or `dist/`. Use `GIT_CONFIG_GLOBAL=/dev/null` if the sandbox cannot read the user-level git config.
+
+## Notes on implementing the layout engine
+
+Any quirks or mismatches between how the engine works, and how the browser renders should be documented in code, so we know WHY we do the work arounds.
+This will also be handy for when Taffy version is updated, we can compare patch notes with our quirk documentation in the code to see whether quirks are fixed.
