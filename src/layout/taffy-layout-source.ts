@@ -192,6 +192,8 @@ function toTaffyStyle(style: SupportedStyle, context: MeasureContext | undefined
   taffyStyle.aspectRatio = style.aspectRatio
   taffyStyle.gridTemplateColumns = toTaffyGridTracks(style.gridTemplateColumns)
   taffyStyle.gridTemplateRows = toTaffyGridTracks(style.gridTemplateRows)
+  taffyStyle.gridAutoColumns = toTaffyGridTracks(style.gridAutoColumns)
+  taffyStyle.gridAutoRows = toTaffyGridTracks(style.gridAutoRows)
   taffyStyle.gridColumn = {
     start: style.gridColumnStart,
     end: style.gridColumnEnd,
@@ -243,7 +245,19 @@ function toTaffyDisplay(value: SupportedStyle['display']): Display {
 }
 
 function toTaffyGridTracks(tracks: SupportedStyle['gridTemplateColumns']): TrackSizingFunction[] {
-  return tracks.map((track) => ({ min: track, max: track }))
+  return tracks.map((track) => {
+    const taffyTrack = toTaffyGridTrack(track)
+    return { min: taffyTrack, max: taffyTrack }
+  })
+}
+
+function toTaffyGridTrack(track: SupportedStyle['gridTemplateColumns'][number]): number | `${number}%` {
+  if (typeof track !== 'string') {
+    return track
+  }
+
+  const percentage = Number(track.slice(0, -1))
+  return `${percentage / 100}%`
 }
 
 function toTaffyFlexWrap(value: SupportedStyle['flexWrap']): FlexWrap {

@@ -27,7 +27,7 @@ export type JustifyContentValue =
 export type AlignContentValue = JustifyContentValue | 'stretch'
 export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
 export type SupportedDimension = number | `${number}%`
-export type GridTrack = number
+export type GridTrack = number | `${number}%`
 export type GridPlacementValue = 'auto' | number
 
 export type SupportedStyle = {
@@ -46,6 +46,8 @@ export type SupportedStyle = {
   aspectRatio?: number
   gridTemplateColumns: GridTrack[]
   gridTemplateRows: GridTrack[]
+  gridAutoColumns: GridTrack[]
+  gridAutoRows: GridTrack[]
   gridColumnStart: GridPlacementValue
   gridColumnEnd: GridPlacementValue
   gridRowStart: GridPlacementValue
@@ -94,6 +96,8 @@ export function createDefaultStyle(): SupportedStyle {
     flexShrink: 1,
     gridTemplateColumns: [],
     gridTemplateRows: [],
+    gridAutoColumns: [],
+    gridAutoRows: [],
     gridColumnStart: 'auto',
     gridColumnEnd: 'auto',
     gridRowStart: 'auto',
@@ -240,6 +244,12 @@ export function applyDeclaration(
       return
     case 'grid-template-rows':
       applyGridTemplate(style, 'gridTemplateRows', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-auto-columns':
+      applyGridAutoTracks(style, 'gridAutoColumns', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-auto-rows':
+      applyGridAutoTracks(style, 'gridAutoRows', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-column':
       applyGridLine(style, 'gridColumnStart', 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
@@ -727,7 +737,7 @@ function applyGridTemplate(
     return
   }
 
-  const tracks = value.split(/\s+/).filter(Boolean).map(parseNonNegativePxLength)
+  const tracks = value.split(/\s+/).filter(Boolean).map(parseGridTrack)
 
   if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
     handleUnsupportedCss(context.policy, {
@@ -741,7 +751,32 @@ function applyGridTemplate(
     return
   }
 
-  style[key] = tracks as number[]
+  style[key] = tracks as GridTrack[]
+}
+
+function applyGridAutoTracks(
+  style: SupportedStyle,
+  key: 'gridAutoColumns' | 'gridAutoRows',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const tracks = value.split(/\s+/).filter(Boolean).map(parseGridTrack)
+
+  if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = tracks as GridTrack[]
 }
 
 function applyGridLine(
@@ -818,6 +853,16 @@ function parseGridPlacement(value: string): GridPlacementValue | undefined {
 
   const number = Number(value)
   return Number.isInteger(number) && number !== 0 ? number : undefined
+}
+
+function parseGridTrack(value: string): GridTrack | undefined {
+  const length = parseNonNegativeDimension(value)
+
+  if (length !== undefined) {
+    return length
+  }
+
+  return undefined
 }
 
 function parseAspectRatio(value: string): number | undefined {

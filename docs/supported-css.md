@@ -53,8 +53,10 @@ flex-grow: <number>
 flex-shrink: <number>
 flex-basis: auto | <px>
 aspect-ratio: auto | <number> | <number> / <number>
-grid-template-columns: none | <px>+
-grid-template-rows: none | <px>+
+grid-template-columns: none | (<px> | <percentage>)+
+grid-template-rows: none | (<px> | <percentage>)+
+grid-auto-columns: (<px> | <percentage>)+
+grid-auto-rows: (<px> | <percentage>)+
 grid-column: auto | <integer> [ / auto | <integer>]
 grid-row: auto | <integer> [ / auto | <integer>]
 grid-column-start/end: auto | <integer>
@@ -99,10 +101,10 @@ white-space: normal | pre-wrap | nowrap
 Notes:
 
 - `display: flex` uses Taffy's flexbox algorithm for row and column layout.
-- `display: grid` supports explicit pixel `grid-template-columns` and
+- `display: grid` supports explicit `grid-template-columns` and
   `grid-template-rows`, numeric `grid-column`/`grid-row` placement, and default
-  auto-placement. Fractions, `repeat()`, named lines, and spans are not
-  supported yet.
+  auto-placement. Percentage tracks are supported. `fr`, `repeat()`, named
+  lines, spans, and grid areas are not supported yet.
 - Elements with a present `hidden` attribute and their descendants receive zero
   rects and are excluded from hit testing.
 - Box dimensions support pixels, percentages, and literal `0`.

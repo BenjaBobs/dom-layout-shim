@@ -395,6 +395,9 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'grid-template-columns':
     case 'grid-template-rows':
       return stringifyGridTemplate(value)
+    case 'grid-auto-columns':
+    case 'grid-auto-rows':
+      return stringifyGridAutoTracks(value)
     case 'grid-column':
     case 'grid-row':
       return stringifyGridLine(value)
@@ -521,11 +524,29 @@ function stringifyGridTemplateItem(item: unknown): string {
 }
 
 function stringifyGridTrackBreadth(value: Record<string, unknown>): string {
+  if (value.type === 'track-breadth' && isRecord(value.value)) {
+    return stringifyGridTrackBreadth(value.value)
+  }
+
   if (value.type === 'length') {
-    return stringifyLength(value.value)
+    return stringifyDimensionPercentage(value.value)
   }
 
   return JSON.stringify(value)
+}
+
+function stringifyGridAutoTracks(value: unknown): string {
+  if (!Array.isArray(value)) {
+    return isRecord(value) ? stringifyGridTrackBreadth(value) : JSON.stringify(value)
+  }
+
+  return value.map((item) => {
+    if (!isRecord(item)) {
+      return JSON.stringify(item)
+    }
+
+    return stringifyGridTrackBreadth(item)
+  }).join(' ')
 }
 
 function stringifyGridLine(value: Record<string, unknown>): string {
