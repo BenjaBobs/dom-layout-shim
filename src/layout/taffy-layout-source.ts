@@ -1,8 +1,11 @@
 import {
+  AlignContent,
   AlignItems,
+  AlignSelf,
   BoxSizing,
   Display,
   FlexDirection,
+  FlexWrap,
   JustifyContent,
   Position,
   Style,
@@ -10,6 +13,7 @@ import {
   loadTaffy,
   type MeasureFunction,
   type Size,
+  type TrackSizingFunction,
 } from 'taffy-layout'
 import { applyInlineStyle } from '../css/inline-style-source.ts'
 import { createDefaultStyle, type Edges, type SupportedStyle } from '../css/supported-declaration.ts'
@@ -172,15 +176,30 @@ function recordChildLayouts(parent: Element | null, origin: { x: number; y: numb
 
 function toTaffyStyle(style: SupportedStyle, context: MeasureContext | undefined): Style {
   const taffyStyle = new Style()
-  taffyStyle.display = style.display === 'flex' ? Display.Flex : Display.Block
+  taffyStyle.display = toTaffyDisplay(style.display)
   taffyStyle.position =
     style.position === 'absolute' || style.position === 'fixed' ? Position.Absolute : Position.Relative
   taffyStyle.boxSizing = style.boxSizing === 'border-box' ? BoxSizing.BorderBox : BoxSizing.ContentBox
   taffyStyle.flexDirection = style.flexDirection === 'column' ? FlexDirection.Column : FlexDirection.Row
+  taffyStyle.flexWrap = toTaffyFlexWrap(style.flexWrap)
   taffyStyle.alignItems = toTaffyAlignItems(style.alignItems)
+  taffyStyle.alignSelf = toTaffyAlignSelf(style.alignSelf)
+  taffyStyle.alignContent = toTaffyAlignContent(style.alignContent)
   taffyStyle.justifyContent = toTaffyJustifyContent(style.justifyContent)
   taffyStyle.flexGrow = style.flexGrow
   taffyStyle.flexShrink = style.flexShrink
+  taffyStyle.flexBasis = style.flexBasis ?? 'auto'
+  taffyStyle.aspectRatio = style.aspectRatio
+  taffyStyle.gridTemplateColumns = toTaffyGridTracks(style.gridTemplateColumns)
+  taffyStyle.gridTemplateRows = toTaffyGridTracks(style.gridTemplateRows)
+  taffyStyle.gridColumn = {
+    start: style.gridColumnStart,
+    end: style.gridColumnEnd,
+  }
+  taffyStyle.gridRow = {
+    start: style.gridRowStart,
+    end: style.gridRowEnd,
+  }
   taffyStyle.size = {
     width: style.width ?? context?.replacedSize?.width ?? 'auto',
     height: style.height ?? context?.replacedSize?.height ?? 'auto',
@@ -210,6 +229,34 @@ function toTaffyStyle(style: SupportedStyle, context: MeasureContext | undefined
   return taffyStyle
 }
 
+function toTaffyDisplay(value: SupportedStyle['display']): Display {
+  switch (value) {
+    case 'flex':
+      return Display.Flex
+    case 'grid':
+      return Display.Grid
+    case 'none':
+      return Display.None
+    default:
+      return Display.Block
+  }
+}
+
+function toTaffyGridTracks(tracks: SupportedStyle['gridTemplateColumns']): TrackSizingFunction[] {
+  return tracks.map((track) => ({ min: track, max: track }))
+}
+
+function toTaffyFlexWrap(value: SupportedStyle['flexWrap']): FlexWrap {
+  switch (value) {
+    case 'wrap':
+      return FlexWrap.Wrap
+    case 'wrap-reverse':
+      return FlexWrap.WrapReverse
+    default:
+      return FlexWrap.NoWrap
+  }
+}
+
 function toTaffyAlignItems(value: SupportedStyle['alignItems']): AlignItems | undefined {
   switch (value) {
     case 'flex-start':
@@ -220,6 +267,42 @@ function toTaffyAlignItems(value: SupportedStyle['alignItems']): AlignItems | un
       return AlignItems.Center
     case 'stretch':
       return AlignItems.Stretch
+    default:
+      return undefined
+  }
+}
+
+function toTaffyAlignSelf(value: SupportedStyle['alignSelf']): AlignSelf {
+  switch (value) {
+    case 'flex-start':
+      return AlignSelf.FlexStart
+    case 'flex-end':
+      return AlignSelf.FlexEnd
+    case 'center':
+      return AlignSelf.Center
+    case 'stretch':
+      return AlignSelf.Stretch
+    default:
+      return AlignSelf.Auto
+  }
+}
+
+function toTaffyAlignContent(value: SupportedStyle['alignContent']): AlignContent | undefined {
+  switch (value) {
+    case 'flex-start':
+      return AlignContent.FlexStart
+    case 'flex-end':
+      return AlignContent.FlexEnd
+    case 'center':
+      return AlignContent.Center
+    case 'stretch':
+      return AlignContent.Stretch
+    case 'space-between':
+      return AlignContent.SpaceBetween
+    case 'space-around':
+      return AlignContent.SpaceAround
+    case 'space-evenly':
+      return AlignContent.SpaceEvenly
     default:
       return undefined
   }

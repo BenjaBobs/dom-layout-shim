@@ -45,11 +45,23 @@ and source order.
 Supported values:
 
 ```txt
-display: block | flex | none
+display: block | flex | grid | none
 flex-direction: row | column
+flex-wrap: nowrap | wrap | wrap-reverse
+flex: none | auto | initial | <number> [<number>] [auto | <px>]
 flex-grow: <number>
 flex-shrink: <number>
+flex-basis: auto | <px>
+aspect-ratio: auto | <number> | <number> / <number>
+grid-template-columns: none | <px>+
+grid-template-rows: none | <px>+
+grid-column: auto | <integer> [ / auto | <integer>]
+grid-row: auto | <integer> [ / auto | <integer>]
+grid-column-start/end: auto | <integer>
+grid-row-start/end: auto | <integer>
+align-content: flex-start | flex-end | center | stretch | space-between | space-around | space-evenly
 align-items: flex-start | flex-end | center | stretch
+align-self: auto | flex-start | flex-end | center | stretch
 justify-content: flex-start | flex-end | center | space-between | space-around | space-evenly
 position: static | relative | absolute | fixed
 box-sizing: content-box | border-box
@@ -69,12 +81,12 @@ right: <px>
 top: <px>
 bottom: <px>
 inset: <px>{1,4}
-width: <px>
-height: <px>
-min-width: <px>
-min-height: <px>
-max-width: <px>
-max-height: <px>
+width: <px> | <percentage>
+height: <px> | <percentage>
+min-width: <px> | <percentage>
+min-height: <px> | <percentage>
+max-width: <px> | <percentage>
+max-height: <px> | <percentage>
 z-index: auto | <integer>
 pointer-events: auto | none
 visibility: visible | hidden
@@ -87,10 +99,14 @@ white-space: normal | pre-wrap | nowrap
 Notes:
 
 - `display: flex` uses Taffy's flexbox algorithm for row and column layout.
-- `display: grid` is not supported yet.
+- `display: grid` supports explicit pixel `grid-template-columns` and
+  `grid-template-rows`, numeric `grid-column`/`grid-row` placement, and default
+  auto-placement. Fractions, `repeat()`, named lines, and spans are not
+  supported yet.
 - Elements with a present `hidden` attribute and their descendants receive zero
   rects and are excluded from hit testing.
-- Lengths are currently pixels only, plus literal `0`.
+- Box dimensions support pixels, percentages, and literal `0`.
+- Insets and spacing are currently pixels only, plus literal `0`.
 - `inset` supports the normal 1-4 value shorthand, with pixel lengths only.
 - `padding` and `border-width` support the normal 1-4 value shorthand, with
   pixel lengths only.

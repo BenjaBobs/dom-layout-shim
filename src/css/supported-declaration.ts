@@ -16,6 +16,7 @@ export type BorderStyles = {
 }
 
 export type AlignItemsValue = 'flex-start' | 'flex-end' | 'center' | 'stretch'
+export type AlignSelfValue = 'auto' | AlignItemsValue
 export type JustifyContentValue =
   | 'flex-start'
   | 'flex-end'
@@ -23,22 +24,38 @@ export type JustifyContentValue =
   | 'space-between'
   | 'space-around'
   | 'space-evenly'
+export type AlignContentValue = JustifyContentValue | 'stretch'
+export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
+export type SupportedDimension = number | `${number}%`
+export type GridTrack = number
+export type GridPlacementValue = 'auto' | number
 
 export type SupportedStyle = {
-  display: 'block' | 'flex' | 'none'
+  display: 'block' | 'flex' | 'grid' | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
   flexDirection: 'row' | 'column'
+  flexWrap: FlexWrapValue
   alignItems?: AlignItemsValue
+  alignSelf: AlignSelfValue
+  alignContent?: AlignContentValue
   justifyContent?: JustifyContentValue
   flexGrow: number
   flexShrink: number
-  width?: number
-  height?: number
-  minWidth?: number
-  minHeight?: number
-  maxWidth?: number
-  maxHeight?: number
+  flexBasis?: SupportedDimension
+  aspectRatio?: number
+  gridTemplateColumns: GridTrack[]
+  gridTemplateRows: GridTrack[]
+  gridColumnStart: GridPlacementValue
+  gridColumnEnd: GridPlacementValue
+  gridRowStart: GridPlacementValue
+  gridRowEnd: GridPlacementValue
+  width?: SupportedDimension
+  height?: SupportedDimension
+  minWidth?: SupportedDimension
+  minHeight?: SupportedDimension
+  maxWidth?: SupportedDimension
+  maxHeight?: SupportedDimension
   top?: number
   right?: number
   bottom?: number
@@ -71,8 +88,16 @@ export function createDefaultStyle(): SupportedStyle {
     position: 'static',
     boxSizing: 'content-box',
     flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignSelf: 'auto',
     flexGrow: 0,
     flexShrink: 1,
+    gridTemplateColumns: [],
+    gridTemplateRows: [],
+    gridColumnStart: 'auto',
+    gridColumnEnd: 'auto',
+    gridRowStart: 'auto',
+    gridRowEnd: 'auto',
     zIndex: 0,
     pointerEvents: 'auto',
     visibility: 'visible',
@@ -105,7 +130,7 @@ export function applyDeclaration(
 
   switch (normalizedProperty) {
     case 'display':
-      applyKeyword(style, 'display', normalizedValue, ['block', 'flex', 'none'], normalizedProperty, value, context)
+      applyKeyword(style, 'display', normalizedValue, ['block', 'flex', 'grid', 'none'], normalizedProperty, value, context)
       return
     case 'position':
       applyKeyword(
@@ -140,12 +165,45 @@ export function applyDeclaration(
         context,
       )
       return
+    case 'flex-wrap':
+      applyKeyword(
+        style,
+        'flexWrap',
+        normalizedValue,
+        ['nowrap', 'wrap', 'wrap-reverse'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
     case 'align-items':
       applyKeyword(
         style,
         'alignItems',
         normalizedValue,
         ['flex-start', 'flex-end', 'center', 'stretch'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
+    case 'align-self':
+      applyKeyword(
+        style,
+        'alignSelf',
+        normalizedValue,
+        ['auto', 'flex-start', 'flex-end', 'center', 'stretch'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
+    case 'align-content':
+      applyKeyword(
+        style,
+        'alignContent',
+        normalizedValue,
+        ['flex-start', 'flex-end', 'center', 'stretch', 'space-between', 'space-around', 'space-evenly'],
         normalizedProperty,
         value,
         context,
@@ -167,6 +225,39 @@ export function applyDeclaration(
       return
     case 'flex-shrink':
       applyNumber(style, 'flexShrink', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'flex-basis':
+      applyFlexBasis(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'flex':
+      applyFlexShorthand(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'aspect-ratio':
+      applyAspectRatio(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-template-columns':
+      applyGridTemplate(style, 'gridTemplateColumns', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-template-rows':
+      applyGridTemplate(style, 'gridTemplateRows', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-column':
+      applyGridLine(style, 'gridColumnStart', 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-row':
+      applyGridLine(style, 'gridRowStart', 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-column-start':
+      applyGridPlacement(style, 'gridColumnStart', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-column-end':
+      applyGridPlacement(style, 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-row-start':
+      applyGridPlacement(style, 'gridRowStart', normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-row-end':
+      applyGridPlacement(style, 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
       return
     case 'pointer-events':
       applyKeyword(
@@ -450,7 +541,26 @@ function applyLength(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parsePxLength(value)
+  if (isInsetLengthKey(key)) {
+    const length = parsePxLength(value)
+
+    if (length === undefined) {
+      handleUnsupportedCss(context.policy, {
+        property,
+        value: originalValue,
+        reason: 'unsupported-value',
+        source: context.source,
+        selector: context.selector,
+        element: context.element,
+      })
+      return
+    }
+
+    style[key] = length
+    return
+  }
+
+  const length = parseDimension(value)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -465,6 +575,12 @@ function applyLength(
   }
 
   style[key] = length
+}
+
+function isInsetLengthKey(
+  key: Parameters<typeof applyLength>[1],
+): key is 'left' | 'right' | 'top' | 'bottom' {
+  return key === 'left' || key === 'right' || key === 'top' || key === 'bottom'
 }
 
 function applyNumber(
@@ -490,6 +606,289 @@ function applyNumber(
   }
 
   style[key] = number
+}
+
+function applyFlexBasis(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'auto') {
+    style.flexBasis = undefined
+    return
+  }
+
+  const length = parseNonNegativeDimension(value)
+
+  if (length === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.flexBasis = length
+}
+
+function applyFlexShorthand(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'auto') {
+    style.flexGrow = 1
+    style.flexShrink = 1
+    style.flexBasis = undefined
+    return
+  }
+
+  if (value === 'none') {
+    style.flexGrow = 0
+    style.flexShrink = 0
+    style.flexBasis = undefined
+    return
+  }
+
+  if (value === 'initial') {
+    style.flexGrow = 0
+    style.flexShrink = 1
+    style.flexBasis = undefined
+    return
+  }
+
+  const parts = value.split(/\s+/).filter(Boolean)
+  const parsed = parseFlexShorthand(parts)
+
+  if (!parsed) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.flexGrow = parsed.grow
+  style.flexShrink = parsed.shrink
+  style.flexBasis = parsed.basis
+}
+
+function applyAspectRatio(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'auto') {
+    style.aspectRatio = undefined
+    return
+  }
+
+  const ratio = parseAspectRatio(value)
+
+  if (ratio === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.aspectRatio = ratio
+}
+
+function applyGridTemplate(
+  style: SupportedStyle,
+  key: 'gridTemplateColumns' | 'gridTemplateRows',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'none') {
+    style[key] = []
+    return
+  }
+
+  const tracks = value.split(/\s+/).filter(Boolean).map(parseNonNegativePxLength)
+
+  if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = tracks as number[]
+}
+
+function applyGridLine(
+  style: SupportedStyle,
+  startKey: 'gridColumnStart' | 'gridRowStart',
+  endKey: 'gridColumnEnd' | 'gridRowEnd',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length < 1 || parts.length > 2) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const start = parseGridPlacement(parts[0] ?? '')
+  const end = parts.length === 2 ? parseGridPlacement(parts[1] ?? '') : 'auto'
+
+  if (start === undefined || end === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[startKey] = start
+  style[endKey] = end
+}
+
+function applyGridPlacement(
+  style: SupportedStyle,
+  key: 'gridColumnStart' | 'gridColumnEnd' | 'gridRowStart' | 'gridRowEnd',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const placement = parseGridPlacement(value)
+
+  if (placement === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = placement
+}
+
+function parseGridPlacement(value: string): GridPlacementValue | undefined {
+  if (value === 'auto') {
+    return 'auto'
+  }
+
+  const number = Number(value)
+  return Number.isInteger(number) && number !== 0 ? number : undefined
+}
+
+function parseAspectRatio(value: string): number | undefined {
+  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length < 1 || parts.length > 2) {
+    return undefined
+  }
+
+  const numerator = parsePositiveNumber(parts[0] ?? '')
+  const denominator = parts.length === 2 ? parsePositiveNumber(parts[1] ?? '') : 1
+
+  if (numerator === undefined || denominator === undefined) {
+    return undefined
+  }
+
+  return numerator / denominator
+}
+
+function parseFlexShorthand(
+  parts: string[],
+): { grow: number; shrink: number; basis: SupportedDimension | undefined } | undefined {
+  if (parts.length < 1 || parts.length > 3) {
+    return undefined
+  }
+
+  if (parts.length === 1) {
+    const number = parseNonNegativeNumber(parts[0] ?? '')
+
+    if (number !== undefined) {
+      return { grow: number, shrink: 1, basis: 0 }
+    }
+
+    const basis = parseFlexBasisValue(parts[0] ?? '')
+    return basis !== null ? { grow: 1, shrink: 1, basis } : undefined
+  }
+
+  const grow = parseNonNegativeNumber(parts[0] ?? '')
+
+  if (grow === undefined) {
+    return undefined
+  }
+
+  if (parts.length === 2) {
+    const shrink = parseNonNegativeNumber(parts[1] ?? '')
+
+    if (shrink !== undefined) {
+      return { grow, shrink, basis: 0 }
+    }
+
+    const basis = parseFlexBasisValue(parts[1] ?? '')
+    return basis !== null ? { grow, shrink: 1, basis } : undefined
+  }
+
+  const shrink = parseNonNegativeNumber(parts[1] ?? '')
+  const basis = parseFlexBasisValue(parts[2] ?? '')
+
+  if (shrink === undefined || basis === null) {
+    return undefined
+  }
+
+  return { grow, shrink, basis }
+}
+
+function parseFlexBasisValue(value: string): SupportedDimension | undefined | null {
+  if (value === 'auto') {
+    return undefined
+  }
+
+  const length = parseNonNegativeDimension(value)
+  return length === undefined ? null : length
 }
 
 function applyInset(
@@ -689,9 +1088,50 @@ function parsePxLength(value: string): number | undefined {
   return match ? Number(match[1]) : undefined
 }
 
+function parseDimension(value: string): SupportedDimension | undefined {
+  const length = parsePxLength(value)
+
+  if (length !== undefined) {
+    return length
+  }
+
+  const percentage = parsePercentage(value)
+  return percentage === undefined ? undefined : `${percentage}%`
+}
+
+function parsePercentage(value: string): number | undefined {
+  const match = /^(-?\d+(?:\.\d+)?)%$/.exec(value)
+  return match ? Number(match[1]) : undefined
+}
+
 function parseNonNegativePxLength(value: string): number | undefined {
   const length = parsePxLength(value)
   return length !== undefined && length >= 0 ? length : undefined
+}
+
+function parseNonNegativeDimension(value: string): SupportedDimension | undefined {
+  const length = parseDimension(value)
+
+  if (typeof length === 'number') {
+    return length >= 0 ? length : undefined
+  }
+
+  if (typeof length === 'string') {
+    const percentage = parsePercentage(length)
+    return percentage !== undefined && percentage >= 0 ? length : undefined
+  }
+
+  return undefined
+}
+
+function parseNonNegativeNumber(value: string): number | undefined {
+  const number = Number(value)
+  return Number.isFinite(number) && number >= 0 ? number : undefined
+}
+
+function parsePositiveNumber(value: string): number | undefined {
+  const number = Number(value)
+  return Number.isFinite(number) && number > 0 ? number : undefined
 }
 
 function parseEdgeLengths(

@@ -365,7 +365,9 @@ function stringifyCssValue(property: string, value: unknown): string {
   switch (property) {
     case 'display':
       return stringifyDisplay(value)
+    case 'align-content':
     case 'align-items':
+    case 'align-self':
     case 'justify-content':
       return stringifyAlignment(value)
     case 'position':
@@ -384,7 +386,23 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'line-height':
     case 'flex-grow':
     case 'flex-shrink':
+    case 'flex-basis':
       return stringifyLengthLike(value)
+    case 'flex':
+      return stringifyFlex(value)
+    case 'aspect-ratio':
+      return stringifyAspectRatio(value)
+    case 'grid-template-columns':
+    case 'grid-template-rows':
+      return stringifyGridTemplate(value)
+    case 'grid-column':
+    case 'grid-row':
+      return stringifyGridLine(value)
+    case 'grid-column-start':
+    case 'grid-column-end':
+    case 'grid-row-start':
+    case 'grid-row-end':
+      return stringifyGridPlacement(value)
     case 'inset':
       return stringifyInset(value)
     case 'gap':
@@ -445,6 +463,89 @@ function stringifyAlignment(value: Record<string, unknown>): string {
 
   if (typeof value.type === 'string') {
     return value.type
+  }
+
+  return JSON.stringify(value)
+}
+
+function stringifyFlex(value: Record<string, unknown>): string {
+  const grow = typeof value.grow === 'number' ? String(value.grow) : JSON.stringify(value.grow)
+  const shrink = typeof value.shrink === 'number' ? String(value.shrink) : JSON.stringify(value.shrink)
+  const basis = isRecord(value.basis) ? stringifyLengthLike(value.basis) : JSON.stringify(value.basis)
+
+  return `${grow} ${shrink} ${basis}`
+}
+
+function stringifyAspectRatio(value: Record<string, unknown>): string {
+  if (value.auto === true && value.ratio === null) {
+    return 'auto'
+  }
+
+  if (!Array.isArray(value.ratio)) {
+    return JSON.stringify(value)
+  }
+
+  const [numerator, denominator] = value.ratio
+
+  if (typeof numerator !== 'number' || typeof denominator !== 'number') {
+    return JSON.stringify(value)
+  }
+
+  return denominator === 1 ? String(numerator) : `${numerator} / ${denominator}`
+}
+
+function stringifyGridTemplate(value: Record<string, unknown>): string {
+  if (value.type === 'none') {
+    return 'none'
+  }
+
+  if (value.type !== 'track-list' || !Array.isArray(value.items)) {
+    return JSON.stringify(value)
+  }
+
+  return value.items.map(stringifyGridTemplateItem).join(' ')
+}
+
+function stringifyGridTemplateItem(item: unknown): string {
+  if (!isRecord(item) || item.type !== 'track-size' || !isRecord(item.value)) {
+    return JSON.stringify(item)
+  }
+
+  const trackSize = item.value
+
+  if (trackSize.type === 'track-breadth' && isRecord(trackSize.value)) {
+    return stringifyGridTrackBreadth(trackSize.value)
+  }
+
+  return JSON.stringify(item)
+}
+
+function stringifyGridTrackBreadth(value: Record<string, unknown>): string {
+  if (value.type === 'length') {
+    return stringifyLength(value.value)
+  }
+
+  return JSON.stringify(value)
+}
+
+function stringifyGridLine(value: Record<string, unknown>): string {
+  const start = stringifyGridPlacement(value.start)
+  const end = stringifyGridPlacement(value.end)
+
+  return end === 'auto' ? start : `${start} / ${end}`
+}
+
+function stringifyGridPlacement(value: unknown): string {
+  if (!isRecord(value)) {
+    return JSON.stringify(value)
+  }
+
+  if (value.type === 'auto') {
+    return 'auto'
+  }
+
+  if (value.type === 'line' && typeof value.index === 'number' && value.name === null) {
+    return String(value.index)
   }
 
   return JSON.stringify(value)
