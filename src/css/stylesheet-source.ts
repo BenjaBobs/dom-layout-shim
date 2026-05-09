@@ -414,6 +414,8 @@ function stringifyCssValue(property: string, value: unknown): string {
       return stringifyLengthLike(value)
     case 'flex':
       return stringifyFlex(value)
+    case 'flex-flow':
+      return stringifyFlexFlow(value)
     case 'aspect-ratio':
       return stringifyAspectRatio(value)
     case 'grid-template-columns':
@@ -642,6 +644,13 @@ function stringifyFlex(value: Record<string, unknown>): string {
   const basis = isRecord(value.basis) ? stringifyLengthLike(value.basis) : JSON.stringify(value.basis)
 
   return `${grow} ${shrink} ${basis}`
+}
+
+function stringifyFlexFlow(value: Record<string, unknown>): string {
+  const direction = typeof value.direction === 'string' ? value.direction : JSON.stringify(value.direction)
+  const wrap = typeof value.wrap === 'string' ? value.wrap : JSON.stringify(value.wrap)
+
+  return `${direction} ${wrap}`
 }
 
 function stringifyAspectRatio(value: Record<string, unknown>): string {

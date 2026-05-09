@@ -39,7 +39,7 @@ export type SupportedStyle = {
   display: 'block' | 'flex' | 'grid' | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
-  flexDirection: 'row' | 'column'
+  flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
   flexWrap: FlexWrapValue
   alignItems?: AlignItemsValue
   alignSelf: AlignSelfValue
@@ -178,7 +178,7 @@ export function applyDeclaration(
         style,
         'flexDirection',
         normalizedValue,
-        ['row', 'column'],
+        ['row', 'row-reverse', 'column', 'column-reverse'],
         normalizedProperty,
         value,
         context,
@@ -194,6 +194,9 @@ export function applyDeclaration(
         value,
         context,
       )
+      return
+    case 'flex-flow':
+      applyFlexFlow(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'align-items':
       applyKeyword(
@@ -784,6 +787,88 @@ function isTransitionProperty(property: string): boolean {
     property === 'transition-delay' ||
     property === 'transition-behavior'
   )
+}
+
+function applyFlexFlow(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split(/\s+/).filter(Boolean)
+
+  if (parts.length < 1 || parts.length > 2) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  let direction: SupportedStyle['flexDirection'] | undefined
+  let wrap: FlexWrapValue | undefined
+
+  for (const part of parts) {
+    if (isFlexDirectionValue(part)) {
+      if (direction) {
+        handleUnsupportedCss(context.policy, {
+          property,
+          value: originalValue,
+          reason: 'unsupported-value',
+          source: context.source,
+          selector: context.selector,
+          element: context.element,
+        })
+        return
+      }
+
+      direction = part
+      continue
+    }
+
+    if (isFlexWrapValue(part)) {
+      if (wrap) {
+        handleUnsupportedCss(context.policy, {
+          property,
+          value: originalValue,
+          reason: 'unsupported-value',
+          source: context.source,
+          selector: context.selector,
+          element: context.element,
+        })
+        return
+      }
+
+      wrap = part
+      continue
+    }
+
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.flexDirection = direction ?? 'row'
+  style.flexWrap = wrap ?? 'nowrap'
+}
+
+function isFlexDirectionValue(value: string): value is SupportedStyle['flexDirection'] {
+  return value === 'row' || value === 'row-reverse' || value === 'column' || value === 'column-reverse'
+}
+
+function isFlexWrapValue(value: string): value is FlexWrapValue {
+  return value === 'nowrap' || value === 'wrap' || value === 'wrap-reverse'
 }
 
 function applyDisplay(

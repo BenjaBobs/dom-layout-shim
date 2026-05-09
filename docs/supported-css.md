@@ -46,8 +46,9 @@ Supported values:
 
 ```txt
 display: block | inline | inline-block | flow-root | list-item | flex | inline-flex | grid | inline-grid | none
-flex-direction: row | column
+flex-direction: row | row-reverse | column | column-reverse
 flex-wrap: nowrap | wrap | wrap-reverse
+flex-flow: <flex-direction> || <flex-wrap>
 flex: none | auto | initial | <number> [<number>] [auto | <px>]
 flex-grow: <number>
 flex-shrink: <number>

@@ -732,6 +732,16 @@ describe('layout engine attachment', () => {
     expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-value/)
   })
 
+  it('throws on unsupported flex flow values by default', async () => {
+    document.body.innerHTML = `
+      <div id="box" style="display:flex; width:100px; height:100px; flex-flow:row row"></div>
+    `
+
+    await attach()
+
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-value/)
+  })
+
   it('can ignore unknown CSS through policy', async () => {
     document.body.innerHTML = `
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transition:opacity 100ms"></div>

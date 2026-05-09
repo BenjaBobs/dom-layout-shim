@@ -192,7 +192,7 @@ function toTaffyStyle(style: SupportedStyle, context: MeasureContext | undefined
   taffyStyle.position =
     style.position === 'absolute' || style.position === 'fixed' ? Position.Absolute : Position.Relative
   taffyStyle.boxSizing = style.boxSizing === 'border-box' ? BoxSizing.BorderBox : BoxSizing.ContentBox
-  taffyStyle.flexDirection = style.flexDirection === 'column' ? FlexDirection.Column : FlexDirection.Row
+  taffyStyle.flexDirection = toTaffyFlexDirection(style.flexDirection)
   taffyStyle.flexWrap = toTaffyFlexWrap(style.flexWrap)
   taffyStyle.alignItems = toTaffyAlignItems(style.alignItems)
   taffyStyle.alignSelf = toTaffyAlignSelf(style.alignSelf)
@@ -255,6 +255,19 @@ function toTaffyDisplay(value: SupportedStyle['display']): Display {
       return Display.None
     default:
       return Display.Block
+  }
+}
+
+function toTaffyFlexDirection(value: SupportedStyle['flexDirection']): FlexDirection {
+  switch (value) {
+    case 'row-reverse':
+      return FlexDirection.RowReverse
+    case 'column':
+      return FlexDirection.Column
+    case 'column-reverse':
+      return FlexDirection.ColumnReverse
+    default:
+      return FlexDirection.Row
   }
 }
 
