@@ -29,8 +29,12 @@ export type AlignContentValue = JustifyContentValue | 'stretch'
 export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
 export type OverflowValue = 'visible' | 'hidden' | 'clip'
 export type SupportedDimension = number | `${number}%`
-export type GridTrack = number | `${number}%`
-export type GridPlacementValue = 'auto' | number
+export type GridMinTrackBreadth = number | `${number}%` | 'auto' | 'min-content' | 'max-content'
+export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`
+export type GridTrack = GridMinTrackBreadth | `${number}fr` | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }
+export type GridTemplateTrack = GridTrack | { repeat: number; tracks: GridTrack[] }
+export type GridPlacementValue = 'auto' | number | { span: number }
+export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense'
 
 export type SupportedStyle = {
   display: 'block' | 'flex' | 'grid' | 'none'
@@ -47,9 +51,11 @@ export type SupportedStyle = {
   flexGrow: number
   flexShrink: number
   flexBasis?: SupportedDimension
+  order: number
   aspectRatio?: number
-  gridTemplateColumns: GridTrack[]
-  gridTemplateRows: GridTrack[]
+  gridAutoFlow: GridAutoFlowValue
+  gridTemplateColumns: GridTemplateTrack[]
+  gridTemplateRows: GridTemplateTrack[]
   gridAutoColumns: GridTrack[]
   gridAutoRows: GridTrack[]
   gridColumnStart: GridPlacementValue
@@ -93,6 +99,8 @@ export function createDefaultStyle(): SupportedStyle {
     alignSelf: 'auto',
     flexGrow: 0,
     flexShrink: 1,
+    order: 0,
+    gridAutoFlow: 'row',
     gridTemplateColumns: [],
     gridTemplateRows: [],
     gridAutoColumns: [],

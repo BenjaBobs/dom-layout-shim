@@ -6,7 +6,10 @@ import type {
   BorderStyles,
   Edges,
   FlexWrapValue,
+  GridMaxTrackBreadth,
+  GridMinTrackBreadth,
   GridPlacementValue,
+  GridTemplateTrack,
   GridTrack,
   JustifyContentValue,
   OverflowValue,
@@ -21,7 +24,10 @@ export type {
   BorderStyles,
   Edges,
   FlexWrapValue,
+  GridMaxTrackBreadth,
+  GridMinTrackBreadth,
   GridPlacementValue,
+  GridTemplateTrack,
   GridTrack,
   JustifyContentValue,
   OverflowValue,
@@ -189,8 +195,14 @@ export function applyDeclaration(
     case 'flex':
       applyFlexShorthand(style, normalizedValue, normalizedProperty, value, context)
       return
+    case 'order':
+      applyInteger(style, 'order', normalizedValue, normalizedProperty, value, context)
+      return
     case 'aspect-ratio':
       applyAspectRatio(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'grid-auto-flow':
+      applyGridAutoFlow(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-template-columns':
       applyGridTemplate(style, 'gridTemplateColumns', normalizedValue, normalizedProperty, value, context)
@@ -1189,6 +1201,37 @@ function splitCssCommaList(value: string): string[] {
 
   parts.push(current.trim())
   return parts.filter(Boolean)
+}
+
+function splitCssWhitespaceList(value: string): string[] {
+  const parts: string[] = []
+  let current = ''
+  let depth = 0
+
+  for (const char of value) {
+    if (char === '(') {
+      depth += 1
+    } else if (char === ')') {
+      depth = Math.max(0, depth - 1)
+    }
+
+    if (/\s/.test(char) && depth === 0) {
+      if (current.trim()) {
+        parts.push(current.trim())
+      }
+
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim())
+  }
+
+  return parts
 }
 
 function parseSingleBoxShadow(value: string): boolean {
@@ -2281,6 +2324,31 @@ function applyNumber(
   style[key] = number
 }
 
+function applyInteger(
+  style: SupportedStyle,
+  key: 'order',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const number = Number(value)
+
+  if (!Number.isInteger(number)) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style[key] = number
+}
+
 function applyFlexBasis(
   style: SupportedStyle,
   value: string,
@@ -2400,7 +2468,7 @@ function applyGridTemplate(
     return
   }
 
-  const tracks = value.split(/\s+/).filter(Boolean).map(parseGridTrack)
+  const tracks = splitCssWhitespaceList(value).map(parseGridTemplateTrack)
 
   if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
     handleUnsupportedCss(context.policy, {
@@ -2414,7 +2482,7 @@ function applyGridTemplate(
     return
   }
 
-  style[key] = tracks as GridTrack[]
+  style[key] = tracks as GridTemplateTrack[]
 }
 
 function applyGridAutoTracks(
@@ -2425,7 +2493,7 @@ function applyGridAutoTracks(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const tracks = value.split(/\s+/).filter(Boolean).map(parseGridTrack)
+  const tracks = splitCssWhitespaceList(value).map(parseGridTrack)
 
   if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
     handleUnsupportedCss(context.policy, {
@@ -2514,11 +2582,67 @@ function parseGridPlacement(value: string): GridPlacementValue | undefined {
     return 'auto'
   }
 
+  const span = parseGridSpan(value)
+
+  if (span) {
+    return span
+  }
+
   const number = Number(value)
   return Number.isInteger(number) && number !== 0 ? number : undefined
 }
 
+function parseGridSpan(value: string): { span: number } | undefined {
+  const parts = value.split(/\s+/).filter(Boolean)
+
+  if (parts.length !== 2 || parts[0] !== 'span') {
+    return undefined
+  }
+
+  const span = Number(parts[1])
+  return Number.isInteger(span) && span > 0 ? { span } : undefined
+}
+
+function applyGridAutoFlow(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split(/\s+/).filter(Boolean)
+  const direction = parts.find((part) => part === 'row' || part === 'column') ?? 'row'
+  const hasDense = parts.includes('dense')
+  const unsupported = parts.some((part) => part !== 'row' && part !== 'column' && part !== 'dense')
+
+  if (unsupported || parts.length > 2 || parts.filter((part) => part === 'row' || part === 'column').length > 1) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.gridAutoFlow = hasDense ? `${direction} dense` : direction
+}
+
 function parseGridTrack(value: string): GridTrack | undefined {
+  const minMax = parseGridMinMax(value)
+
+  if (minMax) {
+    return minMax
+  }
+
+  const fraction = parseGridFraction(value)
+
+  if (fraction !== undefined) {
+    return fraction
+  }
+
   const length = parseNonNegativeDimension(value)
 
   if (length !== undefined) {
@@ -2526,6 +2650,73 @@ function parseGridTrack(value: string): GridTrack | undefined {
   }
 
   return undefined
+}
+
+function parseGridMinMax(value: string): { min: GridMinTrackBreadth; max: GridMaxTrackBreadth } | undefined {
+  const match = /^minmax\(\s*(.*)\s*,\s*(.*)\s*\)$/.exec(value)
+
+  if (!match) {
+    return undefined
+  }
+
+  const min = parseGridMinTrackBreadth(match[1]?.trim() ?? '')
+  const max = parseGridMaxTrackBreadth(match[2]?.trim() ?? '')
+
+  return min === undefined || max === undefined ? undefined : { min, max }
+}
+
+function parseGridMinTrackBreadth(value: string): GridMinTrackBreadth | undefined {
+  if (value === 'auto' || value === 'min-content' || value === 'max-content') {
+    return value
+  }
+
+  return parseNonNegativeDimension(value) as GridMinTrackBreadth | undefined
+}
+
+function parseGridMaxTrackBreadth(value: string): GridMaxTrackBreadth | undefined {
+  const fraction = parseGridFraction(value)
+
+  if (fraction !== undefined) {
+    return fraction
+  }
+
+  return parseGridMinTrackBreadth(value)
+}
+
+function parseGridTemplateTrack(value: string): GridTemplateTrack | undefined {
+  const repeat = parseGridRepeat(value)
+
+  if (repeat) {
+    return repeat
+  }
+
+  return parseGridTrack(value)
+}
+
+function parseGridRepeat(value: string): { repeat: number; tracks: GridTrack[] } | undefined {
+  const match = /^repeat\(\s*(\d+)\s*,\s*(.*)\s*\)$/.exec(value)
+
+  if (!match) {
+    return undefined
+  }
+
+  const count = Number(match[1])
+  const tracks = splitCssWhitespaceList(match[2] ?? '').map(parseGridTrack)
+
+  if (!Number.isInteger(count) || count <= 0 || tracks.length === 0 || tracks.some((track) => track === undefined)) {
+    return undefined
+  }
+
+  return { repeat: count, tracks: tracks as GridTrack[] }
+}
+
+function parseGridFraction(value: string): `${number}fr` | undefined {
+  if (!value.endsWith('fr')) {
+    return undefined
+  }
+
+  const number = parsePositiveNumber(value.slice(0, -2))
+  return number === undefined ? undefined : `${number}fr`
 }
 
 function parseAspectRatio(value: string): number | undefined {

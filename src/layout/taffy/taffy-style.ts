@@ -6,13 +6,24 @@ import {
   Display,
   FlexDirection,
   FlexWrap,
+  GridAutoFlow,
   JustifyContent,
   Position,
   Style,
   type Size,
+  type GridTemplateComponent,
+  type MaxTrackSizingFunction,
+  type MinTrackSizingFunction,
   type TrackSizingFunction,
 } from 'taffy-layout'
-import type { Edges, SupportedStyle } from '../../css/supported-style.ts'
+import type {
+  Edges,
+  GridMaxTrackBreadth,
+  GridMinTrackBreadth,
+  GridTemplateTrack,
+  GridTrack,
+  SupportedStyle,
+} from '../../css/supported-style.ts'
 
 export type TaffyStyleContext = {
   replacedSize?: Size<number>
@@ -36,10 +47,11 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
   taffyStyle.flexShrink = style.flexShrink
   taffyStyle.flexBasis = style.flexBasis ?? 'auto'
   taffyStyle.aspectRatio = style.aspectRatio
+  taffyStyle.gridAutoFlow = toTaffyGridAutoFlow(style.gridAutoFlow)
   taffyStyle.gridTemplateColumns = toTaffyGridTracks(style.gridTemplateColumns)
   taffyStyle.gridTemplateRows = toTaffyGridTracks(style.gridTemplateRows)
-  taffyStyle.gridAutoColumns = toTaffyGridTracks(style.gridAutoColumns)
-  taffyStyle.gridAutoRows = toTaffyGridTracks(style.gridAutoRows)
+  taffyStyle.gridAutoColumns = toTaffyAutoGridTracks(style.gridAutoColumns)
+  taffyStyle.gridAutoRows = toTaffyAutoGridTracks(style.gridAutoRows)
   taffyStyle.gridColumn = {
     start: style.gridColumnStart,
     end: style.gridColumnEnd,
@@ -112,20 +124,66 @@ function toTaffyFlexDirection(value: SupportedStyle['flexDirection']): FlexDirec
   }
 }
 
-function toTaffyGridTracks(tracks: SupportedStyle['gridTemplateColumns']): TrackSizingFunction[] {
+function toTaffyGridTracks(tracks: SupportedStyle['gridTemplateColumns']): GridTemplateComponent[] {
   return tracks.map((track) => {
-    const taffyTrack = toTaffyGridTrack(track)
-    return { min: taffyTrack, max: taffyTrack }
+    if (isGridRepeat(track)) {
+      return {
+        count: track.repeat,
+        tracks: track.tracks.map(toTaffyGridTrackSizing),
+      }
+    }
+
+    return toTaffyGridTrackSizing(track)
   })
 }
 
-function toTaffyGridTrack(track: SupportedStyle['gridTemplateColumns'][number]): number | `${number}%` {
+function toTaffyAutoGridTracks(tracks: SupportedStyle['gridAutoColumns']): TrackSizingFunction[] {
+  return tracks.map(toTaffyGridTrackSizing)
+}
+
+function toTaffyGridTrackSizing(track: GridTrack): TrackSizingFunction {
+  if (typeof track === 'object') {
+    return {
+      min: toTaffyGridMinTrackBreadth(track.min),
+      max: toTaffyGridMaxTrackBreadth(track.max),
+    }
+  }
+
+  if (typeof track === 'string' && track.endsWith('fr')) {
+    return { min: 0, max: track }
+  }
+
+  const taffyTrack = toTaffyGridTrack(track)
+  return { min: taffyTrack, max: taffyTrack }
+}
+
+function toTaffyGridTrack(track: Exclude<GridTrack, { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }>): number | `${number}%` | 'auto' | 'min-content' | 'max-content' {
   if (typeof track !== 'string') {
+    return track
+  }
+
+  if (track === 'auto' || track === 'min-content' || track === 'max-content') {
     return track
   }
 
   const percentage = Number(track.slice(0, -1))
   return `${percentage / 100}%`
+}
+
+function toTaffyGridMinTrackBreadth(track: GridMinTrackBreadth): MinTrackSizingFunction {
+  return toTaffyGridTrack(track)
+}
+
+function toTaffyGridMaxTrackBreadth(track: GridMaxTrackBreadth): MaxTrackSizingFunction {
+  if (typeof track === 'string' && track.endsWith('fr')) {
+    return track
+  }
+
+  return toTaffyGridTrack(track)
+}
+
+function isGridRepeat(track: GridTemplateTrack): track is { repeat: number; tracks: GridTrack[] } {
+  return typeof track === 'object' && track !== null && 'repeat' in track
 }
 
 function toTaffyFlexWrap(value: SupportedStyle['flexWrap']): FlexWrap {
@@ -136,6 +194,19 @@ function toTaffyFlexWrap(value: SupportedStyle['flexWrap']): FlexWrap {
       return FlexWrap.WrapReverse
     default:
       return FlexWrap.NoWrap
+  }
+}
+
+function toTaffyGridAutoFlow(value: SupportedStyle['gridAutoFlow']): GridAutoFlow {
+  switch (value) {
+    case 'column':
+      return GridAutoFlow.Column
+    case 'row dense':
+      return GridAutoFlow.RowDense
+    case 'column dense':
+      return GridAutoFlow.ColumnDense
+    default:
+      return GridAutoFlow.Row
   }
 }
 

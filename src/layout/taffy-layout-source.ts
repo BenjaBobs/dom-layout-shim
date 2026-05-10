@@ -109,7 +109,7 @@ function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigin
     return []
   }
 
-  return elementChildren(parent)
+  return orderedElementChildren(parent, state)
     .map((element) => buildNode(element, state))
     .filter((node): node is bigint => node !== undefined)
 }
@@ -144,7 +144,7 @@ function recordChildLayouts(
     return
   }
 
-  for (const element of elementChildren(parent)) {
+  for (const element of orderedElementChildren(parent, state)) {
     const node = state.elementNodes.get(element)
 
     if (!node) {
@@ -270,6 +270,18 @@ function elementChildren(parent: Element): Element[] {
     const tagName = element.tagName.toLowerCase()
     return tagName !== 'script' && tagName !== 'style'
   })
+}
+
+function orderedElementChildren(parent: Element, state: TaffyLayoutState): Element[] {
+  const children = elementChildren(parent)
+  const parentStyle = resolveSupportedStyle(parent, state)
+
+  if (parentStyle.display !== 'flex' && parentStyle.display !== 'grid') {
+    return children
+  }
+
+  // CSS order participates in flex/grid layout order before Taffy sees children.
+  return children.toSorted((a, b) => resolveSupportedStyle(a, state).order - resolveSupportedStyle(b, state).order)
 }
 
 function isHidden(element: Element): boolean {

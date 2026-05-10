@@ -92,6 +92,8 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'grid-auto-columns':
     case 'grid-auto-rows':
       return stringifyGridAutoTracks(value)
+    case 'grid-auto-flow':
+      return stringifyGridAutoFlow(value)
     case 'grid-column':
     case 'grid-row':
       return stringifyGridLine(value)
@@ -352,11 +354,23 @@ function stringifyGridTemplate(value: Record<string, unknown>): string {
 }
 
 function stringifyGridTemplateItem(item: unknown): string {
-  if (!isRecord(item) || item.type !== 'track-size' || !isRecord(item.value)) {
+  if (!isRecord(item)) {
+    return JSON.stringify(item)
+  }
+
+  if (item.type === 'track-repeat' && isRecord(item.value)) {
+    return stringifyGridTrackRepeat(item.value)
+  }
+
+  if (item.type !== 'track-size' || !isRecord(item.value)) {
     return JSON.stringify(item)
   }
 
   const trackSize = item.value
+
+  if (trackSize.type === 'min-max') {
+    return stringifyGridMinMax(trackSize)
+  }
 
   if (trackSize.type === 'track-breadth' && isRecord(trackSize.value)) {
     return stringifyGridTrackBreadth(trackSize.value)
@@ -365,9 +379,41 @@ function stringifyGridTemplateItem(item: unknown): string {
   return JSON.stringify(item)
 }
 
+function stringifyGridTrackRepeat(value: Record<string, unknown>): string {
+  const count = isRecord(value.count) && value.count.type === 'number' && typeof value.count.value === 'number'
+    ? value.count.value
+    : undefined
+
+  if (count === undefined || !Array.isArray(value.trackSizes)) {
+    return JSON.stringify(value)
+  }
+
+  const tracks = value.trackSizes.map((track) => {
+    return isRecord(track) ? stringifyGridTrackSize(track) : JSON.stringify(track)
+  })
+
+  return `repeat(${count}, ${tracks.join(' ')})`
+}
+
+function stringifyGridTrackSize(value: Record<string, unknown>): string {
+  if (value.type === 'min-max') {
+    return stringifyGridMinMax(value)
+  }
+
+  return stringifyGridTrackBreadth(value)
+}
+
 function stringifyGridTrackBreadth(value: Record<string, unknown>): string {
   if (value.type === 'track-breadth' && isRecord(value.value)) {
     return stringifyGridTrackBreadth(value.value)
+  }
+
+  if (value.type === 'auto' || value.type === 'min-content' || value.type === 'max-content') {
+    return value.type
+  }
+
+  if (value.type === 'flex' && typeof value.value === 'number') {
+    return `${value.value}fr`
   }
 
   if (value.type === 'length') {
@@ -375,6 +421,14 @@ function stringifyGridTrackBreadth(value: Record<string, unknown>): string {
   }
 
   return JSON.stringify(value)
+}
+
+function stringifyGridMinMax(value: Record<string, unknown>): string {
+  if (!isRecord(value.min) || !isRecord(value.max)) {
+    return JSON.stringify(value)
+  }
+
+  return `minmax(${stringifyGridTrackBreadth(value.min)}, ${stringifyGridTrackBreadth(value.max)})`
 }
 
 function stringifyGridAutoTracks(value: unknown): string {
@@ -387,7 +441,7 @@ function stringifyGridAutoTracks(value: unknown): string {
       return JSON.stringify(item)
     }
 
-    return stringifyGridTrackBreadth(item)
+    return stringifyGridTrackSize(item)
   }).join(' ')
 }
 
@@ -411,7 +465,27 @@ function stringifyGridPlacement(value: unknown): string {
     return String(value.index)
   }
 
+  if (value.type === 'span' && typeof value.index === 'number' && value.name === null) {
+    return `span ${value.index}`
+  }
+
   return JSON.stringify(value)
+}
+
+function stringifyGridAutoFlow(value: Record<string, unknown>): string {
+  const parts = []
+
+  if (value.direction === 'column') {
+    parts.push('column')
+  } else {
+    parts.push('row')
+  }
+
+  if (value.dense === true) {
+    parts.push('dense')
+  }
+
+  return parts.join(' ')
 }
 
 function stringifyLengthLike(value: Record<string, unknown>): string {
