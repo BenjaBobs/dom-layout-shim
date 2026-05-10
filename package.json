@@ -21,7 +21,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
     "test:browser-parity": "mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
-    "bench": "node test/bench/hit-testing.bench.ts"
+    "bench": "node test/bench/hit-testing.bench.ts",
+    "css:status": "node scripts/serve-css-support-status.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

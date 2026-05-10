@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSS Support Status</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --panel-2: #eef3f8;
+      --text: #17202a;
+      --muted: #657282;
+      --line: #d9e0e8;
+      --green: #1c7c54;
+      --green-bg: #e5f4ec;
+      --amber: #9a6400;
+      --amber-bg: #fff2d2;
+      --red: #b23b3b;
+      --red-bg: #fde5e5;
+      --blue: #246b9f;
+      --blue-bg: #e4f1fb;
+      --violet: #7251a4;
+      --violet-bg: #eee7f8;
+      --gray-bg: #edf0f3;
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    header {
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 680;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    main {
+      padding: 20px 28px 32px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      min-height: 76px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      margin-top: 4px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1040px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--panel-2);
+      color: #394654;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .title {
+      font-weight: 700;
+    }
+
+    .id {
+      margin-top: 2px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .status-full {
+      color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .status-partial {
+      color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .status-todo {
+      color: var(--red);
+      background: var(--red-bg);
+    }
+
+    .effect-layout {
+      color: var(--blue);
+      background: var(--blue-bg);
+    }
+
+    .effect-hit-testing {
+      color: var(--violet);
+      background: var(--violet-bg);
+    }
+
+    .effect-visual,
+    .effect-inert,
+    .effect-source {
+      color: #4f5b67;
+      background: var(--gray-bg);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-width: 420px;
+    }
+
+    .chip {
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: var(--gray-bg);
+      color: #34414f;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .more {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .notes {
+      display: grid;
+      gap: 6px;
+      max-width: 560px;
+    }
+
+    .note {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 6px;
+    }
+
+    .note svg {
+      width: 15px;
+      height: 15px;
+      margin-top: 2px;
+      color: var(--muted);
+    }
+
+    .note-kind {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .parity-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+    }
+
+    .parity-count svg {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+    }
+
+    .error {
+      padding: 16px;
+      border: 1px solid #e3b4b4;
+      border-radius: 8px;
+      background: #fff1f1;
+      color: #7b2525;
+    }
+
+    @media (max-width: 900px) {
+      header,
+      main {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CSS Support Status</h1>
+    <p class="subhead">Runtime view of <code>src/css/css-support-inventory.ts</code></p>
+  </header>
+
+  <main>
+    <section class="summary" id="summary" aria-label="Summary"></section>
+
+    <section class="toolbar" aria-label="Filters">
+      <input id="search" type="search" placeholder="Search title, property, fixture, or note">
+      <select id="status">
+        <option value="">All statuses</option>
+      </select>
+      <select id="effect">
+        <option value="">All effects</option>
+      </select>
+      <select id="owner">
+        <option value="">All owners</option>
+      </select>
+      <select id="parityStatus">
+        <option value="">All parity</option>
+      </select>
+    </section>
+
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Status</th>
+            <th>Effect</th>
+            <th>Owner</th>
+            <th>Parity Status</th>
+            <th>Properties</th>
+            <th>Fixtures</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const sourcePath = '../src/css/css-support-inventory.ts'
+    const statusOrder = ['full', 'partial', 'todo']
+    const effectOrder = ['layout', 'hit-testing', 'visual', 'inert', 'source']
+    const ownerOrder = ['css-parser', 'taffy-adapter', 'hit-testing', 'text', 'dom-api']
+    const parityStatusOrder = ['covered', 'partial', 'missing', 'not-applicable']
+    let inventory = []
+
+    const icons = {
+      full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>',
+      partial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v18"/><path d="M5 12h14"/></svg>',
+      todo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>',
+      note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>',
+      parity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M12 4v16"/><path d="m7 7 10 10"/><path d="m17 7-10 10"/></svg>'
+    }
+
+    init().catch((error) => {
+      document.querySelector('main').innerHTML = `
+        <div class="error">
+          <strong>Could not load the CSS support inventory.</strong>
+          <p>${escapeHtml(error.message)}</p>
+          <p>Open this page through a local HTTP server from the repository root so the browser can fetch ${sourcePath}.</p>
+        </div>
+      `
+    })
+
+    async function init() {
+      inventory = await loadInventory()
+      populateFilters()
+      render()
+      document.getElementById('search').addEventListener('input', render)
+      document.getElementById('status').addEventListener('change', render)
+      document.getElementById('effect').addEventListener('change', render)
+      document.getElementById('owner').addEventListener('change', render)
+      document.getElementById('parityStatus').addEventListener('change', render)
+    }
+
+    async function loadInventory() {
+      const response = await fetch(`${sourcePath}?t=${Date.now()}`)
+
+      if (!response.ok) {
+        throw new Error(`Fetch failed: ${response.status} ${response.statusText}`)
+      }
+
+      const source = await response.text()
+      const arraySource = extractInventoryArray(source)
+      return Function(`"use strict"; return (${arraySource})`)()
+    }
+
+    function extractInventoryArray(source) {
+      const marker = 'export const cssSupportInventory'
+      const markerIndex = source.indexOf(marker)
+
+      if (markerIndex === -1) {
+        throw new Error(`Could not find ${marker}`)
+      }
+
+      const initializerStart = source.indexOf('=', markerIndex)
+
+      if (initializerStart === -1) {
+        throw new Error('Could not find inventory initializer')
+      }
+
+      const start = source.indexOf('[', initializerStart)
+
+      if (start === -1) {
+        throw new Error('Could not find inventory array start')
+      }
+
+      let depth = 0
+      let quote = ''
+      let escaped = false
+
+      for (let index = start; index < source.length; index += 1) {
+        const char = source[index]
+
+        if (quote) {
+          if (escaped) {
+            escaped = false
+          } else if (char === '\\') {
+            escaped = true
+          } else if (char === quote) {
+            quote = ''
+          }
+          continue
+        }
+
+        if (char === '"' || char === "'" || char === '`') {
+          quote = char
+          continue
+        }
+
+        if (char === '[') {
+          depth += 1
+        } else if (char === ']') {
+          depth -= 1
+
+          if (depth === 0) {
+            return source.slice(start, index + 1)
+          }
+        }
+      }
+
+      throw new Error('Could not find inventory array end')
+    }
+
+    function populateFilters() {
+      fillSelect('status', statusOrder)
+      fillSelect('effect', effectOrder)
+      fillSelect('owner', ownerOrder)
+      fillSelect('parityStatus', parityStatusOrder)
+    }
+
+    function fillSelect(id, values) {
+      const select = document.getElementById(id)
+
+      for (const value of values) {
+        const option = document.createElement('option')
+        option.value = value
+        option.textContent = label(value)
+        select.append(option)
+      }
+    }
+
+    function render() {
+      const query = document.getElementById('search').value.trim().toLowerCase()
+      const status = document.getElementById('status').value
+      const effect = document.getElementById('effect').value
+      const owner = document.getElementById('owner').value
+      const parityStatus = document.getElementById('parityStatus').value
+      const filtered = inventory.filter((entry) => {
+        if (status && entry.status !== status) return false
+        if (effect && entry.effect !== effect) return false
+        if (owner && entry.ownerArea !== owner) return false
+        if (parityStatus && entry.parityStatus !== parityStatus) return false
+        if (!query) return true
+
+        const haystack = [
+          entry.id,
+          entry.title,
+          entry.status,
+          entry.effect,
+          entry.ownerArea,
+          entry.parityStatus,
+          ...(entry.properties || []),
+          ...(entry.values || []),
+          ...(entry.parity || []),
+          ...(entry.notes || []).flatMap((note) => [note.kind, note.text]),
+        ].join(' ').toLowerCase()
+
+        return haystack.includes(query)
+      })
+
+      renderSummary(filtered)
+      renderRows(filtered)
+    }
+
+    function renderSummary(entries) {
+      const implementedProperties = unique(
+        inventory
+          .filter((entry) => entry.status !== 'todo')
+          .flatMap((entry) => entry.properties || [])
+          .filter((property) => !property.includes('*')),
+      )
+      const metrics = [
+        ['Areas', entries.length],
+        ['Properties', implementedProperties.length],
+        ['Full', inventory.filter((entry) => entry.status === 'full').length],
+        ['Partial', inventory.filter((entry) => entry.status === 'partial').length],
+        ['Todo', inventory.filter((entry) => entry.status === 'todo').length],
+      ]
+
+      document.getElementById('summary').innerHTML = metrics.map(([name, value]) => `
+        <div class="metric">
+          <div class="metric-label">${escapeHtml(name)}</div>
+          <div class="metric-value">${value}</div>
+        </div>
+      `).join('')
+    }
+
+    function renderRows(entries) {
+      document.getElementById('rows').innerHTML = entries.map((entry) => `
+        <tr>
+          <td>
+            <div class="title">${escapeHtml(entry.title)}</div>
+            <div class="id">${escapeHtml(entry.id)}</div>
+          </td>
+          <td>${badge(entry.status, `status-${entry.status}`)}</td>
+          <td>${badge(entry.effect, `effect-${entry.effect}`)}</td>
+          <td>${badge(entry.ownerArea, 'effect-source')}</td>
+          <td>${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</td>
+          <td>${chips(entry.properties || [], 12)}</td>
+          <td>${parity(entry.parity || [])}</td>
+          <td>${notes(entry.notes || [])}</td>
+        </tr>
+      `).join('')
+    }
+
+    function badge(value, className) {
+      return `<span class="badge ${className}">${icons[value] || ''}${escapeHtml(label(value))}</span>`
+    }
+
+    function parityStatusClass(value) {
+      if (value === 'covered') {
+        return 'status-full'
+      }
+
+      if (value === 'missing') {
+        return 'status-todo'
+      }
+
+      return 'status-partial'
+    }
+
+    function chips(values, limit) {
+      if (values.length === 0) {
+        return '<span class="more">None</span>'
+      }
+
+      const visible = values.slice(0, limit)
+      const hidden = values.length - visible.length
+      return `
+        <div class="chips">
+          ${visible.map((value) => `<span class="chip">${escapeHtml(value)}</span>`).join('')}
+          ${hidden > 0 ? `<span class="chip more">+${hidden}</span>` : ''}
+        </div>
+      `
+    }
+
+    function parity(values) {
+      if (values.length === 0) {
+        return '<span class="more">No fixture refs</span>'
+      }
+
+      return `
+        <div class="parity-count">${icons.parity}${values.length} fixtures</div>
+        ${chips(values, 5)}
+      `
+    }
+
+    function notes(values) {
+      if (values.length === 0) {
+        return '<span class="more">No notes</span>'
+      }
+
+      return `
+        <div class="notes">
+          ${values.map((note) => `
+            <div class="note">
+              ${icons.note}
+              <div>
+                <div class="note-kind">${escapeHtml(label(note.kind))}</div>
+                <div>${escapeHtml(note.text)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `
+    }
+
+    function unique(values) {
+      return [...new Set(values)]
+    }
+
+    function label(value) {
+      return String(value).replaceAll('-', ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;')
+    }
+  </script>
+</body>
+</html>

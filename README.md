@@ -30,8 +30,9 @@ positioned fixtures. Unsupported CSS throws by default unless explicitly ignored
 by policy. Text measurement falls back to a deterministic approximation in
 Node-like runtimes without canvas text measurement.
 
-See [docs/supported-css.md](docs/supported-css.md) for the current supported
-CSS contract.
+See [docs/css-support-status.html](docs/css-support-status.html) for a
+filterable CSS support overview. The underlying source of truth is
+[src/css/css-support-inventory.ts](src/css/css-support-inventory.ts).
 
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.

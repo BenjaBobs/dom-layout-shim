@@ -47,6 +47,13 @@ behavior, for example `absolute-overlap` or `pointer-events-none`.
 
 Run `pnpm test` for normal changes. Run `pnpm run test:browser-parity` for CSS, layout, geometry, or hit-testing changes. Run `pnpm run build` before publishing-facing changes.
 
+Keep `src/css/css-support-inventory.ts` up to date whenever CSS parsing,
+layout behavior, hit-testing behavior, visual/inert CSS handling, parity
+coverage, implementation quirks, or tracked CSS TODOs change. Update
+`status`, `parityStatus`, `ownerArea`, parity fixture references, and notes in
+the same change that modifies the behavior. The overview can be viewed with
+`pnpm run css:status`.
+
 ## Commit & Pull Request Guidelines
 
 Recent commits use short imperative summaries, for example `remove tsx + allow playwright`. Keep commits focused and mention the changed behavior, not just files.
