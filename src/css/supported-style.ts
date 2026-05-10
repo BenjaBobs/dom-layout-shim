@@ -1,0 +1,134 @@
+import type { WhiteSpace } from '../text/text-measurer.ts'
+
+export type Edges = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+export type BorderStyles = {
+  top: 'none' | 'solid'
+  right: 'none' | 'solid'
+  bottom: 'none' | 'solid'
+  left: 'none' | 'solid'
+}
+
+export type AlignItemsValue = 'start' | 'end' | 'flex-start' | 'flex-end' | 'center' | 'stretch'
+export type AlignSelfValue = 'auto' | AlignItemsValue
+export type JustifyContentValue =
+  | 'start'
+  | 'end'
+  | 'flex-start'
+  | 'flex-end'
+  | 'center'
+  | 'space-between'
+  | 'space-around'
+  | 'space-evenly'
+export type AlignContentValue = JustifyContentValue | 'stretch'
+export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
+export type OverflowValue = 'visible' | 'hidden' | 'clip'
+export type SupportedDimension = number | `${number}%`
+export type GridTrack = number | `${number}%`
+export type GridPlacementValue = 'auto' | number
+
+export type SupportedStyle = {
+  display: 'block' | 'flex' | 'grid' | 'none'
+  position: 'static' | 'relative' | 'absolute' | 'fixed'
+  boxSizing: 'content-box' | 'border-box'
+  flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+  flexWrap: FlexWrapValue
+  alignItems?: AlignItemsValue
+  alignSelf: AlignSelfValue
+  alignContent?: AlignContentValue
+  justifyContent?: JustifyContentValue
+  justifyItems?: AlignItemsValue
+  justifySelf?: AlignSelfValue
+  flexGrow: number
+  flexShrink: number
+  flexBasis?: SupportedDimension
+  aspectRatio?: number
+  gridTemplateColumns: GridTrack[]
+  gridTemplateRows: GridTrack[]
+  gridAutoColumns: GridTrack[]
+  gridAutoRows: GridTrack[]
+  gridColumnStart: GridPlacementValue
+  gridColumnEnd: GridPlacementValue
+  gridRowStart: GridPlacementValue
+  gridRowEnd: GridPlacementValue
+  width?: SupportedDimension
+  height?: SupportedDimension
+  minWidth?: SupportedDimension
+  minHeight?: SupportedDimension
+  maxWidth?: SupportedDimension
+  maxHeight?: SupportedDimension
+  top?: number
+  right?: number
+  bottom?: number
+  left?: number
+  zIndex: number
+  pointerEvents: 'auto' | 'none'
+  visibility: 'visible' | 'hidden'
+  overflowX: OverflowValue
+  overflowY: OverflowValue
+  margin: Edges
+  padding: Edges
+  rowGap: number
+  columnGap: number
+  borderWidth: Edges
+  borderStyle: BorderStyles
+  fontFamily: string
+  fontSize: number
+  lineHeight: number
+  whiteSpace: WhiteSpace
+}
+
+export function createDefaultStyle(): SupportedStyle {
+  return {
+    display: 'block',
+    position: 'static',
+    boxSizing: 'content-box',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignSelf: 'auto',
+    flexGrow: 0,
+    flexShrink: 1,
+    gridTemplateColumns: [],
+    gridTemplateRows: [],
+    gridAutoColumns: [],
+    gridAutoRows: [],
+    gridColumnStart: 'auto',
+    gridColumnEnd: 'auto',
+    gridRowStart: 'auto',
+    gridRowEnd: 'auto',
+    zIndex: 0,
+    pointerEvents: 'auto',
+    visibility: 'visible',
+    overflowX: 'visible',
+    overflowY: 'visible',
+    margin: zeroEdges(),
+    padding: zeroEdges(),
+    rowGap: 0,
+    columnGap: 0,
+    borderWidth: zeroEdges(),
+    borderStyle: {
+      top: 'none',
+      right: 'none',
+      bottom: 'none',
+      left: 'none',
+    },
+    fontFamily: 'sans-serif',
+    fontSize: 16,
+    lineHeight: 19.2,
+    whiteSpace: 'normal',
+  }
+}
+
+export function zeroEdges(): Edges {
+  return {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  }
+}
