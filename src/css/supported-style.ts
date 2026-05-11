@@ -1,17 +1,29 @@
 import type { WhiteSpace } from '../text/text-measurer.ts'
 
-export type Edges = {
-  top: number
-  right: number
-  bottom: number
-  left: number
+export type Edges<Value = number> = {
+  top: Value
+  right: Value
+  bottom: Value
+  left: Value
 }
 
+export type BorderStyleValue =
+  | 'none'
+  | 'hidden'
+  | 'dotted'
+  | 'dashed'
+  | 'solid'
+  | 'double'
+  | 'groove'
+  | 'ridge'
+  | 'inset'
+  | 'outset'
+
 export type BorderStyles = {
-  top: 'none' | 'solid'
-  right: 'none' | 'solid'
-  bottom: 'none' | 'solid'
-  left: 'none' | 'solid'
+  top: BorderStyleValue
+  right: BorderStyleValue
+  bottom: BorderStyleValue
+  left: BorderStyleValue
 }
 
 export type AlignItemsValue = 'start' | 'end' | 'flex-start' | 'flex-end' | 'center' | 'stretch'
@@ -27,8 +39,9 @@ export type JustifyContentValue =
   | 'space-evenly'
 export type AlignContentValue = JustifyContentValue | 'stretch'
 export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
-export type OverflowValue = 'visible' | 'hidden' | 'clip'
+export type OverflowValue = 'visible' | 'hidden' | 'clip' | 'auto' | 'scroll'
 export type SupportedDimension = number | `${number}%`
+export type MarginValue = SupportedDimension | 'auto'
 export type GridMinTrackBreadth = number | `${number}%` | 'auto' | 'min-content' | 'max-content'
 export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`
 export type GridTrack = GridMinTrackBreadth | `${number}fr` | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }
@@ -77,10 +90,10 @@ export type SupportedStyle = {
   visibility: 'visible' | 'hidden'
   overflowX: OverflowValue
   overflowY: OverflowValue
-  margin: Edges
-  padding: Edges
-  rowGap: number
-  columnGap: number
+  margin: Edges<MarginValue>
+  padding: Edges<SupportedDimension>
+  rowGap: SupportedDimension
+  columnGap: SupportedDimension
   borderWidth: Edges
   borderStyle: BorderStyles
   fontFamily: string

@@ -153,6 +153,8 @@ function stringifyCssValue(property: string, value: unknown): string {
       return stringifyFilter(value)
     case 'transform-origin':
       return stringifyTransformOrigin(value)
+    case 'container-name':
+      return stringifyContainerName(value)
     case 'padding-top':
     case 'padding-right':
     case 'padding-bottom':
@@ -505,6 +507,10 @@ function stringifyLengthLike(value: Record<string, unknown>): string {
     return stringifyDimensionPercentage(value.value)
   }
 
+  if (value.type === 'percentage' && typeof value.value === 'number') {
+    return `${value.value * 100}%`
+  }
+
   if (value.type === 'length') {
     return stringifyLength(value.value)
   }
@@ -541,6 +547,10 @@ function stringifyDimensionPercentage(value: unknown): string {
 function stringifyLength(value: unknown): string {
   if (!isRecord(value)) {
     return JSON.stringify(value)
+  }
+
+  if (value.type === 'percentage' && typeof value.value === 'number') {
+    return `${value.value * 100}%`
   }
 
   if (value.type === 'dimension' && isRecord(value.value)) {
@@ -751,6 +761,14 @@ function stringifyTransformOrigin(value: Record<string, unknown>): string {
     .map(stringifyTransformOriginPart)
 
   return parts.length > 0 ? parts.join(' ') : JSON.stringify(value)
+}
+
+function stringifyContainerName(value: Record<string, unknown>): string {
+  if (value.type === 'none') {
+    return 'none'
+  }
+
+  return JSON.stringify(value)
 }
 
 function stringifyTransformOriginPart(value: unknown): string {

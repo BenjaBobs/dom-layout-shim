@@ -2,6 +2,10 @@ import type { MeasureFunction, Size } from 'taffy-layout'
 import type { SupportedStyle } from '../../css/supported-style.ts'
 import type { TextMeasurer } from '../../text/text-measurer.ts'
 
+const elementNodeType = 1
+const textNodeType = 3
+const commentNodeType = 8
+
 export type MeasureContext = {
   text?: string
   fontFamily: string
@@ -30,9 +34,14 @@ export function createMeasureContext(
     }
   }
 
-  const text = element.textContent ?? ''
+  const text = textContentForMeasurement(element)
 
-  if (!text.trim()) {
+  if (
+    !text.trim() &&
+    style.whiteSpace !== 'pre' &&
+    style.whiteSpace !== 'pre-line' &&
+    style.whiteSpace !== 'pre-wrap'
+  ) {
     return undefined
   }
 
@@ -44,6 +53,16 @@ export function createMeasureContext(
     whiteSpace: style.whiteSpace,
     textMeasurer,
   }
+}
+
+export function canMeasureTextLeaf(element: Element): boolean {
+  return Array.from(element.childNodes).every((node) => {
+    if (node.nodeType === textNodeType || node.nodeType === commentNodeType) {
+      return true
+    }
+
+    return node.nodeType === elementNodeType && (node as Element).tagName.toLowerCase() === 'br'
+  })
 }
 
 export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpace, _node, context): Size<number> => {
@@ -106,6 +125,22 @@ function replacedElementSize(element: Element): Size<number> | undefined {
   }
 
   return { width, height }
+}
+
+function textContentForMeasurement(element: Element): string {
+  if (!canMeasureTextLeaf(element)) {
+    return element.textContent ?? ''
+  }
+
+  return Array.from(element.childNodes)
+    .map((node) => {
+      if (node.nodeType === elementNodeType && (node as Element).tagName.toLowerCase() === 'br') {
+        return '\n'
+      }
+
+      return node.textContent ?? ''
+    })
+    .join('')
 }
 
 function readNumberAttribute(element: Element, name: string): number | undefined {

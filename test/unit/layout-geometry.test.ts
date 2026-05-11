@@ -452,6 +452,27 @@ describe('layout geometry and DOM API attachment', () => {
     })
   })
 
+  it('measures br elements as hard breaks in text leaves', async () => {
+    document.body.innerHTML = `
+      <div id="text" style="position:absolute; left:10px; top:20px; font-size:20px; line-height:30px; white-space:pre-wrap">Hello<br>World</div>
+    `
+
+    await attach()
+
+    expectRect(requiredElement('#text').getBoundingClientRect(), {
+      left: 10,
+      top: 20,
+      width: 50,
+      height: 60,
+    })
+    expectRect(requiredElement('br').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    })
+  })
+
   it('uses data layout metadata as intrinsic dimensions', async () => {
     document.body.innerHTML = `
       <div id="icon" data-layout-width="32" data-layout-height="18"></div>
@@ -523,6 +544,28 @@ describe('layout geometry and DOM API attachment', () => {
       top: 0,
       width: 100,
       height: 45,
+    })
+  })
+
+  it('resets line-height normal to the deterministic font-size ratio', async () => {
+    document.body.innerHTML = `
+      <div id="text" style="position:absolute; font-size:20px; line-height:40px; line-height:normal">Hello</div>
+    `
+
+    await attach({
+      viewport: { width: 300, height: 200 },
+      textMeasurer: {
+        measure(input) {
+          return { width: 20, height: input.lineHeight }
+        },
+      },
+    })
+
+    expectRect(requiredElement('#text').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 20,
+      height: 24,
     })
   })
 })

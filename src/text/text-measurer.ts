@@ -5,7 +5,7 @@ import {
   prepareWithSegments,
 } from '@chenglou/pretext'
 
-export type WhiteSpace = 'normal' | 'pre-wrap' | 'nowrap'
+export type WhiteSpace = 'normal' | 'pre' | 'pre-line' | 'pre-wrap' | 'nowrap'
 
 export type TextMeasureInput = {
   text: string
@@ -67,15 +67,16 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
 }
 
 function measureWithPretext(input: TextMeasureInput): TextMeasureResult {
-  const maxWidth = input.whiteSpace === 'nowrap'
+  const maxWidth = input.whiteSpace === 'nowrap' || input.whiteSpace === 'pre'
     ? Number.MAX_SAFE_INTEGER
     : input.maxWidth ?? Number.MAX_SAFE_INTEGER
   const options = {
-    whiteSpace: input.whiteSpace === 'pre-wrap' ? 'pre-wrap' as const : 'normal' as const,
+    whiteSpace: preservesHardBreaks(input.whiteSpace) ? 'pre-wrap' as const : 'normal' as const,
   }
+  const text = input.whiteSpace === 'pre-line' ? normalizeText(input.text, input.whiteSpace) : input.text
 
   if (input.whiteSpace === 'nowrap') {
-    const prepared = prepareWithSegments(input.text, fontShorthand(input), options)
+    const prepared = prepareWithSegments(text, fontShorthand(input), options)
 
     return {
       width: measureNaturalWidth(prepared),
@@ -83,7 +84,7 @@ function measureWithPretext(input: TextMeasureInput): TextMeasureResult {
     }
   }
 
-  const prepared = prepareWithSegments(input.text, fontShorthand(input), options)
+  const prepared = prepareWithSegments(text, fontShorthand(input), options)
   const laidOut = layoutText(prepared, maxWidth, input.lineHeight)
   const lineStats = measureLineStats(prepared, maxWidth)
 
@@ -112,7 +113,7 @@ function breakTextIntoLines(input: TextMeasureInput): string[] {
     return []
   }
 
-  if (input.whiteSpace === 'pre-wrap') {
+  if (preservesHardBreaks(input.whiteSpace)) {
     return normalizedText.split('\n')
   }
 
@@ -124,11 +125,23 @@ function breakTextIntoLines(input: TextMeasureInput): string[] {
 }
 
 function normalizeText(text: string, whiteSpace: WhiteSpace): string {
-  if (whiteSpace === 'pre-wrap') {
+  if (whiteSpace === 'pre' || whiteSpace === 'pre-wrap') {
     return text.replace(/\r\n?/g, '\n')
   }
 
+  if (whiteSpace === 'pre-line') {
+    return text
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .map((line) => line.replace(/[ \t\f\v]+/g, ' ').trim())
+      .join('\n')
+  }
+
   return text.replace(/\s+/g, ' ').trim()
+}
+
+function preservesHardBreaks(whiteSpace: WhiteSpace): boolean {
+  return whiteSpace === 'pre' || whiteSpace === 'pre-line' || whiteSpace === 'pre-wrap'
 }
 
 function wrapNormalText(text: string, maxWidth: number, charWidth: number): string[] {

@@ -27,6 +27,7 @@ export type CssSupportEntry = {
   ownerArea: CssSupportOwnerArea
   parityStatus: CssSupportParityStatus
   properties: readonly string[]
+  elements?: readonly string[]
   values?: readonly string[]
   parity?: readonly string[]
   notes: readonly CssSupportNote[]
@@ -214,7 +215,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'border-bottom-style',
       'border-left-style',
     ],
-    values: ['<px>', 'thin', 'medium', 'thick', 'none', 'solid', 'normal'],
+    values: ['<px>', '<percentage>', 'auto', 'thin', 'medium', 'thick', 'none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset', 'normal'],
     parity: [
       'border-box-padding-border',
       'border-shorthand',
@@ -232,7 +233,11 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       },
       {
         kind: 'implementation-quirk',
-        text: 'Border widths affect geometry only for edges whose supported border style is solid.',
+        text: 'Border widths affect geometry for supported border line styles except none and hidden; border painting is not modeled.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Percentage spacing values are supported for gap and margin properties; padding and border widths remain limited to pixels and listed keywords.',
       },
       {
         kind: 'implementation-quirk',
@@ -370,16 +375,186 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'text',
     parityStatus: 'partial',
     properties: ['font-family', 'font-size', 'line-height', 'white-space'],
-    values: ['<family-list>', '<px>', '<number>', 'normal', 'pre-wrap', 'nowrap'],
+    values: ['<family-list>', '<px>', '<percentage>', '<number>', 'normal', 'pre', 'pre-line', 'pre-wrap', 'nowrap'],
     parity: ['static-pre-wrap-text-lines', 'static-text-line-height'],
     notes: [
       {
         kind: 'implementation-quirk',
-        text: 'Text-only leaf elements are measured through the configured TextMeasurer; the default uses Pretext with deterministic fallback.',
+        text: 'Text-only leaf elements and direct text-plus-br leaves are measured through the configured TextMeasurer; the default uses Pretext with deterministic fallback.',
       },
       {
         kind: 'limitation',
         text: 'The engine does not implement full inline formatting.',
+      },
+    ],
+  },
+  {
+    id: 'generic-html-elements',
+    title: 'Generic HTML element layout',
+    status: 'partial',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'partial',
+    properties: [],
+    elements: [
+      'html',
+      'body',
+      'div',
+      'section',
+      'article',
+      'main',
+      'header',
+      'footer',
+      'nav',
+      'aside',
+      'p',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'blockquote',
+      'pre',
+      'hr',
+      'br',
+      'details',
+      'summary',
+      'dialog',
+    ],
+    parity: ['hidden-attribute', 'static-block-flow', 'static-pre-wrap-text-lines'],
+    notes: [
+      {
+        kind: 'implementation-quirk',
+        text: 'The layout tree treats ordinary elements with the same default block style unless author CSS overrides them.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Browser UA stylesheet defaults such as margins, heading font sizes, hr sizing, dialog positioning, and details disclosure behavior are not modeled.',
+      },
+    ],
+  },
+  {
+    id: 'non-rendered-html-elements',
+    title: 'Non-rendered HTML elements',
+    status: 'full',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'covered',
+    properties: [],
+    elements: ['base', 'link', 'meta', 'script', 'style', 'template', 'title'],
+    parity: ['non-rendered-elements'],
+    notes: [
+      {
+        kind: 'browser-parity',
+        text: 'Metadata and raw-text elements with no CSS box are skipped when building the layout and hit-test tree.',
+      },
+    ],
+  },
+  {
+    id: 'inline-html-elements',
+    title: 'Inline phrasing HTML elements',
+    status: 'todo',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'missing',
+    properties: [],
+    elements: [
+      'span',
+      'a',
+      'strong',
+      'em',
+      'b',
+      'i',
+      'u',
+      's',
+      'small',
+      'code',
+      'kbd',
+      'samp',
+      'mark',
+      'sub',
+      'sup',
+      'time',
+      'label',
+    ],
+    notes: [
+      {
+        kind: 'todo',
+        text: 'Native inline display defaults and inline formatting are not modeled; these elements currently use the same element layout defaults as other nodes.',
+      },
+    ],
+  },
+  {
+    id: 'list-html-elements',
+    title: 'List HTML elements',
+    status: 'todo',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'missing',
+    properties: [],
+    elements: ['ul', 'ol', 'li', 'dl', 'dt', 'dd', 'menu'],
+    notes: [
+      {
+        kind: 'todo',
+        text: 'Native list display defaults, marker boxes, list indentation, and definition-list flow are not modeled.',
+      },
+    ],
+  },
+  {
+    id: 'table-html-elements',
+    title: 'Table HTML elements',
+    status: 'todo',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'missing',
+    properties: [
+      'display: table/table-row/table-cell/table-caption/table-row-group/table-header-group/table-footer-group/table-column/table-column-group',
+      'border-collapse',
+      'border-spacing',
+      'caption-side',
+      'empty-cells',
+      'table-layout',
+      'vertical-align',
+    ],
+    elements: ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'],
+    notes: [
+      {
+        kind: 'todo',
+        text: 'Native table display defaults and table layout semantics are not implemented.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Rows, cells, intrinsic column sizing, captions, column groups, border collapsing, row and column spans, and table-specific visibility:collapse behavior are not modeled.',
+      },
+    ],
+  },
+  {
+    id: 'form-html-elements',
+    title: 'Form and interactive HTML elements',
+    status: 'todo',
+    effect: 'layout',
+    ownerArea: 'taffy-adapter',
+    parityStatus: 'missing',
+    properties: [],
+    elements: [
+      'button',
+      'input',
+      'textarea',
+      'select',
+      'option',
+      'optgroup',
+      'fieldset',
+      'legend',
+      'form',
+      'output',
+      'progress',
+      'meter',
+    ],
+    notes: [
+      {
+        kind: 'todo',
+        text: 'Native control intrinsic sizes, anonymous boxes, fieldset and legend layout, replaced input behavior, and form-control UA defaults are not modeled.',
       },
     ],
   },
@@ -391,7 +566,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'hit-testing',
     parityStatus: 'covered',
     properties: ['pointer-events', 'visibility', 'overflow', 'overflow-x', 'overflow-y'],
-    values: ['auto', 'none', 'visible', 'hidden', 'clip'],
+    values: ['auto', 'none', 'visible', 'hidden', 'collapse', 'clip', 'scroll'],
     parity: ['center-click-blocked-by-overlay', 'elements-from-point-order', 'overflow-clipping', 'pointer-events-none', 'visibility-hidden'],
     notes: [
       {
@@ -400,7 +575,11 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       },
       {
         kind: 'behavior-quirk',
-        text: 'Overflow hidden and clip clip descendant hit boxes to the padding box; getBoundingClientRect output is not clipped.',
+        text: 'Overflow hidden, clip, auto, and scroll clip descendant hit boxes to the padding box; getBoundingClientRect output is not clipped.',
+      },
+      {
+        kind: 'implementation-quirk',
+        text: 'visibility: collapse is treated as hidden for DOM-like box hit testing; table row and column collapse layout is not modeled.',
       },
     ],
   },
@@ -452,6 +631,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'text-decoration-thickness',
       'filter',
       'backdrop-filter',
+      'transform',
       'transform-origin',
       'object-fit',
       'object-position',
@@ -498,12 +678,31 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'user-select',
       'touch-action',
       'resize',
+      'direction',
+      'writing-mode',
+      'float',
+      'clear',
+      'contain',
+      'container-type',
+      'container-name',
     ],
     parity: ['visual-only-properties'],
     notes: [
       {
         kind: 'implementation-quirk',
         text: 'These declarations are parsed so common application CSS can pass unsupported-CSS policy, but they do not affect layout or hit testing.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Only direction:ltr and writing-mode:horizontal-tb are accepted; non-default writing directions remain unsupported because logical layout is mapped as horizontal-tb LTR.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Only float:none and clear:none are accepted; floated layout and float clearance are not modeled.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Only contain:none, container-type:normal, and container-name:none are accepted; containment and container query behavior are not modeled.',
       },
     ],
   },
@@ -542,6 +741,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'taffy-adapter',
     parityStatus: 'covered',
     properties: [],
+    elements: ['img', 'svg', 'canvas', 'video'],
     parity: ['replaced-image-attributes'],
     notes: [
       {
@@ -560,17 +760,24 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     properties: [
       'direction',
       'writing-mode',
-      'float',
-      'clear',
+      'float: left/right/inline-start/inline-end',
+      'clear: left/right/both/inline-start/inline-end',
       'display: inline formatting',
       'display: list-item markers',
+      'display: table/table-row/table-cell/table-caption/table-row-group/table-header-group/table-footer-group/table-column/table-column-group',
       'grid-template-areas',
       'grid-area',
       'position: sticky',
-      'transform',
-      'contain',
-      'container-type',
-      'container-name',
+      'border-collapse',
+      'border-spacing',
+      'caption-side',
+      'empty-cells',
+      'table-layout',
+      'vertical-align',
+      'transform: non-none',
+      'contain: layout/paint/size/style/content/strict',
+      'container-type: size/inline-size/scroll-state',
+      'container-name: <custom-ident>',
     ],
     notes: [
       {
@@ -583,4 +790,8 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
 
 export function getInventoriedCssProperties(): string[] {
   return [...new Set(cssSupportInventory.flatMap((entry) => entry.properties))].sort()
+}
+
+export function getInventoriedHtmlElements(): string[] {
+  return [...new Set(cssSupportInventory.flatMap((entry) => entry.elements ?? []))].sort()
 }

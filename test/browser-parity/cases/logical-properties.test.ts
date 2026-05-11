@@ -11,6 +11,8 @@ it('maps logical properties in default horizontal ltr writing mode', async () =>
         }
 
         #box {
+          direction: ltr;
+          writing-mode: horizontal-tb;
           position: absolute;
           inset-inline-start: 10px;
           inset-block-start: 20px;
@@ -46,6 +48,8 @@ it('maps logical margins and padding in static block flow', async () => {
         }
 
         #parent {
+          direction: ltr;
+          writing-mode: horizontal-tb;
           inline-size: 100px;
           padding-inline: 10px 12px;
           padding-block: 2px 4px;

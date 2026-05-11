@@ -301,7 +301,7 @@
     <section class="summary" id="summary" aria-label="Summary"></section>
 
     <section class="toolbar" aria-label="Filters">
-      <input id="search" type="search" placeholder="Search title, property, fixture, or note">
+      <input id="search" type="search" placeholder="Search title, property, element, fixture, or note">
       <select id="status">
         <option value="">All statuses</option>
       </select>
@@ -325,7 +325,7 @@
             <th>Effect</th>
             <th>Owner</th>
             <th>Parity Status</th>
-            <th>Properties</th>
+            <th>Properties / Elements</th>
             <th>Fixtures</th>
             <th>Notes</th>
           </tr>
@@ -480,6 +480,7 @@
           entry.ownerArea,
           entry.parityStatus,
           ...(entry.properties || []),
+          ...(entry.elements || []),
           ...(entry.values || []),
           ...(entry.parity || []),
           ...(entry.notes || []).flatMap((note) => [note.kind, note.text]),
@@ -526,7 +527,10 @@
           <td>${badge(entry.effect, `effect-${entry.effect}`)}</td>
           <td>${badge(entry.ownerArea, 'effect-source')}</td>
           <td>${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</td>
-          <td>${chips(entry.properties || [], 12)}</td>
+          <td>
+            ${chips(entry.properties || [], 12)}
+            ${entry.elements?.length ? `<div class="id">Elements</div>${chips(entry.elements, 12)}` : ''}
+          </td>
           <td>${parity(entry.parity || [])}</td>
           <td>${notes(entry.notes || [])}</td>
         </tr>

@@ -91,11 +91,15 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
 
 export function effectiveBorderWidth(style: SupportedStyle): Edges {
   return {
-    top: style.borderStyle.top === 'none' ? 0 : style.borderWidth.top,
-    right: style.borderStyle.right === 'none' ? 0 : style.borderWidth.right,
-    bottom: style.borderStyle.bottom === 'none' ? 0 : style.borderWidth.bottom,
-    left: style.borderStyle.left === 'none' ? 0 : style.borderWidth.left,
+    top: borderStyleHasGeometry(style.borderStyle.top) ? style.borderWidth.top : 0,
+    right: borderStyleHasGeometry(style.borderStyle.right) ? style.borderWidth.right : 0,
+    bottom: borderStyleHasGeometry(style.borderStyle.bottom) ? style.borderWidth.bottom : 0,
+    left: borderStyleHasGeometry(style.borderStyle.left) ? style.borderWidth.left : 0,
   }
+}
+
+function borderStyleHasGeometry(style: SupportedStyle['borderStyle'][keyof SupportedStyle['borderStyle']]): boolean {
+  return style !== 'none' && style !== 'hidden'
 }
 
 function toTaffyDisplay(value: SupportedStyle['display']): Display {
@@ -296,7 +300,9 @@ function toTaffyJustifyContent(value: SupportedStyle['justifyContent']): Justify
   }
 }
 
-function toTaffyRect(edges: Edges): { left: number; right: number; top: number; bottom: number } {
+function toTaffyRect<Value extends number | `${number}%` | 'auto'>(
+  edges: Edges<Value>,
+): { left: Value; right: Value; top: Value; bottom: Value } {
   return {
     left: edges.left,
     right: edges.right,

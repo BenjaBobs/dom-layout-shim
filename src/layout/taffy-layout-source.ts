@@ -13,7 +13,7 @@ import type { Box } from '../geometry/box.ts'
 import type { HitBox } from '../hit-testing/hit-box.ts'
 import type { TextMeasurer } from '../text/text-measurer.ts'
 import type { LayoutSnapshot } from './layout-source.ts'
-import { createMeasureContext, measureTaffyNode } from './taffy/taffy-measure.ts'
+import { canMeasureTextLeaf, createMeasureContext, measureTaffyNode } from './taffy/taffy-measure.ts'
 import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts'
 
 type TaffyLayoutState = {
@@ -42,6 +42,8 @@ type ClipBounds = {
 }
 
 let taffyLoadPromise: Promise<unknown> | undefined
+
+const nonRenderedHtmlElements = new Set(['base', 'link', 'meta', 'script', 'style', 'template', 'title'])
 
 export async function loadTaffyBackend(): Promise<void> {
   taffyLoadPromise ??= loadTaffy()
@@ -122,7 +124,7 @@ function buildNode(element: Element, state: TaffyLayoutState): bigint | undefine
     return undefined
   }
 
-  const children = buildChildNodes(element, state)
+  const children = canMeasureTextLeaf(element) ? [] : buildChildNodes(element, state)
   const context = createMeasureContext(element, style, state.textMeasurer)
   const taffyStyle = toTaffyStyle(style, context)
   const node =
@@ -266,10 +268,7 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
 }
 
 function elementChildren(parent: Element): Element[] {
-  return Array.from(parent.children).filter((element) => {
-    const tagName = element.tagName.toLowerCase()
-    return tagName !== 'script' && tagName !== 'style'
-  })
+  return Array.from(parent.children).filter((element) => !isNonRenderedHtmlElement(element))
 }
 
 function orderedElementChildren(parent: Element, state: TaffyLayoutState): Element[] {
@@ -286,6 +285,10 @@ function orderedElementChildren(parent: Element, state: TaffyLayoutState): Eleme
 
 function isHidden(element: Element): boolean {
   return element.hasAttribute('hidden')
+}
+
+function isNonRenderedHtmlElement(element: Element): boolean {
+  return nonRenderedHtmlElements.has(element.tagName.toLowerCase())
 }
 
 function horizontal(edges: Edges): number {

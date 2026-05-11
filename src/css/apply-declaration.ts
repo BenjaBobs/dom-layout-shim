@@ -3,6 +3,7 @@ import type {
   AlignContentValue,
   AlignItemsValue,
   AlignSelfValue,
+  BorderStyleValue,
   BorderStyles,
   Edges,
   FlexWrapValue,
@@ -12,6 +13,7 @@ import type {
   GridTemplateTrack,
   GridTrack,
   JustifyContentValue,
+  MarginValue,
   OverflowValue,
   SupportedDimension,
   SupportedStyle,
@@ -34,8 +36,6 @@ export type {
   SupportedDimension,
   SupportedStyle,
 } from './supported-style.ts'
-
-type BorderStyleValue = BorderStyles[keyof BorderStyles]
 
 export type DeclarationContext = {
   policy?: UnsupportedCssPolicy
@@ -246,15 +246,7 @@ export function applyDeclaration(
       )
       return
     case 'visibility':
-      applyKeyword(
-        style,
-        'visibility',
-        normalizedValue,
-        ['visible', 'hidden'],
-        normalizedProperty,
-        value,
-        context,
-      )
+      applyVisibility(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'overflow':
       applyOverflow(style, normalizedValue, normalizedProperty, value, context)
@@ -264,22 +256,24 @@ export function applyDeclaration(
         style,
         'overflowX',
         normalizedValue,
-        ['visible', 'hidden', 'clip'],
+        ['visible', 'hidden', 'clip', 'auto', 'scroll'],
         normalizedProperty,
         value,
         context,
       )
+      normalizeOverflowAxes(style)
       return
     case 'overflow-y':
       applyKeyword(
         style,
         'overflowY',
         normalizedValue,
-        ['visible', 'hidden', 'clip'],
+        ['visible', 'hidden', 'clip', 'auto', 'scroll'],
         normalizedProperty,
         value,
         context,
       )
+      normalizeOverflowAxes(style)
       return
     case 'opacity':
       applyOpacity(normalizedValue, normalizedProperty, value, context)
@@ -367,6 +361,9 @@ export function applyDeclaration(
     case 'filter':
     case 'backdrop-filter':
       applyVisualFilter(normalizedValue, normalizedProperty, value, context)
+      return
+    case 'transform':
+      applyTransform(normalizedValue, normalizedProperty, value, context)
       return
     case 'transform-origin':
       applyTransformOrigin(normalizedValue, normalizedProperty, value, context)
@@ -460,6 +457,25 @@ export function applyDeclaration(
         context,
       )
       return
+    case 'direction':
+      applyKeywordOnly(normalizedValue, ['ltr'], normalizedProperty, value, context)
+      return
+    case 'writing-mode':
+      applyKeywordOnly(normalizedValue, ['horizontal-tb'], normalizedProperty, value, context)
+      return
+    case 'float':
+    case 'clear':
+      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
+      return
+    case 'contain':
+      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
+      return
+    case 'container-type':
+      applyKeywordOnly(normalizedValue, ['normal'], normalizedProperty, value, context)
+      return
+    case 'container-name':
+      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
+      return
     case 'inline-size':
       applyLength(style, 'width', normalizedValue, normalizedProperty, value, context)
       return
@@ -523,58 +539,58 @@ export function applyDeclaration(
       applyZIndex(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'padding':
-      applyEdges(style.padding, normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdges(style.padding, normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-inline':
-      applyLogicalEdges(style.padding, 'inline', normalizedValue, normalizedProperty, value, context, parsePxLength)
+      applyLogicalPaddingEdges(style.padding, 'inline', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-block':
-      applyLogicalEdges(style.padding, 'block', normalizedValue, normalizedProperty, value, context, parsePxLength)
+      applyLogicalPaddingEdges(style.padding, 'block', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-inline-start':
-      applyEdge(style.padding, 'left', normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdge(style.padding, 'left', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-inline-end':
-      applyEdge(style.padding, 'right', normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdge(style.padding, 'right', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-block-start':
-      applyEdge(style.padding, 'top', normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdge(style.padding, 'top', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-block-end':
-      applyEdge(style.padding, 'bottom', normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdge(style.padding, 'bottom', normalizedValue, normalizedProperty, value, context)
       return
     case 'padding-top':
     case 'padding-right':
     case 'padding-bottom':
     case 'padding-left':
-      applyEdge(style.padding, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
+      applyPaddingEdge(style.padding, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
       return
     case 'margin':
-      applyEdges(style.margin, normalizedValue, normalizedProperty, value, context)
+      applyMarginEdges(style.margin, normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-inline':
-      applyLogicalEdges(style.margin, 'inline', normalizedValue, normalizedProperty, value, context, parsePxLength)
+      applyLogicalMarginEdges(style.margin, 'inline', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-block':
-      applyLogicalEdges(style.margin, 'block', normalizedValue, normalizedProperty, value, context, parsePxLength)
+      applyLogicalMarginEdges(style.margin, 'block', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-inline-start':
-      applyEdge(style.margin, 'left', normalizedValue, normalizedProperty, value, context)
+      applyMarginEdge(style.margin, 'left', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-inline-end':
-      applyEdge(style.margin, 'right', normalizedValue, normalizedProperty, value, context)
+      applyMarginEdge(style.margin, 'right', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-block-start':
-      applyEdge(style.margin, 'top', normalizedValue, normalizedProperty, value, context)
+      applyMarginEdge(style.margin, 'top', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-block-end':
-      applyEdge(style.margin, 'bottom', normalizedValue, normalizedProperty, value, context)
+      applyMarginEdge(style.margin, 'bottom', normalizedValue, normalizedProperty, value, context)
       return
     case 'margin-top':
     case 'margin-right':
     case 'margin-bottom':
     case 'margin-left':
-      applyEdge(style.margin, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
+      applyMarginEdge(style.margin, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
       return
     case 'gap':
       applyGap(style, normalizedValue, normalizedProperty, value, context)
@@ -676,7 +692,7 @@ export function applyDeclaration(
         style,
         'whiteSpace',
         normalizedValue,
-        ['normal', 'pre-wrap', 'nowrap'],
+        ['normal', 'pre', 'pre-line', 'pre-wrap', 'nowrap'],
         normalizedProperty,
         value,
         context,
@@ -858,10 +874,22 @@ function applyLineHeight(
   originalValue: string,
   context: DeclarationContext,
 ): void {
+  if (value === 'normal') {
+    style.lineHeight = style.fontSize * 1.2
+    return
+  }
+
   const pxLength = parsePxLength(value)
 
   if (pxLength !== undefined && pxLength >= 0) {
     style.lineHeight = pxLength
+    return
+  }
+
+  const percentage = parsePercentage(value)
+
+  if (percentage !== undefined && percentage >= 0) {
+    style.lineHeight = (percentage / 100) * style.fontSize
     return
   }
 
@@ -908,6 +936,7 @@ function applyOverflow(
   if (isOverflowValue(x) && isOverflowValue(y)) {
     style.overflowX = x
     style.overflowY = y
+    normalizeOverflowAxes(style)
     return
   }
 
@@ -922,7 +951,56 @@ function applyOverflow(
 }
 
 function isOverflowValue(value: string | undefined): value is OverflowValue {
-  return value === 'visible' || value === 'hidden' || value === 'clip'
+  return (
+    value === 'visible' ||
+    value === 'hidden' ||
+    value === 'clip' ||
+    value === 'auto' ||
+    value === 'scroll'
+  )
+}
+
+function applyVisibility(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'visible' || value === 'hidden') {
+    style.visibility = value
+    return
+  }
+
+  if (value === 'collapse') {
+    style.visibility = 'hidden'
+    return
+  }
+
+  handleUnsupportedCss(context.policy, {
+    property,
+    value: originalValue,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  })
+}
+
+function normalizeOverflowAxes(style: SupportedStyle): void {
+  // Browsers compute visible to auto when the opposite axis clips overflow.
+  // This matters here because hit boxes use the computed overflow axes as clipping flags.
+  if (style.overflowX === 'visible' && isClippingOverflow(style.overflowY)) {
+    style.overflowX = 'auto'
+  }
+
+  if (style.overflowY === 'visible' && isClippingOverflow(style.overflowX)) {
+    style.overflowY = 'auto'
+  }
+}
+
+function isClippingOverflow(value: OverflowValue): boolean {
+  return value === 'hidden' || value === 'auto' || value === 'scroll'
 }
 
 function applyOpacity(
@@ -1521,6 +1599,26 @@ function applyVisualFilter(
   })
 }
 
+function applyTransform(
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'none' || value === '[]') {
+    return
+  }
+
+  handleUnsupportedCss(context.policy, {
+    property,
+    value: originalValue,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  })
+}
+
 function parseVisualFilter(value: string): boolean {
   if (value.includes('url(')) {
     return false
@@ -1928,14 +2026,14 @@ function isVisualColorToken(value: string): boolean {
   )
 }
 
-function applyEdges(
-  edges: Edges,
+function applyPaddingEdges(
+  edges: Edges<SupportedDimension>,
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context)
+  const lengths = parseEdgeLengths(value, property, originalValue, context, parsePxPaddingLength)
 
   if (!lengths) {
     return
@@ -1947,15 +2045,61 @@ function applyEdges(
   edges.left = lengths.left
 }
 
-function applyEdge(
-  edges: Edges,
+function applyPaddingEdge(
+  edges: Edges<SupportedDimension>,
   edge: keyof Edges,
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parsePxLength(value)
+  const length = edge === 'left' || edge === 'right'
+    ? parseInlinePaddingLength(value)
+    : parsePxPaddingLength(value)
+
+  if (length === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  edges[edge] = length
+}
+
+function applyMarginEdges(
+  edges: Edges<MarginValue>,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const lengths = parseEdgeLengths(value, property, originalValue, context, parseMarginLength)
+
+  if (!lengths) {
+    return
+  }
+
+  edges.top = lengths.top
+  edges.right = lengths.right
+  edges.bottom = lengths.bottom
+  edges.left = lengths.left
+}
+
+function applyMarginEdge(
+  edges: Edges<MarginValue>,
+  edge: keyof Edges,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const length = parseMarginLength(value)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -1991,14 +2135,14 @@ function applyBorderWidths(
   edges.left = lengths.left
 }
 
-function applyLogicalEdges(
-  edges: Edges,
+function applyLogicalEdges<Value>(
+  edges: Edges<Value>,
   axis: 'inline' | 'block',
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
-  parseLength: (value: string) => number | undefined,
+  parseLength: (value: string) => Value | undefined,
 ): void {
   const parts = value.split(/\s+/).filter(Boolean)
 
@@ -2037,6 +2181,36 @@ function applyLogicalEdges(
 
   edges.top = start
   edges.bottom = end
+}
+
+function applyLogicalMarginEdges(
+  edges: Edges<MarginValue>,
+  axis: 'inline' | 'block',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  applyLogicalEdges(edges, axis, value, property, originalValue, context, parseMarginLength)
+}
+
+function applyLogicalPaddingEdges(
+  edges: Edges<SupportedDimension>,
+  axis: 'inline' | 'block',
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  applyLogicalEdges(
+    edges,
+    axis,
+    value,
+    property,
+    originalValue,
+    context,
+    axis === 'inline' ? parseInlinePaddingLength : parsePxPaddingLength,
+  )
 }
 
 function applyBorderWidthEdge(
@@ -2915,7 +3089,7 @@ function applyGap(
     return
   }
 
-  const [rowGap, columnGap = rowGap] = lengths as number[]
+  const [rowGap, columnGap = rowGap] = lengths as SupportedDimension[]
   style.rowGap = rowGap
   style.columnGap = columnGap
 }
@@ -2957,8 +3131,20 @@ function setInsetSide(
   style[key] = value === 'auto' ? undefined : value
 }
 
-function parseGapLength(value: string): number | undefined {
-  return value === 'normal' ? 0 : parseNonNegativePxLength(value)
+function parseGapLength(value: string): SupportedDimension | undefined {
+  return value === 'normal' ? 0 : parseNonNegativeDimension(value)
+}
+
+function parseInlinePaddingLength(value: string): SupportedDimension | undefined {
+  return parsePxPaddingLength(value)
+}
+
+function parsePxPaddingLength(value: string): number | undefined {
+  return parseNonNegativePxLength(value)
+}
+
+function parseMarginLength(value: string): MarginValue | undefined {
+  return value === 'auto' ? 'auto' : parseDimension(value)
 }
 
 function applyBorderStyles(
@@ -3032,7 +3218,7 @@ function applyBorderStyle(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (value === 'none' || value === 'solid') {
+  if (isSupportedBorderStyle(value)) {
     styles[edge] = value
     return
   }
@@ -3099,17 +3285,13 @@ function parseBorderShorthand(value: string): { width: number; style: BorderStyl
       continue
     }
 
-    if (part === 'none' || part === 'solid') {
+    if (isSupportedBorderStyle(part)) {
       if (style !== undefined) {
         return undefined
       }
 
       style = part
       continue
-    }
-
-    if (isUnsupportedKnownBorderStyle(part)) {
-      return undefined
     }
 
     // Border color has no effect on layout or hit testing, so recognized color-like
@@ -3138,11 +3320,13 @@ function parseBorderWidth(value: string): number | undefined {
   }
 }
 
-function isUnsupportedKnownBorderStyle(value: string): boolean {
+function isSupportedBorderStyle(value: string): value is BorderStyleValue {
   return [
+    'none',
     'hidden',
     'dotted',
     'dashed',
+    'solid',
     'double',
     'groove',
     'ridge',
@@ -3262,13 +3446,13 @@ function parsePositiveNumber(value: string): number | undefined {
   return Number.isFinite(number) && number > 0 ? number : undefined
 }
 
-function parseEdgeLengths(
+function parseEdgeLengths<Value = number>(
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
-  parseLength: (value: string) => number | undefined = parsePxLength,
-): Edges | undefined {
+  parseLength: (value: string) => Value | undefined = parsePxLength as (value: string) => Value | undefined,
+): Edges<Value> | undefined {
   const parts = value.split(/\s+/).filter(Boolean)
 
   if (parts.length < 1 || parts.length > 4) {
@@ -3297,7 +3481,7 @@ function parseEdgeLengths(
     return undefined
   }
 
-  const [top, right = top, bottom = top, left = right] = lengths as number[]
+  const [top, right = top, bottom = top, left = right] = lengths as Value[]
   return { top, right, bottom, left }
 }
 

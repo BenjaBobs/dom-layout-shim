@@ -34,6 +34,7 @@ it('visual-only properties do not change layout or pointer targeting', async () 
           outline: 4px dashed currentColor;
           outline-offset: 3px;
           text-decoration: underline wavy red 2px;
+          transform: none;
           transform-origin: center top;
           will-change: transform, opacity;
           appearance: none;

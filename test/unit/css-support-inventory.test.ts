@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { cssSupportInventory, getInventoriedCssProperties } from '../../src/index.ts'
+import { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from '../../src/index.ts'
 
 describe('CSS support inventory', () => {
   it('tracks every declaration property handled by applyDeclaration', () => {
@@ -19,6 +19,48 @@ describe('CSS support inventory', () => {
     )
 
     expect(missing).toEqual([])
+  })
+
+  it('tracks major HTML element layout categories', () => {
+    const inventoried = new Set(getInventoriedHtmlElements())
+    const expected = [
+      'a',
+      'base',
+      'body',
+      'button',
+      'canvas',
+      'div',
+      'fieldset',
+      'form',
+      'h1',
+      'html',
+      'img',
+      'input',
+      'li',
+      'link',
+      'meta',
+      'ol',
+      'p',
+      'select',
+      'span',
+      'script',
+      'style',
+      'svg',
+      'table',
+      'tbody',
+      'td',
+      'textarea',
+      'tfoot',
+      'th',
+      'thead',
+      'title',
+      'tr',
+      'ul',
+      'template',
+      'video',
+    ]
+
+    expect(expected.filter((element) => !inventoried.has(element))).toEqual([])
   })
 
   it('does not list the same implemented property in multiple active entries', () => {

@@ -3,7 +3,7 @@ export type { AttachLayoutEngineOptions } from './engine/attach-layout-engine.ts
 export type { LayoutEngineConfig, Viewport } from './engine/layout-engine-config.ts'
 export { debugLayout } from './attachment/patch-dom-apis.ts'
 export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './css/unsupported-css-policy.ts'
-export { cssSupportInventory, getInventoriedCssProperties } from './css/css-support-inventory.ts'
+export { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from './css/css-support-inventory.ts'
 export type {
   CssSupportEffect,
   CssSupportEntry,
