@@ -9,7 +9,7 @@ when the runtime supports canvas measurement. DOM API patching and hit testing
 are derived from the resulting layout snapshot.
 
 ```ts
-import { attachLayoutEngine } from 'test-layout'
+import { attachLayoutEngine, expectReceivesPointer, guardedClick } from 'test-layout'
 
 await attachLayoutEngine({
   window,
@@ -22,6 +22,9 @@ const button = document.getElementById('save')!
 const rect = button.getBoundingClientRect()
 const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
 const clickable = top === button || Boolean(top && button.contains(top))
+
+expectReceivesPointer(button)
+guardedClick(button)
 ```
 
 The current implementation uses Lightning CSS for `<style>` parsing and supports

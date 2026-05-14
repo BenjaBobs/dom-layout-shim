@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { Window } from 'happy-dom'
 import { attachLayoutEngine } from '../../src/index.ts'
-import { attach, receivesPointerAtCenter, requiredElement, waitForMutationDelivery } from './layout-engine-helpers.ts'
+import { attach, expectRect, receivesPointerAtCenter, requiredElement, waitForMutationDelivery } from './layout-engine-helpers.ts'
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -90,6 +90,84 @@ describe('layout invalidation and isolation', () => {
     await waitForMutationDelivery()
 
     expect(receivesPointerAtCenter(requiredElement('#save'))).toBe(false)
+  })
+
+  it('recomputes viewport geometry when element scroll offsets change', async () => {
+    document.body.innerHTML = `
+      <div id="scroller" style="position:relative; left:10px; top:20px; width:100px; height:60px; overflow:auto">
+        <div style="height:160px"></div>
+        <div id="target" style="position:absolute; left:20px; top:70px; width:50px; height:30px"></div>
+      </div>
+    `
+
+    await attach({ viewport: { width: 260, height: 180 } })
+    expectRect(requiredElement('#target').getBoundingClientRect(), {
+      left: 30,
+      top: 90,
+      width: 50,
+      height: 30,
+    })
+
+    requiredElement('#scroller').scrollTop = 40
+
+    expectRect(requiredElement('#target').getBoundingClientRect(), {
+      left: 30,
+      top: 50,
+      width: 50,
+      height: 30,
+    })
+  })
+
+  it('marks layout dirty when details open state changes', async () => {
+    document.body.innerHTML = `
+      <details id="panel">
+        <summary id="summary" style="width:100px; height:20px"></summary>
+        <div id="content" style="width:80px; height:30px"></div>
+      </details>
+      <div id="after" style="width:50px; height:10px"></div>
+    `
+
+    await attach({ viewport: { width: 300, height: 200 } })
+    expectRect(requiredElement('#after').getBoundingClientRect(), {
+      left: 0,
+      top: 20,
+      width: 50,
+      height: 10,
+    })
+
+    requiredElement('#panel').setAttribute('open', '')
+    await waitForMutationDelivery()
+
+    expectRect(requiredElement('#after').getBoundingClientRect(), {
+      left: 0,
+      top: 50,
+      width: 50,
+      height: 10,
+    })
+  })
+
+  it('marks layout dirty when dialog open state changes', async () => {
+    document.body.innerHTML = `
+      <dialog id="dialog" style="width:100px; height:40px; margin:0; padding:0; border-width:0; border-style:none"></dialog>
+    `
+
+    await attach({ viewport: { width: 300, height: 200 } })
+    expectRect(requiredElement('#dialog').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    })
+
+    requiredElement('#dialog').setAttribute('open', '')
+    await waitForMutationDelivery()
+
+    expectRect(requiredElement('#dialog').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 40,
+    })
   })
 
   it('isolates layout attachments by happy-dom window', async () => {

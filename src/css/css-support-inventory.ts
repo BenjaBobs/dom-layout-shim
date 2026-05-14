@@ -62,8 +62,20 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'taffy-adapter',
     parityStatus: 'partial',
     properties: ['display'],
-    values: ['block', 'inline', 'inline-block', 'flow-root', 'list-item', 'flex', 'inline-flex', 'grid', 'inline-grid', 'none'],
-    parity: ['display-aliases', 'display-none', 'static-block-flow', 'flex-row', 'grid-explicit-tracks'],
+    values: [
+      'block',
+      'inline',
+      'inline-block',
+      'flow-root',
+      'list-item',
+      'flex',
+      'inline-flex',
+      'grid',
+      'inline-grid',
+      'contents',
+      'none',
+    ],
+    parity: ['display-aliases', 'display-contents', 'display-none', 'static-block-flow', 'flex-row', 'grid-explicit-tracks'],
     notes: [
       {
         kind: 'taffy-compat',
@@ -72,6 +84,10 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       {
         kind: 'limitation',
         text: 'Inline formatting and list marker layout are not modeled.',
+      },
+      {
+        kind: 'browser-parity',
+        text: 'display: contents has parity coverage for parent box removal plus block and flex child flattening.',
       },
     ],
   },
@@ -101,6 +117,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     parity: [
       'absolute-overlap',
       'absolute-positioned-containing-block',
+      'fixed-inside-scrolled-ancestor',
       'fixed-inset-full-viewport',
       'inset-two-value-shorthand',
       'relative-offset-flow',
@@ -110,7 +127,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, opposing insets, and z-index ordering have parity fixtures.',
+        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, opposing insets, and z-index ordering have parity fixtures.',
       },
       {
         kind: 'taffy-compat',
@@ -422,15 +439,31 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'summary',
       'dialog',
     ],
-    parity: ['hidden-attribute', 'static-block-flow', 'static-pre-wrap-text-lines'],
+    parity: [
+      'details-summary-defaults',
+      'dialog-html-defaults',
+      'generic-html-defaults',
+      'hidden-attribute',
+      'hr-html-defaults',
+      'static-block-flow',
+      'static-pre-wrap-text-lines',
+    ],
     notes: [
       {
         kind: 'implementation-quirk',
-        text: 'The layout tree treats ordinary elements with the same default block style unless author CSS overrides them.',
+        text: 'The layout tree treats ordinary elements with the same default block style unless author CSS overrides them; p, headings, blockquote, and pre receive a narrow set of UA text metrics and spacing defaults.',
       },
       {
         kind: 'limitation',
-        text: 'Browser UA stylesheet defaults such as margins, heading font sizes, hr sizing, dialog positioning, and details disclosure behavior are not modeled.',
+        text: 'Heading subpixel margin positions are rounded by the Taffy collection path; native dialog centering, modal top-layer behavior, and backdrops are not modeled.',
+      },
+      {
+        kind: 'browser-parity',
+        text: 'Paragraph, blockquote, pre, hr, details/summary, and basic dialog open/closed native behavior have parity coverage in non-collapsing block flow; author CSS reset behavior is also covered.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Closed details content is suppressed from layout and hit testing; Chromium still exposes non-zero rects for the suppressed descendants, which this engine does not model.',
       },
     ],
   },
@@ -488,16 +521,21 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
   {
     id: 'list-html-elements',
     title: 'List HTML elements',
-    status: 'todo',
+    status: 'partial',
     effect: 'layout',
     ownerArea: 'taffy-adapter',
-    parityStatus: 'missing',
+    parityStatus: 'partial',
     properties: [],
+    parity: ['list-html-defaults'],
     elements: ['ul', 'ol', 'li', 'dl', 'dt', 'dd', 'menu'],
     notes: [
       {
-        kind: 'todo',
-        text: 'Native list display defaults, marker boxes, list indentation, and definition-list flow are not modeled.',
+        kind: 'browser-parity',
+        text: 'Native ul/ol/menu block margins, inline-start padding, and dd indentation have parity coverage.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Marker boxes, marker painting, list-style-position, and browser margin collapse are not modeled.',
       },
     ],
   },
@@ -532,11 +570,12 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
   {
     id: 'form-html-elements',
     title: 'Form and interactive HTML elements',
-    status: 'todo',
+    status: 'partial',
     effect: 'layout',
     ownerArea: 'taffy-adapter',
-    parityStatus: 'missing',
+    parityStatus: 'partial',
     properties: [],
+    parity: ['form-control-intrinsic-defaults'],
     elements: [
       'button',
       'input',
@@ -553,8 +592,16 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ],
     notes: [
       {
-        kind: 'todo',
-        text: 'Native control intrinsic sizes, anonymous boxes, fieldset and legend layout, replaced input behavior, and form-control UA defaults are not modeled.',
+        kind: 'browser-parity',
+        text: 'button, input text-like controls, checkbox, radio, range, textarea, and select intrinsic sizes have parity coverage when author CSS blockifies them.',
+      },
+      {
+        kind: 'implementation-quirk',
+        text: 'Common form controls are measured as replaced leaves so option children and anonymous control internals do not participate in the layout tree.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Inline form-control formatting, fieldset and legend layout, option popup layout, placeholder text, and most control-specific UA styling are not modeled.',
       },
     ],
   },
@@ -567,11 +614,19 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     parityStatus: 'covered',
     properties: ['pointer-events', 'visibility', 'overflow', 'overflow-x', 'overflow-y'],
     values: ['auto', 'none', 'visible', 'hidden', 'collapse', 'clip', 'scroll'],
-    parity: ['center-click-blocked-by-overlay', 'elements-from-point-order', 'overflow-clipping', 'pointer-events-none', 'visibility-hidden'],
+    parity: [
+      'center-click-blocked-by-overlay',
+      'element-scroll-offsets',
+      'elements-from-point-order',
+      'overflow-clipping',
+      'pointer-events-none',
+      'visibility-hidden',
+      'window-scroll-offsets',
+    ],
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Point query ordering, pointer-events none, visibility hidden, center blocking, and overflow clipping have parity fixtures.',
+        text: 'Point query ordering, pointer-events none, visibility hidden, center blocking, overflow clipping, element scroll offsets, and window scroll offsets have parity fixtures.',
       },
       {
         kind: 'behavior-quirk',

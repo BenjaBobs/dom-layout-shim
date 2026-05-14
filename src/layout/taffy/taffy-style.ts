@@ -108,6 +108,8 @@ function toTaffyDisplay(value: SupportedStyle['display']): Display {
       return Display.Flex
     case 'grid':
       return Display.Grid
+    case 'contents':
+      return Display.Block
     case 'none':
       return Display.None
     default:

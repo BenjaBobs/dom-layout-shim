@@ -818,6 +818,9 @@ function applyDisplay(
     case 'list-item':
       style.display = 'block'
       return
+    case 'contents':
+      style.display = 'contents'
+      return
     case 'flex':
     case 'inline-flex':
       style.display = 'flex'

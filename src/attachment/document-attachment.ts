@@ -3,7 +3,7 @@ import type { Viewport } from '../engine/layout-engine-config.ts'
 import { createDomRect } from '../geometry/dom-rect.ts'
 import { zeroBox } from '../geometry/box.ts'
 import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testing/point-query.ts'
-import type { LayoutSnapshot } from '../layout/layout-source.ts'
+import type { LayoutSnapshot, ScrollOffset } from '../layout/layout-source.ts'
 import { computeTaffyDocumentLayout } from '../layout/taffy-layout-source.ts'
 import type { TextMeasurer } from '../text/text-measurer.ts'
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
@@ -26,6 +26,7 @@ export class DocumentAttachment {
   private dirty = true
   private detached = false
   private snapshot: LayoutSnapshot | undefined
+  private snapshotScroll: ScrollOffset | undefined
   private mutationObserver: MutationObserver | undefined
 
   constructor(options: DocumentAttachmentOptions) {
@@ -58,13 +59,17 @@ export class DocumentAttachment {
 
   recompute(): void {
     this.assertAttached()
+    const scroll = readScrollOffset(this.document)
+
     this.snapshot = computeTaffyDocumentLayout(
       this.document,
       this.viewport,
+      scroll,
       this.unsupportedCss,
       this.textMeasurer,
       this.stylesheets,
     )
+    this.snapshotScroll = scroll
     this.dirty = false
   }
 
@@ -111,7 +116,7 @@ export class DocumentAttachment {
         const label = describeElement(box.element)
         const blocker = findCenterBlocker(box.element, box, snapshot.boxes)
         const blockedBy = blocker ? ` BLOCKED_BY=${describeElement(blocker)}` : ''
-        return `${label} x=${box.x} y=${box.y} w=${box.width} h=${box.height} z=${box.zIndex}${blockedBy}`
+        return `${label} x=${formatNumber(box.x)} y=${formatNumber(box.y)} w=${formatNumber(box.width)} h=${formatNumber(box.height)} z=${box.zIndex} pe=${box.pointerEvents} visibility=${box.visibility}${blockedBy}`
       })
       .join('\n')
   }
@@ -119,7 +124,12 @@ export class DocumentAttachment {
   private getSnapshot(): LayoutSnapshot {
     this.assertAttached()
 
-    if (this.dirty || !this.snapshot) {
+    if (
+      this.dirty ||
+      !this.snapshot ||
+      !sameScrollOffset(this.snapshotScroll, readScrollOffset(this.document)) ||
+      hasElementScrollChanged(this.snapshot.elementScrolls)
+    ) {
       this.recompute()
     }
 
@@ -137,6 +147,29 @@ export class DocumentAttachment {
       throw new Error('Cannot use a detached layout engine attachment')
     }
   }
+}
+
+function readScrollOffset(document: Document): ScrollOffset {
+  const view = document.defaultView
+
+  return {
+    x: view?.scrollX ?? document.documentElement?.scrollLeft ?? 0,
+    y: view?.scrollY ?? document.documentElement?.scrollTop ?? 0,
+  }
+}
+
+function sameScrollOffset(a: ScrollOffset | undefined, b: ScrollOffset): boolean {
+  return Boolean(a && a.x === b.x && a.y === b.y)
+}
+
+function hasElementScrollChanged(scrolls: ReadonlyMap<Element, ScrollOffset>): boolean {
+  for (const [element, scroll] of scrolls) {
+    if (!sameScrollOffset(scroll, { x: element.scrollLeft, y: element.scrollTop })) {
+      return true
+    }
+  }
+
+  return false
 }
 
 function roundCssPixel(value: number): number {
@@ -161,6 +194,10 @@ function describeElement(element: Element): string {
       : ''
 
   return `${element.tagName.toLowerCase()}${id}${className}`
+}
+
+function formatNumber(value: number): string {
+  return Object.is(value, -0) ? '0' : String(Number(value.toFixed(4)))
 }
 
 function observeMutations(document: Document, markDirty: () => void): MutationObserver | undefined {

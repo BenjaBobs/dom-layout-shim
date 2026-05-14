@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { debugLayout } from '../../src/index.ts'
+import { debugLayout, expectBlockedBy, expectReceivesPointer, guardedClick } from '../../src/index.ts'
 import { attach, expectRect, receivesPointerAtCenter, requiredElement } from './layout-engine-helpers.ts'
 
 afterEach(() => {
@@ -148,7 +148,55 @@ describe('layout geometry and DOM API attachment', () => {
 
     await attach()
 
-    expect(debugLayout(window)).toContain('button#save x=10 y=10 w=100 h=40 z=0 BLOCKED_BY=div#overlay')
+    expect(debugLayout(window)).toContain('button#save x=10 y=10 w=100 h=40 z=0 pe=auto visibility=visible BLOCKED_BY=div#overlay')
+  })
+
+  it('asserts pointer reachability with debug output on failure', async () => {
+    document.body.innerHTML = `
+      <button id="save" style="position:absolute; left:10px; top:10px; width:100px; height:40px"></button>
+      <div id="overlay" style="position:absolute; inset:0; z-index:10"></div>
+    `
+
+    await attach()
+
+    expect(() => expectReceivesPointer(requiredElement('#overlay'))).not.toThrow()
+    expect(() => expectReceivesPointer(requiredElement('#save'))).toThrow(/Top element: div#overlay/)
+    expect(() => expectReceivesPointer(requiredElement('#save'))).toThrow(/Layout debug:/)
+  })
+
+  it('asserts center blockers and returns the blocking element', async () => {
+    document.body.innerHTML = `
+      <button id="save" style="position:absolute; left:10px; top:10px; width:100px; height:40px"></button>
+      <div id="overlay" style="position:absolute; inset:0; z-index:10"></div>
+    `
+
+    await attach()
+
+    expect(expectBlockedBy(requiredElement('#save'))).toBe(requiredElement('#overlay'))
+    expect(() => expectBlockedBy(requiredElement('#save'), requiredElement('#overlay'))).not.toThrow()
+    expect(() => expectBlockedBy(requiredElement('#overlay'))).toThrow(/Expected div#overlay to be blocked/)
+  })
+
+  it('guards click dispatch with pointer reachability', async () => {
+    let clicks = 0
+    document.body.innerHTML = `
+      <button id="save" style="position:absolute; left:10px; top:10px; width:100px; height:40px"></button>
+      <div id="overlay" style="position:absolute; inset:0; z-index:10"></div>
+    `
+    requiredElement('#save').addEventListener('click', () => {
+      clicks += 1
+    })
+
+    await attach()
+
+    expect(() => guardedClick(requiredElement('#save') as HTMLElement)).toThrow(/Top element: div#overlay/)
+    expect(clicks).toBe(0)
+
+    requiredElement('#overlay').setAttribute('style', 'display:none')
+    await Promise.resolve()
+
+    guardedClick(requiredElement('#save') as HTMLElement)
+    expect(clicks).toBe(1)
   })
 
   it('computes right and bottom positioned boxes', async () => {
@@ -191,6 +239,30 @@ describe('layout geometry and DOM API attachment', () => {
     expect(rect.top).toBe(0)
     expect(rect.width).toBe(0)
     expect(rect.height).toBe(0)
+  })
+
+  it('returns a zero rect for display contents while preserving child layout', async () => {
+    document.body.innerHTML = `
+      <div id="contents" style="display:contents; width:100px; height:100px">
+        <div id="child" style="width:40px; height:20px"></div>
+      </div>
+    `
+
+    await attach()
+
+    expectRect(requiredElement('#contents').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    })
+    expectRect(requiredElement('#child').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 40,
+      height: 20,
+    })
+    expect(document.elementFromPoint(10, 10)).toBe(requiredElement('#child'))
   })
 
   it('throws on unsupported display values by default', async () => {
@@ -356,6 +428,115 @@ describe('layout geometry and DOM API attachment', () => {
     })
   })
 
+  it('applies native list spacing before author CSS overrides it', async () => {
+    document.body.innerHTML = `
+      <ul id="native">
+        <li id="native-item" style="width:50px; height:20px"></li>
+      </ul>
+      <ul id="reset" style="margin:0; padding:0">
+        <li id="reset-item" style="width:50px; height:20px"></li>
+      </ul>
+    `
+
+    await attach({ viewport: { width: 300, height: 200 } })
+
+    expectRect(requiredElement('#native-item').getBoundingClientRect(), {
+      left: 40,
+      top: 16,
+      width: 50,
+      height: 20,
+    })
+    expectRect(requiredElement('#reset-item').getBoundingClientRect(), {
+      left: 0,
+      top: 52,
+      width: 50,
+      height: 20,
+    })
+  })
+
+  it('applies native text block spacing and heading metrics before author CSS overrides them', async () => {
+    document.body.innerHTML = `
+      <div id="host" style="padding:1px">
+        <p id="paragraph" style="width:100px">Hello</p>
+        <h1 id="heading" style="width:100px">Hello</h1>
+        <pre id="pre" style="width:100px">Hello</pre>
+        <p id="reset" style="margin:0; width:100px; font-size:20px; line-height:30px">Hello</p>
+      </div>
+    `
+
+    await attach({ viewport: { width: 500, height: 400 } })
+
+    expectRect(requiredElement('#paragraph').getBoundingClientRect(), {
+      left: 1,
+      top: 17,
+      width: 100,
+      height: 20,
+    })
+    expectRect(requiredElement('#heading').getBoundingClientRect(), {
+      left: 1,
+      top: 58,
+      width: 100,
+      height: 40,
+    })
+    expectRect(requiredElement('#pre').getBoundingClientRect(), {
+      left: 1,
+      top: 120,
+      width: 100,
+      height: 17,
+    })
+    expectRect(requiredElement('#reset').getBoundingClientRect(), {
+      left: 1,
+      top: 150,
+      width: 100,
+      height: 30,
+    })
+  })
+
+  it('applies native hr border and margin defaults before author CSS overrides them', async () => {
+    document.body.innerHTML = `
+      <div id="before" style="width:30px; height:10px"></div>
+      <hr id="native">
+      <hr id="reset" style="margin:0; width:100px">
+    `
+
+    await attach({ viewport: { width: 300, height: 200 } })
+
+    expectRect(requiredElement('#native').getBoundingClientRect(), {
+      left: 0,
+      top: 18,
+      width: 300,
+      height: 2,
+    })
+    expectRect(requiredElement('#reset').getBoundingClientRect(), {
+      left: 0,
+      top: 28,
+      width: 102,
+      height: 2,
+    })
+  })
+
+  it('hides closed dialogs by default while allowing author display overrides', async () => {
+    document.body.innerHTML = `
+      <dialog id="closed" style="width:100px; height:40px; margin:0; padding:0; border-width:0; border-style:none"></dialog>
+      <dialog id="forced" style="display:block; width:80px; height:30px; margin:0; padding:0; border-width:0; border-style:none"></dialog>
+    `
+
+    await attach({ viewport: { width: 300, height: 200 } })
+
+    expectRect(requiredElement('#closed').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    })
+    expectRect(requiredElement('#forced').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 80,
+      height: 30,
+    })
+  })
+
   it('lays out static children inside parent padding and borders', async () => {
     document.body.innerHTML = `
       <div id="parent" style="width:100px; padding:10px; border-style:solid; border-width:2px">
@@ -485,6 +666,49 @@ describe('layout geometry and DOM API attachment', () => {
       top: 0,
       width: 32,
       height: 18,
+    })
+  })
+
+  it('uses native intrinsic sizes for common form controls', async () => {
+    document.body.innerHTML = `
+      <button id="button">Save</button>
+      <input id="text">
+      <input id="checkbox" type="checkbox">
+      <textarea id="textarea"></textarea>
+      <select id="select"><option>One</option></select>
+    `
+
+    await attach({ viewport: { width: 500, height: 300 } })
+
+    expectRect(requiredElement('#button').getBoundingClientRect(), {
+      left: 0,
+      top: 0,
+      width: 48,
+      height: 23,
+    })
+    expectRect(requiredElement('#text').getBoundingClientRect(), {
+      left: 0,
+      top: 23,
+      width: 192,
+      height: 23,
+    })
+    expectRect(requiredElement('#checkbox').getBoundingClientRect(), {
+      left: 4,
+      top: 49,
+      width: 13,
+      height: 13,
+    })
+    expectRect(requiredElement('#textarea').getBoundingClientRect(), {
+      left: 0,
+      top: 65,
+      width: 181,
+      height: 40,
+    })
+    expectRect(requiredElement('#select').getBoundingClientRect(), {
+      left: 0,
+      top: 105,
+      width: 46,
+      height: 21,
     })
   })
 

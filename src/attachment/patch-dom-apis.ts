@@ -30,6 +30,8 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     },
   })
 
+  patchElementInstanceRects(document)
+
   if (patchedWindows.has(view)) {
     return
   }
@@ -39,12 +41,12 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   const elementPrototype = view.Element.prototype
   const htmlElementPrototype = view.HTMLElement.prototype
 
-  Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
-    configurable: true,
-    value(this: Element) {
-      return attachmentForElement(this).getBoundingClientRect(this)
-    },
-  })
+  patchGetBoundingClientRect(elementPrototype)
+  patchGetBoundingClientRect(htmlElementPrototype)
+  patchGetBoundingClientRect(view.HTMLButtonElement?.prototype)
+  patchGetBoundingClientRect(view.HTMLInputElement?.prototype)
+  patchGetBoundingClientRect(view.HTMLSelectElement?.prototype)
+  patchGetBoundingClientRect(view.HTMLTextAreaElement?.prototype)
 
   Object.defineProperty(htmlElementPrototype, 'offsetWidth', {
     configurable: true,
@@ -103,4 +105,23 @@ function attachmentForDocument(document: Document): DocumentAttachment {
   }
 
   return attachment
+}
+
+function patchGetBoundingClientRect(prototype: object | undefined): void {
+  if (!prototype) {
+    return
+  }
+
+  Object.defineProperty(prototype, 'getBoundingClientRect', {
+    configurable: true,
+    value(this: Element) {
+      return attachmentForElement(this).getBoundingClientRect(this)
+    },
+  })
+}
+
+function patchElementInstanceRects(document: Document): void {
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    patchGetBoundingClientRect(element)
+  }
 }

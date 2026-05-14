@@ -21,7 +21,7 @@ export function createMeasureContext(
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
 ): MeasureContext | undefined {
-  const replacedSize = replacedElementSize(element)
+  const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(element, style, textMeasurer)
 
   if (replacedSize) {
     return {
@@ -125,6 +125,92 @@ function replacedElementSize(element: Element): Size<number> | undefined {
   }
 
   return { width, height }
+}
+
+function formControlIntrinsicSize(
+  element: Element,
+  style: SupportedStyle,
+  textMeasurer: TextMeasurer,
+): Size<number> | undefined {
+  const tagName = element.tagName.toLowerCase()
+
+  if (tagName === 'textarea') {
+    return { width: 181, height: 40 }
+  }
+
+  if (tagName === 'select') {
+    const text = element.textContent?.trim() || ''
+    const measured = textMeasurer.measure({
+      text,
+      fontFamily: style.fontFamily,
+      fontSize: style.fontSize,
+      lineHeight: style.lineHeight,
+      maxWidth: Number.MAX_SAFE_INTEGER,
+      whiteSpace: 'nowrap',
+    })
+
+    return {
+      width: Math.max(46, measured.width + 22),
+      height: 21,
+    }
+  }
+
+  if (tagName === 'button') {
+    return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer)
+  }
+
+  if (tagName !== 'input') {
+    return undefined
+  }
+
+  const type = (element.getAttribute('type') ?? 'text').toLowerCase()
+
+  switch (type) {
+    case 'checkbox':
+    case 'radio':
+      return { width: 13, height: 13 }
+    case 'range':
+      return { width: 129, height: 16 }
+    case 'button':
+    case 'reset':
+    case 'submit':
+      return buttonLikeIntrinsicSize(element.getAttribute('value') ?? defaultInputButtonLabel(type), style, textMeasurer)
+    default:
+      return { width: 192, height: 23 }
+  }
+}
+
+function buttonLikeIntrinsicSize(text: string, style: SupportedStyle, textMeasurer: TextMeasurer): Size<number> {
+  const label = text.trim()
+
+  if (!label) {
+    return { width: 16, height: 6 }
+  }
+
+  const measured = textMeasurer.measure({
+    text: label,
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    lineHeight: style.lineHeight,
+    maxWidth: Number.MAX_SAFE_INTEGER,
+    whiteSpace: 'nowrap',
+  })
+
+  return {
+    width: measured.width + 16,
+    height: 23,
+  }
+}
+
+function defaultInputButtonLabel(type: string): string {
+  switch (type) {
+    case 'reset':
+      return 'Reset'
+    case 'submit':
+      return 'Submit'
+    default:
+      return ''
+  }
 }
 
 function textContentForMeasurement(element: Element): string {

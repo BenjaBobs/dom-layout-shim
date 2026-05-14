@@ -50,7 +50,7 @@ export type GridPlacementValue = 'auto' | number | { span: number }
 export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense'
 
 export type SupportedStyle = {
-  display: 'block' | 'flex' | 'grid' | 'none'
+  display: 'block' | 'flex' | 'grid' | 'contents' | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
   flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'

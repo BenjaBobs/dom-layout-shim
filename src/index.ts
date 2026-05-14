@@ -1,5 +1,7 @@
 export { attachLayoutEngine } from './engine/attach-layout-engine.ts'
 export type { AttachLayoutEngineOptions } from './engine/attach-layout-engine.ts'
+export { expectBlockedBy, expectReceivesPointer, guardedClick } from './assertions/pointer-assertions.ts'
+export type { PointerAssertionOptions } from './assertions/pointer-assertions.ts'
 export type { LayoutEngineConfig, Viewport } from './engine/layout-engine-config.ts'
 export { debugLayout } from './attachment/patch-dom-apis.ts'
 export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './css/unsupported-css-policy.ts'

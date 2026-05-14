@@ -129,7 +129,9 @@ Cases:
 - Fixed positioning versus scroll.
 - Hit testing inside scroll containers.
 
-Status: not started.
+Status: implemented for the current v0 model. Window and element scroll
+offsets are applied to viewport-facing rects and hit testing while
+fixed-position boxes remain anchored to the viewport.
 
 ## Phase 8: Integration Ergonomics
 
@@ -141,4 +143,7 @@ Cases:
 - `guardedClick`.
 - Optional framework/test-library adapters as separate entry points.
 
-Status: not started.
+Status: in progress. Framework-agnostic `expectReceivesPointer`,
+`expectBlockedBy`, and `guardedClick` helpers are available from the package
+entry point and include layout debug output in thrown errors. Separate
+framework/test-library adapters are not implemented yet.

@@ -31,6 +31,15 @@ export type BrowserParityFixture = {
     width: number
     height: number
   }
+  scroll?: {
+    x: number
+    y: number
+  }
+  elementScrolls?: {
+    selector: string
+    x: number
+    y: number
+  }[]
   html: string
   queries: BrowserParityQuery[]
 }
@@ -89,6 +98,22 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
 
   try {
     await page.setContent(fixture.html)
+    if (fixture.scroll) {
+      await page.evaluate(({ x, y }) => window.scrollTo(x, y), fixture.scroll)
+    }
+    if (fixture.elementScrolls) {
+      await page.evaluate((scrolls) => {
+        for (const scroll of scrolls) {
+          const element = document.querySelector(scroll.selector)
+
+          if (!element) {
+            throw new Error(`Missing element: ${scroll.selector}`)
+          }
+
+          element.scrollTo(scroll.x, scroll.y)
+        }
+      }, fixture.elementScrolls)
+    }
 
     return await page.evaluate(
       ({ queries, runQueriesSource }) => {
@@ -120,6 +145,20 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   })
   const document = window.document
   document.body.innerHTML = fixture.html
+  if (fixture.scroll) {
+    window.scrollTo(fixture.scroll.x, fixture.scroll.y)
+  }
+  if (fixture.elementScrolls) {
+    for (const scroll of fixture.elementScrolls) {
+      const element = document.querySelector(scroll.selector)
+
+      if (!element) {
+        throw new Error(`Missing element: ${scroll.selector}`)
+      }
+
+      element.scrollTo(scroll.x, scroll.y)
+    }
+  }
 
   await attachLayoutEngine({ window, viewport: fixture.viewport })
 
