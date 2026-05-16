@@ -669,49 +669,6 @@ describe('layout geometry and DOM API attachment', () => {
     })
   })
 
-  it('uses native intrinsic sizes for common form controls', async () => {
-    document.body.innerHTML = `
-      <button id="button">Save</button>
-      <input id="text">
-      <input id="checkbox" type="checkbox">
-      <textarea id="textarea"></textarea>
-      <select id="select"><option>One</option></select>
-    `
-
-    await attach({ viewport: { width: 500, height: 300 } })
-
-    expectRect(requiredElement('#button').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 48,
-      height: 23,
-    })
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 0,
-      top: 23,
-      width: 192,
-      height: 23,
-    })
-    expectRect(requiredElement('#checkbox').getBoundingClientRect(), {
-      left: 4,
-      top: 49,
-      width: 13,
-      height: 13,
-    })
-    expectRect(requiredElement('#textarea').getBoundingClientRect(), {
-      left: 0,
-      top: 65,
-      width: 181,
-      height: 40,
-    })
-    expectRect(requiredElement('#select').getBoundingClientRect(), {
-      left: 0,
-      top: 105,
-      width: 46,
-      height: 21,
-    })
-  })
-
   it('uses measured text as flex item intrinsic size', async () => {
     document.body.innerHTML = `
       <div id="parent" style="display:flex; width:200px">

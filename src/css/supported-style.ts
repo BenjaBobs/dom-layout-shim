@@ -48,6 +48,13 @@ export type GridTrack = GridMinTrackBreadth | `${number}fr` | { min: GridMinTrac
 export type GridTemplateTrack = GridTrack | { repeat: number; tracks: GridTrack[] }
 export type GridPlacementValue = 'auto' | number | { span: number }
 export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense'
+export type CaptionSideValue = 'top' | 'bottom'
+export type EmptyCellsValue = 'show' | 'hide'
+export type BorderCollapseValue = 'separate' | 'collapse'
+export type TableBorderSpacing = {
+  horizontal: number
+  vertical: number
+}
 
 export type SupportedStyle = {
   display: 'block' | 'flex' | 'grid' | 'contents' | 'none'
@@ -75,6 +82,10 @@ export type SupportedStyle = {
   gridColumnEnd: GridPlacementValue
   gridRowStart: GridPlacementValue
   gridRowEnd: GridPlacementValue
+  captionSide: CaptionSideValue
+  borderCollapse: BorderCollapseValue
+  emptyCells?: EmptyCellsValue
+  tableBorderSpacing: TableBorderSpacing
   width?: SupportedDimension
   height?: SupportedDimension
   minWidth?: SupportedDimension
@@ -87,7 +98,7 @@ export type SupportedStyle = {
   left?: number
   zIndex: number
   pointerEvents: 'auto' | 'none'
-  visibility: 'visible' | 'hidden'
+  visibility: 'visible' | 'hidden' | 'collapse'
   overflowX: OverflowValue
   overflowY: OverflowValue
   margin: Edges<MarginValue>
@@ -122,6 +133,12 @@ export function createDefaultStyle(): SupportedStyle {
     gridColumnEnd: 'auto',
     gridRowStart: 'auto',
     gridRowEnd: 'auto',
+    captionSide: 'top',
+    borderCollapse: 'separate',
+    tableBorderSpacing: {
+      horizontal: 0,
+      vertical: 0,
+    },
     zIndex: 0,
     pointerEvents: 'auto',
     visibility: 'visible',

@@ -16,7 +16,8 @@ it('text block elements apply native margins and font metrics inside padded pare
 
         p,
         blockquote,
-        pre {
+        pre,
+        address {
           width: 100px;
         }
       </style>
@@ -24,12 +25,14 @@ it('text block elements apply native margins and font metrics inside padded pare
         <p id="paragraph">Hello</p>
         <blockquote id="quote">Hello</blockquote>
         <pre id="pre">Hello</pre>
+        <address id="address">Hello</address>
       </div>
     `,
     queries: [
       { type: 'rect', selector: '#paragraph' },
       { type: 'rect', selector: '#quote' },
       { type: 'rect', selector: '#pre' },
+      { type: 'rect', selector: '#address' },
     ],
   })
 })

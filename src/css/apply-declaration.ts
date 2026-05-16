@@ -476,6 +476,18 @@ export function applyDeclaration(
     case 'container-name':
       applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
       return
+    case 'caption-side':
+      applyKeyword(style, 'captionSide', normalizedValue, ['top', 'bottom'], normalizedProperty, value, context)
+      return
+    case 'border-collapse':
+      applyKeyword(style, 'borderCollapse', normalizedValue, ['separate', 'collapse'], normalizedProperty, value, context)
+      return
+    case 'empty-cells':
+      applyKeyword(style, 'emptyCells', normalizedValue, ['show', 'hide'], normalizedProperty, value, context)
+      return
+    case 'border-spacing':
+      applyBorderSpacing(style, normalizedValue, normalizedProperty, value, context)
+      return
     case 'inline-size':
       applyLength(style, 'width', normalizedValue, normalizedProperty, value, context)
       return
@@ -970,13 +982,8 @@ function applyVisibility(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (value === 'visible' || value === 'hidden') {
+  if (value === 'visible' || value === 'hidden' || value === 'collapse') {
     style.visibility = value
-    return
-  }
-
-  if (value === 'collapse') {
-    style.visibility = 'hidden'
     return
   }
 
@@ -2468,6 +2475,45 @@ function applyLength(
   }
 
   style[key] = length
+}
+
+function applyBorderSpacing(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split(/\s+/).filter(Boolean)
+
+  if (parts.length < 1 || parts.length > 2) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const horizontal = parsePxLength(parts[0])
+  const vertical = parsePxLength(parts[1] ?? parts[0])
+
+  if (horizontal === undefined || vertical === undefined || horizontal < 0 || vertical < 0) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.tableBorderSpacing = { horizontal, vertical }
 }
 
 function isInsetLengthKey(

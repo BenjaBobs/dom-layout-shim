@@ -424,6 +424,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'footer',
       'nav',
       'aside',
+      'address',
       'p',
       'h1',
       'h2',
@@ -432,6 +433,8 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'h5',
       'h6',
       'blockquote',
+      'figure',
+      'figcaption',
       'pre',
       'hr',
       'br',
@@ -444,6 +447,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'dialog-html-defaults',
       'generic-html-defaults',
       'hidden-attribute',
+      'figure-html-defaults',
       'hr-html-defaults',
       'static-block-flow',
       'static-pre-wrap-text-lines',
@@ -451,7 +455,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'implementation-quirk',
-        text: 'The layout tree treats ordinary elements with the same default block style unless author CSS overrides them; p, headings, blockquote, and pre receive a narrow set of UA text metrics and spacing defaults.',
+        text: 'The layout tree treats ordinary elements with the same default block style unless author CSS overrides them; address, p, headings, blockquote, figure, and pre receive a narrow set of UA text metrics and spacing defaults.',
       },
       {
         kind: 'limitation',
@@ -459,7 +463,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       },
       {
         kind: 'browser-parity',
-        text: 'Paragraph, blockquote, pre, hr, details/summary, and basic dialog open/closed native behavior have parity coverage in non-collapsing block flow; author CSS reset behavior is also covered.',
+        text: 'Address, paragraph, blockquote, figure, pre, hr, details/summary, hidden including until-found, and basic dialog open/closed native behavior have parity coverage in non-collapsing block flow; author CSS reset behavior is also covered.',
       },
       {
         kind: 'limitation',
@@ -475,12 +479,12 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'taffy-adapter',
     parityStatus: 'covered',
     properties: [],
-    elements: ['base', 'link', 'meta', 'script', 'style', 'template', 'title'],
+    elements: ['base', 'link', 'meta', 'noscript', 'script', 'style', 'template', 'title', 'wbr'],
     parity: ['non-rendered-elements'],
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Metadata and raw-text elements with no CSS box are skipped when building the layout and hit-test tree.',
+        text: 'Metadata, raw-text, template, noscript, and wbr elements with no CSS box are skipped when building the layout and hit-test tree.',
       },
     ],
   },
@@ -542,10 +546,10 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
   {
     id: 'table-html-elements',
     title: 'Table HTML elements',
-    status: 'todo',
+    status: 'partial',
     effect: 'layout',
     ownerArea: 'taffy-adapter',
-    parityStatus: 'missing',
+    parityStatus: 'partial',
     properties: [
       'display: table/table-row/table-cell/table-caption/table-row-group/table-header-group/table-footer-group/table-column/table-column-group',
       'border-collapse',
@@ -556,14 +560,19 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'vertical-align',
     ],
     elements: ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'],
+    parity: ['table-explicit-cells'],
     notes: [
       {
-        kind: 'todo',
-        text: 'Native table display defaults and table layout semantics are not implemented.',
+        kind: 'browser-parity',
+        text: 'Simple native table/caption/colgroup/col/tbody/thead/tfoot/tr/td layout with explicit cell and column sizes, numeric table/cell/column width and height attributes, author table width/height scaling, cellspacing/cellpadding defaults with CSS override, direct row children, row and column spans, row/column visibility:collapse, empty-cells hit testing, top/bottom captions including wider explicit captions, multiple row groups, visual header/footer ordering, cell padding and borders, uniform collapsed borders, cell hit testing, and default/reset/two-axis border spacing has parity coverage.',
       },
       {
         kind: 'limitation',
-        text: 'Rows, cells, intrinsic column sizing, captions, column groups, border collapsing, row and column spans, and table-specific visibility:collapse behavior are not modeled.',
+        text: 'The implemented table subset is intentionally narrow and only handles non-spanning rows with explicit cell sizes.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Intrinsic column sizing, full collapsed-border conflict resolution, and complex table-specific visibility:collapse interactions are not modeled.',
       },
     ],
   },
@@ -593,7 +602,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'button, input text-like controls, checkbox, radio, range, textarea, and select intrinsic sizes have parity coverage when author CSS blockifies them.',
+        text: 'button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, time, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage when author CSS blockifies them.',
       },
       {
         kind: 'implementation-quirk',
@@ -796,12 +805,12 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'taffy-adapter',
     parityStatus: 'covered',
     properties: [],
-    elements: ['img', 'svg', 'canvas', 'video'],
+    elements: ['img', 'svg', 'canvas', 'video', 'audio', 'iframe', 'object'],
     parity: ['replaced-image-attributes'],
     notes: [
       {
         kind: 'implementation-quirk',
-        text: 'img, svg, canvas, and video can use width/height attributes; any element can use data-layout-width and data-layout-height metadata.',
+        text: 'img can use width/height attributes, with missing dimensions treated as zero for no-resource images; svg, canvas, video, iframe, and empty object elements use native 300x150 fallback dimensions with width/height attribute overrides; object elements without type/data resource hints lay out fallback children; audio elements without controls are non-rendered and audio controls use native 300x54 fallback dimensions; any element can use data-layout-width and data-layout-height metadata.',
       },
     ],
   },

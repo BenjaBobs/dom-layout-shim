@@ -5,5 +5,5 @@ export type HitBox = Box & {
   zIndex: number
   domOrder: number
   pointerEvents: 'auto' | 'none'
-  visibility: 'visible' | 'hidden'
+  visibility: 'visible' | 'hidden' | 'collapse'
 }

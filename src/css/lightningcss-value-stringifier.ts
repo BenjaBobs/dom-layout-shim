@@ -153,8 +153,14 @@ function stringifyCssValue(property: string, value: unknown): string {
       return stringifyFilter(value)
     case 'transform-origin':
       return stringifyTransformOrigin(value)
+    case 'caption-side':
+    case 'empty-cells':
+    case 'border-collapse':
+      return typeof value.type === 'string' ? value.type : JSON.stringify(value)
     case 'container-name':
       return stringifyContainerName(value)
+    case 'border-spacing':
+      return stringifyBorderSpacing(value)
     case 'padding-top':
     case 'padding-right':
     case 'padding-bottom':
@@ -1088,6 +1094,16 @@ function stringifyGapSide(value: unknown): string {
   }
 
   return isRecord(value) ? stringifyLengthLike(value) : JSON.stringify(value)
+}
+
+function stringifyBorderSpacing(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.map((part) => {
+      return isRecord(part) ? stringifyLength(part) : JSON.stringify(part)
+    }).join(' ')
+  }
+
+  return isRecord(value) ? stringifyLength(value) : JSON.stringify(value)
 }
 
 function stringifyZIndex(value: Record<string, unknown>): string {

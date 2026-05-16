@@ -4,7 +4,7 @@ import { compareHitOrder } from './stacking-order.ts'
 
 export function elementsFromPointInBoxes(boxes: readonly HitBox[], x: number, y: number): Element[] {
   return boxes
-    .filter((box) => box.visibility !== 'hidden')
+    .filter((box) => box.visibility === 'visible')
     .filter((box) => box.pointerEvents !== 'none')
     .filter((box) => containsPoint(box, x, y))
     .toSorted(compareHitOrder)

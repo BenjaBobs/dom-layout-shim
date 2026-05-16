@@ -40,6 +40,13 @@ already proves that a CSS/layout behavior matches Chromium, keep unit coverage
 only when it exercises a distinct non-parity concern, for example an injected
 measurer or an inline-parser edge.
 
+Do not add unit tests for browser-observable layout behavior just because the
+implementation changed. Native element dimensions, CSS layout semantics,
+geometry, and hit-testing order belong in Chromium parity tests. Unit tests
+should stay focused on engine and package-specific behavior that Chromium cannot
+serve as the oracle for, such as lifecycle, invalidation, policy routing,
+metadata hooks, injected measurement, and debug/assertion contracts.
+
 Add unit tests in `test/unit/**/*.test.ts` for engine behavior and DOM API
 patching. Add browser parity cases in `test/browser-parity/` when behavior
 depends on real Chromium layout, hit-testing, or CSS semantics. Name cases by
