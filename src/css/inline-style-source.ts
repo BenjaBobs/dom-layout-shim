@@ -5,6 +5,7 @@ export function applyInlineStyle(
   style: SupportedStyle,
   element: Element,
   policy: UnsupportedCssPolicy | undefined,
+  rootFontSize?: number,
 ): void {
   const inlineStyle = element.getAttribute('style')
 
@@ -17,6 +18,7 @@ export function applyInlineStyle(
       policy,
       source: 'inline-style',
       element,
+      rootFontSize,
     })
   }
 }

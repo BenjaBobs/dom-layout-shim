@@ -267,7 +267,7 @@ describe('layout geometry and DOM API attachment', () => {
 
   it('throws on unsupported display values by default', async () => {
     document.body.innerHTML = `
-      <div id="box" style="display:table; position:absolute; left:0; top:0; width:100px; height:100px"></div>
+      <div id="box" style="display:ruby; position:absolute; left:0; top:0; width:100px; height:100px"></div>
     `
 
     await attach()

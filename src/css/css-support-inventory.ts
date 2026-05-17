@@ -79,7 +79,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'taffy-compat',
-        text: 'Inline, inline-block, flow-root, and list-item are blockified; inline-flex and inline-grid are mapped to flex and grid.',
+        text: 'Authored inline, inline-block, flow-root, and list-item are blockified; inline-flex and inline-grid are mapped to flex and grid.',
       },
       {
         kind: 'limitation',
@@ -127,7 +127,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, opposing insets, and z-index ordering have parity fixtures.',
+        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, opposing insets, CSS-wide static resets, and z-index ordering have parity fixtures.',
       },
       {
         kind: 'taffy-compat',
@@ -163,7 +163,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Box sizing, min/max constraints, percentages, and aspect ratio have parity fixtures.',
+        text: 'Box sizing including CSS-wide content-box resets, min/max constraints, percentages, and aspect ratio have parity fixtures.',
       },
       {
         kind: 'limitation',
@@ -306,7 +306,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Core row/column, reverse direction, wrapping, alignment, grow, order, basis, shorthand, and replaced intrinsic cases have parity fixtures.',
+        text: 'Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow including CSS-wide resets, order including CSS-wide resets, basis, shorthand, and replaced intrinsic cases have parity fixtures.',
       },
       {
         kind: 'implementation-quirk',
@@ -333,6 +333,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'grid-column-end',
       'grid-row-start',
       'grid-row-end',
+      'grid-area',
     ],
     values: [
       'none',
@@ -354,6 +355,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'grid-explicit-tracks',
       'grid-fr-tracks',
       'grid-gap',
+      'grid-area-placement',
       'grid-line-placement',
       'grid-minmax-tracks',
       'grid-order',
@@ -364,11 +366,11 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Explicit tracks, auto flow, auto tracks, fr tracks, gaps, line placement, minmax tracks, order, percentage tracks, fixed-count repeat tracks, and numeric spans have parity fixtures.',
+        text: 'Explicit tracks, auto flow including CSS-wide resets, auto tracks, fr tracks, gaps, line placement including CSS-wide resets, grid-area shorthand placement including CSS-wide resets, minmax tracks, order, percentage tracks, fixed-count repeat tracks, and numeric spans have parity fixtures.',
       },
       {
         kind: 'limitation',
-        text: 'auto-fill/auto-fit repeat counts, named lines, named spans, fit-content(), and grid areas are not implemented.',
+        text: 'auto-fill/auto-fit repeat counts, named lines, named spans, fit-content(), named grid areas, and grid-template-areas are not implemented.',
       },
       {
         kind: 'limitation',
@@ -392,7 +394,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'text',
     parityStatus: 'partial',
     properties: ['font-family', 'font-size', 'line-height', 'white-space'],
-    values: ['<family-list>', '<px>', '<percentage>', '<number>', 'normal', 'pre', 'pre-line', 'pre-wrap', 'nowrap'],
+    values: ['<family-list>', '<px>', '<percentage>', '<em>', '<rem>', '<number>', 'normal', 'pre', 'pre-line', 'pre-wrap', 'nowrap'],
     parity: ['static-pre-wrap-text-lines', 'static-text-line-height'],
     notes: [
       {
@@ -400,8 +402,12 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
         text: 'Text-only leaf elements and direct text-plus-br leaves are measured through the configured TextMeasurer; the default uses Pretext with deterministic fallback.',
       },
       {
+        kind: 'browser-parity',
+        text: 'Nested text elements inherit parent font metrics; explicit inherit/unset is accepted for inherited text declarations; initial resets are accepted for font-family, font-size, and white-space; percentage/em font-size values resolve against the inherited parent font size; rem font-size values resolve against the computed root font size; percentage/em line-height values resolve against the element font size; rem line-height values resolve against the computed root font size.',
+      },
+      {
         kind: 'limitation',
-        text: 'The engine does not implement full inline formatting.',
+        text: 'The engine does not implement full inline formatting or preserve the distinction between inherited numeric and resolved line-height values.',
       },
     ],
   },
@@ -491,10 +497,10 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
   {
     id: 'inline-html-elements',
     title: 'Inline phrasing HTML elements',
-    status: 'todo',
+    status: 'partial',
     effect: 'layout',
     ownerArea: 'taffy-adapter',
-    parityStatus: 'missing',
+    parityStatus: 'partial',
     properties: [],
     elements: [
       'span',
@@ -510,15 +516,21 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'kbd',
       'samp',
       'mark',
+      'br',
       'sub',
       'sup',
       'time',
       'label',
     ],
+    parity: ['inline-html-defaults'],
     notes: [
       {
-        kind: 'todo',
-        text: 'Native inline display defaults and inline formatting are not modeled; these elements currently use the same element layout defaults as other nodes.',
+        kind: 'browser-parity',
+        text: 'Native inline phrasing elements contribute text through ancestor text measurement without introducing block-flow breaks, including hard line breaks from br elements in inline-only text subtrees.',
+      },
+      {
+        kind: 'limitation',
+        text: 'Inline fragment rectangles, inline hit boxes, mixed inline/block formatting, and baseline effects for sub/sup are not modeled; native inline elements currently expose zero rects unless author CSS changes their display.',
       },
     ],
   },
@@ -560,11 +572,11 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'vertical-align',
     ],
     elements: ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'],
-    parity: ['table-explicit-cells'],
+    parity: ['css-table-display', 'table-explicit-cells'],
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Simple native table/caption/colgroup/col/tbody/thead/tfoot/tr/td layout with explicit cell and column sizes, numeric table/cell/column width and height attributes, author table width/height scaling, cellspacing/cellpadding defaults with CSS override, direct row children, row and column spans, row/column visibility:collapse, empty-cells hit testing, top/bottom captions including wider explicit captions, multiple row groups, visual header/footer ordering, cell padding and borders, uniform collapsed borders, cell hit testing, and default/reset/two-axis border spacing has parity coverage.',
+        text: 'Simple native table/caption/colgroup/col/tbody/thead/tfoot/tr/td layout and authored display:table/table-row/table-cell/table-caption/table-row-group boxes with explicit cell and column sizes, numeric table/cell/column width and height attributes, author table width/height scaling, cellspacing/cellpadding defaults with CSS override, direct row children, row and column spans, row/column visibility:collapse, empty-cells hit testing, top/bottom captions including inherited caption-side, wider explicit captions, multiple row groups, visual header/footer ordering, cell padding and borders, uniform collapsed borders, cell hit testing, default/reset/two-axis border spacing, and inert table-layout/vertical-align parsing has parity coverage.',
       },
       {
         kind: 'limitation',
@@ -635,7 +647,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Point query ordering, pointer-events none, visibility hidden, center blocking, overflow clipping, element scroll offsets, and window scroll offsets have parity fixtures.',
+        text: 'Point query ordering, pointer-events none including descendant inheritance, inherit/unset preservation, and auto/initial overrides, visibility hidden including descendant inheritance, inherit/unset preservation, and visible/initial overrides, center blocking, overflow clipping, element scroll offsets, and window scroll offsets have parity fixtures.',
       },
       {
         kind: 'behavior-quirk',
@@ -828,16 +840,11 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       'clear: left/right/both/inline-start/inline-end',
       'display: inline formatting',
       'display: list-item markers',
-      'display: table/table-row/table-cell/table-caption/table-row-group/table-header-group/table-footer-group/table-column/table-column-group',
       'grid-template-areas',
-      'grid-area',
       'position: sticky',
       'border-collapse',
       'border-spacing',
-      'caption-side',
       'empty-cells',
-      'table-layout',
-      'vertical-align',
       'transform: non-none',
       'contain: layout/paint/size/style/content/strict',
       'container-type: size/inline-size/scroll-state',

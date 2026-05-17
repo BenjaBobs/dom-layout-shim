@@ -97,6 +97,8 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'grid-column':
     case 'grid-row':
       return stringifyGridLine(value)
+    case 'grid-area':
+      return stringifyGridArea(value)
     case 'grid-column-start':
     case 'grid-column-end':
     case 'grid-row-start':
@@ -209,6 +211,12 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'overflow-x':
     case 'overflow-y':
       return typeof value === 'string' ? value : JSON.stringify(value)
+    case 'table-layout':
+      return typeof value === 'string' ? value : JSON.stringify(value)
+    case 'vertical-align':
+      return isRecord(value) && value.type === 'keyword' && typeof value.value === 'string'
+        ? value.value
+        : JSON.stringify(value)
     case 'z-index':
       return stringifyZIndex(value)
     case 'accent-color':
@@ -458,6 +466,15 @@ function stringifyGridLine(value: Record<string, unknown>): string {
   const end = stringifyGridPlacement(value.end)
 
   return end === 'auto' ? start : `${start} / ${end}`
+}
+
+function stringifyGridArea(value: Record<string, unknown>): string {
+  const rowStart = stringifyGridPlacement(value.rowStart)
+  const columnStart = stringifyGridPlacement(value.columnStart)
+  const rowEnd = stringifyGridPlacement(value.rowEnd)
+  const columnEnd = stringifyGridPlacement(value.columnEnd)
+
+  return `${rowStart} / ${columnStart} / ${rowEnd} / ${columnEnd}`
 }
 
 function stringifyGridPlacement(value: unknown): string {

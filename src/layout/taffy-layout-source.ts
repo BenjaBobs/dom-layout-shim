@@ -138,6 +138,25 @@ type SimpleTableRowSpanConstraint = {
 let taffyLoadPromise: Promise<unknown> | undefined
 
 const nonRenderedHtmlElements = new Set(['base', 'link', 'meta', 'noscript', 'script', 'style', 'template', 'title', 'wbr'])
+const inlinePhrasingHtmlElements = new Set([
+  'a',
+  'b',
+  'code',
+  'em',
+  'i',
+  'kbd',
+  'label',
+  'mark',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'time',
+  'u',
+])
 
 export async function loadTaffyBackend(): Promise<void> {
   taffyLoadPromise ??= loadTaffy()
@@ -218,6 +237,19 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
 
   if (isHidden(element) || style.display === 'none') {
     markSubtreeDisplayNone(element, state)
+    return []
+  }
+
+  if (element.tagName.toLowerCase() === 'br') {
+    markElementNoBox(element, state)
+    return []
+  }
+
+  if (style.display === 'inline') {
+    // Native inline phrasing elements do not participate as block-level Taffy
+    // children. Their text is measured through the nearest modeled ancestor via
+    // textContent; their own inline fragments are not yet exposed as rects.
+    markSubtreeNoBox(element, state)
     return []
   }
 
@@ -349,6 +381,14 @@ function markSubtreeDisplayNone(element: Element, state: TaffyLayoutState): void
   }
 }
 
+function markSubtreeNoBox(element: Element, state: TaffyLayoutState): void {
+  markElementNoBox(element, state)
+
+  for (const child of elementChildren(element)) {
+    markSubtreeNoBox(child, state)
+  }
+}
+
 function recordSimpleTableLayout(
   tableLayout: SimpleTableLayout,
   tableBox: Box,
@@ -409,7 +449,7 @@ function offsetTableBox(origin: Box, box: { x: number; y: number; width: number;
 }
 
 function tableCellIncludesHitBox(element: Element, style: SupportedStyle, state: TaffyLayoutState): boolean {
-  const table = closestAncestorTable(element)
+  const table = closestAncestorTable(element, state)
   const tableStyle = table ? resolveSupportedStyle(table, state) : undefined
   const emptyCells = style.emptyCells ?? tableStyle?.emptyCells ?? 'show'
 
@@ -510,25 +550,53 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
   }
 
   const style = createDefaultStyle()
+  applyInheritedTextDefaults(style, element, state)
   applyUserAgentDefaults(style, element)
-  applyStyleRules(style, element, state.rules, state.policy)
-  applyInlineStyle(style, element, state.policy)
+  const rootFontSize = resolveRootFontSize(element, state)
+  applyStyleRules(style, element, state.rules, state.policy, rootFontSize)
+  applyInlineStyle(style, element, state.policy, rootFontSize)
   applyPostAuthorUserAgentDefaults(style, element)
   state.styles.set(element, style)
   return style
 }
 
+function resolveRootFontSize(element: Element, state: TaffyLayoutState): number {
+  const root = element.ownerDocument.documentElement
+
+  if (!root || element === root) {
+    return 16
+  }
+
+  return resolveSupportedStyle(root, state).fontSize
+}
+
+function applyInheritedTextDefaults(style: SupportedStyle, element: Element, state: TaffyLayoutState): void {
+  const parent = element.parentElement
+
+  if (!parent) {
+    return
+  }
+
+  const parentStyle = resolveSupportedStyle(parent, state)
+  style.fontFamily = parentStyle.fontFamily
+  style.fontSize = parentStyle.fontSize
+  style.lineHeight = parentStyle.lineHeight
+  style.whiteSpace = parentStyle.whiteSpace
+  style.pointerEvents = parentStyle.pointerEvents
+  style.visibility = parentStyle.visibility
+}
+
 function createSimpleTableLayout(element: Element, state: TaffyLayoutState): SimpleTableLayout | undefined {
-  if (element.tagName.toLowerCase() !== 'table') {
+  if (!isTableElement(element, state)) {
     return undefined
   }
 
-  const sections = tableSectionElements(element)
-  const rowElements = sections.map((section) => tableRowElements(section))
-  const rowCells = rowElements.map((rows) => rows.map((row) => tableCellInputs(row)))
+  const sections = tableSectionElements(element, state)
+  const rowElements = sections.map((section) => tableRowElements(section, state))
+  const rowCells = rowElements.map((rows) => rows.map((row) => tableCellInputs(row, state)))
   const rowPlacements = rowCells.map(createTableCellPlacements)
-  const columnGroups = tableColumnGroups(element)
-  const columnPlacements = columnGroups.map((group) => tableColumnPlacements(group))
+  const columnGroups = tableColumnGroups(element, state)
+  const columnPlacements = columnGroups.map((group) => tableColumnPlacements(group, state))
   const tableColumnCount = Math.max(0, ...columnPlacements.flatMap((columns) =>
     columns.map((column) => column.columnIndex + column.span)
   ))
@@ -558,11 +626,14 @@ function createSimpleTableLayout(element: Element, state: TaffyLayoutState): Sim
   const horizontalSpacing = isCollapsedBorderTable ? 0 : tableStyle.tableBorderSpacing.horizontal
   const verticalSpacing = isCollapsedBorderTable ? 0 : tableStyle.tableBorderSpacing.vertical
   const collapsedBorderInset = isCollapsedBorderTable ? tableCollapsedBorderInset(rowPlacements, state) : zeroEdges()
-  const captionElement = tableCaptionElement(element)
+  const captionElement = tableCaptionElement(element, state)
   const captionStyle = captionElement ? resolveSupportedStyle(captionElement, state) : undefined
   const captionWidth = captionStyle ? tableCaptionOuterWidth(captionStyle) : 0
   const captionHeight = captionStyle ? tableCaptionOuterHeight(captionStyle) : 0
-  const captionSide = captionStyle?.captionSide ?? 'top'
+  // caption-side is inherited in browsers. We do not yet track declaration
+  // provenance, so a caption's non-default value wins and otherwise the table
+  // value supplies the inherited side.
+  const captionSide = captionStyle && captionStyle.captionSide !== 'top' ? captionStyle.captionSide : tableStyle.captionSide
 
   for (const columns of columnPlacements) {
     for (const column of columns) {
@@ -700,24 +771,63 @@ function createSimpleTableLayout(element: Element, state: TaffyLayoutState): Sim
   }
 }
 
-function tableCaptionElement(table: Element): Element | undefined {
-  return Array.from(table.children).find((child) => child.tagName.toLowerCase() === 'caption')
+function isTableElement(element: Element, state: TaffyLayoutState): boolean {
+  return element.tagName.toLowerCase() === 'table' || resolveSupportedStyle(element, state).display === 'table'
 }
 
-function tableColumnGroups(table: Element): Element[] {
-  return Array.from(table.children).filter((child) =>
-    child.tagName.toLowerCase() === 'colgroup' && tableColumnElements(child).length > 0
+function isTableCaptionElement(element: Element, state: TaffyLayoutState): boolean {
+  return element.tagName.toLowerCase() === 'caption' || resolveSupportedStyle(element, state).display === 'table-caption'
+}
+
+function isTableColumnGroupElement(element: Element, state: TaffyLayoutState): boolean {
+  return element.tagName.toLowerCase() === 'colgroup' || resolveSupportedStyle(element, state).display === 'table-column-group'
+}
+
+function isTableColumnElement(element: Element, state: TaffyLayoutState): boolean {
+  return element.tagName.toLowerCase() === 'col' || resolveSupportedStyle(element, state).display === 'table-column'
+}
+
+function isTableSectionElement(element: Element, state: TaffyLayoutState): boolean {
+  const tagName = element.tagName.toLowerCase()
+  const display = resolveSupportedStyle(element, state).display
+
+  return (
+    tagName === 'tbody' ||
+    tagName === 'thead' ||
+    tagName === 'tfoot' ||
+    display === 'table-row-group' ||
+    display === 'table-header-group' ||
+    display === 'table-footer-group'
   )
 }
 
-function tableColumnElements(columnGroup: Element): Element[] {
-  return Array.from(columnGroup.children).filter((child) => child.tagName.toLowerCase() === 'col')
+function isTableRowElement(element: Element, state: TaffyLayoutState): boolean {
+  return element.tagName.toLowerCase() === 'tr' || resolveSupportedStyle(element, state).display === 'table-row'
 }
 
-function tableColumnPlacements(columnGroup: Element): SimpleTableColumnPlacement[] {
+function isTableCellElement(element: Element, state: TaffyLayoutState): boolean {
+  const tagName = element.tagName.toLowerCase()
+  return tagName === 'td' || tagName === 'th' || resolveSupportedStyle(element, state).display === 'table-cell'
+}
+
+function tableCaptionElement(table: Element, state: TaffyLayoutState): Element | undefined {
+  return Array.from(table.children).find((child) => isTableCaptionElement(child, state))
+}
+
+function tableColumnGroups(table: Element, state: TaffyLayoutState): Element[] {
+  return Array.from(table.children).filter((child) =>
+    isTableColumnGroupElement(child, state) && tableColumnElements(child, state).length > 0
+  )
+}
+
+function tableColumnElements(columnGroup: Element, state: TaffyLayoutState): Element[] {
+  return Array.from(columnGroup.children).filter((child) => isTableColumnElement(child, state))
+}
+
+function tableColumnPlacements(columnGroup: Element, state: TaffyLayoutState): SimpleTableColumnPlacement[] {
   let columnIndex = 0
 
-  return tableColumnElements(columnGroup).map((element) => {
+  return tableColumnElements(columnGroup, state).map((element) => {
     const span = tableColumnElementSpan(element)
     const placement = { element, span, columnIndex }
     columnIndex += span
@@ -769,38 +879,45 @@ function tableColumnElementSpan(column: Element): number {
   return Number.isInteger(value) && value > 0 ? Math.min(value, 1000) : 1
 }
 
-function tableSectionElements(table: Element): Element[] {
+function tableSectionElements(table: Element, state: TaffyLayoutState): Element[] {
   const sections = Array.from(table.children).filter((child) =>
-    ['tbody', 'thead', 'tfoot'].includes(child.tagName.toLowerCase()),
+    isTableSectionElement(child, state),
   )
 
-  return sections.length > 0 ? sections.sort((a, b) => tableSectionOrder(a) - tableSectionOrder(b)) : [table]
+  return sections.length > 0 ? sections.sort((a, b) => tableSectionOrder(a, state) - tableSectionOrder(b, state)) : [table]
 }
 
-function tableSectionOrder(section: Element): number {
-  switch (section.tagName.toLowerCase()) {
-    case 'thead':
+function tableSectionOrder(section: Element, state: TaffyLayoutState): number {
+  const tagName = section.tagName.toLowerCase()
+
+  if (tagName === 'thead') {
+    return 0
+  }
+
+  if (tagName === 'tfoot') {
+    return 2
+  }
+
+  switch (resolveSupportedStyle(section, state).display) {
+    case 'table-header-group':
       return 0
-    case 'tfoot':
+    case 'table-footer-group':
       return 2
     default:
       return 1
   }
 }
 
-function tableRowElements(section: Element): Element[] {
-  return Array.from(section.children).filter((child) => child.tagName.toLowerCase() === 'tr')
+function tableRowElements(section: Element, state: TaffyLayoutState): Element[] {
+  return Array.from(section.children).filter((child) => isTableRowElement(child, state))
 }
 
-function tableCellElements(row: Element): Element[] {
-  return Array.from(row.children).filter((child) => {
-    const tagName = child.tagName.toLowerCase()
-    return tagName === 'td' || tagName === 'th'
-  })
+function tableCellElements(row: Element, state: TaffyLayoutState): Element[] {
+  return Array.from(row.children).filter((child) => isTableCellElement(child, state))
 }
 
-function tableCellInputs(row: Element): SimpleTableCellInput[] {
-  return tableCellElements(row).map((element) => ({
+function tableCellInputs(row: Element, state: TaffyLayoutState): SimpleTableCellInput[] {
+  return tableCellElements(row, state).map((element) => ({
     element,
     colSpan: tableColumnSpan(element),
     rowSpan: tableRowSpan(element),
@@ -1097,11 +1214,11 @@ function applyTableCellPaddingDefault(style: SupportedStyle, cell: Element): voi
   style.padding.left = cellPadding
 }
 
-function closestAncestorTable(element: Element): Element | undefined {
+function closestAncestorTable(element: Element, state?: TaffyLayoutState): Element | undefined {
   let current = element.parentElement
 
   while (current) {
-    if (current.tagName.toLowerCase() === 'table') {
+    if (current.tagName.toLowerCase() === 'table' || (state && resolveSupportedStyle(current, state).display === 'table')) {
       return current
     }
 
@@ -1139,7 +1256,13 @@ function createReplacedMeasureContext(
 }
 
 function applyUserAgentDefaults(style: SupportedStyle, element: Element): void {
-  switch (element.tagName.toLowerCase()) {
+  const tagName = element.tagName.toLowerCase()
+
+  if (inlinePhrasingHtmlElements.has(tagName)) {
+    style.display = 'inline'
+  }
+
+  switch (tagName) {
     case 'ul':
     case 'ol':
     case 'menu':

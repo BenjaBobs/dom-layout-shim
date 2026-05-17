@@ -57,7 +57,22 @@ export type TableBorderSpacing = {
 }
 
 export type SupportedStyle = {
-  display: 'block' | 'flex' | 'grid' | 'contents' | 'none'
+  display:
+    | 'block'
+    | 'inline'
+    | 'flex'
+    | 'grid'
+    | 'table'
+    | 'table-row-group'
+    | 'table-header-group'
+    | 'table-footer-group'
+    | 'table-row'
+    | 'table-cell'
+    | 'table-caption'
+    | 'table-column-group'
+    | 'table-column'
+    | 'contents'
+    | 'none'
   position: 'static' | 'relative' | 'absolute' | 'fixed'
   boxSizing: 'content-box' | 'border-box'
   flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
@@ -136,8 +151,8 @@ export function createDefaultStyle(): SupportedStyle {
     captionSide: 'top',
     borderCollapse: 'separate',
     tableBorderSpacing: {
-      horizontal: 0,
-      vertical: 0,
+      horizontal: 2,
+      vertical: 2,
     },
     zIndex: 0,
     pointerEvents: 'auto',

@@ -306,7 +306,7 @@ function defaultInputButtonLabel(type: string): string {
 
 function textContentForMeasurement(element: Element): string {
   if (!canMeasureTextLeaf(element)) {
-    return element.textContent ?? ''
+    return flattenedTextContent(element)
   }
 
   return Array.from(element.childNodes)
@@ -318,6 +318,24 @@ function textContentForMeasurement(element: Element): string {
       return node.textContent ?? ''
     })
     .join('')
+}
+
+function flattenedTextContent(node: Node): string {
+  if (node.nodeType === textNodeType || node.nodeType === commentNodeType) {
+    return node.textContent ?? ''
+  }
+
+  if (node.nodeType !== elementNodeType) {
+    return node.textContent ?? ''
+  }
+
+  const element = node as Element
+
+  if (element.tagName.toLowerCase() === 'br') {
+    return '\n'
+  }
+
+  return Array.from(element.childNodes).map(flattenedTextContent).join('')
 }
 
 function readNumberAttribute(element: Element, name: string): number | undefined {

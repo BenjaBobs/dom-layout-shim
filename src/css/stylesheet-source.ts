@@ -34,6 +34,7 @@ export function applyStyleRules(
   element: Element,
   rules: readonly StyleRule[],
   policy: UnsupportedCssPolicy | undefined,
+  rootFontSize?: number,
 ): void {
   rules
     .filter((rule) => matchesSelector(element, rule.selector, policy))
@@ -45,6 +46,7 @@ export function applyStyleRules(
           source: 'stylesheet',
           selector: rule.selector,
           element,
+          rootFontSize,
         })
       }
     })

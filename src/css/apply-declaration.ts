@@ -42,6 +42,7 @@ export type DeclarationContext = {
   source: UnsupportedCssSource
   selector?: string
   element?: Element
+  rootFontSize?: number
 }
 
 export function applyDeclaration(
@@ -62,6 +63,10 @@ export function applyDeclaration(
       applyDisplay(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'position':
+      if (normalizedValue === 'initial' || normalizedValue === 'unset') {
+        style.position = 'static'
+        return
+      }
       applyKeyword(
         style,
         'position',
@@ -73,6 +78,10 @@ export function applyDeclaration(
       )
       return
     case 'box-sizing':
+      if (normalizedValue === 'initial' || normalizedValue === 'unset') {
+        style.boxSizing = 'content-box'
+        return
+      }
       applyKeyword(
         style,
         'boxSizing',
@@ -84,6 +93,9 @@ export function applyDeclaration(
       )
       return
     case 'flex-direction':
+      if (resetKeyword(style, 'flexDirection', normalizedValue, 'row')) {
+        return
+      }
       applyKeyword(
         style,
         'flexDirection',
@@ -95,6 +107,9 @@ export function applyDeclaration(
       )
       return
     case 'flex-wrap':
+      if (resetKeyword(style, 'flexWrap', normalizedValue, 'nowrap')) {
+        return
+      }
       applyKeyword(
         style,
         'flexWrap',
@@ -106,9 +121,17 @@ export function applyDeclaration(
       )
       return
     case 'flex-flow':
+      if (normalizedValue === 'initial' || normalizedValue === 'unset') {
+        style.flexDirection = 'row'
+        style.flexWrap = 'nowrap'
+        return
+      }
       applyFlexFlow(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'align-items':
+      if (resetOptionalKeyword(style, 'alignItems', normalizedValue, undefined)) {
+        return
+      }
       applyKeyword(
         style,
         'alignItems',
@@ -120,6 +143,9 @@ export function applyDeclaration(
       )
       return
     case 'align-self':
+      if (resetKeyword(style, 'alignSelf', normalizedValue, 'auto')) {
+        return
+      }
       applyKeyword(
         style,
         'alignSelf',
@@ -131,6 +157,9 @@ export function applyDeclaration(
       )
       return
     case 'align-content':
+      if (resetOptionalKeyword(style, 'alignContent', normalizedValue, undefined)) {
+        return
+      }
       applyKeyword(
         style,
         'alignContent',
@@ -142,6 +171,9 @@ export function applyDeclaration(
       )
       return
     case 'justify-content':
+      if (resetOptionalKeyword(style, 'justifyContent', normalizedValue, undefined)) {
+        return
+      }
       applyKeyword(
         style,
         'justifyContent',
@@ -153,6 +185,9 @@ export function applyDeclaration(
       )
       return
     case 'justify-items':
+      if (resetOptionalKeyword(style, 'justifyItems', normalizedValue, undefined)) {
+        return
+      }
       applyKeyword(
         style,
         'justifyItems',
@@ -164,6 +199,9 @@ export function applyDeclaration(
       )
       return
     case 'justify-self':
+      if (resetOptionalKeyword(style, 'justifySelf', normalizedValue, undefined)) {
+        return
+      }
       applyKeyword(
         style,
         'justifySelf',
@@ -184,9 +222,15 @@ export function applyDeclaration(
       applyPlaceSelf(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'flex-grow':
+      if (resetNumber(style, 'flexGrow', normalizedValue, 0)) {
+        return
+      }
       applyNumber(style, 'flexGrow', normalizedValue, normalizedProperty, value, context)
       return
     case 'flex-shrink':
+      if (resetNumber(style, 'flexShrink', normalizedValue, 1)) {
+        return
+      }
       applyNumber(style, 'flexShrink', normalizedValue, normalizedProperty, value, context)
       return
     case 'flex-basis':
@@ -196,12 +240,18 @@ export function applyDeclaration(
       applyFlexShorthand(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'order':
+      if (resetNumber(style, 'order', normalizedValue, 0)) {
+        return
+      }
       applyInteger(style, 'order', normalizedValue, normalizedProperty, value, context)
       return
     case 'aspect-ratio':
       applyAspectRatio(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-auto-flow':
+      if (resetKeyword(style, 'gridAutoFlow', normalizedValue, 'row')) {
+        return
+      }
       applyGridAutoFlow(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-template-columns':
@@ -217,24 +267,59 @@ export function applyDeclaration(
       applyGridAutoTracks(style, 'gridAutoRows', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-column':
+      if (resetGridLine(style, normalizedValue, 'gridColumnStart', 'gridColumnEnd')) {
+        return
+      }
       applyGridLine(style, 'gridColumnStart', 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-row':
+      if (resetGridLine(style, normalizedValue, 'gridRowStart', 'gridRowEnd')) {
+        return
+      }
       applyGridLine(style, 'gridRowStart', 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
       return
+    case 'grid-area':
+      if (normalizedValue === 'initial' || normalizedValue === 'unset') {
+        style.gridRowStart = 'auto'
+        style.gridColumnStart = 'auto'
+        style.gridRowEnd = 'auto'
+        style.gridColumnEnd = 'auto'
+        return
+      }
+      applyGridArea(style, normalizedValue, normalizedProperty, value, context)
+      return
     case 'grid-column-start':
+      if (resetGridPlacement(style, 'gridColumnStart', normalizedValue)) {
+        return
+      }
       applyGridPlacement(style, 'gridColumnStart', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-column-end':
+      if (resetGridPlacement(style, 'gridColumnEnd', normalizedValue)) {
+        return
+      }
       applyGridPlacement(style, 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-row-start':
+      if (resetGridPlacement(style, 'gridRowStart', normalizedValue)) {
+        return
+      }
       applyGridPlacement(style, 'gridRowStart', normalizedValue, normalizedProperty, value, context)
       return
     case 'grid-row-end':
+      if (resetGridPlacement(style, 'gridRowEnd', normalizedValue)) {
+        return
+      }
       applyGridPlacement(style, 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
       return
     case 'pointer-events':
+      if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
+        return
+      }
+      if (normalizedValue === 'initial') {
+        style.pointerEvents = 'auto'
+        return
+      }
       applyKeyword(
         style,
         'pointerEvents',
@@ -246,6 +331,13 @@ export function applyDeclaration(
       )
       return
     case 'visibility':
+      if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
+        return
+      }
+      if (normalizedValue === 'initial') {
+        style.visibility = 'visible'
+        return
+      }
       applyVisibility(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'overflow':
@@ -488,6 +580,18 @@ export function applyDeclaration(
     case 'border-spacing':
       applyBorderSpacing(style, normalizedValue, normalizedProperty, value, context)
       return
+    case 'table-layout':
+      applyKeywordOnly(normalizedValue, ['auto', 'fixed'], normalizedProperty, value, context)
+      return
+    case 'vertical-align':
+      applyKeywordOnly(
+        normalizedValue,
+        ['baseline', 'top', 'middle', 'bottom', 'sub', 'super', 'text-top', 'text-bottom'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
     case 'inline-size':
       applyLength(style, 'width', normalizedValue, normalizedProperty, value, context)
       return
@@ -691,6 +795,13 @@ export function applyDeclaration(
       applyBorderShorthand(style, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
       return
     case 'font-family':
+      if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
+        return
+      }
+      if (normalizedValue === 'initial') {
+        style.fontFamily = 'sans-serif'
+        return
+      }
       style.fontFamily = value.trim()
       return
     case 'font-size':
@@ -700,6 +811,13 @@ export function applyDeclaration(
       applyLineHeight(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'white-space':
+      if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
+        return
+      }
+      if (normalizedValue === 'initial') {
+        style.whiteSpace = 'normal'
+        return
+      }
       applyKeyword(
         style,
         'whiteSpace',
@@ -830,6 +948,20 @@ function applyDisplay(
     case 'list-item':
       style.display = 'block'
       return
+    case 'table':
+    case 'inline-table':
+      style.display = 'table'
+      return
+    case 'table-row-group':
+    case 'table-header-group':
+    case 'table-footer-group':
+    case 'table-row':
+    case 'table-cell':
+    case 'table-caption':
+    case 'table-column-group':
+    case 'table-column':
+      style.display = value
+      return
     case 'contents':
       style.display = 'contents'
       return
@@ -863,7 +995,42 @@ function applyFontSize(
   originalValue: string,
   context: DeclarationContext,
 ): void {
+  if (value === 'inherit' || value === 'unset') {
+    return
+  }
+
+  if (value === 'initial') {
+    applyFontSizeLength(style, 16)
+    return
+  }
+
   const length = parsePxLength(value)
+
+  if (length !== undefined && length >= 0) {
+    applyFontSizeLength(style, length)
+    return
+  }
+
+  const percentage = parsePercentage(value)
+
+  if (percentage !== undefined && percentage >= 0) {
+    applyFontSizeLength(style, style.fontSize * (percentage / 100))
+    return
+  }
+
+  const em = parseEmLength(value)
+
+  if (em !== undefined && em >= 0) {
+    applyFontSizeLength(style, style.fontSize * em)
+    return
+  }
+
+  const rem = parseRemLength(value)
+
+  if (rem !== undefined && rem >= 0 && context.rootFontSize !== undefined) {
+    applyFontSizeLength(style, context.rootFontSize * rem)
+    return
+  }
 
   if (length === undefined || length < 0) {
     handleUnsupportedCss(context.policy, {
@@ -876,7 +1043,9 @@ function applyFontSize(
     })
     return
   }
+}
 
+function applyFontSizeLength(style: SupportedStyle, length: number): void {
   const ratio = style.lineHeight / style.fontSize
   style.fontSize = length
   style.lineHeight = ratio * length
@@ -889,6 +1058,10 @@ function applyLineHeight(
   originalValue: string,
   context: DeclarationContext,
 ): void {
+  if (value === 'inherit' || value === 'unset') {
+    return
+  }
+
   if (value === 'normal') {
     style.lineHeight = style.fontSize * 1.2
     return
@@ -905,6 +1078,20 @@ function applyLineHeight(
 
   if (percentage !== undefined && percentage >= 0) {
     style.lineHeight = (percentage / 100) * style.fontSize
+    return
+  }
+
+  const emLength = parseEmLength(value)
+
+  if (emLength !== undefined && emLength >= 0) {
+    style.lineHeight = emLength * style.fontSize
+    return
+  }
+
+  const remLength = parseRemLength(value)
+
+  if (remLength !== undefined && remLength >= 0 && context.rootFontSize !== undefined) {
+    style.lineHeight = remLength * context.rootFontSize
     return
   }
 
@@ -2272,6 +2459,71 @@ function applyKeyword<Key extends keyof SupportedStyle>(
   })
 }
 
+function resetKeyword<Key extends keyof SupportedStyle>(
+  style: SupportedStyle,
+  key: Key,
+  value: string,
+  initialValue: SupportedStyle[Key],
+): boolean {
+  if (value !== 'initial' && value !== 'unset') {
+    return false
+  }
+
+  style[key] = initialValue
+  return true
+}
+
+function resetOptionalKeyword<Key extends keyof SupportedStyle>(
+  style: SupportedStyle,
+  key: Key,
+  value: string,
+  initialValue: SupportedStyle[Key],
+): boolean {
+  return resetKeyword(style, key, value, initialValue)
+}
+
+function resetNumber<Key extends keyof SupportedStyle>(
+  style: SupportedStyle,
+  key: Key,
+  value: string,
+  initialValue: Extract<SupportedStyle[Key], number>,
+): boolean {
+  if (value !== 'initial' && value !== 'unset') {
+    return false
+  }
+
+  style[key] = initialValue as SupportedStyle[Key]
+  return true
+}
+
+function resetGridLine(
+  style: SupportedStyle,
+  value: string,
+  startKey: 'gridColumnStart' | 'gridRowStart',
+  endKey: 'gridColumnEnd' | 'gridRowEnd',
+): boolean {
+  if (value !== 'initial' && value !== 'unset') {
+    return false
+  }
+
+  style[startKey] = 'auto'
+  style[endKey] = 'auto'
+  return true
+}
+
+function resetGridPlacement(
+  style: SupportedStyle,
+  key: 'gridColumnStart' | 'gridColumnEnd' | 'gridRowStart' | 'gridRowEnd',
+  value: string,
+): boolean {
+  if (value !== 'initial' && value !== 'unset') {
+    return false
+  }
+
+  style[key] = 'auto'
+  return true
+}
+
 function applyPlaceContent(
   style: SupportedStyle,
   value: string,
@@ -2773,6 +3025,52 @@ function applyGridLine(
 
   style[startKey] = start
   style[endKey] = end
+}
+
+function applyGridArea(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length !== 4) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const [rowStart, columnStart, rowEnd, columnEnd] = parts.map(parseGridPlacement)
+
+  if (
+    rowStart === undefined ||
+    columnStart === undefined ||
+    rowEnd === undefined ||
+    columnEnd === undefined
+  ) {
+    handleUnsupportedCss(context.policy, {
+      property,
+      value: originalValue,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  style.gridRowStart = rowStart
+  style.gridColumnStart = columnStart
+  style.gridRowEnd = rowEnd
+  style.gridColumnEnd = columnEnd
 }
 
 function applyGridPlacement(
@@ -3446,6 +3744,16 @@ function parsePxLength(value: string): number | undefined {
   }
 
   const match = /^(-?\d+(?:\.\d+)?)px$/.exec(value)
+  return match ? Number(match[1]) : undefined
+}
+
+function parseEmLength(value: string): number | undefined {
+  const match = /^(-?\d+(?:\.\d+)?)em$/.exec(value)
+  return match ? Number(match[1]) : undefined
+}
+
+function parseRemLength(value: string): number | undefined {
+  const match = /^(-?\d+(?:\.\d+)?)rem$/.exec(value)
   return match ? Number(match[1]) : undefined
 }
 

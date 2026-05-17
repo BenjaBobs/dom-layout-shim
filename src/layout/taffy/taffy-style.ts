@@ -80,10 +80,10 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
     height: style.rowGap,
   }
   taffyStyle.inset = {
-    left: style.left ?? 'auto',
-    right: style.right ?? 'auto',
-    top: style.top ?? 'auto',
-    bottom: style.bottom ?? 'auto',
+    left: style.position === 'static' ? 'auto' : style.left ?? 'auto',
+    right: style.position === 'static' ? 'auto' : style.right ?? 'auto',
+    top: style.position === 'static' ? 'auto' : style.top ?? 'auto',
+    bottom: style.position === 'static' ? 'auto' : style.bottom ?? 'auto',
   }
 
   return taffyStyle
