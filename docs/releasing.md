@@ -116,10 +116,14 @@ Create a GitHub environment named `npm` with:
 - No npm token or other long-lived publishing secret.
 
 Protect `main` with a repository ruleset that requires pull requests and the
-package, Chromium parity, and documentation status checks. Block force pushes
-and branch deletion. Do not grant write access to untrusted contributors;
-external contributors can work through forks, whose pull request workflows
-receive read-only tokens and no publishing environment access.
+Feature branch history, package, Chromium parity, and documentation status
+checks. Block force pushes and branch deletion. Do not enable GitHub's
+`Require linear history` rule: the repository intentionally permits one merge
+commit at the `main` boundary while the Feature branch history check rejects
+merge commits inside the pull request itself. Do not grant write access to
+untrusted contributors; external contributors can work through forks, whose
+pull request workflows receive read-only tokens and no publishing environment
+access.
 
 All workflow actions are pinned to immutable commit SHAs. Dependabot proposes
 reviewable SHA updates for them. If the account plan exposes an Actions policy
