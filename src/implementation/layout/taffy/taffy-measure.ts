@@ -1,6 +1,6 @@
 import type { MeasureFunction, Size } from 'taffy-layout'
 import type { SupportedStyle } from '../../css/supported-style.ts'
-import type { TextMeasurer } from '../../text/text-measurer.ts'
+import type { TextMeasurer } from '../../../api/text-measurer.ts'
 
 const elementNodeType = 1
 const textNodeType = 3

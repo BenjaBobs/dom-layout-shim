@@ -1,4 +1,4 @@
-import { handleUnsupportedCss, type UnsupportedCssPolicy } from './unsupported-css-policy.ts'
+import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 
 export type ParsedSelector = {
   selector: string

@@ -2,7 +2,11 @@
 
 ## Project Structure & Module Organization
 
-This package provides deterministic layout and hit testing for DOM-like test harnesses. Source lives in `src/`, organized by responsibility: `engine/` configures the layout engine, `attachment/` patches DOM APIs, `layout/` computes boxes, `hit-testing/` resolves pointer targets, `css/` parses supported CSS, and `geometry/` contains primitives. Public exports are centralized in `src/index.ts`.
+This package provides deterministic layout and hit testing for DOM-like test
+harnesses. Source is split into `src/api/` for public contracts and integration
+glue, and `src/implementation/` for DOM attachment, CSS parsing, layout,
+geometry, and hit-testing internals. Public exports are centralized in
+`src/index.ts`; implementation modules must not be exported directly from it.
 
 Tests live under `test/`: unit coverage is in `test/unit/`, Chromium parity cases are in `test/browser-parity/`, shared parity fixtures are in `test/browser-parity/fixtures/`, and performance checks are in `test/bench/`. Documentation lives in `docs/`; generated output is `dist/`.
 
@@ -54,12 +58,12 @@ behavior, for example `absolute-overlap` or `pointer-events-none`.
 
 Run `pnpm test` for normal changes. Run `pnpm run test:browser-parity` for CSS, layout, geometry, or hit-testing changes. Run `pnpm run build` before publishing-facing changes.
 
-Keep `src/css/css-support-inventory.ts` up to date whenever CSS parsing,
-layout behavior, hit-testing behavior, visual/inert CSS handling, parity
-coverage, implementation quirks, or tracked CSS TODOs change. Update
-`status`, `parityStatus`, `ownerArea`, parity fixture references, and notes in
-the same change that modifies the behavior. The overview can be viewed with
-`pnpm run css:status`.
+Keep the records in `support/css/` up to date whenever CSS parsing, layout
+behavior, hit-testing behavior, visual/inert CSS handling, parity coverage,
+implementation quirks, or tracked CSS TODOs change. Update claim support,
+parity status, owner, fixture references, conditions, and notes in the same
+change that modifies the behavior. Run `pnpm run css:check` to validate and
+generate the inventory. The overview can be viewed with `pnpm run css:status`.
 
 ## Commit & Pull Request Guidelines
 

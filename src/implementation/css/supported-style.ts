@@ -1,4 +1,4 @@
-import type { WhiteSpace } from '../text/text-measurer.ts'
+import type { WhiteSpace } from '../../api/text-measurer.ts'
 
 export type Edges<Value = number> = {
   top: Value

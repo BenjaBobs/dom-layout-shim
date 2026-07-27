@@ -15,7 +15,7 @@
 # production
 /build
 /docs/data/
-/src/css/css-support-inventory.generated.ts
+/src/api/css-support-inventory.generated.ts
 
 # misc
 .DS_Store

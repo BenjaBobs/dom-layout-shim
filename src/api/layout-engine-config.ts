@@ -1,5 +1,5 @@
-import type { UnsupportedCssPolicy } from '../css/unsupported-css-policy.ts'
-import { createDefaultTextMeasurer, type TextMeasurer } from '../text/text-measurer.ts'
+import type { UnsupportedCssPolicy } from './unsupported-css-policy.ts'
+import { createDefaultTextMeasurer, type TextMeasurer } from './text-measurer.ts'
 
 export type Viewport = {
   width: number

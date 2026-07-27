@@ -2,7 +2,7 @@ import { transform } from 'lightningcss'
 import { readDeclaration } from './lightningcss-value-stringifier.ts'
 import { readSelectorList } from './selector-parser.ts'
 import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
-import { handleUnsupportedCss, type UnsupportedCssPolicy } from './unsupported-css-policy.ts'
+import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 
 export type StyleRule = {
   selector: string

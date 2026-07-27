@@ -1,5 +1,5 @@
 import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
-import type { UnsupportedCssPolicy } from './unsupported-css-policy.ts'
+import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 
 export function applyInlineStyle(
   style: SupportedStyle,

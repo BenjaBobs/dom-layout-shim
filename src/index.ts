@@ -1,11 +1,11 @@
-export { attachLayoutEngine } from './engine/attach-layout-engine.ts'
-export type { AttachLayoutEngineOptions } from './engine/attach-layout-engine.ts'
-export { expectBlockedBy, expectReceivesPointer, guardedClick } from './assertions/pointer-assertions.ts'
-export type { PointerAssertionOptions } from './assertions/pointer-assertions.ts'
-export type { LayoutEngineConfig, Viewport } from './engine/layout-engine-config.ts'
-export { debugLayout } from './attachment/patch-dom-apis.ts'
-export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './css/unsupported-css-policy.ts'
-export { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from './css/css-support-inventory.ts'
+export { attachLayoutEngine } from './api/attach-layout-engine.ts'
+export type { AttachLayoutEngineOptions } from './api/attach-layout-engine.ts'
+export { expectBlockedBy, expectReceivesPointer, guardedClick } from './api/pointer-assertions.ts'
+export type { PointerAssertionOptions } from './api/pointer-assertions.ts'
+export type { LayoutEngineConfig, Viewport } from './api/layout-engine-config.ts'
+export { debugLayout } from './api/debug-layout.ts'
+export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './api/unsupported-css-policy.ts'
+export { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from './api/css-support-inventory.ts'
 export type {
   CssSupportClaim,
   CssSupportEffect,
@@ -15,12 +15,12 @@ export type {
   CssSupportOwner,
   CssSupportParity,
   CssSupportRecord,
-} from './css/css-support-inventory.ts'
-export type { Box } from './geometry/box.ts'
-export type { HitBox } from './hit-testing/hit-box.ts'
+} from './api/css-support-inventory.ts'
+export type { Box } from './api/box.ts'
+export type { HitBox } from './api/hit-box.ts'
 export {
   createDefaultTextMeasurer,
   createDeterministicTextMeasurer,
   createPretextTextMeasurer,
-} from './text/text-measurer.ts'
-export type { TextMeasureInput, TextMeasureResult, TextMeasurer } from './text/text-measurer.ts'
+} from './api/text-measurer.ts'
+export type { TextMeasureInput, TextMeasureResult, TextMeasurer } from './api/text-measurer.ts'

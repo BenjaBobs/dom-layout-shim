@@ -1,4 +1,4 @@
-import type { NormalizedLayoutEngineConfig } from '../engine/layout-engine-config.ts'
+import type { NormalizedLayoutEngineConfig } from '../../api/layout-engine-config.ts'
 import type { DocumentLike } from '../browser-dom/document-like.ts'
 import { DocumentAttachment } from './document-attachment.ts'
 

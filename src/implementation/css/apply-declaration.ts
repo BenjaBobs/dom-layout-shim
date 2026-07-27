@@ -1,4 +1,4 @@
-import { handleUnsupportedCss, type UnsupportedCssPolicy, type UnsupportedCssSource } from './unsupported-css-policy.ts'
+import { handleUnsupportedCss, type UnsupportedCssPolicy, type UnsupportedCssSource } from '../../api/unsupported-css-policy.ts'
 import type {
   AlignContentValue,
   AlignItemsValue,

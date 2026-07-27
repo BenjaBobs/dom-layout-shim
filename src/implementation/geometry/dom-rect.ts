@@ -1,4 +1,4 @@
-import type { Box } from './box.ts'
+import type { Box } from '../../api/box.ts'
 
 type DomRectConstructor = new (
   x?: number,

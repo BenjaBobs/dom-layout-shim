@@ -9,7 +9,7 @@ const fixtureDirectory = resolve(root, 'test/browser-parity/cases')
 const generatedJsonPath = resolve(root, 'docs/data/css-support.json')
 const generatedIndexPath = resolve(root, 'docs/data/css-property-index.json')
 const generatedSchemaPath = resolve(root, 'docs/data/css-support.schema.json')
-const generatedTypeScriptPath = resolve(root, 'src/css/css-support-inventory.generated.ts')
+const generatedTypeScriptPath = resolve(root, 'src/api/css-support-inventory.generated.ts')
 const schemaSource = await readFile(resolve(root, 'support/css-support.schema.json'), 'utf8')
 
 const supportValues = new Set(['supported', 'partial', 'unsupported', 'unknown'])
