@@ -16,6 +16,7 @@ jobs:
   version:
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
     steps:
@@ -35,6 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Create or update version pull request
+        id: changesets
         uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1.8.0
         with:
           version: pnpm run release:version
@@ -42,6 +44,14 @@ jobs:
           commit: "chore(cfg): Version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run required checks on the version pull request
+        if: steps.changesets.outputs.hasChangesets == 'true'
+        run: |
+          gh workflow run ci.yml --ref changeset-release/main
+          gh workflow run docs.yml --ref changeset-release/main -f deploy=false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   inspect:
     runs-on: ubuntu-latest

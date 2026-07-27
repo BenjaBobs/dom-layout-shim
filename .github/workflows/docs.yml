@@ -4,18 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '.github/workflows/docs.yml'
-      - 'docs/**'
-      - 'scripts/css-support.mjs'
-      - 'support/**'
   pull_request:
-    paths:
-      - '.github/workflows/docs.yml'
-      - 'docs/**'
-      - 'scripts/css-support.mjs'
-      - 'support/**'
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the generated site
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -45,7 +40,12 @@ jobs:
           path: docs
 
   deploy:
-    if: github.event_name != 'pull_request' && github.event.repository.visibility == 'public'
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && inputs.deploy)
+      )
     needs: build
     runs-on: ubuntu-latest
     permissions:
