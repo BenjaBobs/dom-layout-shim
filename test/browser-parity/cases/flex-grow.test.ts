@@ -76,3 +76,43 @@ it('flex grow redistributes space after an item reaches its maximum size', async
     ],
   })
 })
+
+it('flex grow distributes vertical free space in column layout', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 240 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          display: flex;
+          flex-direction: column;
+          width: 50px;
+          height: 200px;
+        }
+
+        #first {
+          width: 20px;
+          height: 40px;
+          flex-grow: 1;
+        }
+
+        #second {
+          width: 30px;
+          height: 40px;
+          flex-grow: 3;
+        }
+      </style>
+      <div id="parent">
+        <div id="first"></div>
+        <div id="second"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#first' },
+      { type: 'rect', selector: '#second' },
+    ],
+  })
+})

@@ -113,3 +113,43 @@ it('flex shrink freezes an item at its minimum main size', async () => {
     ],
   })
 })
+
+it('flex shrink distributes vertical overflow in column layout', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 240 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          display: flex;
+          flex-direction: column;
+          width: 50px;
+          height: 150px;
+        }
+
+        #first {
+          width: 20px;
+          height: 100px;
+          flex-shrink: 1;
+        }
+
+        #second {
+          width: 30px;
+          height: 100px;
+          flex-shrink: 3;
+        }
+      </style>
+      <div id="parent">
+        <div id="first"></div>
+        <div id="second"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#first' },
+      { type: 'rect', selector: '#second' },
+    ],
+  })
+})

@@ -389,6 +389,10 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       },
       {
         kind: 'taffy-compat',
+        text: 'Explicit minmax row caps and auto-height grids with empty implicit minmax rows can diverge from Chromium in Taffy 0.9.2; implicit row minmax parity coverage therefore uses a definite grid height.',
+      },
+      {
+        kind: 'taffy-compat',
         text: 'Flexible fr tracks are mapped to Taffy min/max tracks with min 0 and max Nfr because Taffy only accepts fr as a max track sizing function.',
       },
       {
