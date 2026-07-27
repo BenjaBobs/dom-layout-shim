@@ -8,7 +8,15 @@ describe('source boundaries', () => {
       .map((entry) => entry.name)
       .sort()
 
-    expect(entries).toEqual(['api', 'implementation', 'index.ts'])
+    expect(entries).toEqual(['api', 'css-parity-implementation', 'index.ts'])
+  })
+
+  it('keeps DOM glue in the API and CSS parity algorithms separate', () => {
+    const apiDirectories = directoriesIn('src/api')
+    const parityDirectories = directoriesIn('src/css-parity-implementation')
+
+    expect(apiDirectories).toEqual(['attachment', 'browser-dom'])
+    expect(parityDirectories).toEqual(['css', 'geometry', 'hit-testing', 'layout'])
   })
 
   it('exports the package surface through API modules', () => {
@@ -19,3 +27,10 @@ describe('source boundaries', () => {
     expect(localExportSources.every((path) => path.startsWith('./api/'))).toBe(true)
   })
 })
+
+function directoriesIn(path: string): string[] {
+  return readdirSync(resolve(path), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+}

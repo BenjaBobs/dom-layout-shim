@@ -1,11 +1,17 @@
-import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
-import type { Viewport } from '../../api/layout-engine-config.ts'
-import { createDomRect } from '../geometry/dom-rect.ts'
-import { zeroBox } from '../../api/box.ts'
-import { elementFromPointInBoxes, elementsFromPointInBoxes } from '../hit-testing/point-query.ts'
-import type { LayoutSnapshot, ScrollOffset } from '../layout/layout-source.ts'
-import { computeTaffyDocumentLayout } from '../layout/taffy-layout-source.ts'
-import type { TextMeasurer } from '../../api/text-measurer.ts'
+import type { UnsupportedCssPolicy } from '../unsupported-css-policy.ts'
+import type { Viewport } from '../layout-engine-config.ts'
+import { createDomRect } from '../../css-parity-implementation/geometry/dom-rect.ts'
+import { zeroBox } from '../box.ts'
+import {
+  elementFromPointInBoxes,
+  elementsFromPointInBoxes,
+} from '../../css-parity-implementation/hit-testing/point-query.ts'
+import type {
+  LayoutSnapshot,
+  ScrollOffset,
+} from '../../css-parity-implementation/layout/layout-source.ts'
+import { computeTaffyDocumentLayout } from '../../css-parity-implementation/layout/taffy-layout-source.ts'
+import type { TextMeasurer } from '../text-measurer.ts'
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
 
 export type DocumentAttachmentOptions = {

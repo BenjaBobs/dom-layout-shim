@@ -83,7 +83,7 @@ describe('CSS support inventory', () => {
 })
 
 function handledDeclarationProperties(): string[] {
-  const source = readFileSync(resolve('src/implementation/css/apply-declaration.ts'), 'utf8')
+  const source = readFileSync(resolve('src/css-parity-implementation/css/apply-declaration.ts'), 'utf8')
   const switchStart = source.indexOf('switch (normalizedProperty)')
   const defaultStart = source.indexOf('    default:', switchStart)
 

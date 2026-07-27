@@ -3,10 +3,11 @@
 ## Project Structure & Module Organization
 
 This package provides deterministic layout and hit testing for DOM-like test
-harnesses. Source is split into `src/api/` for public contracts and integration
-glue, and `src/implementation/` for DOM attachment, CSS parsing, layout,
-geometry, and hit-testing internals. Public exports are centralized in
-`src/index.ts`; implementation modules must not be exported directly from it.
+harnesses. Source is split into `src/api/` for public contracts, DOM attachment,
+DOM-like interfaces, and integration glue, and `src/css-parity-implementation/`
+for CSS parsing, layout, geometry, and hit-testing algorithms. Public exports
+are centralized in `src/index.ts`; CSS parity implementation modules must not
+be exported directly from it.
 
 Tests live under `test/`: unit coverage is in `test/unit/`, Chromium parity cases are in `test/browser-parity/`, shared parity fixtures are in `test/browser-parity/fixtures/`, and performance checks are in `test/bench/`. Documentation lives in `docs/`; generated output is `dist/`.
 

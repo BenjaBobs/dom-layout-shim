@@ -1,4 +1,4 @@
-import { debugLayout } from '../implementation/attachment/patch-dom-apis.ts'
+import { debugLayout } from './attachment/patch-dom-apis.ts'
 
 export type PointerAssertionOptions = {
   message?: string
