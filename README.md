@@ -46,9 +46,27 @@ await attachLayoutEngine({
 
 The current implementation uses Lightning CSS for `<style>` parsing and supports
 a small CSS subset for proof-of-concept block, flex, absolute, and fixed
-positioned fixtures. Unsupported CSS throws by default unless explicitly ignored
-by policy. Text measurement falls back to a deterministic approximation in
-Node-like runtimes without canvas text measurement.
+positioned fixtures. Unsupported declarations are ignored with deduplicated
+warnings so applications can continue using the supported subset. Each warning
+identifies the declaration and links to its compatibility entry.
+
+Use a callback to display or collect warnings in the test runner:
+
+```ts
+await attachLayoutEngine({
+  window,
+  unsupportedCss: {
+    onWarning: ({ property, value, reason }) => {
+      testLogger.warn(`${property}: ${value} (${reason})`)
+    },
+  },
+})
+```
+
+Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
+`'ignore'` to deliberately suppress unsupported declarations. Decisions can
+also be overridden by property. Text measurement falls back to a deterministic
+approximation in Node-like runtimes without canvas text measurement.
 
 The package requires Node.js 22 or newer and uses standard ES modules.
 

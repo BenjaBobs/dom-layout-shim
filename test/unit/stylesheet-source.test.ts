@@ -20,7 +20,7 @@ describe('stylesheet source handling', () => {
       <button id="button" data-state="OPEN"></button>
     `
 
-    await attach()
+    await attachStrict()
 
     expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
   })
@@ -85,6 +85,9 @@ describe('stylesheet source handling', () => {
     `
 
     await attach({
+      unsupportedCss: {
+        default: 'throw',
+      },
       stylesheets: [
         `
           @media (min-width: 1px) {
@@ -119,7 +122,7 @@ describe('stylesheet source handling', () => {
       <div id="box"></div>
     `
 
-    await attach()
+    await attachStrict()
 
     expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
   })
@@ -134,8 +137,12 @@ describe('stylesheet source handling', () => {
       <div id="box" class="box"></div>
     `
 
-    await attach()
+    await attachStrict()
 
     expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
   })
 })
+
+async function attachStrict(): Promise<void> {
+  await attach({ unsupportedCss: { default: 'throw' } })
+}

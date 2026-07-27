@@ -29,6 +29,10 @@
         {
           "kind": "limitation",
           "text": "External stylesheets, at-rules, sibling combinators, pseudo-elements, and most pseudo-classes are not implemented."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Unsupported CSS is ignored with one actionable warning per distinct declaration by default; strict throw and silent ignore policies remain configurable."
         }
       ]
     }

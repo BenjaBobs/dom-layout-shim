@@ -28,7 +28,7 @@ export type NormalizedLayoutEngineConfig = {
 export function normalizeConfig(config: LayoutEngineConfig = {}): NormalizedLayoutEngineConfig {
   return {
     viewport: config.viewport ?? { width: 1280, height: 720 },
-    unsupportedCss: config.unsupportedCss ?? { default: 'throw' },
+    unsupportedCss: { default: 'warn', ...config.unsupportedCss },
     textMeasurer: config.textMeasurer ?? createDefaultTextMeasurer(),
     stylesheets: config.stylesheets ?? [],
   }
