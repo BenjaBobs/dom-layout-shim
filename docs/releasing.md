@@ -65,6 +65,11 @@ opposing logical insets.
 6. Package publication, tags, and GitHub Releases remain disabled while
    `package.json` is private and the project is at `0.0.0`.
 
+The documentation workflow validates and generates the site while the
+repository is private. Pages setup, artifact upload, and deployment begin
+automatically once the repository is public. Enable Pages with GitHub Actions
+as its source in the repository settings before the first public deployment.
+
 Run `pnpm run release:status` to inspect pending changesets and
 `pnpm run release:version` to preview the versioning step locally. The version
 command consumes pending changeset files, so only run it when intentionally
