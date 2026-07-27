@@ -1,6 +1,5 @@
 {
   "name": "dom-layout-shim",
-  "private": true,
   "version": "0.0.0",
   "description": "Patch deterministic layout and hit testing into DOM-like test environments.",
   "license": "Unlicense",
@@ -27,6 +26,9 @@
   "homepage": "https://benjabobs.github.io/dom-layout-shim/",
   "bugs": {
     "url": "https://github.com/BenjaBobs/dom-layout-shim/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "main": "./dist/index.js",
