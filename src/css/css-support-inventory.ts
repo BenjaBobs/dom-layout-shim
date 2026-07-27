@@ -127,7 +127,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, opposing insets, CSS-wide static resets, and z-index ordering have parity fixtures.',
+        text: 'Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, physical and logical opposing/end insets, CSS-wide static resets, and z-index ordering have parity fixtures.',
       },
       {
         kind: 'taffy-compat',
@@ -163,7 +163,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Box sizing including CSS-wide content-box resets, pixel and percentage min/max constraints, percentages, and aspect ratio in both axes with constraint interaction have parity fixtures.',
+        text: 'Box sizing including CSS-wide content-box resets, physical and logical min/max constraints, percentages, and aspect ratio in both axes with constraint interaction have parity fixtures.',
       },
       {
         kind: 'limitation',

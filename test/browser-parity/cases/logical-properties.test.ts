@@ -71,3 +71,99 @@ it('maps logical margins and padding in static block flow', async () => {
     ],
   })
 })
+
+it('maps logical min and max sizes to physical constraints', async () => {
+  await expectChromiumParity({
+    viewport: { width: 320, height: 220 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #minimum {
+          inline-size: 40px;
+          block-size: 20px;
+          min-inline-size: 80px;
+          min-block-size: 50px;
+        }
+
+        #maximum {
+          inline-size: 120px;
+          block-size: 70px;
+          max-inline-size: 90px;
+          max-block-size: 30px;
+        }
+      </style>
+      <div id="minimum"></div>
+      <div id="maximum"></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#minimum' },
+      { type: 'rect', selector: '#maximum' },
+    ],
+  })
+})
+
+it('logical opposing insets resolve automatic dimensions', async () => {
+  await expectChromiumParity({
+    viewport: { width: 320, height: 220 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          position: relative;
+          inline-size: 200px;
+          block-size: 100px;
+        }
+
+        #child {
+          position: absolute;
+          inset-inline: 10px 20px;
+          inset-block: 5px 15px;
+        }
+      </style>
+      <div id="parent">
+        <div id="child"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#parent' },
+      { type: 'rect', selector: '#child' },
+    ],
+  })
+})
+
+it('logical end insets position explicitly sized boxes', async () => {
+  await expectChromiumParity({
+    viewport: { width: 320, height: 220 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          position: relative;
+          inline-size: 200px;
+          block-size: 100px;
+        }
+
+        #child {
+          position: absolute;
+          inset-inline-end: 12px;
+          inset-block-end: 8px;
+          inline-size: 40px;
+          block-size: 20px;
+        }
+      </style>
+      <div id="parent">
+        <div id="child"></div>
+      </div>
+    `,
+    queries: [{ type: 'rect', selector: '#child' }],
+  })
+})
