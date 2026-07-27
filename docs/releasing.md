@@ -61,11 +61,70 @@ opposing logical insets.
 3. Package CI validates the inventory, types, unit tests, Chromium parity,
    build output, and packed file list.
 4. Maintainers review and edit the proposed version and `CHANGELOG.md`.
-5. Merging that pull request records the versioned release state.
-6. Package publication, tags, and GitHub Releases remain disabled while
-   `package.json` is private and the project is at `0.0.0`.
+5. Merging that pull request starts a protected `npm` environment deployment.
+6. After approval, the deployment repeats the complete validation suite,
+   publishes through npm trusted publishing, creates the version tag, and
+   creates a GitHub Release from the human-authored changelog section.
+
+The publish job does not use an npm token. npm authenticates the exact
+`release.yml` workflow through a short-lived GitHub OIDC identity. Arbitrary
+branches and pull requests cannot enter the protected `npm` environment.
+
+The `0.0.0` version is an explicit publication guard. The workflow does not
+publish until Changesets prepares the first real version.
+
+The documentation workflow validates and generates the site while the
+repository is private. Pages setup, artifact upload, and deployment begin
+automatically once the repository is public. Enable Pages with GitHub Actions
+as its source in the repository settings before the first public deployment.
 
 Run `pnpm run release:status` to inspect pending changesets and
 `pnpm run release:version` to preview the versioning step locally. The version
 command consumes pending changeset files, so only run it when intentionally
 preparing a release.
+
+## One-time npm setup
+
+The package must exist on npm before its trusted publisher can be configured.
+For the first release:
+
+1. Let Changesets prepare and merge the initial version pull request.
+2. From that exact release commit, run all release checks and publish once with
+   an npm account protected by two-factor authentication.
+3. In the package settings on npmjs.com, configure GitHub Actions as the trusted
+   publisher:
+   - owner: `BenjaBobs`
+   - repository: `dom-layout-shim`
+   - workflow: `release.yml`
+   - environment: `npm`
+   - allowed action: `npm publish`
+4. Disable token-based package publication on npm.
+5. Re-run the release workflow so it can create any missing tag or GitHub
+   Release.
+
+## Repository security settings
+
+Keep repository-wide workflow permissions read-only. The checked-in workflows
+grant write access only to the jobs that create version pull requests, deploy
+Pages, or publish releases.
+
+Create a GitHub environment named `npm` with:
+
+- Required reviewer: the package owner.
+- Deployment branches: selected branch `main` only.
+- Administrator bypass disabled.
+- No npm token or other long-lived publishing secret.
+
+Protect `main` with a repository ruleset that requires pull requests and the
+Feature branch history, package, Chromium parity, and documentation status
+checks. Block force pushes and branch deletion. Do not enable GitHub's
+`Require linear history` rule: the repository intentionally permits one merge
+commit at the `main` boundary while the Feature branch history check rejects
+merge commits inside the pull request itself. Do not grant write access to
+untrusted contributors; external contributors can work through forks, whose
+pull request workflows receive read-only tokens and no publishing environment
+access.
+
+All workflow actions are pinned to immutable commit SHAs. Dependabot proposes
+reviewable SHA updates for them. If the account plan exposes an Actions policy
+requiring full-length SHA pins, enable it as an additional server-side guard.

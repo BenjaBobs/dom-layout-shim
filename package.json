@@ -1,6 +1,5 @@
 {
   "name": "dom-layout-shim",
-  "private": true,
   "version": "0.0.0",
   "description": "Patch deterministic layout and hit testing into DOM-like test environments.",
   "license": "Unlicense",
@@ -28,6 +27,9 @@
   "bugs": {
     "url": "https://github.com/BenjaBobs/dom-layout-shim/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -44,9 +46,10 @@
     "README.md"
   ],
   "scripts": {
-    "build": "pnpm run css:generate && tsc -p tsconfig.build.json",
+    "build": "pnpm run css:generate && node scripts/clean-build-output.mjs && tsc -p tsconfig.build.json",
     "typecheck": "pnpm run css:generate && tsc -p tsconfig.json --noEmit",
     "test": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
+    "test:package": "pnpm run build && node scripts/test-package-consumer.mjs",
     "test:browser-parity": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
     "bench": "pnpm run css:generate && node test/bench/hit-testing.bench.ts",
     "docs:serve": "pnpm run css:generate && node scripts/serve-css-support-status.mjs",

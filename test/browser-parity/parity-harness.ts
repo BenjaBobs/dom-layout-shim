@@ -14,15 +14,25 @@ export type CenterClickabilityQuery = {
   selector: string
 }
 
+type ExplainedTolerance<T extends string> =
+  | {
+      tolerance?: never
+      toleranceReason?: never
+    }
+  | {
+      tolerance: Partial<Record<T, number>>
+      toleranceReason: string
+    }
+
 export type RectQuery = {
   type: 'rect'
   selector: string
-}
+} & ExplainedTolerance<'left' | 'top' | 'width' | 'height'>
 
 export type DimensionsQuery = {
   type: 'dimensions'
   selector: string
-}
+} & ExplainedTolerance<'offsetWidth' | 'offsetHeight' | 'clientWidth' | 'clientHeight'>
 
 export type BrowserParityQuery = PointQuery | CenterClickabilityQuery | RectQuery | DimensionsQuery
 
@@ -84,11 +94,55 @@ export async function expectChromiumParity(fixture: BrowserParityFixture): Promi
   expect(chromiumResult.length, 'Chromium result count should match query count').toBe(fixture.queries.length)
 
   for (const [index, query] of fixture.queries.entries()) {
-    expect(
-      engineResult[index],
-      `Parity mismatch for query ${index}: ${describeQuery(query)}\n` +
-        'Chromium result is expected; happy-dom engine result is received.',
-    ).toEqual(chromiumResult[index])
+    expectQueryParity(engineResult[index], chromiumResult[index], query, index)
+  }
+}
+
+function expectQueryParity(
+  engineResult: QueryResult | undefined,
+  chromiumResult: QueryResult | undefined,
+  query: BrowserParityQuery,
+  index: number,
+): void {
+  const message =
+    `Parity mismatch for query ${index}: ${describeQuery(query)}\n` +
+    'Chromium result is expected; happy-dom engine result is received.'
+
+  if (query.type === 'rect' && query.tolerance) {
+    expectNumericRecordParity(
+      engineResult?.rect,
+      chromiumResult?.rect,
+      query.tolerance,
+      `${message}\nTolerance reason: ${query.toleranceReason}`,
+    )
+    return
+  }
+
+  if (query.type === 'dimensions' && query.tolerance) {
+    expectNumericRecordParity(
+      engineResult?.dimensions,
+      chromiumResult?.dimensions,
+      query.tolerance,
+      `${message}\nTolerance reason: ${query.toleranceReason}`,
+    )
+    return
+  }
+
+  expect(engineResult, message).toEqual(chromiumResult)
+}
+
+function expectNumericRecordParity<T extends Record<string, number>>(
+  engineResult: T | undefined,
+  chromiumResult: T | undefined,
+  tolerance: Partial<Record<keyof T, number>>,
+  message: string,
+): void {
+  expect(engineResult, message).toBeDefined()
+  expect(chromiumResult, message).toBeDefined()
+
+  for (const key of Object.keys(chromiumResult ?? {}) as (keyof T)[]) {
+    const difference = Math.abs((engineResult?.[key] ?? Number.NaN) - (chromiumResult?.[key] ?? Number.NaN))
+    expect(difference, `${message}\nNumeric field: ${String(key)}`).toBeLessThanOrEqual(tolerance[key] ?? 0)
   }
 }
 

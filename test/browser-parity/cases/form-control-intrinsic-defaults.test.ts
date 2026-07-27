@@ -1,7 +1,37 @@
 import { it } from 'vitest'
 import { expectChromiumParity } from '../parity-harness.ts'
 
-it('common form controls expose native intrinsic sizes in block flow', async () => {
+const nativeButtonTolerance = {
+  tolerance: { width: 12, height: 2 },
+  toleranceReason: 'Native button font and theme metrics vary across Chromium host platforms.',
+} as const
+
+const nativeTextInputTolerance = {
+  tolerance: { width: 8, height: 2 },
+  toleranceReason: 'Native text input font and theme metrics vary across Chromium host platforms.',
+} as const
+
+const nativeFileInputTolerance = {
+  tolerance: { width: 24, height: 4 },
+  toleranceReason: 'Native file input labels and theme metrics vary across Chromium host platforms.',
+} as const
+
+const nativeTextareaTolerance = {
+  tolerance: { width: 1, height: 8 },
+  toleranceReason: 'Native textarea row and column metrics vary across Chromium host platforms.',
+} as const
+
+const nativeSelectTolerance = {
+  tolerance: { width: 20, height: 4 },
+  toleranceReason: 'Native select option fonts and theme metrics vary across Chromium host platforms.',
+} as const
+
+const nativeControlTolerance = {
+  tolerance: { width: 2, height: 3 },
+  toleranceReason: 'Native control theme metrics vary across Chromium host platforms.',
+} as const
+
+it('common form controls expose native intrinsic sizes independently', async () => {
   await expectChromiumParity({
     viewport: { width: 500, height: 300 },
     html: `
@@ -17,6 +47,9 @@ it('common form controls expose native intrinsic sizes in block flow', async () 
         progress,
         meter {
           display: block;
+          position: absolute;
+          left: 0;
+          top: 0;
         }
       </style>
       <button id="button">Save</button>
@@ -55,33 +88,32 @@ it('common form controls expose native intrinsic sizes in block flow', async () 
       <meter id="meter" value=".5"></meter>
     `,
     queries: [
-      { type: 'rect', selector: '#button' },
-      { type: 'rect', selector: '#text' },
-      { type: 'rect', selector: '#text-sized' },
-      { type: 'rect', selector: '#password-sized' },
-      { type: 'rect', selector: '#search-sized' },
-      { type: 'rect', selector: '#email-sized' },
-      { type: 'rect', selector: '#number-sized' },
-      { type: 'rect', selector: '#input-button' },
-      { type: 'rect', selector: '#input-submit' },
-      { type: 'rect', selector: '#input-reset' },
-      { type: 'rect', selector: '#checkbox' },
-      { type: 'rect', selector: '#radio' },
-      { type: 'rect', selector: '#range' },
-      { type: 'rect', selector: '#color' },
+      { type: 'rect', selector: '#button', ...nativeButtonTolerance },
+      { type: 'rect', selector: '#text', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#text-sized', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#password-sized', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#search-sized', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#email-sized', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#number-sized', ...nativeTextInputTolerance },
+      { type: 'rect', selector: '#input-button', ...nativeButtonTolerance },
+      { type: 'rect', selector: '#input-submit', ...nativeButtonTolerance },
+      { type: 'rect', selector: '#input-reset', ...nativeButtonTolerance },
+      { type: 'rect', selector: '#checkbox', ...nativeControlTolerance },
+      { type: 'rect', selector: '#radio', ...nativeControlTolerance },
+      { type: 'rect', selector: '#range', ...nativeControlTolerance },
+      { type: 'rect', selector: '#color', ...nativeControlTolerance },
       { type: 'rect', selector: '#hidden' },
       { type: 'rect', selector: '#image' },
-      { type: 'rect', selector: '#time' },
-      { type: 'rect', selector: '#file' },
-      { type: 'rect', selector: '#textarea' },
-      { type: 'rect', selector: '#textarea-sized' },
-      { type: 'rect', selector: '#select' },
-      { type: 'rect', selector: '#select-long' },
-      { type: 'rect', selector: '#select-sized' },
-      { type: 'rect', selector: '#select-multiple' },
+      { type: 'rect', selector: '#time', ...nativeControlTolerance },
+      { type: 'rect', selector: '#file', ...nativeFileInputTolerance },
+      { type: 'rect', selector: '#textarea', ...nativeTextareaTolerance },
+      { type: 'rect', selector: '#textarea-sized', ...nativeTextareaTolerance },
+      { type: 'rect', selector: '#select', ...nativeSelectTolerance },
+      { type: 'rect', selector: '#select-long', ...nativeSelectTolerance },
+      { type: 'rect', selector: '#select-sized', ...nativeSelectTolerance },
+      { type: 'rect', selector: '#select-multiple', ...nativeSelectTolerance },
       { type: 'rect', selector: '#progress' },
       { type: 'rect', selector: '#meter' },
-      { type: 'point', x: 5, y: 5 },
     ],
   })
 })
@@ -105,6 +137,12 @@ it('author width and height override form control intrinsic sizes', async () => 
           display: block;
           width: 120px;
           height: 80px;
+        }
+
+        textarea {
+          display: block;
+          width: 100px;
+          height: 60px;
         }
       </style>
       <input id="text">

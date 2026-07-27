@@ -35,11 +35,15 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, time, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage when author CSS blockifies them."
+          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, time, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage as independently positioned controls."
         },
         {
           "kind": "implementation-quirk",
           "text": "Common form controls are measured as replaced leaves so option children and anonymous control internals do not participate in the layout tree."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Native button text and textarea row/column metrics vary with the host Chromium platform; their parity checks use narrow, field-specific tolerances while other control dimensions remain exact."
         },
         {
           "kind": "limitation",
