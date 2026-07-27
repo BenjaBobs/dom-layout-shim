@@ -43,6 +43,10 @@ editing it, or `pnpm run css:query -- flex-basis` to query it from a terminal.
 Ignored, generated JSON for documentation and agent consumers is written to
 `docs/data/`.
 
+Run `pnpm run docs:serve` to generate the support data and serve the complete
+documentation site locally. Pass a port when needed, for example
+`pnpm run docs:serve -- 4174`.
+
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.
 

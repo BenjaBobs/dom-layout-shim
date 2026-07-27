@@ -5,7 +5,7 @@ import { extname, resolve, sep } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const portArgument = process.argv.slice(2).find((argument) => /^\d+$/.test(argument))
 const requestedPort = Number(process.env.PORT ?? portArgument ?? 4173)
-const overviewPath = '/docs/css-support-status.html'
+const docsPath = '/docs/index.html'
 const contentTypes = {
   '.html': 'text/html; charset=utf-8',
   '.ts': 'text/plain; charset=utf-8',
@@ -17,7 +17,7 @@ const contentTypes = {
 
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`)
-  const pathname = url.pathname === '/' ? overviewPath : decodeURIComponent(url.pathname)
+  const pathname = url.pathname === '/' ? docsPath : decodeURIComponent(url.pathname)
   const filePath = resolve(root, `.${pathname}`)
 
   if (!isWithinRoot(filePath)) {
@@ -49,7 +49,8 @@ server.listen(requestedPort, '127.0.0.1', () => {
   const address = server.address()
   const port = typeof address === 'object' && address ? address.port : requestedPort
 
-  console.log(`CSS support overview: http://localhost:${port}${overviewPath}`)
+  console.log(`Documentation site: http://localhost:${port}/`)
+  console.log(`CSS support overview: http://localhost:${port}/docs/css-support-status.html`)
   console.log('Press Ctrl+C to stop the server.')
 })
 
