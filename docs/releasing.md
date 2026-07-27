@@ -58,9 +58,11 @@ opposing logical insets.
 
 1. Changes land on `main` with changeset files.
 2. The release workflow creates or updates a `Version Packages` pull request.
-3. Maintainers review and edit the proposed version and `CHANGELOG.md`.
-4. Merging that pull request records the versioned release state.
-5. Package publication, tags, and GitHub Releases remain disabled while
+3. Package CI validates the inventory, types, unit tests, Chromium parity,
+   build output, and packed file list.
+4. Maintainers review and edit the proposed version and `CHANGELOG.md`.
+5. Merging that pull request records the versioned release state.
+6. Package publication, tags, and GitHub Releases remain disabled while
    `package.json` is private and the project is at `0.0.0`.
 
 Run `pnpm run release:status` to inspect pending changesets and
