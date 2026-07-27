@@ -163,7 +163,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Box sizing including CSS-wide content-box resets, min/max constraints, percentages, and aspect ratio have parity fixtures.',
+        text: 'Box sizing including CSS-wide content-box resets, pixel and percentage min/max constraints, percentages, and aspect ratio in both axes with constraint interaction have parity fixtures.',
       },
       {
         kind: 'limitation',
@@ -311,7 +311,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow including CSS-wide resets, order including CSS-wide resets, basis, shorthand, and replaced intrinsic cases have parity fixtures.',
+        text: 'Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow and shrink including min/max clamping, auto margins, order including CSS-wide resets, basis, shorthand, and replaced intrinsic cases have parity fixtures.',
       },
       {
         kind: 'implementation-quirk',
@@ -373,7 +373,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Explicit tracks, auto flow including CSS-wide resets, auto tracks, fr tracks, gaps, line placement including CSS-wide resets, grid-area shorthand placement including CSS-wide resets, minmax tracks, order, percentage tracks, fixed-count repeat tracks, and numeric spans have parity fixtures.',
+        text: 'Explicit tracks, auto flow including CSS-wide resets, implicit row and column tracks, fr tracks, gaps, content and item alignment, line placement including CSS-wide resets, grid-area shorthand placement including CSS-wide resets, minmax tracks, order, percentage tracks, fixed-count repeat tracks, and numeric spans have parity fixtures.',
       },
       {
         kind: 'limitation',

@@ -39,3 +39,40 @@ it('flex grow distributes remaining space', async () => {
     ],
   })
 })
+
+it('flex grow redistributes space after an item reaches its maximum size', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          display: flex;
+          width: 200px;
+        }
+
+        #limited,
+        #remaining {
+          width: 40px;
+          height: 20px;
+          flex-grow: 1;
+        }
+
+        #limited {
+          max-width: 60px;
+        }
+      </style>
+      <div id="parent">
+        <div id="limited"></div>
+        <div id="remaining"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#limited' },
+      { type: 'rect', selector: '#remaining' },
+    ],
+  })
+})

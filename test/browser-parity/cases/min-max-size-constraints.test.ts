@@ -39,3 +39,35 @@ it('min and max size constraints clamp absolute box dimensions', async () => {
     ],
   })
 })
+
+it('percentage min and max constraints resolve against the containing block', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          width: 200px;
+          height: 100px;
+        }
+
+        #child {
+          width: 90%;
+          max-width: 50%;
+          height: 50%;
+          min-height: 80%;
+        }
+      </style>
+      <div id="parent">
+        <div id="child"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#parent' },
+      { type: 'rect', selector: '#child' },
+    ],
+  })
+})

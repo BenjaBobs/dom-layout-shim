@@ -76,3 +76,40 @@ it('flex shrink zero preserves an inflexible item while siblings shrink', async 
     ],
   })
 })
+
+it('flex shrink freezes an item at its minimum main size', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          display: flex;
+          width: 150px;
+        }
+
+        #limited {
+          width: 100px;
+          min-width: 80px;
+          height: 20px;
+        }
+
+        #remaining {
+          width: 100px;
+          height: 10px;
+        }
+      </style>
+      <div id="parent">
+        <div id="limited"></div>
+        <div id="remaining"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#limited' },
+      { type: 'rect', selector: '#remaining' },
+    ],
+  })
+})
