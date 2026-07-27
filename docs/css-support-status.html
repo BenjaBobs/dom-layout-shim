@@ -229,6 +229,59 @@
       white-space: nowrap;
     }
 
+    a.chip {
+      text-decoration: none;
+    }
+
+    a.chip:hover {
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+
+    .claims {
+      display: grid;
+      gap: 10px;
+      min-width: 300px;
+      max-width: 560px;
+    }
+
+    .claim {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfcfd;
+    }
+
+    .claim-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .claim-title {
+      margin-right: auto;
+      font-weight: 700;
+    }
+
+    .claim-description {
+      margin-bottom: 7px;
+    }
+
+    .claim-section {
+      margin-top: 7px;
+    }
+
+    .claim-label {
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
     .more {
       color: var(--muted);
       font-family: ui-sans-serif, system-ui, sans-serif;
@@ -271,6 +324,15 @@
       width: 15px;
       height: 15px;
       flex: 0 0 auto;
+    }
+
+    .fixture-link {
+      color: inherit;
+    }
+
+    .fixture-link:hover {
+      color: var(--blue);
+      text-decoration: underline;
     }
 
     .error {
@@ -334,8 +396,7 @@
             <th>Owner</th>
             <th>Parity Status</th>
             <th>Properties / Elements</th>
-            <th>Fixtures</th>
-            <th>Notes</th>
+            <th>Support claims and evidence</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -374,12 +435,22 @@
     async function init() {
       inventory = await loadInventory()
       populateFilters()
+      restoreFilters()
       render()
       document.getElementById('search').addEventListener('input', render)
       document.getElementById('status').addEventListener('change', render)
       document.getElementById('effect').addEventListener('change', render)
       document.getElementById('owner').addEventListener('change', render)
       document.getElementById('parityStatus').addEventListener('change', render)
+    }
+
+    function restoreFilters() {
+      const parameters = new URLSearchParams(location.search)
+      document.getElementById('search').value = parameters.get('q') || ''
+      document.getElementById('status').value = parameters.get('status') || ''
+      document.getElementById('effect').value = parameters.get('effect') || ''
+      document.getElementById('owner').value = parameters.get('owner') || ''
+      document.getElementById('parityStatus').value = parameters.get('parity') || ''
     }
 
     async function loadInventory() {
@@ -417,6 +488,7 @@
       const effect = document.getElementById('effect').value
       const owner = document.getElementById('owner').value
       const parityStatus = document.getElementById('parityStatus').value
+      updateLocation({ query, status, effect, owner, parityStatus })
       const filtered = inventory.filter((entry) => {
         if (status && entry.status !== status) return false
         if (effect && entry.effect !== effect) return false
@@ -447,6 +519,16 @@
 
       renderSummary(filtered)
       renderRows(filtered)
+    }
+
+    function updateLocation({ query, status, effect, owner, parityStatus }) {
+      const parameters = new URLSearchParams()
+      if (query) parameters.set('q', query)
+      if (status) parameters.set('status', status)
+      if (effect) parameters.set('effect', effect)
+      if (owner) parameters.set('owner', owner)
+      if (parityStatus) parameters.set('parity', parityStatus)
+      history.replaceState(null, '', parameters.size > 0 ? `?${parameters}` : location.pathname)
     }
 
     function renderSummary(entries) {
@@ -484,11 +566,10 @@
           <td>${badge(entry.owner, 'effect-source')}</td>
           <td>${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</td>
           <td>
-            ${chips(entry.subjects.properties || [], 12)}
+            ${propertyChips(entry.subjects.properties || [], 12)}
             ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12)}` : ''}
           </td>
-          <td>${parity(unique(entry.claims.flatMap((claim) => claim.parity.fixtures)))}</td>
-          <td>${notes(entry.claims.flatMap((claim) => claim.notes))}</td>
+          <td>${claims(entry.claims)}</td>
         </tr>
       `).join('')
     }
@@ -509,6 +590,23 @@
       return 'status-partial'
     }
 
+    function propertyChips(values, limit) {
+      if (values.length === 0) {
+        return '<span class="more">None</span>'
+      }
+
+      const visible = values.slice(0, limit)
+      const hidden = values.length - visible.length
+      return `
+        <div class="chips">
+          ${visible.map((value) => `
+            <a class="chip" href="?q=${encodeURIComponent(value)}" title="Show support for ${escapeHtml(value)}">${escapeHtml(value)}</a>
+          `).join('')}
+          ${hidden > 0 ? `<span class="chip more">+${hidden}</span>` : ''}
+        </div>
+      `
+    }
+
     function chips(values, limit) {
       if (values.length === 0) {
         return '<span class="more">None</span>'
@@ -524,14 +622,51 @@
       `
     }
 
-    function parity(values) {
-      if (values.length === 0) {
-        return '<span class="more">No fixture refs</span>'
-      }
-
+    function claims(values) {
       return `
-        <div class="parity-count">${icons.parity}${values.length} fixtures</div>
-        ${chips(values, 5)}
+        <div class="claims">
+          ${values.map((claim) => `
+            <article class="claim" id="${escapeHtml(claim.id)}">
+              <div class="claim-head">
+                <span class="claim-title">${escapeHtml(label(claim.id))}</span>
+                ${badge(claim.support, `status-${claim.support}`)}
+                ${badge(claim.parity.status, parityStatusClass(claim.parity.status))}
+              </div>
+              ${claim.description ? `<div class="claim-description">${escapeHtml(claim.description)}</div>` : ''}
+              ${claim.syntax?.length ? claimValues('Syntax', claim.syntax) : ''}
+              ${claim.conditions?.length ? claimValues('Conditions', claim.conditions) : ''}
+              ${claim.parity.fixtures.length ? `
+                <div class="claim-section">
+                  <div class="claim-label">Chromium parity evidence</div>
+                  ${fixtureChips(claim.parity.fixtures)}
+                </div>
+              ` : ''}
+              ${claim.notes.length ? `<div class="claim-section">${notes(claim.notes)}</div>` : ''}
+            </article>
+          `).join('')}
+        </div>
+      `
+    }
+
+    function claimValues(name, values) {
+      return `
+        <div class="claim-section">
+          <div class="claim-label">${escapeHtml(name)}</div>
+          ${chips(values, 20)}
+        </div>
+      `
+    }
+
+    function fixtureChips(values) {
+      return `
+        <div class="chips">
+          ${values.map((value) => `
+            <a
+              class="chip fixture-link"
+              href="https://github.com/BenjaBobs/test-layout/blob/main/test/browser-parity/cases/${encodeURIComponent(value)}.test.ts"
+            >${escapeHtml(value)}</a>
+          `).join('')}
+        </div>
       `
     }
 
