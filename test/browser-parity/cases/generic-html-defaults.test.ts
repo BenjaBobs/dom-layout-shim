@@ -1,7 +1,7 @@
 import { it } from 'vitest'
 import { expectChromiumParity } from '../parity-harness.ts'
 
-it('text block elements apply native margins and font metrics inside padded parents', async () => {
+it('text block elements apply native margins with explicit line metrics', async () => {
   await expectChromiumParity({
     viewport: { width: 500, height: 400 },
     html: `
@@ -19,6 +19,16 @@ it('text block elements apply native margins and font metrics inside padded pare
         pre,
         address {
           width: 100px;
+        }
+
+        p,
+        blockquote,
+        address {
+          line-height: 20px;
+        }
+
+        pre {
+          line-height: 17px;
         }
       </style>
       <div id="host">

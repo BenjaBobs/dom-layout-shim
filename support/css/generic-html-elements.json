@@ -65,7 +65,7 @@
         },
         {
           "kind": "browser-parity",
-          "text": "Address, paragraph, blockquote, figure, pre, hr, details/summary, hidden including until-found, and basic dialog open/closed native behavior have parity coverage in non-collapsing block flow; author CSS reset behavior is also covered."
+          "text": "Address, paragraph, blockquote, figure, pre, hr, details/summary, hidden including until-found, and basic dialog open/closed behavior have parity coverage in non-collapsing block flow; text element spacing is verified with explicit line metrics so host fonts do not change the oracle."
         },
         {
           "kind": "limitation",

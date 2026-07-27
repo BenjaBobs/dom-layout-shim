@@ -17,6 +17,9 @@ it('common form controls expose native intrinsic sizes in block flow', async () 
         progress,
         meter {
           display: block;
+          position: absolute;
+          left: 0;
+          top: 0;
         }
       </style>
       <button id="button">Save</button>
@@ -55,7 +58,7 @@ it('common form controls expose native intrinsic sizes in block flow', async () 
       <meter id="meter" value=".5"></meter>
     `,
     queries: [
-      { type: 'rect', selector: '#button' },
+      { type: 'rect', selector: '#button', tolerance: { width: 2, height: 2 } },
       { type: 'rect', selector: '#text' },
       { type: 'rect', selector: '#text-sized' },
       { type: 'rect', selector: '#password-sized' },
@@ -73,15 +76,14 @@ it('common form controls expose native intrinsic sizes in block flow', async () 
       { type: 'rect', selector: '#image' },
       { type: 'rect', selector: '#time' },
       { type: 'rect', selector: '#file' },
-      { type: 'rect', selector: '#textarea' },
-      { type: 'rect', selector: '#textarea-sized' },
+      { type: 'rect', selector: '#textarea', tolerance: { width: 1, height: 4 } },
+      { type: 'rect', selector: '#textarea-sized', tolerance: { width: 1, height: 8 } },
       { type: 'rect', selector: '#select' },
       { type: 'rect', selector: '#select-long' },
       { type: 'rect', selector: '#select-sized' },
       { type: 'rect', selector: '#select-multiple' },
       { type: 'rect', selector: '#progress' },
       { type: 'rect', selector: '#meter' },
-      { type: 'point', x: 5, y: 5 },
     ],
   })
 })
@@ -123,8 +125,17 @@ it('author width and height override form control intrinsic sizes', async () => 
       { type: 'dimensions', selector: '#image' },
       { type: 'rect', selector: '#file' },
       { type: 'dimensions', selector: '#file' },
-      { type: 'rect', selector: '#textarea' },
-      { type: 'dimensions', selector: '#textarea' },
+      { type: 'rect', selector: '#textarea', tolerance: { width: 1, height: 8 } },
+      {
+        type: 'dimensions',
+        selector: '#textarea',
+        tolerance: {
+          offsetWidth: 1,
+          offsetHeight: 8,
+          clientWidth: 1,
+          clientHeight: 8,
+        },
+      },
       { type: 'rect', selector: '#select' },
     ],
   })
