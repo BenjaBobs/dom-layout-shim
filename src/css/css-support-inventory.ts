@@ -315,7 +315,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     notes: [
       {
         kind: 'browser-parity',
-        text: 'Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow and shrink including min/max clamping, auto margins, order including CSS-wide resets, basis, shorthand, and replaced intrinsic cases have parity fixtures.',
+        text: 'Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow and shrink including min/max clamping, auto margins, order including CSS-wide resets, pixel/percentage/auto basis on both axes, shorthand, and replaced intrinsic cases have parity fixtures.',
       },
       {
         kind: 'implementation-quirk',
