@@ -33,8 +33,9 @@ positioned fixtures. Unsupported CSS throws by default unless explicitly ignored
 by policy. Text measurement falls back to a deterministic approximation in
 Node-like runtimes without canvas text measurement.
 
-See [docs/css-support-status.html](docs/css-support-status.html) for a
-filterable CSS support overview. The underlying source of truth is
+See [docs/index.html](docs/index.html) for the documentation site and
+[docs/css-support-status.html](docs/css-support-status.html) for its filterable
+CSS support overview. The underlying source of truth is
 the machine-readable records in [support/css](support/css). Each record follows
 [support/css-support.schema.json](support/css-support.schema.json). Run
 `pnpm run css:validate` to check the inventory, `pnpm run css:generate` after

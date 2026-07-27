@@ -1,0 +1,26 @@
+# test-layout documentation
+
+test-layout provides deterministic layout and hit testing for DOM-like test
+harnesses.
+
+## CSS support data
+
+- Compatibility explorer: ./css-support-status.html
+- Complete normalized inventory: ./data/css-support.json
+- CSS property-to-record index: ./data/css-property-index.json
+- JSON Schema: ./data/css-support.schema.json
+
+The inventory separates implementation support from Chromium parity. Do not
+interpret unverified behavior as unsupported, or accepted-inert declarations as
+layout support. Aggregate record statuses are derived from their claims.
+
+Each record identifies its authoring source under `support/css/`. Claims may
+include syntax, conditions, parity fixtures, limitations, known mismatches, and
+implementation quirks. Broad `current-supported-scope` claims are migrated
+legacy descriptions and should be interpreted conservatively.
+
+## Source documentation
+
+- Repository and README: https://github.com/BenjaBobs/test-layout
+- Implementation phases: https://github.com/BenjaBobs/test-layout/blob/main/docs/implementation-phases.md
+- Taffy pipeline roadmap: https://github.com/BenjaBobs/test-layout/blob/main/docs/taffy-pipeline-roadmap.md
