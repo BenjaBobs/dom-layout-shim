@@ -58,6 +58,8 @@ opposing logical insets.
 
 1. Changes land on `main` with changeset files.
 2. The release workflow creates or updates a `Version Packages` pull request.
+   It explicitly dispatches the required checks because GitHub does not
+   recursively trigger workflows for pull requests created by `GITHUB_TOKEN`.
 3. Package CI validates the inventory, types, unit tests, Chromium parity,
    build output, and packed file list.
 4. Maintainers review and edit the proposed version and `CHANGELOG.md`.
