@@ -84,6 +84,10 @@ Run `pnpm run docs:serve` to generate the support data and serve the complete
 documentation site locally. Pass a port when needed, for example
 `pnpm run docs:serve -- 4174`.
 
+Run `pnpm run test:package` to build and pack the exact npm artifact, install it
+into an isolated consumer project, typecheck its public API, and exercise layout
+and hit testing through the packaged output.
+
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.
 

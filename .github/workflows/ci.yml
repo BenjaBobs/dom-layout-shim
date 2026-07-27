@@ -42,11 +42,8 @@ jobs:
       - name: Run unit tests
         run: pnpm test
 
-      - name: Build package
-        run: pnpm run build
-
-      - name: Inspect package contents
-        run: pnpm pack --dry-run
+      - name: Test packed package
+        run: pnpm run test:package
 
   browser-parity:
     name: Chromium parity
