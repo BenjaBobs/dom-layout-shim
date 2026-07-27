@@ -1,5 +1,5 @@
 ---
-'test-layout': minor
+'dom-layout-shim': minor
 ---
 
 Release the package into the public domain under the Unlicense, permitting use,

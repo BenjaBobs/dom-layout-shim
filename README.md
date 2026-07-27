@@ -1,4 +1,4 @@
-# test-layout
+# DOM Layout Shim
 
 Deterministic layout and hit testing for fast DOM test harnesses.
 
@@ -9,7 +9,7 @@ when the runtime supports canvas measurement. DOM API patching and hit testing
 are derived from the resulting layout snapshot.
 
 ```ts
-import { attachLayoutEngine, expectReceivesPointer, guardedClick } from 'test-layout'
+import { attachLayoutEngine, expectReceivesPointer, guardedClick } from 'dom-layout-shim'
 
 await attachLayoutEngine({
   window,
@@ -125,6 +125,6 @@ not amend existing commits or push unless explicitly requested.
 
 ## License
 
-test-layout is released into the public domain under
+DOM Layout Shim is released into the public domain under
 [the Unlicense](LICENSE). You may use, copy, modify, publish, compile, sell, or
 distribute the software for any commercial or non-commercial purpose.

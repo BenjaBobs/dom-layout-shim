@@ -1,6 +1,6 @@
-# test-layout documentation
+# DOM Layout Shim documentation
 
-test-layout provides deterministic layout and hit testing for DOM-like test
+DOM Layout Shim provides deterministic layout and hit testing for DOM-like test
 harnesses.
 
 ## CSS support data
@@ -21,7 +21,7 @@ legacy descriptions and should be interpreted conservatively.
 
 ## Source documentation
 
-- Repository and README: https://github.com/BenjaBobs/test-layout
-- Implementation phases: https://github.com/BenjaBobs/test-layout/blob/main/docs/implementation-phases.md
-- Taffy pipeline roadmap: https://github.com/BenjaBobs/test-layout/blob/main/docs/taffy-pipeline-roadmap.md
-- Release and changelog policy: https://github.com/BenjaBobs/test-layout/blob/main/docs/releasing.md
+- Repository and README: https://github.com/BenjaBobs/dom-layout-shim
+- Implementation phases: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/implementation-phases.md
+- Taffy pipeline roadmap: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/taffy-pipeline-roadmap.md
+- Release and changelog policy: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/releasing.md

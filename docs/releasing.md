@@ -1,6 +1,6 @@
 # Releases and changelogs
 
-test-layout uses Changesets to separate development history from release notes.
+DOM Layout Shim uses Changesets to separate development history from release notes.
 Commit messages describe repository work. Changesets describe why that work
 matters to package consumers.
 

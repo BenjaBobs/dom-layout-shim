@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/BenjaBobs/test-layout/blob/main/support/css-support.schema.json",
-  "title": "test-layout CSS support record",
+  "$id": "https://github.com/BenjaBobs/dom-layout-shim/blob/main/support/css-support.schema.json",
+  "title": "DOM Layout Shim CSS support record",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "id", "title", "subjects", "effect", "owner", "claims"],

@@ -1,9 +1,17 @@
 {
-  "name": "test-layout",
+  "name": "dom-layout-shim",
   "private": true,
   "version": "0.0.0",
   "license": "Unlicense",
   "packageManager": "pnpm@10.33.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenjaBobs/dom-layout-shim.git"
+  },
+  "homepage": "https://benjabobs.github.io/dom-layout-shim/",
+  "bugs": {
+    "url": "https://github.com/BenjaBobs/dom-layout-shim/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

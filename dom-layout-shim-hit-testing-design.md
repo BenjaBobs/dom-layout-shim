@@ -163,14 +163,14 @@ patched DOM APIs:
 Possible package name:
 
 ```txt
-@org/test-layout
+dom-layout-shim
 ```
 
 Usage:
 
 ```ts
 // vitest.setup.ts
-import { createLayoutEngine } from '@org/test-layout'
+import { createLayoutEngine } from 'dom-layout-shim'
 
 const layoutEngine = createLayoutEngine({
   viewport: { width: 1280, height: 720 },
