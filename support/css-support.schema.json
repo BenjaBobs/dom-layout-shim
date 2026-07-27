@@ -59,6 +59,11 @@
             "type": "string",
             "minLength": 1
           },
+          "properties": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
           "syntax": {
             "type": "array",
             "items": { "type": "string", "minLength": 1 },

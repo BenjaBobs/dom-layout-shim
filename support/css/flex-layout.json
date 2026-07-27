@@ -29,7 +29,119 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "direction-and-wrapping",
+      "description": "Flex direction, reversal, wrapping, and the flex-flow shorthand affect placement on row and column axes.",
+      "properties": [
+        "flex-direction",
+        "flex-wrap",
+        "flex-flow"
+      ],
+      "syntax": [
+        "row",
+        "row-reverse",
+        "column",
+        "column-reverse",
+        "nowrap",
+        "wrap",
+        "wrap-reverse"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-direction-reverse",
+          "flex-flow",
+          "flex-row",
+          "flex-wrap"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "flexible-lengths",
+      "description": "Grow and shrink factors distribute free space and respect supported min/max constraints.",
+      "properties": [
+        "flex-grow",
+        "flex-shrink"
+      ],
+      "syntax": [
+        "<number>"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-grow",
+          "flex-shrink"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "flex-basis",
+      "description": "Pixel, percentage, and auto flex bases resolve on row and column main axes.",
+      "properties": [
+        "flex-basis"
+      ],
+      "syntax": [
+        "<px>",
+        "<percentage>",
+        "auto"
+      ],
+      "conditions": [
+        "Percentage bases require a definite container main size."
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-basis"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "The content keyword and general CSS length units are not implemented."
+        }
+      ]
+    },
+    {
+      "id": "flex-shorthand",
+      "description": "The flex shorthand expands supported factor and basis forms, including its CSS-wide reset behavior.",
+      "properties": [
+        "flex"
+      ],
+      "syntax": [
+        "none",
+        "auto",
+        "initial",
+        "<flex-grow>",
+        "<flex-grow> <flex-shrink>",
+        "<flex-grow> <flex-shrink> <flex-basis>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-shorthand"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "alignment",
+      "description": "Supported content, item, and self alignment controls participate in flex placement and stretching.",
+      "properties": [
+        "align-content",
+        "align-items",
+        "align-self",
+        "justify-content",
+        "justify-items",
+        "justify-self",
+        "place-content",
+        "place-items",
+        "place-self"
+      ],
       "support": "partial",
       "parity": {
         "status": "partially-verified",
@@ -38,31 +150,58 @@
           "flex-align-items-stretch",
           "flex-align-self",
           "flex-alignment",
-          "flex-auto-margins",
-          "flex-basis",
-          "flex-direction-reverse",
-          "flex-flow",
-          "flex-grow",
           "flex-justify-content",
-          "flex-order",
-          "flex-replaced-intrinsic",
-          "flex-row",
-          "flex-shorthand",
-          "flex-shrink",
-          "flex-wrap",
           "place-alignment"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "order",
+      "description": "Flex items are laid out in order-modified document order.",
+      "properties": [
+        "order"
+      ],
+      "syntax": [
+        "<integer>"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-order"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow and shrink including min/max clamping, auto margins, order including CSS-wide resets, pixel/percentage/auto basis on both axes, shorthand, and replaced intrinsic cases have parity fixtures."
-        },
-        {
           "kind": "implementation-quirk",
-          "text": "The CSS order property is applied by sorting flex children before building the Taffy tree."
+          "text": "Flex children are sorted before the Taffy tree is built."
         }
       ]
+    },
+    {
+      "id": "auto-margins",
+      "description": "Auto margins absorb available space in supported flex layouts.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-auto-margins"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "replaced-intrinsic-items",
+      "description": "Replaced elements retain supported intrinsic dimensions when participating as flex items.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-replaced-intrinsic"
+        ]
+      },
+      "notes": []
     }
   ]
 }

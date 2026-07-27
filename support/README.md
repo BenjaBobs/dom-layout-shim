@@ -5,8 +5,10 @@ They are intentionally split by coherent feature area so unrelated work usually
 changes different files. As an area becomes more detailed, split its claims or
 record further rather than adding ambiguity to a broad claim.
 
-Each claim independently records implementation support, Chromium parity
-evidence, supported syntax or conditions, and explanatory notes. Do not infer
+Each claim independently records the properties it covers, implementation
+support, Chromium parity evidence, supported syntax or conditions, and
+explanatory notes. Omit `properties` only when a claim applies to the whole
+record or describes behavior without a declaration of its own. Do not infer
 that missing coverage means unsupported behavior: use `unknown` or `unverified`
 when the behavior has not been established.
 

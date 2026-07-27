@@ -83,6 +83,16 @@ function validateRecords(records) {
       requireValue(errors, claimLocation, parityValues.has(claim.parity?.status), `unknown parity status "${claim.parity?.status}"`)
       requireValue(errors, claimLocation, Array.isArray(claim.parity?.fixtures), 'parity.fixtures must be an array')
       requireValue(errors, claimLocation, Array.isArray(claim.notes), 'notes must be an array')
+      requireValue(errors, claimLocation, claim.properties === undefined || Array.isArray(claim.properties), 'properties must be an array')
+
+      for (const property of claim.properties ?? []) {
+        requireValue(
+          errors,
+          claimLocation,
+          record.subjects.properties.includes(property),
+          `claim property "${property}" is not declared by the record`,
+        )
+      }
 
       if (claim.parity?.status === 'verified') {
         requireValue(errors, claimLocation, claim.parity.fixtures.length > 0, 'verified claims require fixture evidence')
@@ -101,6 +111,18 @@ function validateRecords(records) {
       for (const note of claim.notes ?? []) {
         requireValue(errors, claimLocation, noteKinds.has(note.kind), `unknown note kind "${note.kind}"`)
         requireValue(errors, claimLocation, typeof note.text === 'string' && note.text.length > 0, 'note text is required')
+      }
+    }
+
+    const scopedClaims = (record.claims ?? []).filter((claim) => claim.properties !== undefined)
+    if (scopedClaims.length > 0) {
+      for (const property of record.subjects?.properties ?? []) {
+        requireValue(
+          errors,
+          location,
+          scopedClaims.some((claim) => claim.properties.includes(property)),
+          `property "${property}" has no scoped support claim`,
+        )
       }
     }
 
@@ -222,10 +244,13 @@ function query(records, arguments_) {
     return
   }
   for (const record of matches) {
+    const relevantClaims = exactPropertyMatches.length > 0
+      ? record.claims.filter((claim) => claim.properties?.includes(property))
+      : record.claims
     console.log(`${record.id}: ${record.title}`)
     console.log(`  properties: ${record.subjects.properties.join(', ') || 'none'}`)
     console.log(`  support: ${aggregateSupport(record.claims)}; parity: ${aggregateParity(record.claims)}`)
-    for (const claim of record.claims) {
+    for (const claim of relevantClaims) {
       console.log(`  - ${claim.id}: ${claim.support}, ${claim.parity.status}`)
     }
     console.log(`  source: ${record.sourceFile}`)

@@ -507,6 +507,7 @@
           ...(entry.subjects.elements || []),
           ...entry.claims.flatMap((claim) => [
             claim.id,
+            ...(claim.properties || []),
             ...(claim.syntax || []),
             ...(claim.conditions || []),
             ...claim.parity.fixtures,
@@ -569,7 +570,7 @@
             ${propertyChips(entry.subjects.properties || [], 12)}
             ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12)}` : ''}
           </td>
-          <td>${claims(entry.claims)}</td>
+          <td>${claims(entry.claims, document.getElementById('search').value.trim().toLowerCase())}</td>
         </tr>
       `).join('')
     }
@@ -622,10 +623,12 @@
       `
     }
 
-    function claims(values) {
+    function claims(values, query) {
+      const propertyClaims = values.filter((claim) => claim.properties?.includes(query))
+      const visible = propertyClaims.length > 0 ? propertyClaims : values
       return `
         <div class="claims">
-          ${values.map((claim) => `
+          ${visible.map((claim) => `
             <article class="claim" id="${escapeHtml(claim.id)}">
               <div class="claim-head">
                 <span class="claim-title">${escapeHtml(label(claim.id))}</span>
@@ -633,6 +636,7 @@
                 ${badge(claim.parity.status, parityStatusClass(claim.parity.status))}
               </div>
               ${claim.description ? `<div class="claim-description">${escapeHtml(claim.description)}</div>` : ''}
+              ${claim.properties?.length ? claimValues('Properties', claim.properties) : ''}
               ${claim.syntax?.length ? claimValues('Syntax', claim.syntax) : ''}
               ${claim.conditions?.length ? claimValues('Conditions', claim.conditions) : ''}
               ${claim.parity.fixtures.length ? `

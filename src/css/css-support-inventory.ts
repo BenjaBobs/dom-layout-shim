@@ -32,6 +32,7 @@ export type CssSupportNote = {
 export type CssSupportClaim = {
   id: string
   description?: string
+  properties?: readonly string[]
   syntax?: readonly string[]
   conditions?: readonly string[]
   support: CssSupportLevel
