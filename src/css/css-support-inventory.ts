@@ -42,7 +42,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ownerArea: 'css-parser',
     parityStatus: 'partial',
     properties: [],
-    parity: ['selector-source-order-tie', 'selector-specificity'],
+    parity: ['selector-matching', 'selector-source-order-tie', 'selector-specificity'],
     notes: [
       {
         kind: 'browser-parity',
@@ -236,6 +236,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     parity: [
       'border-box-padding-border',
       'border-shorthand',
+      'border-width-keywords',
       'border-width-none-style',
       'content-box-padding-border',
       'flex-gap',
@@ -290,16 +291,20 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ],
     parity: [
       'flex-align-content',
+      'flex-align-items-stretch',
       'flex-align-self',
       'flex-alignment',
+      'flex-auto-margins',
       'flex-basis',
       'flex-direction-reverse',
       'flex-flow',
       'flex-grow',
+      'flex-justify-content',
       'flex-order',
       'flex-replaced-intrinsic',
       'flex-row',
       'flex-shorthand',
+      'flex-shrink',
       'flex-wrap',
       'place-alignment',
     ],
@@ -465,7 +470,7 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
       },
       {
         kind: 'limitation',
-        text: 'Heading subpixel margin positions are rounded by the Taffy collection path; native dialog centering, modal top-layer behavior, and backdrops are not modeled.',
+        text: 'Native dialog centering, modal top-layer behavior, and backdrops are not modeled.',
       },
       {
         kind: 'browser-parity',

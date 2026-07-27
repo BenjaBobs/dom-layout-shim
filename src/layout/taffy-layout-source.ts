@@ -184,6 +184,10 @@ function buildTaffyLayoutTree(
   stylesheets: readonly string[],
 ): TaffyLayoutTree {
   const tree = new TaffyTree()
+  // Taffy's JS wrapper enables whole-pixel rounding by default, while DOM
+  // geometry APIs preserve CSS subpixels. Keep raw Taffy values so flex
+  // distribution and fractional UA metrics match browser-observable boxes.
+  tree.disableRounding()
   const state: TaffyLayoutState = {
     boxes: [],
     rects: new Map<Element, Box>(),

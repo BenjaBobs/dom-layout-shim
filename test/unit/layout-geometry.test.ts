@@ -1,131 +1,31 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { debugLayout, expectBlockedBy, expectReceivesPointer, guardedClick } from '../../src/index.ts'
-import { attach, expectRect, receivesPointerAtCenter, requiredElement } from './layout-engine-helpers.ts'
+import { attach, receivesPointerAtCenter, requiredElement } from './layout-engine-helpers.ts'
 
 afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('layout geometry and DOM API attachment', () => {
-  it('patches getBoundingClientRect from supported stylesheet CSS', async () => {
+describe('layout DOM API and package contracts', () => {
+  it('patches element dimension APIs from the computed layout snapshot', async () => {
     document.body.innerHTML = `
-      <style>
-        #save {
-          position: absolute;
-          left: 100px;
-          top: 80px;
-          width: 120px;
-          height: 40px;
-        }
-      </style>
-      <button id="save">Save</button>
+      <div
+        id="box"
+        style="position:absolute; left:10px; top:20px; width:100px; height:50px; padding:5px 10px; border-style:solid; border-width:2px 4px"
+      ></div>
     `
 
     await attach()
 
-    const save = requiredElement('#save')
-    const rect = save.getBoundingClientRect()
+    const box = requiredElement('#box') as HTMLElement
+    const rect = box.getBoundingClientRect()
 
-    expect(rect.left).toBe(100)
-    expect(rect.top).toBe(80)
-    expect(rect.width).toBe(120)
-    expect(rect.height).toBe(40)
-  })
-
-  it('uses z-index before DOM order for elementFromPoint', async () => {
-    document.body.innerHTML = `
-      <style>
-        #back {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100px;
-          height: 100px;
-          z-index: 10;
-        }
-
-        #front {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100px;
-          height: 100px;
-          z-index: 20;
-        }
-      </style>
-      <div id="front"></div>
-      <div id="back"></div>
-    `
-
-    await attach()
-
-    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#front'))
-    expect(document.elementsFromPoint(50, 50)).toEqual([
-      requiredElement('#front'),
-      requiredElement('#back'),
-    ])
-  })
-
-  it('uses later DOM order when z-index ties', async () => {
-    document.body.innerHTML = `
-      <div id="first" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
-      <div id="second" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
-    `
-
-    await attach()
-
-    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#second'))
-  })
-
-  it('offsets relative boxes without changing normal flow placement', async () => {
-    document.body.innerHTML = `
-      <div id="one" style="position:relative; left:10px; top:5px; width:100px; height:30px"></div>
-      <div id="two" style="width:80px; height:40px"></div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#one').getBoundingClientRect(), {
-      left: 10,
-      top: 5,
-      width: 100,
-      height: 30,
-    })
-    expectRect(requiredElement('#two').getBoundingClientRect(), {
-      left: 0,
-      top: 30,
-      width: 80,
-      height: 40,
-    })
-  })
-
-  it('positions absolute children against the nearest positioned padding box', async () => {
-    document.body.innerHTML = `
-      <div id="parent" style="position:relative; left:5px; top:10px; width:100px; height:80px; padding:10px; border-style:solid; border-width:2px">
-        <div id="child" style="position:absolute; left:3px; top:4px; width:20px; height:10px"></div>
-      </div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#child').getBoundingClientRect(), {
-      left: 10,
-      top: 16,
-      width: 20,
-      height: 10,
-    })
-  })
-
-  it('filters pointer-events none and visibility hidden from point queries', async () => {
-    document.body.innerHTML = `
-      <div id="target" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>
-      <div id="transparent" style="position:absolute; left:0; top:0; width:100px; height:100px; z-index:10; pointer-events:none"></div>
-      <div id="hidden" style="position:absolute; left:0; top:0; width:100px; height:100px; z-index:20; visibility:hidden"></div>
-    `
-
-    await attach()
-
-    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#target'))
+    expect(rect.width).toBe(128)
+    expect(rect.height).toBe(64)
+    expect(box.offsetWidth).toBe(128)
+    expect(box.offsetHeight).toBe(64)
+    expect(box.clientWidth).toBe(120)
+    expect(box.clientHeight).toBe(60)
   })
 
   it('checks whether an element receives pointer events at its center', async () => {
@@ -199,554 +99,49 @@ describe('layout geometry and DOM API attachment', () => {
     expect(clicks).toBe(1)
   })
 
-  it('computes right and bottom positioned boxes', async () => {
-    document.body.innerHTML = `
-      <div id="box" style="position:absolute; right:25px; bottom:30px; width:50px; height:40px"></div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.left).toBe(225)
-    expect(rect.top).toBe(130)
-    expect(rect.width).toBe(50)
-    expect(rect.height).toBe(40)
-  })
-
-  it('computes auto dimensions from opposing inset edges', async () => {
-    document.body.innerHTML = `
-      <div id="box" style="position:fixed; inset:10px 20px"></div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.left).toBe(20)
-    expect(rect.top).toBe(10)
-    expect(rect.width).toBe(260)
-    expect(rect.height).toBe(180)
-  })
-
-  it('returns a zero rect for display none elements', async () => {
-    document.body.innerHTML = `
-      <div id="box" style="display:none; position:absolute; left:10px; top:20px; width:30px; height:40px"></div>
-    `
-
-    await attach()
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.left).toBe(0)
-    expect(rect.top).toBe(0)
-    expect(rect.width).toBe(0)
-    expect(rect.height).toBe(0)
-  })
-
-  it('returns a zero rect for display contents while preserving child layout', async () => {
-    document.body.innerHTML = `
-      <div id="contents" style="display:contents; width:100px; height:100px">
-        <div id="child" style="width:40px; height:20px"></div>
-      </div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#contents').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-    })
-    expectRect(requiredElement('#child').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 40,
-      height: 20,
-    })
-    expect(document.elementFromPoint(10, 10)).toBe(requiredElement('#child'))
-  })
-
-  it('throws on unsupported display values by default', async () => {
-    document.body.innerHTML = `
-      <div id="box" style="display:ruby; position:absolute; left:0; top:0; width:100px; height:100px"></div>
-    `
-
-    await attach()
-
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-value/)
-  })
-
-  it('returns a zero rect for hidden attribute elements and descendants', async () => {
-    document.body.innerHTML = `
-      <div id="box" hidden style="position:absolute; left:10px; top:20px; width:30px; height:40px">
-        <div id="child" style="position:absolute; left:0; top:0; width:10px; height:10px"></div>
-      </div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#box').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-    })
-    expectRect(requiredElement('#child').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-    })
-  })
-
-  it('includes padding and solid border widths in content-box rects', async () => {
-    document.body.innerHTML = `
-      <div
-        id="box"
-        style="position:absolute; left:10px; top:20px; width:100px; height:50px; padding:5px 10px; border-style:solid; border-width:2px 4px"
-      ></div>
-    `
-
-    await attach()
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.left).toBe(10)
-    expect(rect.top).toBe(20)
-    expect(rect.width).toBe(128)
-    expect(rect.height).toBe(64)
-  })
-
-  it('patches offset and client dimensions from layout boxes', async () => {
-    document.body.innerHTML = `
-      <div
-        id="box"
-        style="position:absolute; left:10px; top:20px; width:100px; height:50px; padding:5px 10px; border-style:solid; border-width:2px 4px"
-      ></div>
-    `
-
-    await attach()
-
-    const box = requiredElement('#box') as HTMLElement
-    expect(box.offsetWidth).toBe(128)
-    expect(box.offsetHeight).toBe(64)
-    expect(box.clientWidth).toBe(120)
-    expect(box.clientHeight).toBe(60)
-  })
-
-  it('does not expand border-box rects for padding and borders', async () => {
-    document.body.innerHTML = `
-      <div
-        id="box"
-        style="position:absolute; left:10px; top:20px; box-sizing:border-box; width:100px; height:50px; padding:5px 10px; border-style:solid; border-width:2px 4px"
-      ></div>
-    `
-
-    await attach()
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.width).toBe(100)
-    expect(rect.height).toBe(50)
-  })
-
-  it('applies min and max size constraints to positioned boxes', async () => {
-    document.body.innerHTML = `
-      <div id="min" style="position:absolute; left:0; top:0; width:50px; height:20px; min-width:80px; min-height:40px"></div>
-      <div id="max" style="position:absolute; left:100px; top:0; width:90px; height:60px; max-width:70px; max-height:30px"></div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#min').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 80,
-      height: 40,
-    })
-    expectRect(requiredElement('#max').getBoundingClientRect(), {
-      left: 100,
-      top: 0,
-      width: 70,
-      height: 30,
-    })
-  })
-
-  it('applies min and max size constraints in the active box-sizing model', async () => {
-    document.body.innerHTML = `
-      <div id="content-box" style="position:absolute; left:0; top:0; width:10px; height:10px; min-width:20px; min-height:15px; padding:5px; border-style:solid; border-width:2px"></div>
-      <div id="border-box" style="position:absolute; left:0; top:40px; box-sizing:border-box; width:100px; height:60px; max-width:80px; max-height:30px; padding:5px; border-style:solid; border-width:2px"></div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#content-box').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 34,
-      height: 29,
-    })
-    expectRect(requiredElement('#border-box').getBoundingClientRect(), {
-      left: 0,
-      top: 40,
-      width: 80,
-      height: 30,
-    })
-  })
-
-  it('ignores border width for none border styles', async () => {
-    document.body.innerHTML = `
-      <div
-        id="box"
-        style="position:absolute; left:10px; top:20px; width:100px; height:50px; border-style:none; border-width:10px"
-      ></div>
-    `
-
-    await attach()
-
-    const rect = requiredElement('#box').getBoundingClientRect()
-    expect(rect.width).toBe(100)
-    expect(rect.height).toBe(50)
-  })
-
-  it('stacks static block siblings vertically', async () => {
-    document.body.innerHTML = `
-      <div id="one" style="width:100px; height:30px"></div>
-      <div id="two" style="width:80px; height:40px"></div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#one').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 100,
-      height: 30,
-    })
-    expectRect(requiredElement('#two').getBoundingClientRect(), {
-      left: 0,
-      top: 30,
-      width: 80,
-      height: 40,
-    })
-  })
-
-  it('applies native list spacing before author CSS overrides it', async () => {
-    document.body.innerHTML = `
-      <ul id="native">
-        <li id="native-item" style="width:50px; height:20px"></li>
-      </ul>
-      <ul id="reset" style="margin:0; padding:0">
-        <li id="reset-item" style="width:50px; height:20px"></li>
-      </ul>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#native-item').getBoundingClientRect(), {
-      left: 40,
-      top: 16,
-      width: 50,
-      height: 20,
-    })
-    expectRect(requiredElement('#reset-item').getBoundingClientRect(), {
-      left: 0,
-      top: 52,
-      width: 50,
-      height: 20,
-    })
-  })
-
-  it('applies native text block spacing and heading metrics before author CSS overrides them', async () => {
-    document.body.innerHTML = `
-      <div id="host" style="padding:1px">
-        <p id="paragraph" style="width:100px">Hello</p>
-        <h1 id="heading" style="width:100px">Hello</h1>
-        <pre id="pre" style="width:100px">Hello</pre>
-        <p id="reset" style="margin:0; width:100px; font-size:20px; line-height:30px">Hello</p>
-      </div>
-    `
-
-    await attach({ viewport: { width: 500, height: 400 } })
-
-    expectRect(requiredElement('#paragraph').getBoundingClientRect(), {
-      left: 1,
-      top: 17,
-      width: 100,
-      height: 20,
-    })
-    expectRect(requiredElement('#heading').getBoundingClientRect(), {
-      left: 1,
-      top: 58,
-      width: 100,
-      height: 40,
-    })
-    expectRect(requiredElement('#pre').getBoundingClientRect(), {
-      left: 1,
-      top: 120,
-      width: 100,
-      height: 17,
-    })
-    expectRect(requiredElement('#reset').getBoundingClientRect(), {
-      left: 1,
-      top: 150,
-      width: 100,
-      height: 30,
-    })
-  })
-
-  it('applies native hr border and margin defaults before author CSS overrides them', async () => {
-    document.body.innerHTML = `
-      <div id="before" style="width:30px; height:10px"></div>
-      <hr id="native">
-      <hr id="reset" style="margin:0; width:100px">
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#native').getBoundingClientRect(), {
-      left: 0,
-      top: 18,
-      width: 300,
-      height: 2,
-    })
-    expectRect(requiredElement('#reset').getBoundingClientRect(), {
-      left: 0,
-      top: 28,
-      width: 102,
-      height: 2,
-    })
-  })
-
-  it('hides closed dialogs by default while allowing author display overrides', async () => {
-    document.body.innerHTML = `
-      <dialog id="closed" style="width:100px; height:40px; margin:0; padding:0; border-width:0; border-style:none"></dialog>
-      <dialog id="forced" style="display:block; width:80px; height:30px; margin:0; padding:0; border-width:0; border-style:none"></dialog>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#closed').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-    })
-    expectRect(requiredElement('#forced').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 80,
-      height: 30,
-    })
-  })
-
-  it('lays out static children inside parent padding and borders', async () => {
-    document.body.innerHTML = `
-      <div id="parent" style="width:100px; padding:10px; border-style:solid; border-width:2px">
-        <div id="child" style="height:20px"></div>
-      </div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#parent').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 124,
-      height: 44,
-    })
-    expectRect(requiredElement('#child').getBoundingClientRect(), {
-      left: 12,
-      top: 12,
-      width: 100,
-      height: 20,
-    })
-  })
-
-  it('includes static child margins in block flow without margin collapse', async () => {
-    document.body.innerHTML = `
-      <div id="parent" style="width:100px; padding:1px">
-        <div id="child" style="height:20px; margin-top:5px; margin-bottom:7px"></div>
-      </div>
-    `
-
-    await attach({ viewport: { width: 300, height: 200 } })
-
-    expectRect(requiredElement('#child').getBoundingClientRect(), {
-      left: 1,
-      top: 6,
-      width: 100,
-      height: 20,
-    })
-    expect(requiredElement('#parent').getBoundingClientRect().height).toBe(34)
-  })
-
-  it('uses the configured text measurer for text-only leaf auto height', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="width:100px">Hello</div>
-    `
-
-    await attach({
-      textMeasurer: {
-        measure() {
-          return { width: 25, height: 30 }
-        },
-      },
-    })
-
-    const rect = requiredElement('#text').getBoundingClientRect()
-    expect(rect.width).toBe(100)
-    expect(rect.height).toBe(30)
-  })
-
-  it('measures text auto height with the constrained content width', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="max-width:50px">Hello world</div>
-    `
+  it('passes constrained text inputs to the configured text measurer', async () => {
+    const inputs: Array<{ maxWidth: number | undefined }> = []
+    document.body.innerHTML = '<div id="text" style="max-width:50px">Hello world</div>'
 
     await attach({
       viewport: { width: 300, height: 200 },
       textMeasurer: {
         measure(input) {
+          inputs.push({ maxWidth: input.maxWidth })
           return input.maxWidth === 50 ? { width: 50, height: 40 } : { width: 100, height: 20 }
         },
       },
     })
 
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 50,
-      height: 40,
-    })
-  })
-
-  it('uses text measurement for positioned auto sizes', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="position:absolute; left:10px; top:20px; font-size:20px; line-height:30px; white-space:nowrap">Hello</div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 10,
-      top: 20,
-      width: 50,
-      height: 30,
-    })
-  })
-
-  it('measures br elements as hard breaks in text leaves', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="position:absolute; left:10px; top:20px; font-size:20px; line-height:30px; white-space:pre-wrap">Hello<br>World</div>
-    `
-
-    await attach()
-
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 10,
-      top: 20,
-      width: 50,
-      height: 60,
-    })
-    expectRect(requiredElement('br').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-    })
+    requiredElement('#text').getBoundingClientRect()
+    expect(inputs).toContainEqual({ maxWidth: 50 })
   })
 
   it('uses data layout metadata as intrinsic dimensions', async () => {
-    document.body.innerHTML = `
-      <div id="icon" data-layout-width="32" data-layout-height="18"></div>
-    `
+    document.body.innerHTML = '<div id="icon" data-layout-width="32" data-layout-height="18"></div>'
 
     await attach({ viewport: { width: 300, height: 200 } })
 
-    expectRect(requiredElement('#icon').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 32,
-      height: 18,
-    })
+    const rect = requiredElement('#icon').getBoundingClientRect()
+    expect(rect.width).toBe(32)
+    expect(rect.height).toBe(18)
   })
 
-  it('uses measured text as flex item intrinsic size', async () => {
-    document.body.innerHTML = `
-      <div id="parent" style="display:flex; width:200px">
-        <div id="label">Measured label</div>
-        <div id="box" style="width:40px; height:10px"></div>
-      </div>
-    `
+  it('uses configured text measurement in Taffy leaf sizing', async () => {
+    const inputs: Array<{ text: string; maxWidth: number | undefined }> = []
+    document.body.innerHTML = '<div id="text" style="width:100px">Hello</div>'
 
     await attach({
       viewport: { width: 300, height: 200 },
       textMeasurer: {
         measure(input) {
-          return input.text.includes('Measured') ? { width: 70, height: 24 } : { width: 1, height: 1 }
+          inputs.push({ text: input.text, maxWidth: input.maxWidth })
+          return { width: 20, height: 45 }
         },
       },
     })
 
-    expectRect(requiredElement('#label').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 70,
-      height: 24,
-    })
-    expectRect(requiredElement('#box').getBoundingClientRect(), {
-      left: 70,
-      top: 0,
-      width: 40,
-      height: 10,
-    })
-    expectRect(requiredElement('#parent').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 200,
-      height: 24,
-    })
-  })
-
-  it('uses the configured text measurer for Taffy text leaves', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="width:100px">Hello</div>
-    `
-
-    await attach({
-      viewport: { width: 300, height: 200 },
-      textMeasurer: {
-        measure(input) {
-          return input.maxWidth === 100 ? { width: 20, height: 45 } : { width: 10, height: 15 }
-        },
-      },
-    })
-
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 100,
-      height: 45,
-    })
-  })
-
-  it('resets line-height normal to the deterministic font-size ratio', async () => {
-    document.body.innerHTML = `
-      <div id="text" style="position:absolute; font-size:20px; line-height:40px; line-height:normal">Hello</div>
-    `
-
-    await attach({
-      viewport: { width: 300, height: 200 },
-      textMeasurer: {
-        measure(input) {
-          return { width: 20, height: input.lineHeight }
-        },
-      },
-    })
-
-    expectRect(requiredElement('#text').getBoundingClientRect(), {
-      left: 0,
-      top: 0,
-      width: 20,
-      height: 24,
-    })
+    expect(requiredElement('#text').getBoundingClientRect().height).toBe(45)
+    expect(inputs).toContainEqual({ text: 'Hello', maxWidth: 100 })
   })
 })
