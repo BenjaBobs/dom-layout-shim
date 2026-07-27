@@ -63,7 +63,7 @@ the same change that modifies the behavior. The overview can be viewed with
 
 ## Commit & Pull Request Guidelines
 
-Recent commits use short imperative summaries, for example `remove tsx + allow playwright`. Keep commits focused and mention the changed behavior, not just files.
+Follow the commit convention documented in `README.md`.
 
 Pull requests should include a brief description, commands run, and notes about parity or benchmark impact. Link related issues when available. Screenshots are only useful for documentation or browser-observed behavior changes.
 
