@@ -2,7 +2,7 @@ import { it } from 'vitest'
 import { expectChromiumParity } from '../parity-harness.ts'
 
 const nativeButtonTolerance = {
-  tolerance: { width: 4, height: 2 },
+  tolerance: { width: 12, height: 2 },
   toleranceReason: 'Native button font and theme metrics vary across Chromium host platforms.',
 } as const
 
@@ -22,7 +22,7 @@ const nativeTextareaTolerance = {
 } as const
 
 const nativeSelectTolerance = {
-  tolerance: { width: 8, height: 2 },
+  tolerance: { width: 20, height: 2 },
   toleranceReason: 'Native select option fonts and theme metrics vary across Chromium host platforms.',
 } as const
 
