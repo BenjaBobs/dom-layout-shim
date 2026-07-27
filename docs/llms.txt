@@ -24,3 +24,4 @@ legacy descriptions and should be interpreted conservatively.
 - Repository and README: https://github.com/BenjaBobs/test-layout
 - Implementation phases: https://github.com/BenjaBobs/test-layout/blob/main/docs/implementation-phases.md
 - Taffy pipeline roadmap: https://github.com/BenjaBobs/test-layout/blob/main/docs/taffy-pipeline-roadmap.md
+- Release and changelog policy: https://github.com/BenjaBobs/test-layout/blob/main/docs/releasing.md

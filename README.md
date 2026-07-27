@@ -53,6 +53,9 @@ case-based implementation plan.
 See [docs/taffy-pipeline-roadmap.md](docs/taffy-pipeline-roadmap.md) for the
 Taffy pipeline contract and migration roadmap.
 
+See [docs/releasing.md](docs/releasing.md) for the changeset, changelog, and
+pre-1.0 versioning policy.
+
 ## Commit convention
 
 Use `<type>(<scope>): <imperative summary>` for commit subjects. A scope is
