@@ -73,7 +73,9 @@ subject is sufficient. Use a body when it explains non-obvious reasoning or
 provides a useful enumeration of changes. Commit bodies may use Markdown.
 When applicable, include a minimal code example that makes the changed CSS,
 API, or configuration behavior easy to see. Prefer a focused usage example
-over reproducing implementation details or a large part of the diff.
+over reproducing implementation details or a large part of the diff. Add a
+short code comment when it helps identify the newly supported or changed part
+of the example.
 
 For example, a parity commit covering several distinct behaviors should
 enumerate them:
@@ -96,7 +98,7 @@ feat(css): Support percentage row gaps
   display: flex;
   flex-wrap: wrap;
   height: 100px;
-  row-gap: 10%;
+  row-gap: 10%; /* Percentage row gaps are now supported. */
 }
 ```
 ````
