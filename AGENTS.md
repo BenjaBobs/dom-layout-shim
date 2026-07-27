@@ -59,6 +59,11 @@ behavior, for example `absolute-overlap` or `pointer-events-none`.
 
 Run `pnpm test` for normal changes. Run `pnpm run test:browser-parity` for CSS, layout, geometry, or hit-testing changes. Run `pnpm run build` before publishing-facing changes.
 
+Browser parity assertions are exact by default. Use numeric tolerances only for
+values that Chromium itself varies across supported host platforms. Every
+tolerance must include a `toleranceReason` explaining the browser/platform
+variance; never use a tolerance merely to make an implementation mismatch pass.
+
 Keep the records in `support/css/` up to date whenever CSS parsing, layout
 behavior, hit-testing behavior, visual/inert CSS handling, parity coverage,
 implementation quirks, or tracked CSS TODOs change. Update claim support,

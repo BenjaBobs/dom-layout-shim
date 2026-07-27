@@ -14,17 +14,25 @@ export type CenterClickabilityQuery = {
   selector: string
 }
 
+type ExplainedTolerance<T extends string> =
+  | {
+      tolerance?: never
+      toleranceReason?: never
+    }
+  | {
+      tolerance: Partial<Record<T, number>>
+      toleranceReason: string
+    }
+
 export type RectQuery = {
   type: 'rect'
   selector: string
-  tolerance?: Partial<Record<'left' | 'top' | 'width' | 'height', number>>
-}
+} & ExplainedTolerance<'left' | 'top' | 'width' | 'height'>
 
 export type DimensionsQuery = {
   type: 'dimensions'
   selector: string
-  tolerance?: Partial<Record<'offsetWidth' | 'offsetHeight' | 'clientWidth' | 'clientHeight', number>>
-}
+} & ExplainedTolerance<'offsetWidth' | 'offsetHeight' | 'clientWidth' | 'clientHeight'>
 
 export type BrowserParityQuery = PointQuery | CenterClickabilityQuery | RectQuery | DimensionsQuery
 
@@ -101,12 +109,22 @@ function expectQueryParity(
     'Chromium result is expected; happy-dom engine result is received.'
 
   if (query.type === 'rect' && query.tolerance) {
-    expectNumericRecordParity(engineResult?.rect, chromiumResult?.rect, query.tolerance, message)
+    expectNumericRecordParity(
+      engineResult?.rect,
+      chromiumResult?.rect,
+      query.tolerance,
+      `${message}\nTolerance reason: ${query.toleranceReason}`,
+    )
     return
   }
 
   if (query.type === 'dimensions' && query.tolerance) {
-    expectNumericRecordParity(engineResult?.dimensions, chromiumResult?.dimensions, query.tolerance, message)
+    expectNumericRecordParity(
+      engineResult?.dimensions,
+      chromiumResult?.dimensions,
+      query.tolerance,
+      `${message}\nTolerance reason: ${query.toleranceReason}`,
+    )
     return
   }
 
