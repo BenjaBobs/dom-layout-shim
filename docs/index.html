@@ -229,19 +229,19 @@
           <a class="button" href="https://github.com/BenjaBobs/dom-layout-shim#readme">Read the guide</a>
         </div>
       </div>
-      <pre aria-label="Usage example"><code>await attachLayoutEngine({
-  window,
-  viewport: {
-    width: 1280,
-    height: 720,
-  },
-  stylesheets: [appCss],
-})
+      <pre aria-label="Usage example"><code>import {
+  attachLayoutEngine,
+} from 'dom-layout-shim'
+
+await attachLayoutEngine({ window })
 
 const rect =
   button.getBoundingClientRect()
 
-expectReceivesPointer(button)</code></pre>
+document.elementFromPoint(
+  rect.x + rect.width / 2,
+  rect.y + rect.height / 2,
+)</code></pre>
     </section>
 
     <section class="grid" aria-label="Documentation">

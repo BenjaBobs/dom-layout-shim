@@ -8,23 +8,40 @@ through a Taffy-backed pipeline, with text measurement supplied through Pretext
 when the runtime supports canvas measurement. DOM API patching and hit testing
 are derived from the resulting layout snapshot.
 
-```ts
-import { attachLayoutEngine, expectReceivesPointer, guardedClick } from 'dom-layout-shim'
+## Installation
 
-await attachLayoutEngine({
-  window,
-  viewport: { width: 1280, height: 720 },
-  unsupportedCss: { default: 'throw' },
-  stylesheets: [appLayoutCss],
-})
+```sh
+pnpm add dom-layout-shim
+```
+
+DOM Layout Shim works with the DOM environment already owned by your test
+harness. It does not install or require a particular DOM implementation.
+
+## Quick start
+
+```ts
+import { attachLayoutEngine } from 'dom-layout-shim'
+
+await attachLayoutEngine({ window })
 
 const button = document.getElementById('save')!
 const rect = button.getBoundingClientRect()
-const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
-const clickable = top === button || Boolean(top && button.contains(top))
+const target = document.elementFromPoint(
+  rect.left + rect.width / 2,
+  rect.top + rect.height / 2,
+)
+```
 
-expectReceivesPointer(button)
-guardedClick(button)
+The default viewport is 1280×720. Inline styles and document `<style>` elements
+are discovered automatically. Configuration is only needed to override a
+default or supply additional stylesheet text:
+
+```ts
+await attachLayoutEngine({
+  window,
+  viewport: { width: 1440, height: 900 },
+  stylesheets: [appLayoutCss],
+})
 ```
 
 The current implementation uses Lightning CSS for `<style>` parsing and supports
@@ -32,6 +49,8 @@ a small CSS subset for proof-of-concept block, flex, absolute, and fixed
 positioned fixtures. Unsupported CSS throws by default unless explicitly ignored
 by policy. Text measurement falls back to a deterministic approximation in
 Node-like runtimes without canvas text measurement.
+
+The package requires Node.js 22 or newer and uses standard ES modules.
 
 See [docs/index.html](docs/index.html) for the documentation site and
 [docs/css-support-status.html](docs/css-support-status.html) for its filterable
