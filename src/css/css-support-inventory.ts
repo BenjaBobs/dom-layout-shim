@@ -357,11 +357,13 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     parity: [
       'grid-auto-flow',
       'grid-auto-tracks',
+      'grid-content-alignment',
       'grid-explicit-tracks',
       'grid-fr-tracks',
       'grid-gap',
       'grid-area-placement',
       'grid-line-placement',
+      'grid-item-stretch',
       'grid-minmax-tracks',
       'grid-order',
       'grid-percentage-tracks',
