@@ -60,3 +60,33 @@ it('grid percentage column gap resolves against container width', async () => {
     ],
   })
 })
+
+it('grid percentage row gap resolves against container height', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #parent {
+          display: grid;
+          grid-template-columns: 40px;
+          grid-template-rows: 20px 30px;
+          row-gap: 10%;
+          width: 200px;
+          height: 100px;
+        }
+      </style>
+      <div id="parent">
+        <div id="first"></div>
+        <div id="second"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#first' },
+      { type: 'rect', selector: '#second' },
+    ],
+  })
+})

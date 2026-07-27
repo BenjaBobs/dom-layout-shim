@@ -246,6 +246,10 @@ export const cssSupportInventory: readonly CssSupportEntry[] = [
     ],
     notes: [
       {
+        kind: 'browser-parity',
+        text: 'Physical and logical box spacing, border geometry, flex and grid gaps on both axes, wrapped flex row gaps, and percentage gaps against definite container sizes have parity fixtures.',
+      },
+      {
         kind: 'limitation',
         text: 'Margin collapse is not implemented.',
       },
