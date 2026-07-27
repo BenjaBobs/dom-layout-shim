@@ -70,7 +70,18 @@ being made.
 Keep the subject imperative and under 72 characters. Both uppercase and
 lowercase letters are allowed. Keep commit bodies short and omit them when the
 subject is sufficient. Use a body when it explains non-obvious reasoning or
-provides a useful enumeration of changes.
+provides a useful enumeration of changes. Commit bodies may use Markdown.
+
+For example, a parity commit covering several distinct behaviors should
+enumerate them:
+
+```text
+test(css): Expand grid and aspect-ratio parity coverage
+
+- Cover grid track content alignment
+- Cover grid item stretching and self-alignment
+- Cover inverse and constrained aspect-ratio sizing
+```
 
 If a change genuinely requires another scope, add that scope to the list above
 in the same change. Do not introduce unlisted scopes only in commit subjects.
