@@ -122,3 +122,10 @@ in the same change. Do not introduce unlisted scopes only in commit subjects.
 Agents may create focused commits for their own changes after relevant checks
 pass. They must preserve unrelated changes, exclude generated output, and must
 not amend existing commits or push unless explicitly requested.
+
+## License
+
+test-layout is available under the
+[Zero-Clause BSD license](LICENSE). You may use, copy, modify, and distribute
+the software for any purpose, with or without a fee and without an attribution
+requirement.

@@ -2,6 +2,7 @@
   "name": "test-layout",
   "private": true,
   "version": "0.0.0",
+  "license": "0BSD",
   "packageManager": "pnpm@10.33.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,6 +16,7 @@
   "files": [
     "dist",
     "docs",
+    "LICENSE",
     "README.md"
   ],
   "scripts": {
