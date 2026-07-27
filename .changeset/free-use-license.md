@@ -2,6 +2,6 @@
 'test-layout': minor
 ---
 
-License the package under the Zero-Clause BSD license, permitting use, copying,
-modification, and distribution for any purpose without an attribution
-requirement.
+Release the package into the public domain under the Unlicense, permitting use,
+copying, modification, publishing, compilation, sale, and distribution for any
+commercial or non-commercial purpose.

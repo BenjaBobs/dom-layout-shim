@@ -125,7 +125,6 @@ not amend existing commits or push unless explicitly requested.
 
 ## License
 
-test-layout is available under the
-[Zero-Clause BSD license](LICENSE). You may use, copy, modify, and distribute
-the software for any purpose, with or without a fee and without an attribution
-requirement.
+test-layout is released into the public domain under
+[the Unlicense](LICENSE). You may use, copy, modify, publish, compile, sell, or
+distribute the software for any commercial or non-commercial purpose.
