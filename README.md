@@ -71,6 +71,9 @@ Keep the subject imperative and under 72 characters. Both uppercase and
 lowercase letters are allowed. Keep commit bodies short and omit them when the
 subject is sufficient. Use a body when it explains non-obvious reasoning or
 provides a useful enumeration of changes. Commit bodies may use Markdown.
+When applicable, include a minimal code example that makes the changed CSS,
+API, or configuration behavior easy to see. Prefer a focused usage example
+over reproducing implementation details or a large part of the diff.
 
 For example, a parity commit covering several distinct behaviors should
 enumerate them:
@@ -82,6 +85,21 @@ test(css): Expand grid and aspect-ratio parity coverage
 - Cover grid item stretching and self-alignment
 - Cover inverse and constrained aspect-ratio sizing
 ```
+
+For example, a commit adding CSS behavior may show the newly supported form:
+
+````text
+feat(css): Support percentage row gaps
+
+```css
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  height: 100px;
+  row-gap: 10%;
+}
+```
+````
 
 If a change genuinely requires another scope, add that scope to the list above
 in the same change. Do not introduce unlisted scopes only in commit subjects.
