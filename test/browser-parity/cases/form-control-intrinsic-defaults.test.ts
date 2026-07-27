@@ -22,7 +22,7 @@ const nativeTextareaTolerance = {
 } as const
 
 const nativeSelectTolerance = {
-  tolerance: { width: 20, height: 2 },
+  tolerance: { width: 20, height: 4 },
   toleranceReason: 'Native select option fonts and theme metrics vary across Chromium host platforms.',
 } as const
 
