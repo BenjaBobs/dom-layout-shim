@@ -45,8 +45,8 @@ Taffy pipeline contract and migration roadmap.
 
 ## Commit convention
 
-Use `<type>(<scope>): <imperative summary>` for commit subjects. Omit the scope
-when none of the listed scopes describes the change.
+Use `<type>(<scope>): <imperative summary>` for commit subjects. A scope is
+required for every commit.
 
 Allowed types:
 
@@ -67,9 +67,10 @@ Choose the type based on the effect of the change. For example, a dependency
 update may be `feat(cfg)`, `fix(cfg)`, or `refactor(cfg)` depending on why it is
 being made.
 
-Keep the subject lowercase, imperative, and under 72 characters. Keep commit
-bodies short and omit them when the subject is sufficient. Use a body when it
-explains non-obvious reasoning or provides a useful enumeration of changes.
+Keep the subject imperative and under 72 characters. Both uppercase and
+lowercase letters are allowed. Keep commit bodies short and omit them when the
+subject is sufficient. Use a body when it explains non-obvious reasoning or
+provides a useful enumeration of changes.
 
 If a change genuinely requires another scope, add that scope to the list above
 in the same change. Do not introduce unlisted scopes only in commit subjects.
