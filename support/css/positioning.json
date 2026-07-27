@@ -1,0 +1,64 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "positioning",
+  "title": "Positioning and insets",
+  "subjects": {
+    "properties": [
+      "position",
+      "left",
+      "right",
+      "top",
+      "bottom",
+      "inset",
+      "inset-inline",
+      "inset-block",
+      "inset-inline-start",
+      "inset-inline-end",
+      "inset-block-start",
+      "inset-block-end",
+      "z-index"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "syntax": [
+        "static",
+        "relative",
+        "absolute",
+        "fixed",
+        "<px>",
+        "auto",
+        "<integer>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "absolute-overlap",
+          "absolute-positioned-containing-block",
+          "fixed-inside-scrolled-ancestor",
+          "fixed-inset-full-viewport",
+          "inset-two-value-shorthand",
+          "relative-offset-flow",
+          "right-bottom-positioning",
+          "z-index-dom-order"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, physical and logical opposing/end insets, CSS-wide static resets, and z-index ordering have parity fixtures."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Fixed positioning is represented through Taffy absolute positioning in the viewport-rooted layout tree."
+        }
+      ]
+    }
+  ]
+}

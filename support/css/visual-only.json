@@ -1,0 +1,79 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "visual-only",
+  "title": "Visual-only accepted declarations",
+  "subjects": {
+    "properties": [
+      "opacity",
+      "color",
+      "background-color",
+      "background",
+      "background-image",
+      "background-repeat",
+      "background-position",
+      "background-size",
+      "background-origin",
+      "background-clip",
+      "background-attachment",
+      "box-shadow",
+      "border-color",
+      "border-inline-color",
+      "border-block-color",
+      "border-top-color",
+      "border-right-color",
+      "border-bottom-color",
+      "border-left-color",
+      "border-inline-start-color",
+      "border-inline-end-color",
+      "border-block-start-color",
+      "border-block-end-color",
+      "outline",
+      "outline-width",
+      "outline-style",
+      "outline-color",
+      "outline-offset",
+      "border-radius",
+      "border-top-left-radius",
+      "border-top-right-radius",
+      "border-bottom-right-radius",
+      "border-bottom-left-radius",
+      "text-decoration",
+      "text-decoration-line",
+      "text-decoration-color",
+      "text-decoration-style",
+      "text-decoration-thickness",
+      "filter",
+      "backdrop-filter",
+      "transform",
+      "transform-origin",
+      "object-fit",
+      "object-position"
+    ],
+    "elements": []
+  },
+  "effect": "visual-ignored",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Accepted visual-only declarations have parity coverage that they do not affect rectangles or point queries under this package contract."
+        },
+        {
+          "kind": "limitation",
+          "text": "Painting, transforms, decoration rendering, and visual overflow are not modeled."
+        }
+      ]
+    }
+  ]
+}

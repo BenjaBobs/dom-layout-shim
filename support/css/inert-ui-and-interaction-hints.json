@@ -1,0 +1,72 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "inert-ui-and-interaction-hints",
+  "title": "Inert UI, interaction, and environment hints",
+  "subjects": {
+    "properties": [
+      "will-change",
+      "appearance",
+      "accent-color",
+      "caret-color",
+      "scroll-behavior",
+      "scrollbar-width",
+      "scrollbar-color",
+      "overscroll-behavior",
+      "overscroll-behavior-x",
+      "overscroll-behavior-y",
+      "isolation",
+      "mix-blend-mode",
+      "list-style",
+      "list-style-type",
+      "list-style-position",
+      "list-style-image",
+      "forced-color-adjust",
+      "color-scheme",
+      "cursor",
+      "user-select",
+      "touch-action",
+      "resize",
+      "direction",
+      "writing-mode",
+      "float",
+      "clear",
+      "contain",
+      "container-type",
+      "container-name"
+    ],
+    "elements": []
+  },
+  "effect": "accepted-inert",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "These declarations are parsed so common application CSS can pass unsupported-CSS policy, but they do not affect layout or hit testing."
+        },
+        {
+          "kind": "limitation",
+          "text": "Only direction:ltr and writing-mode:horizontal-tb are accepted; non-default writing directions remain unsupported because logical layout is mapped as horizontal-tb LTR."
+        },
+        {
+          "kind": "limitation",
+          "text": "Only float:none and clear:none are accepted; floated layout and float clearance are not modeled."
+        },
+        {
+          "kind": "limitation",
+          "text": "Only contain:none, container-type:normal, and container-name:none are accepted; containment and container query behavior are not modeled."
+        }
+      ]
+    }
+  ]
+}

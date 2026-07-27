@@ -13,7 +13,7 @@ describe('CSS support inventory', () => {
 
   it('references existing browser parity fixtures', () => {
     const missing = cssSupportInventory.flatMap((entry) =>
-      (entry.parity ?? [])
+      entry.claims.flatMap((claim) => claim.parity.fixtures)
         .filter((fixture) => !existsSync(resolve('test/browser-parity/cases', `${fixture}.test.ts`)))
         .map((fixture) => `${entry.id}: ${fixture}`),
     )
@@ -65,8 +65,8 @@ describe('CSS support inventory', () => {
 
   it('does not list the same implemented property in multiple active entries', () => {
     const activeProperties = cssSupportInventory
-      .filter((entry) => entry.status !== 'todo')
-      .flatMap((entry) => entry.properties.map((property) => ({ entry: entry.id, property })))
+      .filter((entry) => entry.status !== 'unsupported')
+      .flatMap((entry) => entry.subjects.properties.map((property) => ({ entry: entry.id, property })))
       .filter(({ property }) => !property.includes('*'))
     const counts = new Map<string, string[]>()
 

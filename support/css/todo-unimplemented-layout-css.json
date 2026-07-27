@@ -1,0 +1,44 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "todo-unimplemented-layout-css",
+  "title": "Tracked unimplemented layout CSS",
+  "subjects": {
+    "properties": [
+      "direction",
+      "writing-mode",
+      "float: left/right/inline-start/inline-end",
+      "clear: left/right/both/inline-start/inline-end",
+      "display: inline formatting",
+      "display: list-item markers",
+      "grid-template-areas",
+      "position: sticky",
+      "border-collapse",
+      "border-spacing",
+      "empty-cells",
+      "transform: non-none",
+      "contain: layout/paint/size/style/content/strict",
+      "container-type: size/inline-size/scroll-state",
+      "container-name: <custom-ident>"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "tracked-unsupported-scope",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "todo",
+          "text": "These are tracked because they are likely to matter for layout coherence, but they are not currently accepted as implemented declarations."
+        }
+      ]
+    }
+  ]
+}

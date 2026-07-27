@@ -7,13 +7,14 @@ export { debugLayout } from './attachment/patch-dom-apis.ts'
 export type { UnsupportedCssContext, UnsupportedCssDecision, UnsupportedCssPolicy } from './css/unsupported-css-policy.ts'
 export { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from './css/css-support-inventory.ts'
 export type {
+  CssSupportClaim,
   CssSupportEffect,
-  CssSupportEntry,
-  CssSupportOwnerArea,
+  CssSupportLevel,
   CssSupportNote,
   CssSupportNoteKind,
-  CssSupportParityStatus,
-  CssSupportStatus,
+  CssSupportOwner,
+  CssSupportParity,
+  CssSupportRecord,
 } from './css/css-support-inventory.ts'
 export type { Box } from './geometry/box.ts'
 export type { HitBox } from './hit-testing/hit-box.ts'

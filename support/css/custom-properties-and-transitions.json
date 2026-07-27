@@ -1,0 +1,40 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "custom-properties-and-transitions",
+  "title": "Custom properties and transitions",
+  "subjects": {
+    "properties": [
+      "--*",
+      "transition",
+      "transition-property",
+      "transition-duration",
+      "transition-timing-function",
+      "transition-delay",
+      "transition-behavior"
+    ],
+    "elements": []
+  },
+  "effect": "accepted-inert",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Custom properties and transition declarations are accepted as inert declarations before value parsing."
+        },
+        {
+          "kind": "limitation",
+          "text": "CSS variable resolution is not implemented, so var() references in supported layout declarations remain unsupported."
+        }
+      ]
+    }
+  ]
+}

@@ -35,7 +35,12 @@ Node-like runtimes without canvas text measurement.
 
 See [docs/css-support-status.html](docs/css-support-status.html) for a
 filterable CSS support overview. The underlying source of truth is
-[src/css/css-support-inventory.ts](src/css/css-support-inventory.ts).
+the machine-readable records in [support/css](support/css). Each record follows
+[support/css-support.schema.json](support/css-support.schema.json). Run
+`pnpm run css:validate` to check the inventory, `pnpm run css:generate` after
+editing it, or `pnpm run css:query -- flex-basis` to query it from a terminal.
+Ignored, generated JSON for documentation and agent consumers is written to
+`docs/data/`.
 
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.

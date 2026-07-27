@@ -1,0 +1,58 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "table-html-elements",
+  "title": "Table HTML elements",
+  "subjects": {
+    "properties": [
+      "display: table/table-row/table-cell/table-caption/table-row-group/table-header-group/table-footer-group/table-column/table-column-group",
+      "border-collapse",
+      "border-spacing",
+      "caption-side",
+      "empty-cells",
+      "table-layout",
+      "vertical-align"
+    ],
+    "elements": [
+      "table",
+      "caption",
+      "colgroup",
+      "col",
+      "thead",
+      "tbody",
+      "tfoot",
+      "tr",
+      "th",
+      "td"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "css-table-display",
+          "table-explicit-cells"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Simple native table/caption/colgroup/col/tbody/thead/tfoot/tr/td layout and authored display:table/table-row/table-cell/table-caption/table-row-group boxes with explicit cell and column sizes, numeric table/cell/column width and height attributes, author table width/height scaling, cellspacing/cellpadding defaults with CSS override, direct row children, row and column spans, row/column visibility:collapse, empty-cells hit testing, top/bottom captions including inherited caption-side, wider explicit captions, multiple row groups, visual header/footer ordering, cell padding and borders, uniform collapsed borders, cell hit testing, default/reset/two-axis border spacing, and inert table-layout/vertical-align parsing has parity coverage."
+        },
+        {
+          "kind": "limitation",
+          "text": "The implemented table subset is intentionally narrow and only handles non-spanning rows with explicit cell sizes."
+        },
+        {
+          "kind": "limitation",
+          "text": "Intrinsic column sizing, full collapsed-border conflict resolution, and complex table-specific visibility:collapse interactions are not modeled."
+        }
+      ]
+    }
+  ]
+}

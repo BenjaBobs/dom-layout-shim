@@ -1,0 +1,38 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "replaced-elements",
+  "title": "Replaced element intrinsic sizing",
+  "subjects": {
+    "properties": [],
+    "elements": [
+      "img",
+      "svg",
+      "canvas",
+      "video",
+      "audio",
+      "iframe",
+      "object"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "replaced-image-attributes"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "img can use width/height attributes, with missing dimensions treated as zero for no-resource images; svg, canvas, video, iframe, and empty object elements use native 300x150 fallback dimensions with width/height attribute overrides; object elements without type/data resource hints lay out fallback children; audio elements without controls are non-rendered and audio controls use native 300x54 fallback dimensions; any element can use data-layout-width and data-layout-height metadata."
+        }
+      ]
+    }
+  ]
+}

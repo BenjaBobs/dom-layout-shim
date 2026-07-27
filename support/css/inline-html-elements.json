@@ -1,0 +1,53 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "inline-html-elements",
+  "title": "Inline phrasing HTML elements",
+  "subjects": {
+    "properties": [],
+    "elements": [
+      "span",
+      "a",
+      "strong",
+      "em",
+      "b",
+      "i",
+      "u",
+      "s",
+      "small",
+      "code",
+      "kbd",
+      "samp",
+      "mark",
+      "br",
+      "sub",
+      "sup",
+      "time",
+      "label"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "inline-html-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Native inline phrasing elements contribute text through ancestor text measurement without introducing block-flow breaks, including hard line breaks from br elements in inline-only text subtrees."
+        },
+        {
+          "kind": "limitation",
+          "text": "Inline fragment rectangles, inline hit boxes, mixed inline/block formatting, and baseline effects for sub/sup are not modeled; native inline elements currently expose zero rects unless author CSS changes their display."
+        }
+      ]
+    }
+  ]
+}

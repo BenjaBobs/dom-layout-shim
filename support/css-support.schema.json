@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BenjaBobs/test-layout/blob/main/support/css-support.schema.json",
+  "title": "test-layout CSS support record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "title", "subjects", "effect", "owner", "claims"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subjects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["properties", "elements"],
+      "properties": {
+        "properties": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "elements": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "effect": {
+      "enum": ["layout", "hit-testing", "accepted-inert", "visual-ignored", "source"]
+    },
+    "owner": {
+      "enum": ["css-parser", "taffy-adapter", "hit-testing", "text", "dom-api"]
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "support", "parity", "notes"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "syntax": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "conditions": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "support": {
+            "enum": ["supported", "partial", "unsupported", "unknown"]
+          },
+          "parity": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "fixtures"],
+            "properties": {
+              "status": {
+                "enum": ["verified", "partially-verified", "unverified", "known-mismatch", "not-applicable"]
+              },
+              "fixtures": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "uniqueItems": true
+              }
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "text"],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "browser-parity",
+                    "behavior-quirk",
+                    "implementation-quirk",
+                    "taffy-compat",
+                    "limitation",
+                    "todo"
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

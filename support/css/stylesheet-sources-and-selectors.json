@@ -1,0 +1,36 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "stylesheet-sources-and-selectors",
+  "title": "Stylesheet sources and selectors",
+  "subjects": {
+    "properties": [],
+    "elements": []
+  },
+  "effect": "source",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "selector-matching",
+          "selector-source-order-tie",
+          "selector-specificity"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Configured stylesheets, style elements, selector lists, specificity, and source-order ties are covered by parity fixtures."
+        },
+        {
+          "kind": "limitation",
+          "text": "External stylesheets, at-rules, sibling combinators, pseudo-elements, and most pseudo-classes are not implemented."
+        }
+      ]
+    }
+  ]
+}

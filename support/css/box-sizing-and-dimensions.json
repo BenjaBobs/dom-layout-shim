@@ -1,0 +1,62 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "box-sizing-and-dimensions",
+  "title": "Box sizing and dimensions",
+  "subjects": {
+    "properties": [
+      "box-sizing",
+      "width",
+      "height",
+      "inline-size",
+      "block-size",
+      "min-width",
+      "min-height",
+      "min-inline-size",
+      "min-block-size",
+      "max-width",
+      "max-height",
+      "max-inline-size",
+      "max-block-size",
+      "aspect-ratio"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "syntax": [
+        "content-box",
+        "border-box",
+        "<px>",
+        "<percentage>",
+        "auto",
+        "none",
+        "<number>",
+        "<ratio>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "aspect-ratio",
+          "box-sizing-min-max-size-constraints",
+          "min-max-size-constraints",
+          "percentage-sizing"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Box sizing including CSS-wide content-box resets, physical and logical min/max constraints, percentages, and aspect ratio in both axes with constraint interaction have parity fixtures."
+        },
+        {
+          "kind": "limitation",
+          "text": "Length support is intentionally narrow: pixels, percentages where listed, reset keywords, and literal zero."
+        }
+      ]
+    }
+  ]
+}

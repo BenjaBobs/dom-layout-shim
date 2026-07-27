@@ -1,0 +1,68 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "flex-layout",
+  "title": "Flex layout",
+  "subjects": {
+    "properties": [
+      "flex",
+      "flex-direction",
+      "flex-wrap",
+      "flex-flow",
+      "flex-grow",
+      "flex-shrink",
+      "flex-basis",
+      "order",
+      "align-content",
+      "align-items",
+      "align-self",
+      "justify-content",
+      "justify-items",
+      "justify-self",
+      "place-content",
+      "place-items",
+      "place-self"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "flex-align-content",
+          "flex-align-items-stretch",
+          "flex-align-self",
+          "flex-alignment",
+          "flex-auto-margins",
+          "flex-basis",
+          "flex-direction-reverse",
+          "flex-flow",
+          "flex-grow",
+          "flex-justify-content",
+          "flex-order",
+          "flex-replaced-intrinsic",
+          "flex-row",
+          "flex-shorthand",
+          "flex-shrink",
+          "flex-wrap",
+          "place-alignment"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Core row/column, reverse direction, wrapping, alignment including CSS-wide resets, grow and shrink including min/max clamping, auto margins, order including CSS-wide resets, pixel/percentage/auto basis on both axes, shorthand, and replaced intrinsic cases have parity fixtures."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "The CSS order property is applied by sorting flex children before building the Taffy tree."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "generic-html-elements",
+  "title": "Generic HTML element layout",
+  "subjects": {
+    "properties": [],
+    "elements": [
+      "html",
+      "body",
+      "div",
+      "section",
+      "article",
+      "main",
+      "header",
+      "footer",
+      "nav",
+      "aside",
+      "address",
+      "p",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "blockquote",
+      "figure",
+      "figcaption",
+      "pre",
+      "hr",
+      "br",
+      "details",
+      "summary",
+      "dialog"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "details-summary-defaults",
+          "dialog-html-defaults",
+          "generic-html-defaults",
+          "hidden-attribute",
+          "figure-html-defaults",
+          "hr-html-defaults",
+          "static-block-flow",
+          "static-pre-wrap-text-lines"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "The layout tree treats ordinary elements with the same default block style unless author CSS overrides them; address, p, headings, blockquote, figure, and pre receive a narrow set of UA text metrics and spacing defaults."
+        },
+        {
+          "kind": "limitation",
+          "text": "Native dialog centering, modal top-layer behavior, and backdrops are not modeled."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Address, paragraph, blockquote, figure, pre, hr, details/summary, hidden including until-found, and basic dialog open/closed native behavior have parity coverage in non-collapsing block flow; author CSS reset behavior is also covered."
+        },
+        {
+          "kind": "limitation",
+          "text": "Closed details content is suppressed from layout and hit testing; Chromium still exposes non-zero rects for the suppressed descendants, which this engine does not model."
+        }
+      ]
+    }
+  ]
+}

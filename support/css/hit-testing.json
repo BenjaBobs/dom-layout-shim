@@ -1,0 +1,59 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "hit-testing",
+  "title": "Hit testing visibility and overflow",
+  "subjects": {
+    "properties": [
+      "pointer-events",
+      "visibility",
+      "overflow",
+      "overflow-x",
+      "overflow-y"
+    ],
+    "elements": []
+  },
+  "effect": "hit-testing",
+  "owner": "hit-testing",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "syntax": [
+        "auto",
+        "none",
+        "visible",
+        "hidden",
+        "collapse",
+        "clip",
+        "scroll"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "center-click-blocked-by-overlay",
+          "element-scroll-offsets",
+          "elements-from-point-order",
+          "overflow-clipping",
+          "pointer-events-none",
+          "visibility-hidden",
+          "window-scroll-offsets"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Point query ordering, pointer-events none including descendant inheritance, inherit/unset preservation, and auto/initial overrides, visibility hidden including descendant inheritance, inherit/unset preservation, and visible/initial overrides, center blocking, overflow clipping, element scroll offsets, and window scroll offsets have parity fixtures."
+        },
+        {
+          "kind": "behavior-quirk",
+          "text": "Overflow hidden, clip, auto, and scroll clip descendant hit boxes to the padding box; getBoundingClientRect output is not clipped."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "visibility: collapse is treated as hidden for DOM-like box hit testing; table row and column collapse layout is not modeled."
+        }
+      ]
+    }
+  ]
+}

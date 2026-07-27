@@ -1,0 +1,57 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "text-measurement",
+  "title": "Text measurement",
+  "subjects": {
+    "properties": [
+      "font-family",
+      "font-size",
+      "line-height",
+      "white-space"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "text",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "syntax": [
+        "<family-list>",
+        "<px>",
+        "<percentage>",
+        "<em>",
+        "<rem>",
+        "<number>",
+        "normal",
+        "pre",
+        "pre-line",
+        "pre-wrap",
+        "nowrap"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "static-pre-wrap-text-lines",
+          "static-text-line-height"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Text-only leaf elements and direct text-plus-br leaves are measured through the configured TextMeasurer; the default uses Pretext with deterministic fallback."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Nested text elements inherit parent font metrics; explicit inherit/unset is accepted for inherited text declarations; initial resets are accepted for font-family, font-size, and white-space; percentage/em font-size values resolve against the inherited parent font size; rem font-size values resolve against the computed root font size; percentage/em line-height values resolve against the element font size; rem line-height values resolve against the computed root font size."
+        },
+        {
+          "kind": "limitation",
+          "text": "The engine does not implement full inline formatting or preserve the distinction between inherited numeric and resolved line-height values."
+        }
+      ]
+    }
+  ]
+}

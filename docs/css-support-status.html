@@ -173,7 +173,9 @@
       height: 14px;
     }
 
-    .status-full {
+    .status-full,
+    .status-supported,
+    .status-verified {
       color: var(--green);
       background: var(--green-bg);
     }
@@ -183,7 +185,10 @@
       background: var(--amber-bg);
     }
 
-    .status-todo {
+    .status-todo,
+    .status-unsupported,
+    .status-unverified,
+    .status-known-mismatch {
       color: var(--red);
       background: var(--red-bg);
     }
@@ -199,7 +204,9 @@
     }
 
     .effect-visual,
+    .effect-visual-ignored,
     .effect-inert,
+    .effect-accepted-inert,
     .effect-source {
       color: #4f5b67;
       background: var(--gray-bg);
@@ -294,7 +301,7 @@
 <body>
   <header>
     <h1>CSS Support Status</h1>
-    <p class="subhead">Runtime view of <code>src/css/css-support-inventory.ts</code></p>
+    <p class="subhead">Generated from the machine-readable records in <code>support/css/</code></p>
   </header>
 
   <main>
@@ -336,15 +343,17 @@
   </main>
 
   <script>
-    const sourcePath = '../src/css/css-support-inventory.ts'
-    const statusOrder = ['full', 'partial', 'todo']
-    const effectOrder = ['layout', 'hit-testing', 'visual', 'inert', 'source']
+    const sourcePath = './data/css-support.json'
+    const statusOrder = ['supported', 'partial', 'unsupported', 'unknown']
+    const effectOrder = ['layout', 'hit-testing', 'visual-ignored', 'accepted-inert', 'source']
     const ownerOrder = ['css-parser', 'taffy-adapter', 'hit-testing', 'text', 'dom-api']
-    const parityStatusOrder = ['covered', 'partial', 'missing', 'not-applicable']
+    const parityStatusOrder = ['verified', 'partially-verified', 'unverified', 'known-mismatch', 'not-applicable']
     let inventory = []
 
     const icons = {
       full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>',
+      supported: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>',
+      verified: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>',
       partial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v18"/><path d="M5 12h14"/></svg>',
       todo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>',
       note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>',
@@ -379,66 +388,8 @@
         throw new Error(`Fetch failed: ${response.status} ${response.statusText}`)
       }
 
-      const source = await response.text()
-      const arraySource = extractInventoryArray(source)
-      return Function(`"use strict"; return (${arraySource})`)()
-    }
-
-    function extractInventoryArray(source) {
-      const marker = 'export const cssSupportInventory'
-      const markerIndex = source.indexOf(marker)
-
-      if (markerIndex === -1) {
-        throw new Error(`Could not find ${marker}`)
-      }
-
-      const initializerStart = source.indexOf('=', markerIndex)
-
-      if (initializerStart === -1) {
-        throw new Error('Could not find inventory initializer')
-      }
-
-      const start = source.indexOf('[', initializerStart)
-
-      if (start === -1) {
-        throw new Error('Could not find inventory array start')
-      }
-
-      let depth = 0
-      let quote = ''
-      let escaped = false
-
-      for (let index = start; index < source.length; index += 1) {
-        const char = source[index]
-
-        if (quote) {
-          if (escaped) {
-            escaped = false
-          } else if (char === '\\') {
-            escaped = true
-          } else if (char === quote) {
-            quote = ''
-          }
-          continue
-        }
-
-        if (char === '"' || char === "'" || char === '`') {
-          quote = char
-          continue
-        }
-
-        if (char === '[') {
-          depth += 1
-        } else if (char === ']') {
-          depth -= 1
-
-          if (depth === 0) {
-            return source.slice(start, index + 1)
-          }
-        }
-      }
-
-      throw new Error('Could not find inventory array end')
+      const payload = await response.json()
+      return payload.records
     }
 
     function populateFilters() {
@@ -468,7 +419,7 @@
       const filtered = inventory.filter((entry) => {
         if (status && entry.status !== status) return false
         if (effect && entry.effect !== effect) return false
-        if (owner && entry.ownerArea !== owner) return false
+        if (owner && entry.owner !== owner) return false
         if (parityStatus && entry.parityStatus !== parityStatus) return false
         if (!query) return true
 
@@ -477,13 +428,17 @@
           entry.title,
           entry.status,
           entry.effect,
-          entry.ownerArea,
+          entry.owner,
           entry.parityStatus,
-          ...(entry.properties || []),
-          ...(entry.elements || []),
-          ...(entry.values || []),
-          ...(entry.parity || []),
-          ...(entry.notes || []).flatMap((note) => [note.kind, note.text]),
+          ...(entry.subjects.properties || []),
+          ...(entry.subjects.elements || []),
+          ...entry.claims.flatMap((claim) => [
+            claim.id,
+            ...(claim.syntax || []),
+            ...(claim.conditions || []),
+            ...claim.parity.fixtures,
+            ...claim.notes.flatMap((note) => [note.kind, note.text]),
+          ]),
         ].join(' ').toLowerCase()
 
         return haystack.includes(query)
@@ -496,16 +451,16 @@
     function renderSummary(entries) {
       const implementedProperties = unique(
         inventory
-          .filter((entry) => entry.status !== 'todo')
-          .flatMap((entry) => entry.properties || [])
+          .filter((entry) => entry.status !== 'unsupported')
+          .flatMap((entry) => entry.subjects.properties || [])
           .filter((property) => !property.includes('*')),
       )
       const metrics = [
         ['Areas', entries.length],
         ['Properties', implementedProperties.length],
-        ['Full', inventory.filter((entry) => entry.status === 'full').length],
+        ['Supported', inventory.filter((entry) => entry.status === 'supported').length],
         ['Partial', inventory.filter((entry) => entry.status === 'partial').length],
-        ['Todo', inventory.filter((entry) => entry.status === 'todo').length],
+        ['Unsupported', inventory.filter((entry) => entry.status === 'unsupported').length],
       ]
 
       document.getElementById('summary').innerHTML = metrics.map(([name, value]) => `
@@ -525,14 +480,14 @@
           </td>
           <td>${badge(entry.status, `status-${entry.status}`)}</td>
           <td>${badge(entry.effect, `effect-${entry.effect}`)}</td>
-          <td>${badge(entry.ownerArea, 'effect-source')}</td>
+          <td>${badge(entry.owner, 'effect-source')}</td>
           <td>${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</td>
           <td>
-            ${chips(entry.properties || [], 12)}
-            ${entry.elements?.length ? `<div class="id">Elements</div>${chips(entry.elements, 12)}` : ''}
+            ${chips(entry.subjects.properties || [], 12)}
+            ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12)}` : ''}
           </td>
-          <td>${parity(entry.parity || [])}</td>
-          <td>${notes(entry.notes || [])}</td>
+          <td>${parity(unique(entry.claims.flatMap((claim) => claim.parity.fixtures)))}</td>
+          <td>${notes(entry.claims.flatMap((claim) => claim.notes))}</td>
         </tr>
       `).join('')
     }
@@ -542,11 +497,11 @@
     }
 
     function parityStatusClass(value) {
-      if (value === 'covered') {
+      if (value === 'verified') {
         return 'status-full'
       }
 
-      if (value === 'missing') {
+      if (value === 'unverified' || value === 'known-mismatch') {
         return 'status-todo'
       }
 

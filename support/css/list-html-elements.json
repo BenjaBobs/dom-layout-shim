@@ -1,0 +1,42 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "list-html-elements",
+  "title": "List HTML elements",
+  "subjects": {
+    "properties": [],
+    "elements": [
+      "ul",
+      "ol",
+      "li",
+      "dl",
+      "dt",
+      "dd",
+      "menu"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "list-html-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Native ul/ol/menu block margins, inline-start padding, and dd indentation have parity coverage."
+        },
+        {
+          "kind": "limitation",
+          "text": "Marker boxes, marker painting, list-style-position, and browser margin collapse are not modeled."
+        }
+      ]
+    }
+  ]
+}

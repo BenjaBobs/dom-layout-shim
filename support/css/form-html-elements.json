@@ -1,0 +1,51 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "form-html-elements",
+  "title": "Form and interactive HTML elements",
+  "subjects": {
+    "properties": [],
+    "elements": [
+      "button",
+      "input",
+      "textarea",
+      "select",
+      "option",
+      "optgroup",
+      "fieldset",
+      "legend",
+      "form",
+      "output",
+      "progress",
+      "meter"
+    ]
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "form-control-intrinsic-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, time, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage when author CSS blockifies them."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Common form controls are measured as replaced leaves so option children and anonymous control internals do not participate in the layout tree."
+        },
+        {
+          "kind": "limitation",
+          "text": "Inline form-control formatting, fieldset and legend layout, option popup layout, placeholder text, and most control-specific UA styling are not modeled."
+        }
+      ]
+    }
+  ]
+}

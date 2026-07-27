@@ -17,12 +17,16 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
-    "test:browser-parity": "mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
-    "bench": "node test/bench/hit-testing.bench.ts",
-    "css:status": "node scripts/serve-css-support-status.mjs"
+    "build": "pnpm run css:generate && tsc -p tsconfig.build.json",
+    "typecheck": "pnpm run css:generate && tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
+    "test:browser-parity": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
+    "bench": "pnpm run css:generate && node test/bench/hit-testing.bench.ts",
+    "css:status": "pnpm run css:generate && node scripts/serve-css-support-status.mjs",
+    "css:validate": "node scripts/css-support.mjs validate",
+    "css:generate": "node scripts/css-support.mjs generate",
+    "css:check": "node scripts/css-support.mjs validate && node scripts/css-support.mjs generate",
+    "css:query": "node scripts/css-support.mjs query"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
