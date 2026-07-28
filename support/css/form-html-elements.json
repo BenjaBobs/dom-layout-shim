@@ -35,7 +35,7 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, time, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage as independently positioned controls."
+          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, textarea including rows/cols attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage as independently positioned controls. Time inputs have exact parity coverage when author-sized."
         },
         {
           "kind": "implementation-quirk",
@@ -44,6 +44,10 @@
         {
           "kind": "implementation-quirk",
           "text": "Native button text and textarea row/column metrics vary with the host Chromium platform; their parity checks use narrow, field-specific tolerances while other control dimensions remain exact."
+        },
+        {
+          "kind": "limitation",
+          "text": "The intrinsic width of input[type=time] depends on Chromium's host-native picker UI, so its deterministic default is not claimed as cross-platform pixel parity."
         },
         {
           "kind": "limitation",
