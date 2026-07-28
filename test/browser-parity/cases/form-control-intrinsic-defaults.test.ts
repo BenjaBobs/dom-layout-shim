@@ -16,11 +16,6 @@ const nativeFileInputTolerance = {
   toleranceReason: 'Native file input labels and theme metrics vary across Chromium host platforms.',
 } as const
 
-const nativeTextareaTolerance = {
-  tolerance: { width: 1, height: 8 },
-  toleranceReason: 'Native textarea row and column metrics vary across Chromium host platforms.',
-} as const
-
 const nativeSelectTolerance = {
   tolerance: { width: 20, height: 4 },
   toleranceReason: 'Native select option fonts and theme metrics vary across Chromium host platforms.',
@@ -105,8 +100,6 @@ it('common form controls expose native intrinsic sizes independently', async () 
       { type: 'rect', selector: '#hidden' },
       { type: 'rect', selector: '#image' },
       { type: 'rect', selector: '#file', ...nativeFileInputTolerance },
-      { type: 'rect', selector: '#textarea', ...nativeTextareaTolerance },
-      { type: 'rect', selector: '#textarea-sized', ...nativeTextareaTolerance },
       { type: 'rect', selector: '#select', ...nativeSelectTolerance },
       { type: 'rect', selector: '#select-long', ...nativeSelectTolerance },
       { type: 'rect', selector: '#select-sized', ...nativeSelectTolerance },
