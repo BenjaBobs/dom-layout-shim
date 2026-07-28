@@ -15,6 +15,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  affected:
+    name: Affected scopes
+    runs-on: ubuntu-latest
+    outputs:
+      package: ${{ steps.scopes.outputs.package }}
+      parity: ${{ steps.scopes.outputs.parity }}
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: scopes
+        run: >-
+          node scripts/affected-scopes.mjs
+          "${{ github.event.pull_request.base.sha || github.event.before }}"
+          "${{ github.event.pull_request.head.sha || github.sha }}"
+          "${{ github.event_name }}"
+
   branch-history:
     name: Feature branch history
     if: github.event_name == 'pull_request' || github.ref_name != 'main'
@@ -33,56 +53,94 @@ jobs:
 
   package:
     name: Package checks
+    needs: affected
+    if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Require successful classification
+        if: needs.affected.result != 'success'
+        run: |
+          echo "::error title=Affected scope classification failed::Package checks cannot be skipped safely."
+          exit 1
+
       - name: Check out repository
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up pnpm
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
       - name: Set up Node.js
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install dependencies
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Validate CSS support inventory
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run css:check
 
       - name: Typecheck
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run typecheck
 
       - name: Run unit tests
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm test
 
       - name: Test packed package
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run test:package
+
+      - name: Report unaffected package
+        if: needs.affected.result == 'success' && needs.affected.outputs.package != 'true'
+        run: echo "Package checks are not affected by this change."
 
   browser-parity:
     name: Chromium parity
+    needs: affected
+    if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Require successful classification
+        if: needs.affected.result != 'success'
+        run: |
+          echo "::error title=Affected scope classification failed::Chromium parity cannot be skipped safely."
+          exit 1
+
       - name: Check out repository
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up pnpm
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
       - name: Set up Node.js
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install dependencies
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm exec playwright install --with-deps chromium
 
       - name: Run Chromium parity tests
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: pnpm run test:browser-parity
+
+      - name: Report unaffected parity
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity != 'true'
+        run: echo "Chromium parity is not affected by this change."

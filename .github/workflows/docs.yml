@@ -22,25 +22,43 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.scopes.outputs.docs }}
     steps:
-      - name: Check out repository
+      - name: Check out repository history
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: scopes
+        run: >-
+          node scripts/affected-scopes.mjs
+          "${{ github.event.pull_request.base.sha || github.event.before }}"
+          "${{ github.event.pull_request.head.sha || github.sha }}"
+          "${{ github.event_name }}"
 
       - name: Configure Pages
-        if: github.event.repository.visibility == 'public'
+        if: steps.scopes.outputs.docs == 'true' && github.event.repository.visibility == 'public'
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Validate and generate support data
+        if: steps.scopes.outputs.docs == 'true'
         run: node scripts/css-support.mjs validate && node scripts/css-support.mjs generate
 
       - name: Upload Pages artifact
-        if: github.event.repository.visibility == 'public'
+        if: steps.scopes.outputs.docs == 'true' && github.event.repository.visibility == 'public'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: docs
 
+      - name: Report unaffected documentation
+        if: steps.scopes.outputs.docs != 'true'
+        run: echo "Documentation is not affected by this change."
+
   deploy:
     if: >-
+      needs.build.outputs.docs == 'true' &&
       github.event.repository.visibility == 'public' &&
       (
         github.event_name == 'push' ||
