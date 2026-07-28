@@ -85,6 +85,26 @@ Run `pnpm run release:status` to inspect pending changesets and
 command consumes pending changeset files, so only run it when intentionally
 preparing a release.
 
+## Affected pull request checks
+
+Pull request workflows always report their required check names, but
+`scripts/affected-scopes.mjs` skips expensive work that cannot be affected by
+the changed paths:
+
+- `package` covers source, unit tests, build inputs, and packed package data.
+- `parity` covers source and Chromium parity fixtures or configuration.
+- `docs` covers the documentation site and CSS support inventory.
+- `release` covers Changesets and repository release automation.
+
+Unknown paths and manual workflow runs select every scope. Changes to the
+classifier select every scope as well. Package and parity jobs fail rather than
+skip if classification fails, so the optimization cannot silently replace a
+required validation result.
+
+The protected release deployment does not use affected scopes. An unpublished
+package version always repeats the complete release validation suite before
+publishing.
+
 ## One-time npm setup
 
 The package must exist on npm before its trusted publisher can be configured.
