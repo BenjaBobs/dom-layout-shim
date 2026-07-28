@@ -104,7 +104,6 @@ it('common form controls expose native intrinsic sizes independently', async () 
       { type: 'rect', selector: '#color', ...nativeControlTolerance },
       { type: 'rect', selector: '#hidden' },
       { type: 'rect', selector: '#image' },
-      { type: 'rect', selector: '#time', ...nativeControlTolerance },
       { type: 'rect', selector: '#file', ...nativeFileInputTolerance },
       { type: 'rect', selector: '#textarea', ...nativeTextareaTolerance },
       { type: 'rect', selector: '#textarea-sized', ...nativeTextareaTolerance },
@@ -149,6 +148,7 @@ it('author width and height override form control intrinsic sizes', async () => 
       <input id="text-sized" size="10">
       <input id="image" type="image" width="40" height="20">
       <input id="file" type="file">
+      <input id="time" type="time">
       <textarea id="textarea" cols="10" rows="4"></textarea>
       <select id="select" size="4"><option>One</option></select>
     `,
@@ -161,6 +161,8 @@ it('author width and height override form control intrinsic sizes', async () => 
       { type: 'dimensions', selector: '#image' },
       { type: 'rect', selector: '#file' },
       { type: 'dimensions', selector: '#file' },
+      { type: 'rect', selector: '#time' },
+      { type: 'dimensions', selector: '#time' },
       { type: 'rect', selector: '#textarea' },
       { type: 'dimensions', selector: '#textarea' },
       { type: 'rect', selector: '#select' },
