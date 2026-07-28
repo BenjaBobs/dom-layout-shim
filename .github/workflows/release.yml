@@ -119,6 +119,10 @@ jobs:
       - name: Publish package to npm
         if: needs.inspect.outputs.should_publish == 'true'
         run: npm publish --access public
+        env:
+          # Bootstrap only: remove this token fallback after the first release
+          # establishes npm trusted publishing for this workflow.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create release tag
         if: needs.inspect.outputs.should_tag == 'true'
