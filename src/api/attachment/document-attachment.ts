@@ -11,6 +11,7 @@ import type {
   ScrollOffset,
 } from '../../css-parity-implementation/layout/layout-source.ts'
 import { computeTaffyDocumentLayout } from '../../css-parity-implementation/layout/taffy-layout-source.ts'
+import { documentStylesheetFingerprint } from '../../css-parity-implementation/css/stylesheet-source.ts'
 import type { TextMeasurer } from '../text-measurer.ts'
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
 
@@ -33,6 +34,7 @@ export class DocumentAttachment {
   private detached = false
   private snapshot: LayoutSnapshot | undefined
   private snapshotScroll: ScrollOffset | undefined
+  private stylesheetFingerprint: string | undefined
   private mutationObserver: MutationObserver | undefined
 
   constructor(options: DocumentAttachmentOptions) {
@@ -76,6 +78,7 @@ export class DocumentAttachment {
       this.stylesheets,
     )
     this.snapshotScroll = scroll
+    this.stylesheetFingerprint = documentStylesheetFingerprint(this.document)
     this.dirty = false
   }
 
@@ -133,6 +136,7 @@ export class DocumentAttachment {
     if (
       this.dirty ||
       !this.snapshot ||
+      this.stylesheetFingerprint !== documentStylesheetFingerprint(this.document) ||
       !sameScrollOffset(this.snapshotScroll, readScrollOffset(this.document)) ||
       hasElementScrollChanged(this.snapshot.elementScrolls)
     ) {

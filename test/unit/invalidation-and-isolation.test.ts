@@ -75,6 +75,30 @@ describe('layout invalidation and isolation', () => {
     expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
   })
 
+  it('recomputes layout when a rule is inserted through the stylesheet CSSOM', async () => {
+    document.body.innerHTML = `
+      <style id="styles">
+        .box {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100px;
+          height: 100px;
+        }
+      </style>
+      <div id="box" class="box"></div>
+    `
+
+    await attach()
+    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
+
+    const styleElement = requiredElement('#styles') as HTMLStyleElement
+    styleElement.sheet?.insertRule('.box { left: 100px; }', styleElement.sheet.cssRules.length)
+
+    expect(document.elementFromPoint(50, 50)).toBe(null)
+    expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
+  })
+
   it('marks layout dirty when elements are inserted', async () => {
     document.body.innerHTML = `
       <button id="save" style="position:absolute; left:0; top:0; width:100px; height:40px"></button>

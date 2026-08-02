@@ -79,6 +79,33 @@ describe('stylesheet source handling', () => {
     expect(requiredElement('#box').getBoundingClientRect().left).toBe(60)
   })
 
+  it('reads rules inserted through the stylesheet CSSOM', async () => {
+    document.body.innerHTML = `
+      <style id="styles"></style>
+      <div id="box" class="box"></div>
+    `
+
+    const styleElement = requiredElement('#styles') as HTMLStyleElement
+    styleElement.sheet?.insertRule(`
+      .box {
+        position: absolute;
+        left: 10px;
+        top: 20px;
+        width: 100px;
+        height: 50px;
+      }
+    `)
+
+    await attach()
+
+    expectRect(requiredElement('#box').getBoundingClientRect(), {
+      left: 10,
+      top: 20,
+      width: 100,
+      height: 50,
+    })
+  })
+
   it('routes unsupported configured stylesheet rules through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
       <div id="box"></div>
