@@ -23,10 +23,19 @@ export function readStyleRules(
   }
 
   for (const [index, styleElement] of Array.from(document.querySelectorAll('style')).entries()) {
-    readCssRules(styleElement.textContent ?? '', `style-${index}.css`, policy, rules)
+    readCssRules(readStyleElementCssText(styleElement), `style-${index}.css`, policy, rules)
   }
 
   return rules
+}
+
+export function documentStylesheetFingerprint(document: Document): string {
+  return Array.from(document.querySelectorAll('style'))
+    .map((styleElement) => {
+      const cssText = readStyleElementCssText(styleElement)
+      return `${cssText.length}:${cssText}`
+    })
+    .join('|')
 }
 
 export function applyStyleRules(
@@ -115,6 +124,58 @@ function readCssRules(
       reason: 'unsupported-rule',
       source: 'stylesheet',
     })
+  }
+}
+
+function readStyleElementCssText(styleElement: Element): string {
+  const authoredCssText = styleElement.textContent ?? ''
+  const sheet = (styleElement as HTMLStyleElement).sheet
+
+  if (!sheet) {
+    return authoredCssText
+  }
+
+  try {
+    const cssomRules = Array.from(sheet.cssRules, (rule) => rule.cssText)
+
+    if (!authoredCssText.trim()) {
+      return cssomRules.join('\n')
+    }
+
+    const authoredRules = canonicalCssRules(styleElement.ownerDocument, authoredCssText)
+
+    if (
+      authoredRules &&
+      authoredRules.every((rule, index) => cssomRules[index] === rule)
+    ) {
+      // Keep authored text intact because CSSOM serialization expands some
+      // shorthands into declarations that do not round-trip through our
+      // supported subset. CSS-in-JS runtimes append insertRule entries, so
+      // only the CSSOM-only suffix needs serialization.
+      return [authoredCssText, ...cssomRules.slice(authoredRules.length)].join('\n')
+    }
+
+    return authoredCssText
+  } catch {
+    // Accessing cssRules can throw for inaccessible stylesheets. A style
+    // element's own text remains the best deterministic source in that case.
+    return authoredCssText
+  }
+}
+
+function canonicalCssRules(document: Document, cssText: string): string[] | undefined {
+  const CSSStyleSheet = document.defaultView?.CSSStyleSheet
+
+  if (!CSSStyleSheet) {
+    return undefined
+  }
+
+  try {
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(cssText)
+    return Array.from(sheet.cssRules, (rule) => rule.cssText)
+  } catch {
+    return undefined
   }
 }
 
