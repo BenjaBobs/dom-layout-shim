@@ -23,7 +23,7 @@ jobs:
       parity: ${{ steps.scopes.outputs.parity }}
     steps:
       - name: Check out repository history
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository history
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Check out repository
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up pnpm
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
@@ -116,7 +116,7 @@ jobs:
 
       - name: Check out repository
         if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up pnpm
         if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
