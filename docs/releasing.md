@@ -52,6 +52,32 @@ Expand verified Chromium parity coverage for logical min/max sizing and
 opposing logical insets.
 ```
 
+### Code examples
+
+Changeset descriptions are Markdown, so they may include fenced code examples.
+Use them when a short before-and-after comparison makes the consumer-visible
+change or required migration materially clearer. Keep examples concise, use the
+public API, and state the observable difference:
+
+````md
+Previously, media queries used the DOM environment's viewport:
+
+```ts
+// Previously: false
+window.matchMedia('(max-width: 500px)').matches
+```
+
+They now use the configured layout viewport:
+
+```ts
+// Now: true
+window.matchMedia('(max-width: 500px)').matches
+```
+````
+
+Do not add examples merely to restate the prose, and avoid test setup or
+implementation details unless consumers need them to understand the change.
+
 ## Version policy before 1.0
 
 - `patch`: fixes, compatibility corrections, and materially improved evidence.
