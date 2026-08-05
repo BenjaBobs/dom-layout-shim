@@ -116,6 +116,96 @@ export class DocumentAttachment {
     return roundCssPixel(this.getSnapshot().clientRects.get(element)?.height ?? 0)
   }
 
+  scrollIntoView(element: Element, arg?: boolean | ScrollIntoViewOptions): void {
+    const alignment = normalizeScrollIntoViewOptions(arg)
+    let snapshot = this.getSnapshot()
+
+    if (snapshot.fixedElements.has(element)) {
+      return
+    }
+
+    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor === this.document.body || ancestor === this.document.documentElement) {
+        continue
+      }
+
+      const axes = snapshot.scrollContainers.get(ancestor)
+
+      if (!axes?.x && !axes?.y) {
+        continue
+      }
+
+      const target = snapshot.rects.get(element)
+      const container = snapshot.clientRects.get(ancestor)
+
+      if (!target || !container) {
+        continue
+      }
+
+      if (axes.x) {
+        ancestor.scrollLeft = clampScroll(
+          ancestor.scrollLeft +
+            alignmentDelta(
+              target.x,
+              target.x + target.width,
+              container.x,
+              container.x + container.width,
+              alignment.inline,
+            ),
+          maximumElementScroll(ancestor, 'x', snapshot),
+        )
+      }
+
+      if (axes.y) {
+        ancestor.scrollTop = clampScroll(
+          ancestor.scrollTop +
+            alignmentDelta(
+              target.y,
+              target.y + target.height,
+              container.y,
+              container.y + container.height,
+              alignment.block,
+            ),
+          maximumElementScroll(ancestor, 'y', snapshot),
+        )
+      }
+
+      snapshot = this.getSnapshot()
+    }
+
+    const target = snapshot.rects.get(element)
+    const view = this.document.defaultView
+
+    if (!target || !view) {
+      return
+    }
+
+    view.scrollTo(
+      clampScroll(
+        view.scrollX +
+          alignmentDelta(
+            target.x,
+            target.x + target.width,
+            0,
+            this.viewport.width,
+            alignment.inline,
+          ),
+        maximumViewportScroll('x', snapshot, this.viewport, view.scrollX),
+      ),
+      clampScroll(
+        view.scrollY +
+          alignmentDelta(
+            target.y,
+            target.y + target.height,
+            0,
+            this.viewport.height,
+            alignment.block,
+          ),
+        maximumViewportScroll('y', snapshot, this.viewport, view.scrollY),
+      ),
+    )
+  }
+
   matchesMediaQuery(query: string): boolean {
     this.assertAttached()
     return matchesViewportMediaQuery(query, this.viewport)
@@ -207,6 +297,116 @@ export class DocumentAttachment {
       throw new Error('Cannot use a detached layout engine attachment')
     }
   }
+}
+
+type ScrollAlignment = {
+  block: ScrollLogicalPosition
+  inline: ScrollLogicalPosition
+}
+
+function normalizeScrollIntoViewOptions(
+  arg: boolean | ScrollIntoViewOptions | undefined,
+): ScrollAlignment {
+  if (typeof arg === 'boolean') {
+    return {
+      block: arg ? 'start' : 'end',
+      inline: 'nearest',
+    }
+  }
+
+  return {
+    block: arg?.block ?? 'start',
+    inline: arg?.inline ?? 'nearest',
+  }
+}
+
+function alignmentDelta(
+  targetStart: number,
+  targetEnd: number,
+  viewportStart: number,
+  viewportEnd: number,
+  alignment: ScrollLogicalPosition,
+): number {
+  switch (alignment) {
+    case 'start':
+      return targetStart - viewportStart
+    case 'center':
+      return (targetStart + targetEnd - viewportStart - viewportEnd) / 2
+    case 'end':
+      return targetEnd - viewportEnd
+    case 'nearest':
+      return nearestAlignmentDelta(targetStart, targetEnd, viewportStart, viewportEnd)
+  }
+}
+
+function nearestAlignmentDelta(
+  targetStart: number,
+  targetEnd: number,
+  viewportStart: number,
+  viewportEnd: number,
+): number {
+  if (
+    (targetStart >= viewportStart && targetEnd <= viewportEnd) ||
+    (targetStart < viewportStart && targetEnd > viewportEnd)
+  ) {
+    return 0
+  }
+
+  if (targetStart < viewportStart) {
+    return targetStart - viewportStart
+  }
+
+  return targetEnd - viewportEnd
+}
+
+function maximumElementScroll(
+  container: Element,
+  axis: 'x' | 'y',
+  snapshot: LayoutSnapshot,
+): number {
+  const client = snapshot.clientRects.get(container)
+
+  if (!client) {
+    return 0
+  }
+
+  const currentScroll = axis === 'x' ? container.scrollLeft : container.scrollTop
+  const clientStart = client[axis]
+  const clientSize = axis === 'x' ? client.width : client.height
+  let contentEnd = clientStart + clientSize
+
+  for (const [element, box] of snapshot.rects) {
+    if (element !== container && container.contains(element)) {
+      const boxEnd = box[axis] + (axis === 'x' ? box.width : box.height)
+      contentEnd = Math.max(contentEnd, boxEnd + currentScroll)
+    }
+  }
+
+  return Math.max(0, contentEnd - clientStart - clientSize)
+}
+
+function maximumViewportScroll(
+  axis: 'x' | 'y',
+  snapshot: LayoutSnapshot,
+  viewport: Viewport,
+  currentScroll: number,
+): number {
+  let contentEnd = axis === 'x' ? viewport.width : viewport.height
+
+  for (const [element, box] of snapshot.rects) {
+    if (!snapshot.fixedElements.has(element)) {
+      contentEnd = Math.max(
+        contentEnd,
+        box[axis] + (axis === 'x' ? box.width : box.height) + currentScroll,
+      )
+    }
+  }
+
+  return Math.max(0, contentEnd - (axis === 'x' ? viewport.width : viewport.height))
+}
+
+function clampScroll(value: number, maximum: number): number {
+  return Math.min(maximum, Math.max(0, value))
 }
 
 function readScrollOffset(document: Document): ScrollOffset {

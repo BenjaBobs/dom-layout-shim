@@ -47,6 +47,8 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patchGetBoundingClientRect(view.HTMLInputElement?.prototype)
   patchGetBoundingClientRect(view.HTMLSelectElement?.prototype)
   patchGetBoundingClientRect(view.HTMLTextAreaElement?.prototype)
+  patchScrollIntoView(elementPrototype)
+  patchScrollIntoView(htmlElementPrototype)
   patchMatchMedia(view)
 
   Object.defineProperty(htmlElementPrototype, 'offsetWidth', {
@@ -146,6 +148,19 @@ function patchElementInstanceRects(document: Document): void {
   for (const element of Array.from(document.getElementsByTagName('*'))) {
     patchGetBoundingClientRect(element)
   }
+}
+
+function patchScrollIntoView(prototype: object | undefined): void {
+  if (!prototype) {
+    return
+  }
+
+  Object.defineProperty(prototype, 'scrollIntoView', {
+    configurable: true,
+    value(this: Element, arg?: boolean | ScrollIntoViewOptions) {
+      attachmentForElement(this).scrollIntoView(this, arg)
+    },
+  })
 }
 
 function patchMatchMedia(view: Window): void {

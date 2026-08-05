@@ -7,6 +7,8 @@ export type LayoutSnapshot = {
   clientRects: Map<Element, Box>
   elementScrolls: Map<Element, ScrollOffset>
   offsetParents: Map<Element, Element | null>
+  scrollContainers: Map<Element, { x: boolean; y: boolean }>
+  fixedElements: Set<Element>
 }
 
 export type ScrollOffset = {
