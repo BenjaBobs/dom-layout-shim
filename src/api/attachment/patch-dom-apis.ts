@@ -47,6 +47,7 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patchGetBoundingClientRect(view.HTMLInputElement?.prototype)
   patchGetBoundingClientRect(view.HTMLSelectElement?.prototype)
   patchGetBoundingClientRect(view.HTMLTextAreaElement?.prototype)
+  patchMatchMedia(view)
 
   Object.defineProperty(htmlElementPrototype, 'offsetWidth', {
     configurable: true,
@@ -124,4 +125,53 @@ function patchElementInstanceRects(document: Document): void {
   for (const element of Array.from(document.getElementsByTagName('*'))) {
     patchGetBoundingClientRect(element)
   }
+}
+
+function patchMatchMedia(view: Window): void {
+  const EventTargetConstructor = (
+    view as Window & { EventTarget: typeof EventTarget }
+  ).EventTarget
+
+  Object.defineProperty(view, 'matchMedia', {
+    configurable: true,
+    value(query: string): MediaQueryList {
+      const media = String(query)
+      const eventTarget = new EventTargetConstructor() as MediaQueryList
+
+      Object.defineProperties(eventTarget, {
+        matches: {
+          enumerable: true,
+          get: () => attachmentForDocument(view.document).matchesMediaQuery(media),
+        },
+        media: {
+          enumerable: true,
+          value: media,
+        },
+        onchange: {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: null,
+        },
+        addListener: {
+          configurable: true,
+          value(listener: ((event: MediaQueryListEvent) => void) | null) {
+            if (listener) {
+              eventTarget.addEventListener('change', listener as EventListener)
+            }
+          },
+        },
+        removeListener: {
+          configurable: true,
+          value(listener: ((event: MediaQueryListEvent) => void) | null) {
+            if (listener) {
+              eventTarget.removeEventListener('change', listener as EventListener)
+            }
+          },
+        },
+      })
+
+      return eventTarget
+    },
+  })
 }

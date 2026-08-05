@@ -14,6 +14,7 @@ import { computeTaffyDocumentLayout } from '../../css-parity-implementation/layo
 import { documentStylesheetFingerprint } from '../../css-parity-implementation/css/stylesheet-source.ts'
 import type { TextMeasurer } from '../text-measurer.ts'
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
+import { matchesViewportMediaQuery } from './viewport-media-query.ts'
 
 export type DocumentAttachmentOptions = {
   document: Document
@@ -101,6 +102,11 @@ export class DocumentAttachment {
 
   clientHeight(element: Element): number {
     return roundCssPixel(this.getSnapshot().clientRects.get(element)?.height ?? 0)
+  }
+
+  matchesMediaQuery(query: string): boolean {
+    this.assertAttached()
+    return matchesViewportMediaQuery(query, this.viewport)
   }
 
   elementFromPoint(x: number, y: number): Element | null {
