@@ -155,7 +155,12 @@ function readStyleElementCssText(styleElement: Element): string {
       return [authoredCssText, ...cssomRules.slice(authoredRules.length)].join('\n')
     }
 
-    return authoredCssText
+    // Once an authored rule is changed or removed through CSSOM, textContent is
+    // stale and cannot describe the live cascade. CSSOM serialization may
+    // expand shorthands, but it is the only deterministic source that preserves
+    // rule edits and deletions without replaying declarations that no longer
+    // exist.
+    return cssomRules.join('\n')
   } catch {
     // Accessing cssRules can throw for inaccessible stylesheets. A style
     // element's own text remains the best deterministic source in that case.
