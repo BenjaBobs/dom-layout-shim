@@ -75,6 +75,11 @@ generate the inventory. The overview can be viewed with `pnpm run css:status`.
 
 Follow the commit convention documented in `README.md`.
 
+When a commit specifically targets and fully resolves an issue, include a
+closing keyword on its own line in the commit body, for example
+`Closes #23`. Use a plain issue reference without a closing keyword when the
+commit contributes to an issue but does not complete it.
+
 Every pull request except the generated `Version Packages` pull request must add
 or update a Changeset file. The generated release pull request is exempt
 because it consumes pending Changesets. Run `pnpm run changeset` for a
