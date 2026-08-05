@@ -80,6 +80,12 @@ closing keyword on its own line in the commit body, for example
 `Closes #23`. Use a plain issue reference without a closing keyword when the
 commit contributes to an issue but does not complete it.
 
+Dependency update issues are discovery tasks, not merge-ready version bumps.
+Before resolving one, read the upstream release notes between the installed and
+target versions, identify and apply required migrations, run the relevant full
+validation, and add a user-facing or empty Changeset based on the actual package
+impact.
+
 Every pull request except the generated `Version Packages` pull request must add
 or update a Changeset file. The generated release pull request is exempt
 because it consumes pending Changesets. Run `pnpm run changeset` for a

@@ -20,12 +20,7 @@ The package uses TypeScript ES modules. Local relative imports include explicit
 
 ## Describe the release intent
 
-Every pull request except the generated `Version Packages` pull request must
-add or update a file in `.changeset/`. This records an explicit decision about
-whether the change should appear in a package release. The generated release
-pull request is exempt because its purpose is to consume pending Changesets.
-
-For a user-facing change, run:
+For a user-facing change, add or update a file in `.changeset/` by running:
 
 ```sh
 pnpm run changeset
@@ -42,17 +37,17 @@ update an existing pending Changeset when it refines the same unreleased
 consumer-facing change. Prefer a new Changeset for an independent change so
 that pull requests remain easy to review and revert.
 
-If the pull request has no user-facing release impact, add an empty Changeset:
+Pull requests with no user-facing release impact do not need a Changeset. You
+may still record that decision explicitly with an empty Changeset:
 
 ```sh
 pnpm run changeset --empty
 ```
 
-Empty Changesets are the explicit release decision for changes such as internal
+Empty Changesets can document release intent for changes such as internal
 refactoring, test organization, tooling maintenance, and typo-only
 documentation fixes. They do not create changelog entries or package version
-bumps. Automated maintenance pull requests, including Dependabot updates, also
-need an empty Changeset before merge when they have no release impact.
+bumps.
 
 See [docs/releasing.md](docs/releasing.md) for the complete release policy and
 automated publication flow.
@@ -81,7 +76,7 @@ Pull requests should include:
 - A concise description of the outcome.
 - The commands used to validate it.
 - Notes about parity or benchmark impact where relevant.
-- A note identifying the added, updated, or empty Changeset.
+- A note identifying the Changeset when the pull request includes one.
 
 Keep CSS support records in `support/css/` synchronized with CSS parsing,
 layout, hit-testing, parity, and support-claim changes. Do not commit generated

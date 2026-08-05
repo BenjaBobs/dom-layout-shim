@@ -6,11 +6,6 @@ matters to package consumers.
 
 ## When to add a changeset
 
-Every pull request except the generated `Version Packages` pull request must add
-or update a Changeset file so its release intent is explicit and reviewable.
-The generated release pull request is exempt because it consumes the pending
-Changesets.
-
 Add a user-facing Changeset for:
 
 - New supported behavior or public API, normally `minor`.
@@ -21,11 +16,11 @@ Add a user-facing Changeset for:
   evidence changes what the project can confidently claim.
 - A corrected public compatibility claim, normally `patch`.
 
-Use `pnpm run changeset --empty` for internal refactoring, test reorganization,
-tooling, or editorial documentation that does not change a compatibility claim.
-Empty Changesets do not create a changelog entry, version bump, or version pull
-request when no user-facing Changesets are pending. Automated maintenance pull
-requests use the same empty-Changeset path when they have no release impact.
+Internal refactoring, test reorganization, tooling, or editorial documentation
+that does not change a compatibility claim does not require a Changeset. Use
+`pnpm run changeset --empty` when it is useful to record that release decision
+explicitly. Empty Changesets do not create a changelog entry, version bump, or
+version pull request when no user-facing Changesets are pending.
 
 Changesets accumulate between releases. A follow-up pull request may update an
 existing pending Changeset when it refines the same unreleased consumer-facing
@@ -68,7 +63,7 @@ opposing logical insets.
 
 ## Release flow
 
-1. Changes land on `main` with user-facing or empty Changeset files.
+1. User-facing changes land on `main` with Changeset files.
 2. The release workflow creates or updates a `Version Packages` pull request.
    It explicitly dispatches the required checks because GitHub does not
    recursively trigger workflows for pull requests created by `GITHUB_TOKEN`.
@@ -117,6 +112,34 @@ The protected release deployment does not use affected scopes. An unpublished
 package version always repeats the complete release validation suite before
 publishing.
 
+## Dependency update issues
+
+The daily `Dependency update issues` workflow compares direct npm dependencies
+in the installed pnpm graph with each package's npm `latest` tag. For every
+outdated package it maintains exactly one open issue titled:
+
+```text
+chore: Update <package> from <current> to <latest>
+```
+
+The issue body contains only an invisible package identity marker. If a newer
+version is published before the update is completed, the existing issue title
+is updated. Duplicate trackers are closed, and the remaining issue is closed
+automatically when the dependency becomes current or is removed.
+
+These issues only report available versions. Resolving one requires reviewing
+the upstream release notes, applying migrations, running the relevant complete
+validation suite, and adding a Changeset when the update has user-facing
+release impact. Routine
+Dependabot version updates are disabled. Keep Dependabot alerts enabled for
+vulnerability visibility, but disable the repository-level `Dependabot security
+updates` setting if security fixes should also enter through issues instead of
+automatic pull requests.
+
+GitHub Actions are not covered by the npm issue synchronizer. Their immutable
+SHA pins must be reviewed and updated manually until an Actions-specific tracker
+is added.
+
 ## One-time npm setup
 
 The package must exist on npm before its trusted publisher can be configured.
@@ -150,8 +173,8 @@ Create a GitHub environment named `npm` with:
 - No npm token or other long-lived publishing secret.
 
 Protect `main` with a repository ruleset that requires pull requests and the
-Changeset intent, Feature branch history, package, Chromium parity, and
-documentation status checks. Block force pushes and branch deletion. Enable
+Feature branch history, package, Chromium parity, and documentation status
+checks. Block force pushes and branch deletion. Enable
 private vulnerability reporting, secret scanning, push protection, and
 Dependabot security alerts. Do not enable GitHub's `Require linear history`
 rule: the repository intentionally permits one merge commit at the `main`
@@ -160,6 +183,6 @@ the pull request itself. Do not grant write access to untrusted contributors;
 external contributors can work through forks, whose pull request workflows
 receive read-only tokens and no publishing environment access.
 
-All workflow actions are pinned to immutable commit SHAs. Dependabot proposes
-reviewable SHA updates for them. If the account plan exposes an Actions policy
-requiring full-length SHA pins, enable it as an additional server-side guard.
+All workflow actions are pinned to immutable commit SHAs. Review and update
+those pins manually. If the account plan exposes an Actions policy requiring
+full-length SHA pins, enable it as an additional server-side guard.

@@ -29,6 +29,15 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('runs package tests for dependency issue synchronization changes', () => {
+    expect(classifyAffectedScopes(['scripts/sync-dependency-update-issues.mjs'])).toMatchObject({
+      package: true,
+      parity: false,
+      docs: false,
+      release: true,
+    })
+  })
+
   it('limits community documentation changes to documentation checks', () => {
     expect(classifyAffectedScopes(['SECURITY.md'])).toMatchObject({
       package: false,
