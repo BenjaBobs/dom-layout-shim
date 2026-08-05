@@ -99,6 +99,100 @@ describe('layout invalidation and isolation', () => {
     expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
   })
 
+  it('recomputes layout when a stylesheet is added or its text changes', async () => {
+    document.body.innerHTML = `
+      <div id="box" class="box"></div>
+    `
+
+    await attach({
+      stylesheets: [
+        `
+          .box {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100px;
+            height: 100px;
+          }
+        `,
+      ],
+    })
+    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
+
+    const styleElement = document.createElement('style')
+    styleElement.textContent = '.box { left: 100px; }'
+    document.head.append(styleElement)
+    await waitForMutationDelivery()
+
+    expect(document.elementFromPoint(50, 50)).toBe(null)
+    expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
+
+    styleElement.textContent = '.box { left: 200px; }'
+    await waitForMutationDelivery()
+
+    expect(document.elementFromPoint(150, 50)).toBe(null)
+    expect(document.elementFromPoint(250, 50)).toBe(requiredElement('#box'))
+
+    styleElement.remove()
+    await waitForMutationDelivery()
+
+    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
+    expect(document.elementFromPoint(250, 50)).toBe(null)
+  })
+
+  it('recomputes layout when an existing CSSOM declaration changes', async () => {
+    document.body.innerHTML = `
+      <style id="styles">
+        .box {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100px;
+          height: 100px;
+        }
+      </style>
+      <div id="box" class="box"></div>
+    `
+
+    await attach()
+    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
+
+    const styleElement = requiredElement('#styles') as HTMLStyleElement
+    const rule = styleElement.sheet?.cssRules[0] as CSSStyleRule | undefined
+    rule?.style.setProperty('left', '100px')
+
+    expect(document.elementFromPoint(50, 50)).toBe(null)
+    expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
+  })
+
+  it('recomputes layout when an authored rule is deleted through the stylesheet CSSOM', async () => {
+    document.body.innerHTML = `
+      <style id="styles">
+        .box {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100px;
+          height: 100px;
+        }
+
+        .box {
+          left: 100px;
+        }
+      </style>
+      <div id="box" class="box"></div>
+    `
+
+    await attach()
+    expect(document.elementFromPoint(150, 50)).toBe(requiredElement('#box'))
+
+    const styleElement = requiredElement('#styles') as HTMLStyleElement
+    styleElement.sheet?.deleteRule(1)
+
+    expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
+    expect(document.elementFromPoint(150, 50)).toBe(null)
+  })
+
   it('marks layout dirty when elements are inserted', async () => {
     document.body.innerHTML = `
       <button id="save" style="position:absolute; left:0; top:0; width:100px; height:40px"></button>
