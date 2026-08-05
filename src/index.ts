@@ -11,6 +11,12 @@ export type {
   UnsupportedCssReason,
   UnsupportedCssSource,
 } from './api/unsupported-css-policy.ts'
+export { createUnsupportedCssReporter } from './api/unsupported-css-reporter.ts'
+export type {
+  UnsupportedCssReporter,
+  UnsupportedCssSummary,
+  UnsupportedCssSummaryEntry,
+} from './api/unsupported-css-reporter.ts'
 export { cssSupportInventory, getInventoriedCssProperties, getInventoriedHtmlElements } from './api/css-support-inventory.ts'
 export type {
   CssSupportClaim,

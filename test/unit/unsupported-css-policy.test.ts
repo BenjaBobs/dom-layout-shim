@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { UnsupportedCssContext } from '../../src/index.ts'
+import {
+  createUnsupportedCssReporter,
+  type UnsupportedCssContext,
+} from '../../src/index.ts'
 import { attach, requiredElement } from './layout-engine-helpers.ts'
 
 afterEach(() => {
@@ -47,6 +50,75 @@ describe('unsupported CSS policy', () => {
       reason: 'unsupported-value',
       source: 'inline-style',
       defaultDecision: 'warn',
+    })
+  })
+
+  it('summarizes unique unsupported declarations across a test suite', async () => {
+    const reporter = createUnsupportedCssReporter()
+    document.body.innerHTML = `
+      <div style="transform:translateX(10px)"></div>
+      <div style="transform:translateX(10px)"></div>
+      <div style="transform:rotate(10deg)"></div>
+    `
+
+    await attach({
+      unsupportedCss: {
+        onWarning: reporter.onWarning,
+      },
+    })
+    document.body.getBoundingClientRect()
+    reporter.onWarning({
+      property: 'transform',
+      value: 'translateX(10px)',
+      reason: 'unsupported-value',
+      source: 'stylesheet',
+      defaultDecision: 'warn',
+    })
+
+    expect(reporter.getSummary()).toEqual({
+      unsupportedDeclarationCount: 2,
+      declarations: [
+        {
+          property: 'transform',
+          value: 'rotate(10deg)',
+          reason: 'unsupported-value',
+          sources: ['inline-style'],
+        },
+        {
+          property: 'transform',
+          value: 'translateX(10px)',
+          reason: 'unsupported-value',
+          sources: ['inline-style', 'stylesheet'],
+        },
+      ],
+    })
+
+    document.body.innerHTML = '<div style="transform:translateX(10px)"></div>'
+    await attach({
+      unsupportedCss: {
+        onWarning: reporter.onWarning,
+      },
+    })
+    document.body.getBoundingClientRect()
+
+    expect(reporter.getSummary().unsupportedDeclarationCount).toBe(2)
+  })
+
+  it('resets an unsupported CSS summary between suites', () => {
+    const reporter = createUnsupportedCssReporter()
+
+    reporter.onWarning({
+      property: 'transform',
+      value: 'translateX(10px)',
+      reason: 'unsupported-value',
+      source: 'inline-style',
+      defaultDecision: 'warn',
+    })
+    reporter.reset()
+
+    expect(reporter.getSummary()).toEqual({
+      unsupportedDeclarationCount: 0,
+      declarations: [],
     })
   })
 

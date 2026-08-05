@@ -69,6 +69,31 @@ await attachLayoutEngine({
 })
 ```
 
+To reduce a warning stream to one adoption-cost number for a test suite, reuse
+an unsupported CSS reporter across its attachments:
+
+```ts
+import {
+  attachLayoutEngine,
+  createUnsupportedCssReporter,
+} from 'dom-layout-shim'
+
+const reporter = createUnsupportedCssReporter()
+
+await attachLayoutEngine({
+  window,
+  unsupportedCss: { onWarning: reporter.onWarning },
+})
+
+const summary = reporter.getSummary()
+console.log(summary.unsupportedDeclarationCount)
+```
+
+The count represents unique unsupported combinations of property, value, and
+reason. `summary.declarations` contains stable, sorted details and the source
+types where each declaration was encountered. Call `reporter.reset()` between
+independent suites.
+
 Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
 `'ignore'` to deliberately suppress unsupported declarations. Decisions can
 also be overridden by property. Text measurement falls back to a deterministic
