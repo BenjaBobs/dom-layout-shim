@@ -224,7 +224,81 @@ function computeTaffyLayout(layoutTree: TaffyLayoutTree, viewport: Viewport): vo
 function collectTaffyLayoutSnapshot(document: Document, scroll: ScrollOffset, state: TaffyLayoutState): LayoutSnapshot {
   recordChildLayouts(document.body, { x: 0, y: 0 }, infiniteClipBounds(), scroll, false, false, state)
 
-  return { boxes: state.boxes, rects: state.rects, clientRects: state.clientRects, elementScrolls: state.elementScrolls }
+  return {
+    boxes: state.boxes,
+    rects: state.rects,
+    clientRects: state.clientRects,
+    elementScrolls: state.elementScrolls,
+    offsetParents: collectOffsetParents(document, state),
+  }
+}
+
+function collectOffsetParents(
+  document: Document,
+  state: TaffyLayoutState,
+): Map<Element, Element | null> {
+  const offsetParents = new Map<Element, Element | null>()
+
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    offsetParents.set(element, findOffsetParent(element, document, state))
+  }
+
+  return offsetParents
+}
+
+function findOffsetParent(
+  element: Element,
+  document: Document,
+  state: TaffyLayoutState,
+): Element | null {
+  if (
+    element === document.body ||
+    element === document.documentElement ||
+    !hasPrincipalBox(element, state) ||
+    resolveSupportedStyle(element, state).position === 'fixed'
+  ) {
+    return null
+  }
+
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor === document.body) {
+      return ancestor
+    }
+
+    if (!hasPrincipalBox(ancestor, state)) {
+      continue
+    }
+
+    const style = resolveSupportedStyle(ancestor, state)
+    const tagName = ancestor.tagName.toLowerCase()
+
+    if (
+      style.position !== 'static' ||
+      tagName === 'table' ||
+      tagName === 'td' ||
+      tagName === 'th'
+    ) {
+      return ancestor
+    }
+  }
+
+  return null
+}
+
+function hasPrincipalBox(element: Element, state: TaffyLayoutState): boolean {
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    const display = resolveSupportedStyle(current, state).display
+
+    if (display === 'none') {
+      return false
+    }
+
+    if (current === element && display === 'contents') {
+      return false
+    }
+  }
+
+  return state.rects.has(element)
 }
 
 function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigint[] {

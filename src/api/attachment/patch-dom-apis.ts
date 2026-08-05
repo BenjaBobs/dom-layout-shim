@@ -63,6 +63,27 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     },
   })
 
+  Object.defineProperty(htmlElementPrototype, 'offsetTop', {
+    configurable: true,
+    get(this: Element) {
+      return attachmentForElement(this).offsetTop(this)
+    },
+  })
+
+  Object.defineProperty(htmlElementPrototype, 'offsetLeft', {
+    configurable: true,
+    get(this: Element) {
+      return attachmentForElement(this).offsetLeft(this)
+    },
+  })
+
+  Object.defineProperty(htmlElementPrototype, 'offsetParent', {
+    configurable: true,
+    get(this: Element) {
+      return attachmentForElement(this).offsetParent(this)
+    },
+  })
+
   Object.defineProperty(htmlElementPrototype, 'clientWidth', {
     configurable: true,
     get(this: Element) {

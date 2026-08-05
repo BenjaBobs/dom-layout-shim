@@ -6,6 +6,7 @@ export type LayoutSnapshot = {
   rects: Map<Element, Box>
   clientRects: Map<Element, Box>
   elementScrolls: Map<Element, ScrollOffset>
+  offsetParents: Map<Element, Element | null>
 }
 
 export type ScrollOffset = {

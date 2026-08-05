@@ -32,7 +32,14 @@ export type RectQuery = {
 export type DimensionsQuery = {
   type: 'dimensions'
   selector: string
-} & ExplainedTolerance<'offsetWidth' | 'offsetHeight' | 'clientWidth' | 'clientHeight'>
+} & ExplainedTolerance<
+  | 'offsetWidth'
+  | 'offsetHeight'
+  | 'offsetTop'
+  | 'offsetLeft'
+  | 'clientWidth'
+  | 'clientHeight'
+>
 
 export type BrowserParityQuery = PointQuery | CenterClickabilityQuery | RectQuery | DimensionsQuery
 
@@ -59,6 +66,7 @@ type QueryResult = {
   elementsFromPoint?: string[]
   rect?: SerializedRect
   dimensions?: SerializedDimensions
+  offsetParent?: string | null
   receivesPointerAtCenter?: boolean
 }
 
@@ -72,6 +80,8 @@ type SerializedRect = {
 type SerializedDimensions = {
   offsetWidth: number
   offsetHeight: number
+  offsetTop: number
+  offsetLeft: number
   clientWidth: number
   clientHeight: number
 }
@@ -261,9 +271,12 @@ function runQueries(windowLike: QueryWindow, queries: BrowserParityQuery[]): Que
         dimensions: {
           offsetWidth: htmlElement.offsetWidth,
           offsetHeight: htmlElement.offsetHeight,
+          offsetTop: htmlElement.offsetTop,
+          offsetLeft: htmlElement.offsetLeft,
           clientWidth: htmlElement.clientWidth,
           clientHeight: htmlElement.clientHeight,
         },
+        offsetParent: describeOffsetParent(htmlElement.offsetParent),
       }
     }
 
@@ -276,6 +289,14 @@ function runQueries(windowLike: QueryWindow, queries: BrowserParityQuery[]): Que
 
   function describeElement(element: Element | null): string | null {
     return element?.id ? `#${element.id}` : null
+  }
+
+  function describeOffsetParent(element: Element | null): string | null {
+    if (!element) {
+      return null
+    }
+
+    return element.id ? `#${element.id}` : element.tagName.toLowerCase()
   }
 
   function serializeRect(rect: DOMRect): SerializedRect {
