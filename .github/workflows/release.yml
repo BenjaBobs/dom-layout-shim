@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run required checks on the version pull request
-        if: steps.changesets.outputs.hasChangesets == 'true'
+        if: steps.changesets.outputs.pullRequestNumber != ''
         run: |
           gh workflow run ci.yml --ref changeset-release/main
           gh workflow run docs.yml --ref changeset-release/main -f deploy=false
