@@ -44,6 +44,12 @@ await attachLayoutEngine({
 })
 ```
 
+The attachment also answers `window.matchMedia()` from that configured
+viewport. It supports screen/all media types, width and height constraints,
+orientation, aspect ratio, query lists, and `not`/`and` combinations.
+Non-viewport media features that the deterministic configuration does not
+define evaluate to false.
+
 The current implementation uses Lightning CSS for `<style>` parsing and supports
 a small CSS subset for proof-of-concept block, flex, absolute, and fixed
 positioned fixtures. Unsupported declarations are ignored with deduplicated
