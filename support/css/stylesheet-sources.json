@@ -1,0 +1,34 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "stylesheet-sources",
+  "title": "Stylesheet sources",
+  "subjects": {
+    "properties": [],
+    "elements": []
+  },
+  "effect": "source",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "selector-matching"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Configured stylesheet text, document style elements, and CSSOM rules belonging to style elements are read in source order. Static style-element behavior is exercised by browser parity fixtures; configured and CSSOM sources are covered by package-contract tests."
+        },
+        {
+          "kind": "limitation",
+          "text": "External and constructable stylesheets and at-rules are not implemented."
+        }
+      ]
+    }
+  ]
+}

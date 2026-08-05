@@ -1,0 +1,32 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "stylesheet-mutation-invalidation",
+  "title": "Stylesheet mutation invalidation",
+  "subjects": {
+    "properties": [],
+    "elements": []
+  },
+  "effect": "source",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "style-element-and-cssom-mutations",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Package-contract tests verify snapshot invalidation when style elements are added, removed, or edited and when CSSOM rules are inserted, changed, or deleted."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "The engine fingerprints live style-element CSSOM state before cached snapshot reads because CSSOM rule mutations do not emit DOM mutation records."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "selector-matching",
+  "title": "Selector matching",
+  "subjects": {
+    "properties": [],
+    "elements": []
+  },
+  "effect": "source",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "current-supported-scope",
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "selector-matching",
+          "selector-sibling-combinators",
+          "selector-source-order-tie",
+          "selector-specificity"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Selector lists, descendant, child, adjacent-sibling, and general-sibling combinators, supported attribute and functional pseudo-class selectors, specificity, and source-order ties are covered by browser parity fixtures."
+        },
+        {
+          "kind": "limitation",
+          "text": "Pseudo-elements and most pseudo-classes are not implemented."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Unsupported CSS and selectors are ignored with one actionable warning per distinct input by default; strict throw and silent ignore policies remain configurable."
+        }
+      ]
+    }
+  ]
+}
