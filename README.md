@@ -32,6 +32,11 @@ const target = document.elementFromPoint(
 )
 ```
 
+The attachment patches `getBoundingClientRect()`, `offsetWidth`,
+`offsetHeight`, `offsetTop`, `offsetLeft`, `offsetParent`, `clientWidth`, and
+`clientHeight` from the same layout snapshot, so geometry APIs agree with hit
+testing.
+
 The default viewport is 1280×720. Inline styles and document `<style>` elements
 are discovered automatically. Configuration is only needed to override a
 default or supply additional stylesheet text:

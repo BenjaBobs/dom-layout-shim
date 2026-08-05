@@ -44,13 +44,14 @@
           "aspect-ratio",
           "box-sizing-min-max-size-constraints",
           "min-max-size-constraints",
+          "offset-geometry",
           "percentage-sizing"
         ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Box sizing including CSS-wide content-box resets, physical and logical min/max constraints, percentages, and aspect ratio in both axes with constraint interaction have parity fixtures."
+          "text": "Box sizing including CSS-wide content-box resets, physical and logical min/max constraints, percentages, aspect ratio in both axes with constraint interaction, and offset geometry have parity fixtures."
         },
         {
           "kind": "limitation",

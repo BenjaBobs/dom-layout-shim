@@ -96,6 +96,18 @@ export class DocumentAttachment {
     return roundCssPixel(this.getSnapshot().rects.get(element)?.height ?? 0)
   }
 
+  offsetTop(element: Element): number {
+    return this.offsetPosition(element, 'y')
+  }
+
+  offsetLeft(element: Element): number {
+    return this.offsetPosition(element, 'x')
+  }
+
+  offsetParent(element: Element): Element | null {
+    return this.getSnapshot().offsetParents.get(element) ?? null
+  }
+
   clientWidth(element: Element): number {
     return roundCssPixel(this.getSnapshot().clientRects.get(element)?.width ?? 0)
   }
@@ -156,6 +168,38 @@ export class DocumentAttachment {
     }
 
     return snapshot
+  }
+
+  private offsetPosition(element: Element, axis: 'x' | 'y'): number {
+    const snapshot = this.getSnapshot()
+    const box = snapshot.rects.get(element)
+    const offsetParent = snapshot.offsetParents.get(element)
+
+    if (!box) {
+      return 0
+    }
+
+    const parentOrigin = offsetParent
+      ? snapshot.clientRects.get(offsetParent)?.[axis] ?? 0
+      : 0
+    let scrollOffset = 0
+
+    for (
+      let ancestor = element.parentElement;
+      ancestor;
+      ancestor = ancestor.parentElement
+    ) {
+      scrollOffset +=
+        axis === 'x'
+          ? snapshot.elementScrolls.get(ancestor)?.x ?? 0
+          : snapshot.elementScrolls.get(ancestor)?.y ?? 0
+
+      if (ancestor === offsetParent) {
+        break
+      }
+    }
+
+    return roundCssPixel(box[axis] - parentOrigin + scrollOffset)
   }
 
   private assertAttached(): void {
