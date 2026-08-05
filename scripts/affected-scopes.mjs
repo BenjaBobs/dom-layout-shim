@@ -20,6 +20,7 @@ const rules = [
   { match: exact('scripts/css-support.mjs'), scopes: ['package', 'docs'] },
   { match: oneOf('scripts/clean-build-output.mjs', 'scripts/test-package-consumer.mjs'), scopes: ['package'] },
   { match: oneOf('scripts/extract-release-notes.mjs', 'scripts/inspect-release-state.mjs'), scopes: ['release'] },
+  { match: exact('scripts/sync-dependency-update-issues.mjs'), scopes: ['package', 'release'] },
   { match: exact('scripts/serve-css-support-status.mjs'), scopes: ['docs'] },
   { match: exact('scripts/check-pr-history.mjs'), scopes: ['release'] },
   { match: exact('scripts/affected-scopes.mjs'), scopes },

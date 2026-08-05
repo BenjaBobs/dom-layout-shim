@@ -4,15 +4,14 @@ Changeset files are short, human-authored descriptions of user-relevant changes.
 They are accumulated into a version pull request and ultimately into
 `CHANGELOG.md`.
 
-Every pull request except the generated `Version Packages` pull request must add
-or update a Changeset file. The generated pull request consumes the pending
-Changesets. For a user-facing change, add one interactively with:
+For a user-facing change, add a Changeset interactively with:
 
 ```sh
 pnpm run changeset
 ```
 
-If a pull request has no user-facing release impact, record that decision with:
+Pull requests with no user-facing release impact do not need a Changeset. To
+record that decision explicitly, you may use:
 
 ```sh
 pnpm run changeset --empty
