@@ -91,6 +91,16 @@ function readSelector(
           break
         }
 
+        if (component.value === 'next-sibling') {
+          result = `${result.trimEnd()} + `
+          break
+        }
+
+        if (component.value === 'later-sibling') {
+          result = `${result.trimEnd()} ~ `
+          break
+        }
+
         handleUnsupportedSelector(JSON.stringify(component), policy)
         unsupported = true
         break

@@ -17,6 +17,7 @@
         "status": "partially-verified",
         "fixtures": [
           "selector-matching",
+          "selector-sibling-combinators",
           "selector-source-order-tie",
           "selector-specificity"
         ]
@@ -24,11 +25,11 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Configured stylesheets, style elements, CSSOM-inserted style rules, selector lists, specificity, and source-order ties are supported. Static stylesheet and selector behavior is covered by parity fixtures; CSSOM mutation invalidation is covered by package-contract tests."
+          "text": "Configured stylesheets, style elements, CSSOM-inserted style rules, selector lists, descendant, child, adjacent-sibling, and general-sibling combinators, specificity, and source-order ties are supported. Static stylesheet and selector behavior is covered by parity fixtures; CSSOM mutation invalidation is covered by package-contract tests."
         },
         {
           "kind": "limitation",
-          "text": "External and constructable stylesheets, at-rules, sibling combinators, pseudo-elements, and most pseudo-classes are not implemented."
+          "text": "External and constructable stylesheets, at-rules, pseudo-elements, and most pseudo-classes are not implemented."
         },
         {
           "kind": "implementation-quirk",
