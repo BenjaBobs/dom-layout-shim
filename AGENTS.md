@@ -96,7 +96,10 @@ A follow-up pull request may update an existing pending Changeset only when it
 refines the same unreleased consumer-facing change. Prefer a new Changeset for
 an independent change so pull requests remain easy to review and revert. Follow
 the version and summary guidance in `CONTRIBUTING.md` and
-`docs/releasing.md`.
+`docs/releasing.md`. Changesets may use concise fenced code examples when a
+before-and-after example explains the consumer-visible behavior more clearly
+than prose. Keep examples focused on public usage and make the changed outcome
+explicit.
 
 Pull requests should include a brief description, commands run, and notes about
 parity or benchmark impact. Link related issues when available. Screenshots are

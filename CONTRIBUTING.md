@@ -32,6 +32,12 @@ Choose the version impact and write a summary for package consumers. Use:
   compatibility evidence.
 - `minor` for new capabilities and breaking changes before 1.0.
 
+Changeset descriptions are Markdown and may include concise fenced code
+examples. Use a before-and-after example when it makes the consumer-visible
+behavior or migration clearer than prose alone. Keep examples focused on public
+usage rather than tests or internal implementation details. See
+[docs/releasing.md](docs/releasing.md#code-examples) for an example.
+
 Changesets accumulate until the next release. A follow-up pull request may
 update an existing pending Changeset when it refines the same unreleased
 consumer-facing change. Prefer a new Changeset for an independent change so
