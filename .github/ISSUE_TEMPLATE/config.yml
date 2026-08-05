@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/BenjaBobs/dom-layout-shim/security/advisories/new
+    about: Report suspected vulnerabilities privately.
+  - name: Support guidance
+    url: https://github.com/BenjaBobs/dom-layout-shim/blob/main/SUPPORT.md
+    about: Read which requests are appropriate for the issue tracker.

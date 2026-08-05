@@ -16,6 +16,7 @@ const rules = [
   { match: prefix('support/'), scopes: ['package', 'docs'] },
   { match: prefix('docs/'), scopes: ['docs'] },
   { match: oneOf('README.md', 'LICENSE'), scopes: ['package', 'docs'] },
+  { match: oneOf('CONTRIBUTING.md', 'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md'), scopes: ['docs'] },
   { match: exact('scripts/css-support.mjs'), scopes: ['package', 'docs'] },
   { match: oneOf('scripts/clean-build-output.mjs', 'scripts/test-package-consumer.mjs'), scopes: ['package'] },
   { match: oneOf('scripts/extract-release-notes.mjs', 'scripts/inspect-release-state.mjs'), scopes: ['release'] },
@@ -28,7 +29,14 @@ const rules = [
   { match: prefix('.github/'), scopes: ['release'] },
   { match: prefix('.changeset/'), scopes: ['release'] },
   { match: exact('CHANGELOG.md'), scopes: ['release'] },
-  { match: oneOf('AGENTS.md', '.gitignore', 'dom-layout-shim-hit-testing-design.md'), scopes: [] },
+  { match: oneOf(
+    'AGENTS.md',
+    '.editorconfig',
+    '.gitattributes',
+    '.gitignore',
+    '.node-version',
+    'dom-layout-shim-hit-testing-design.md',
+  ), scopes: [] },
 ]
 
 export function classifyAffectedScopes(paths, { forceAll = false } = {}) {

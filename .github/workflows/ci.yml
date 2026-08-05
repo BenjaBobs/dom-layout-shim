@@ -51,6 +51,40 @@ jobs:
           "${{ github.event.pull_request.base.sha || 'origin/main' }}"
           "${{ github.event.pull_request.head.sha || github.sha }}"
 
+  changeset-intent:
+    name: Changeset intent
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - name: Set up Node.js
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        run: pnpm install --frozen-lockfile
+
+      - name: Require a new, updated, or empty Changeset
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        run: >-
+          pnpm run release:status
+          --since="${{ github.event.pull_request.base.sha }}"
+
+      - name: Report exempt release or non-pull-request run
+        if: github.event_name != 'pull_request' || github.head_ref == 'changeset-release/main'
+        run: echo "Changeset intent is not required for this workflow event."
+
   package:
     name: Package checks
     needs: affected

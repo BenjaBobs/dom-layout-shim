@@ -1,0 +1,8 @@
+/.github/workflows/ @BenjaBobs
+/.changeset/ @BenjaBobs
+/package.json @BenjaBobs
+/pnpm-lock.yaml @BenjaBobs
+/scripts/inspect-release-state.mjs @BenjaBobs
+/scripts/extract-release-notes.mjs @BenjaBobs
+/src/index.ts @BenjaBobs
+/src/api/ @BenjaBobs

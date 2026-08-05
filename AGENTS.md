@@ -75,7 +75,25 @@ generate the inventory. The overview can be viewed with `pnpm run css:status`.
 
 Follow the commit convention documented in `README.md`.
 
-Pull requests should include a brief description, commands run, and notes about parity or benchmark impact. Link related issues when available. Screenshots are only useful for documentation or browser-observed behavior changes.
+Every pull request except the generated `Version Packages` pull request must add
+or update a Changeset file. The generated release pull request is exempt
+because it consumes pending Changesets. Run `pnpm run changeset` for a
+user-facing change. Run
+`pnpm run changeset --empty` when the pull request has no user-facing release
+impact, including internal refactoring, test organization, tooling maintenance,
+and typo-only documentation changes. Automated maintenance pull requests also
+need an empty Changeset when they have no release impact.
+
+A follow-up pull request may update an existing pending Changeset only when it
+refines the same unreleased consumer-facing change. Prefer a new Changeset for
+an independent change so pull requests remain easy to review and revert. Follow
+the version and summary guidance in `CONTRIBUTING.md` and
+`docs/releasing.md`.
+
+Pull requests should include a brief description, commands run, and notes about
+parity or benchmark impact. Select exactly one release-intent choice in the
+pull request template. Link related issues when available. Screenshots are only
+useful for documentation or browser-observed behavior changes.
 
 ## Agent-Specific Notes
 
