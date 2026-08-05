@@ -83,17 +83,14 @@ commit contributes to an issue but does not complete it.
 Dependency update issues are discovery tasks, not merge-ready version bumps.
 Before resolving one, read the upstream release notes between the installed and
 target versions, identify and apply required migrations, run the relevant full
-validation, and add a user-facing or empty Changeset based on the actual package
-impact.
+validation, and add a descriptive Changeset when the update has user-facing
+package impact.
 
-Every pull request except the generated `Version Packages` pull request must add
-or update a Changeset file. The generated release pull request is exempt
-because it consumes pending Changesets. Run `pnpm run changeset` for a
-user-facing change. Run
-`pnpm run changeset --empty` when the pull request has no user-facing release
-impact, including internal refactoring, test organization, tooling maintenance,
-and typo-only documentation changes. Automated maintenance pull requests also
-need an empty Changeset when they have no release impact.
+Every pull request with user-facing release impact must add or update a
+descriptive Changeset file. Pull requests without user-facing release impact
+must not add an empty Changeset. The generated `Version Packages` pull request
+is exempt because it consumes pending Changesets. Run `pnpm run changeset` for
+a user-facing change.
 
 A follow-up pull request may update an existing pending Changeset only when it
 refines the same unreleased consumer-facing change. Prefer a new Changeset for

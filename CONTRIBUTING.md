@@ -37,17 +37,8 @@ update an existing pending Changeset when it refines the same unreleased
 consumer-facing change. Prefer a new Changeset for an independent change so
 that pull requests remain easy to review and revert.
 
-Pull requests with no user-facing release impact do not need a Changeset. You
-may still record that decision explicitly with an empty Changeset:
-
-```sh
-pnpm run changeset --empty
-```
-
-Empty Changesets can document release intent for changes such as internal
-refactoring, test organization, tooling maintenance, and typo-only
-documentation fixes. They do not create changelog entries or package version
-bumps.
+Pull requests with no user-facing release impact do not include a Changeset.
+Do not add empty Changesets.
 
 See [docs/releasing.md](docs/releasing.md) for the complete release policy and
 automated publication flow.
