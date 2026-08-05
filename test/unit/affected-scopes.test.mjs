@@ -29,6 +29,24 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('limits community documentation changes to documentation checks', () => {
+    expect(classifyAffectedScopes(['SECURITY.md'])).toMatchObject({
+      package: false,
+      parity: false,
+      docs: true,
+      release: false,
+    })
+  })
+
+  it('does not run behavior checks for editor defaults', () => {
+    expect(classifyAffectedScopes(['.gitattributes'])).toMatchObject({
+      package: false,
+      parity: false,
+      docs: false,
+      release: false,
+    })
+  })
+
   it('validates package data and documentation for support inventory changes', () => {
     expect(classifyAffectedScopes(['support/css/flex-layout.json'])).toMatchObject({
       package: true,

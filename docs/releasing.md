@@ -6,7 +6,12 @@ matters to package consumers.
 
 ## When to add a changeset
 
-Add a changeset for:
+Every pull request except the generated `Version Packages` pull request must add
+or update a Changeset file so its release intent is explicit and reviewable.
+The generated release pull request is exempt because it consumes the pending
+Changesets.
+
+Add a user-facing Changeset for:
 
 - New supported behavior or public API, normally `minor`.
 - A corrected behavior or Chromium mismatch, normally `patch`.
@@ -16,9 +21,16 @@ Add a changeset for:
   evidence changes what the project can confidently claim.
 - A corrected public compatibility claim, normally `patch`.
 
-A changeset is usually unnecessary for internal refactoring, test
-reorganization, tooling, or editorial documentation that does not change a
-compatibility claim.
+Use `pnpm run changeset --empty` for internal refactoring, test reorganization,
+tooling, or editorial documentation that does not change a compatibility claim.
+Empty Changesets do not create a changelog entry, version bump, or version pull
+request when no user-facing Changesets are pending. Automated maintenance pull
+requests use the same empty-Changeset path when they have no release impact.
+
+Changesets accumulate between releases. A follow-up pull request may update an
+existing pending Changeset when it refines the same unreleased consumer-facing
+change. Prefer a new Changeset for an independent change so it can be reviewed,
+reverted, and released independently.
 
 ## Writing release notes
 
@@ -56,7 +68,7 @@ opposing logical insets.
 
 ## Release flow
 
-1. Changes land on `main` with changeset files.
+1. Changes land on `main` with user-facing or empty Changeset files.
 2. The release workflow creates or updates a `Version Packages` pull request.
    It explicitly dispatches the required checks because GitHub does not
    recursively trigger workflows for pull requests created by `GITHUB_TOKEN`.
@@ -138,14 +150,15 @@ Create a GitHub environment named `npm` with:
 - No npm token or other long-lived publishing secret.
 
 Protect `main` with a repository ruleset that requires pull requests and the
-Feature branch history, package, Chromium parity, and documentation status
-checks. Block force pushes and branch deletion. Do not enable GitHub's
-`Require linear history` rule: the repository intentionally permits one merge
-commit at the `main` boundary while the Feature branch history check rejects
-merge commits inside the pull request itself. Do not grant write access to
-untrusted contributors; external contributors can work through forks, whose
-pull request workflows receive read-only tokens and no publishing environment
-access.
+Changeset intent, Feature branch history, package, Chromium parity, and
+documentation status checks. Block force pushes and branch deletion. Enable
+private vulnerability reporting, secret scanning, push protection, and
+Dependabot security alerts. Do not enable GitHub's `Require linear history`
+rule: the repository intentionally permits one merge commit at the `main`
+boundary while the Feature branch history check rejects merge commits inside
+the pull request itself. Do not grant write access to untrusted contributors;
+external contributors can work through forks, whose pull request workflows
+receive read-only tokens and no publishing environment access.
 
 All workflow actions are pinned to immutable commit SHAs. Dependabot proposes
 reviewable SHA updates for them. If the account plan exposes an Actions policy

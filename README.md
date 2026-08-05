@@ -97,6 +97,14 @@ Taffy pipeline contract and migration roadmap.
 See [docs/releasing.md](docs/releasing.md) for the changeset, changelog, and
 pre-1.0 versioning policy.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Every pull
+request, except the generated version pull request, records its release intent
+with either a user-facing Changeset or an empty Changeset.
+
+See [SUPPORT.md](SUPPORT.md) for issue guidance,
+[SECURITY.md](SECURITY.md) for private vulnerability reporting, and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for participation expectations.
+
 ## Commit convention
 
 Use `<type>(<scope>): <imperative summary>` for commit subjects. A scope is

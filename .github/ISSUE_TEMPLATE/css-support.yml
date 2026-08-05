@@ -1,0 +1,37 @@
+name: CSS support request
+description: Request support for a CSS property, value, or interaction.
+title: "css: "
+labels:
+  - enhancement
+body:
+  - type: input
+    id: feature
+    attributes:
+      label: CSS feature
+      placeholder: percentage row-gap in wrapped flex layouts
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Testing use case
+      description: Explain why deterministic support matters to the test harness.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal HTML and CSS
+      render: html
+    validations:
+      required: true
+  - type: textarea
+    id: chromium
+    attributes:
+      label: Expected Chromium behavior
+    validations:
+      required: true
+  - type: textarea
+    id: related
+    attributes:
+      label: Related support record or issue

@@ -1,0 +1,49 @@
+name: Chromium parity mismatch
+description: Report layout, geometry, CSS, or hit-testing output that differs from Chromium.
+title: "parity: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include the same minimal HTML and CSS used for both Chromium and DOM Layout Shim.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Chromium version and platform
+      placeholder: Chromium 140 on Linux x64
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Minimal HTML and CSS fixture
+      render: html
+    validations:
+      required: true
+  - type: textarea
+    id: chromium
+    attributes:
+      label: Chromium result
+      description: Include exact dimensions, coordinates, or hit-test results.
+    validations:
+      required: true
+  - type: textarea
+    id: shim
+    attributes:
+      label: DOM Layout Shim result
+      description: Include exact dimensions, coordinates, or hit-test results.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
