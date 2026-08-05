@@ -55,6 +55,11 @@ orientation, aspect ratio, query lists, and `not`/`and` combinations.
 Non-viewport media features that the deterministic configuration does not
 define evaluate to false.
 
+Calling `element.scrollIntoView()` scrolls layout-backed ancestors and the
+configured viewport. Boolean arguments and `block`/`inline` alignment options
+are supported. Smooth behavior completes immediately so subsequent test
+assertions remain deterministic.
+
 The current implementation uses Lightning CSS for `<style>` parsing and supports
 a small CSS subset for proof-of-concept block, flex, absolute, and fixed
 positioned fixtures. Unsupported declarations are ignored with deduplicated

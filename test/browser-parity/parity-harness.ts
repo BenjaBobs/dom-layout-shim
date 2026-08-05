@@ -41,7 +41,17 @@ export type DimensionsQuery = {
   | 'clientHeight'
 >
 
-export type BrowserParityQuery = PointQuery | CenterClickabilityQuery | RectQuery | DimensionsQuery
+export type ScrollQuery = {
+  type: 'scroll'
+  selector?: string
+}
+
+export type BrowserParityQuery =
+  | PointQuery
+  | CenterClickabilityQuery
+  | RectQuery
+  | DimensionsQuery
+  | ScrollQuery
 
 export type BrowserParityFixture = {
   viewport: {
@@ -57,6 +67,10 @@ export type BrowserParityFixture = {
     x: number
     y: number
   }[]
+  scrollIntoView?: {
+    selector: string
+    arg?: boolean | ScrollIntoViewOptions
+  }
   html: string
   queries: BrowserParityQuery[]
 }
@@ -67,6 +81,10 @@ type QueryResult = {
   rect?: SerializedRect
   dimensions?: SerializedDimensions
   offsetParent?: string | null
+  scroll?: {
+    x: number
+    y: number
+  }
   receivesPointerAtCenter?: boolean
 }
 
@@ -87,6 +105,8 @@ type SerializedDimensions = {
 }
 
 type QueryWindow = {
+  scrollX: number
+  scrollY: number
   document: {
     querySelector(selector: string): Element | null
     elementFromPoint(x: number, y: number): Element | null
@@ -178,6 +198,17 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
         }
       }, fixture.elementScrolls)
     }
+    if (fixture.scrollIntoView) {
+      await page.evaluate(({ selector, arg }) => {
+        const element = document.querySelector(selector)
+
+        if (!element) {
+          throw new Error(`Missing element: ${selector}`)
+        }
+
+        element.scrollIntoView(arg)
+      }, fixture.scrollIntoView)
+    }
 
     return await page.evaluate(
       ({ queries, runQueriesSource }) => {
@@ -225,6 +256,15 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   }
 
   await attachLayoutEngine({ window, viewport: fixture.viewport })
+  if (fixture.scrollIntoView) {
+    const element = document.querySelector(fixture.scrollIntoView.selector)
+
+    if (!element) {
+      throw new Error(`Missing element: ${fixture.scrollIntoView.selector}`)
+    }
+
+    element.scrollIntoView(fixture.scrollIntoView.arg)
+  }
 
   const results = runQueries(window as unknown as QueryWindow, fixture.queries)
   window.close()
@@ -240,6 +280,30 @@ function runQueries(windowLike: QueryWindow, queries: BrowserParityQuery[]): Que
   const document = windowLike.document
 
   return queries.map((query) => {
+    if (query.type === 'scroll') {
+      if (!query.selector) {
+        return {
+          scroll: {
+            x: windowLike.scrollX,
+            y: windowLike.scrollY,
+          },
+        }
+      }
+
+      const scroller = document.querySelector(query.selector)
+
+      if (!scroller) {
+        throw new Error(`Missing element: ${query.selector}`)
+      }
+
+      return {
+        scroll: {
+          x: scroller.scrollLeft,
+          y: scroller.scrollTop,
+        },
+      }
+    }
+
     if (query.type === 'point') {
       return {
         elementFromPoint: describeElement(document.elementFromPoint(query.x, query.y)),

@@ -230,6 +230,8 @@ function collectTaffyLayoutSnapshot(document: Document, scroll: ScrollOffset, st
     clientRects: state.clientRects,
     elementScrolls: state.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
+    scrollContainers: collectScrollContainers(document, state),
+    fixedElements: collectFixedElements(document, state),
   }
 }
 
@@ -299,6 +301,48 @@ function hasPrincipalBox(element: Element, state: TaffyLayoutState): boolean {
   }
 
   return state.rects.has(element)
+}
+
+function collectScrollContainers(
+  document: Document,
+  state: TaffyLayoutState,
+): Map<Element, { x: boolean; y: boolean }> {
+  const containers = new Map<Element, { x: boolean; y: boolean }>()
+
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    const style = resolveSupportedStyle(element, state)
+
+    containers.set(element, {
+      x: isProgrammaticallyScrollable(style.overflowX),
+      y: isProgrammaticallyScrollable(style.overflowY),
+    })
+  }
+
+  return containers
+}
+
+function collectFixedElements(document: Document, state: TaffyLayoutState): Set<Element> {
+  return new Set(
+    Array.from(document.getElementsByTagName('*')).filter(
+      (element) => hasFixedAncestor(element, state),
+    ),
+  )
+}
+
+function hasFixedAncestor(element: Element, state: TaffyLayoutState): boolean {
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    if (resolveSupportedStyle(current, state).position === 'fixed') {
+      return true
+    }
+  }
+
+  return false
+}
+
+function isProgrammaticallyScrollable(
+  overflow: SupportedStyle['overflowX'] | SupportedStyle['overflowY'],
+): boolean {
+  return overflow === 'auto' || overflow === 'scroll' || overflow === 'hidden'
 }
 
 function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigint[] {
