@@ -17,10 +17,8 @@ Add a user-facing Changeset for:
 - A corrected public compatibility claim, normally `patch`.
 
 Internal refactoring, test reorganization, tooling, or editorial documentation
-that does not change a compatibility claim does not require a Changeset. Use
-`pnpm run changeset --empty` when it is useful to record that release decision
-explicitly. Empty Changesets do not create a changelog entry, version bump, or
-version pull request when no user-facing Changesets are pending.
+that does not change a compatibility claim does not include a Changeset. Do not
+add empty Changesets.
 
 Changesets accumulate between releases. A follow-up pull request may update an
 existing pending Changeset when it refines the same unreleased consumer-facing
