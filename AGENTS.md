@@ -91,9 +91,8 @@ the version and summary guidance in `CONTRIBUTING.md` and
 `docs/releasing.md`.
 
 Pull requests should include a brief description, commands run, and notes about
-parity or benchmark impact. Select exactly one release-intent choice in the
-pull request template. Link related issues when available. Screenshots are only
-useful for documentation or browser-observed behavior changes.
+parity or benchmark impact. Link related issues when available. Screenshots are
+only useful for documentation or browser-observed behavior changes.
 
 ## Agent-Specific Notes
 

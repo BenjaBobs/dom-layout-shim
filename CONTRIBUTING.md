@@ -81,7 +81,7 @@ Pull requests should include:
 - A concise description of the outcome.
 - The commands used to validate it.
 - Notes about parity or benchmark impact where relevant.
-- Exactly one release-intent choice in the pull request template.
+- A note identifying the added, updated, or empty Changeset.
 
 Keep CSS support records in `support/css/` synchronized with CSS parsing,
 layout, hit-testing, parity, and support-claim changes. Do not commit generated
