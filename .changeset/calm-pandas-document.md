@@ -37,7 +37,10 @@ resettable controls, and give every support area a stable link such as
 `css-support-status.html#flex-layout`. Guide navigation follows the currently
 visible section and accounts for the sticky header when following a section
 link. The changelog likewise keeps the current version visible while scrolling,
-links directly to release sections, and can show only minor or patch entries.
+also identifies the current major, minor, or patch section, links directly to
+release headings, and can filter entries by release type. External references
+open in a separate tab, and Chromium parity fixtures are styled as source links
+rather than inert metadata chips.
 
 The generated website is deployed from an ignored build directory rather than
 being bundled into the npm package. Authored Markdown and machine-readable

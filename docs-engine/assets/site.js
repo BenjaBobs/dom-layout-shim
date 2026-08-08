@@ -1,11 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
   enhanceNavigation()
   enhanceScrollspy()
+  enhanceExternalLinks()
 
   for (const code of document.querySelectorAll('code[data-language]')) {
     code.innerHTML = highlight(code.textContent ?? '', code.dataset.language ?? '')
   }
 })
+
+export function enhanceExternalLinks(root = document) {
+  const update = (scope) => {
+    const links = scope.matches?.('a[href^="http"]') ? [scope] : scope.querySelectorAll?.('a[href^="http"]') || []
+    for (const link of links) {
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+    }
+  }
+
+  update(root)
+  if (root === document && document.body) {
+    new MutationObserver((records) => {
+      for (const record of records) for (const node of record.addedNodes) if (node.nodeType === Node.ELEMENT_NODE) update(node)
+    }).observe(document.body, { childList: true, subtree: true })
+  }
+}
 
 export function enhanceNavigation() {
   const navigation = document.querySelector('[data-site-nav]')
