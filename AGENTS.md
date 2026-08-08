@@ -33,7 +33,7 @@ Follow the existing style: two-space indentation, no semicolons, single quotes, 
 
 Treat documentation as part of every public API change. When adding, changing,
 or removing a public export, option, contract, or consumer-visible behavior,
-review and update the README, the public guide source in `docs-engine/`, and the
+review and update the README, the public guide source in `docs/guide.md`, and the
 machine-readable guide in `docs/llms.txt` in the same change. Examples should
 use the public API and show the resulting consumer-visible behavior. Also keep
 the Changeset and any affected `support/css/` records consistent with those
@@ -42,11 +42,14 @@ or outcome is stale. The documentation changelog derives its `Upcoming` section
 from pending Changesets; do not manually copy pending entries into
 `CHANGELOG.md`.
 
-`docs/` contains authored documentation content, while `docs-engine/` contains
-the web templates and assets used to present it. The ignored `.site/` directory
-is generated deployment output and must not be committed. Edit shared shell
-behavior in `scripts/docs-page-shell.mjs`, shared styles and browser behavior in
-`docs-engine/assets/`, and changelog rendering in
+`docs/` contains authored documentation content, including the Markdown guide
+in `docs/guide.md`, while `docs-engine/` contains the renderers, templates, and
+assets used to present it. The CSS support explorer remains a purpose-built HTML
+template because its controls and generated inventory are application-like. The
+ignored `.site/` directory is generated deployment output and must not be
+committed. Edit shared shell behavior in `scripts/docs-page-shell.mjs`, guide
+rendering in `docs-engine/render-guide.mjs`, shared styles and browser behavior
+in `docs-engine/assets/`, and changelog rendering in
 `scripts/generate-changelog-page.mjs`. Run `pnpm run docs:generate` after edits
 and `pnpm run docs:check` before committing.
 

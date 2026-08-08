@@ -1,0 +1,148 @@
+---
+title: DOM Layout Shim guide
+description: Guide to deterministic layout and hit testing with DOM Layout Shim.
+eyebrow: Deterministic browser geometry
+---
+
+# Layout and hit testing for DOM test harnesses.
+
+Attach a deterministic layout engine to happy-dom, then use familiar DOM
+geometry and point-query APIs without launching a browser.
+
+```ts hero
+import { attachLayoutEngine } from 'dom-layout-shim'
+
+// Attach once so DOM geometry APIs read from the deterministic layout snapshot.
+await attachLayoutEngine({ window })
+
+// Geometry and point queries now share the same computed layout.
+const rect = button.getBoundingClientRect()
+const target = document.elementFromPoint(
+  rect.x + rect.width / 2,
+  rect.y + rect.height / 2,
+)
+```
+
+## Install
+
+Install DOM Layout Shim alongside your DOM implementation. The engine supports
+Node.js 22 and newer.
+
+```shell
+# Install both packages as test-only dependencies.
+pnpm add -D dom-layout-shim happy-dom
+```
+
+## Attach the engine
+
+Create the window normally, populate the document, then attach once. Set an
+explicit viewport when tests depend on available width or height.
+
+```ts
+import { Window } from 'happy-dom'
+import { attachLayoutEngine } from 'dom-layout-shim'
+
+const window = new Window()
+// Populate the document before attaching the engine.
+window.document.body.innerHTML = `
+  <button id="save" style="width:120px; height:40px">Save</button>
+`
+
+// Use an explicit viewport whenever available space affects the assertion.
+await attachLayoutEngine({
+  window,
+  viewport: { width: 800, height: 600 },
+})
+```
+
+> Geometry is recomputed after DOM, class, inline-style, stylesheet, CSSOM, and
+> scroll changes. Repeated reads use the cached snapshot.
+
+## Configure native controls
+
+Unstyled controls use the cross-host `portable` profile by default. Select it
+explicitly to make the test target clear, then override only the control metrics
+your environment needs.
+
+```ts
+// Keep the portable defaults except for controls your harness customizes.
+await attachLayoutEngine({
+  window,
+  nativeControls: {
+    profile: 'portable',
+    overrides: {
+      textInput: { width: 220 },
+      checkboxRadio: { width: 16, height: 16 },
+    },
+  },
+})
+```
+
+The text input is now 220 pixels wide while retaining the profile's 23-pixel
+height. Overrides merge by control group and metric; replacing every field in
+every group defines a fully custom profile. Profiles model outer geometry, not
+operating-system painting or internal widget behavior.
+
+## Read layout-backed geometry
+
+Bounding rectangles, offsets, client dimensions, offset parents, scrolling,
+and supported transforms come from one snapshot.
+
+```ts
+// All of these values come from the same cached layout snapshot.
+const save = window.document.querySelector('#save')!
+const rect = save.getBoundingClientRect()
+
+console.log(rect.left, rect.top, rect.width, rect.height)
+console.log(save.offsetTop, save.offsetLeft, save.offsetParent)
+save.scrollIntoView({ block: 'center', inline: 'nearest' })
+```
+
+## Test pointer targets
+
+Point queries respect layout, stacking order, visibility, pointer events,
+clipping, scrolling, and supported transforms.
+
+```ts
+// Query the element's visual center to verify that it receives the pointer.
+const centerX = rect.left + rect.width / 2
+const centerY = rect.top + rect.height / 2
+
+expect(window.document.elementFromPoint(centerX, centerY)).toBe(save)
+expect(window.document.elementsFromPoint(centerX, centerY)).toContain(save)
+```
+
+## Handle unsupported CSS
+
+The default policy warns and continues. Use strict mode when a silent difference
+would make a test misleading.
+
+```ts
+// Fail fast unless a known visual-only declaration is deliberately ignored.
+await attachLayoutEngine({
+  window,
+  unsupportedCss: {
+    default: 'throw',
+    overrides: [{ property: 'filter', decision: 'ignore' }],
+  },
+})
+```
+
+Check the [CSS support explorer](./css-support-status.html) for exact syntax,
+Chromium fixtures, and limitations.
+
+## Use it in a test lifecycle
+
+Attach after creating the window, reset content between tests, and close the
+window when the suite finishes.
+
+```ts
+// Give each test an isolated document and layout attachment.
+beforeEach(async () => {
+  window = new Window()
+  await attachLayoutEngine({ window })
+})
+
+// Release DOM resources after every test.
+afterEach(() => window.close())
+```
