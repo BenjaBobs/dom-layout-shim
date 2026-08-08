@@ -16,17 +16,18 @@
       "parity": {
         "status": "partially-verified",
         "fixtures": [
+          "adopted-stylesheet-cascade",
           "selector-matching"
         ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Configured stylesheet text, document style elements, and CSSOM rules belonging to style elements are read in source order. Static style-element behavior is exercised by browser parity fixtures; configured and CSSOM sources are covered by package-contract tests."
+          "text": "Configured stylesheet text, document style and accessible linked stylesheets, and document.adoptedStyleSheets are read in cascade order. Adopted-sheet ordering is verified against Chromium; configured, external, CSSOM mutation, and invalidation behavior is covered by package-contract tests."
         },
         {
           "kind": "limitation",
-          "text": "External and constructable stylesheets and at-rules are not implemented."
+          "text": "Cross-origin or otherwise inaccessible linked stylesheets cannot contribute rules. They are routed through the unsupported CSS policy as an unsupported stylesheet rule. At-rules remain unsupported."
         }
       ]
     }
