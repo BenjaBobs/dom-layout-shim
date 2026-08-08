@@ -43,6 +43,10 @@
         },
         {
           "kind": "implementation-quirk",
+          "text": "Intrinsic native-control geometry comes from an explicitly selected deterministic profile. The portable profile preserves the package's existing cross-host defaults; profiles never follow the runtime host automatically."
+        },
+        {
+          "kind": "implementation-quirk",
           "text": "Native button text metrics vary with the host Chromium platform; their parity checks use narrow, field-specific tolerances while other claimed control dimensions remain exact."
         },
         {

@@ -1,6 +1,7 @@
 import type { MeasureFunction, Size } from 'taffy-layout'
 import type { SupportedStyle } from '../../css/supported-style.ts'
 import type { TextMeasurer } from '../../../api/text-measurer.ts'
+import { getNativeControlMetrics, type NativeControlProfile } from '../../../api/native-control-profile.ts'
 
 const elementNodeType = 1
 const textNodeType = 3
@@ -20,8 +21,14 @@ export function createMeasureContext(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
+  nativeControlProfile: NativeControlProfile,
 ): MeasureContext | undefined {
-  const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(element, style, textMeasurer)
+  const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(
+    element,
+    style,
+    textMeasurer,
+    nativeControlProfile,
+  )
 
   if (replacedSize) {
     return {
@@ -153,30 +160,32 @@ function formControlIntrinsicSize(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
+  nativeControlProfile: NativeControlProfile,
 ): Size<number> | undefined {
+  const metrics = getNativeControlMetrics(nativeControlProfile)
   const tagName = element.tagName.toLowerCase()
 
   if (tagName === 'textarea') {
     return {
-      width: (readPositiveIntegerAttribute(element, 'cols') ?? 20) * 8 + 21,
-      height: (readPositiveIntegerAttribute(element, 'rows') ?? 2) * 17 + 6,
+      width: (readPositiveIntegerAttribute(element, 'cols') ?? 20) * metrics.textarea.columnWidth + metrics.textarea.paddingWidth,
+      height: (readPositiveIntegerAttribute(element, 'rows') ?? 2) * metrics.textarea.rowHeight + metrics.textarea.paddingHeight,
     }
   }
 
   if (tagName === 'select') {
-    return selectIntrinsicSize(element, style, textMeasurer)
+    return selectIntrinsicSize(element, style, textMeasurer, metrics)
   }
 
   if (tagName === 'progress') {
-    return { width: 160, height: 16 }
+    return metrics.progress
   }
 
   if (tagName === 'meter') {
-    return { width: 80, height: 16 }
+    return metrics.meter
   }
 
   if (tagName === 'button') {
-    return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer)
+    return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer, metrics)
   }
 
   if (tagName !== 'input') {
@@ -193,63 +202,78 @@ function formControlIntrinsicSize(
       return { width, height }
     }
 
-    return { width: 64, height: 17 }
+    return metrics.imageFallback
   }
 
   if (type === 'file') {
-    return { width: 272, height: 23 }
+    return metrics.file
   }
 
   switch (type) {
     case 'checkbox':
     case 'radio':
-      return { width: 13, height: 13 }
+      return metrics.checkboxRadio
     case 'color':
-      return { width: 50, height: 27 }
+      return metrics.color
     case 'time':
-      return { width: 103, height: 24 }
+      return metrics.time
     case 'range':
-      return { width: 129, height: 16 }
+      return metrics.range
     case 'button': {
       const value = element.getAttribute('value') ?? ''
-      return value ? buttonLikeIntrinsicSize(value, style, textMeasurer) : { width: 16, height: 23 }
+      return value ? buttonLikeIntrinsicSize(value, style, textMeasurer, metrics) : {
+        width: metrics.button.emptyWidth,
+        height: metrics.button.height,
+      }
     }
     case 'reset':
     case 'submit':
-      return buttonLikeIntrinsicSize(element.getAttribute('value') ?? defaultInputButtonLabel(type), style, textMeasurer)
+      return buttonLikeIntrinsicSize(
+        element.getAttribute('value') ?? defaultInputButtonLabel(type),
+        style,
+        textMeasurer,
+        metrics,
+      )
     default:
-      return { width: inputTextLikeIntrinsicWidth(element, type), height: 23 }
+      return { width: inputTextLikeIntrinsicWidth(element, type, metrics), height: metrics.textInput.height }
   }
 }
 
-function inputTextLikeIntrinsicWidth(element: Element, type: string): number {
+function inputTextLikeIntrinsicWidth(element: Element, type: string, metrics: ReturnType<typeof getNativeControlMetrics>): number {
   if (!textLikeInputSizeAttributeApplies(type)) {
-    return 192
+    return metrics.textInput.width
   }
 
   const size = readPositiveIntegerAttribute(element, 'size')
-  return size === undefined ? 192 : size * 8 + 32
+  return size === undefined
+    ? metrics.textInput.width
+    : size * metrics.textInput.sizeCharacterWidth + metrics.textInput.sizePaddingWidth
 }
 
 function textLikeInputSizeAttributeApplies(type: string): boolean {
   return ['text', 'password', 'search', 'email', 'url', 'tel'].includes(type)
 }
 
-function selectIntrinsicSize(element: Element, style: SupportedStyle, textMeasurer: TextMeasurer): Size<number> {
+function selectIntrinsicSize(
+  element: Element,
+  style: SupportedStyle,
+  textMeasurer: TextMeasurer,
+  metrics: ReturnType<typeof getNativeControlMetrics>,
+): Size<number> {
   const size = readPositiveIntegerAttribute(element, 'size')
   const listRows = size && size > 1 ? size : element.hasAttribute('multiple') ? 4 : undefined
   const optionWidth = widestOptionTextWidth(element, style, textMeasurer)
 
   if (listRows) {
     return {
-      width: optionWidth + 6,
-      height: listRows * 17 + 6,
+      width: optionWidth + metrics.select.listPaddingWidth,
+      height: listRows * metrics.select.listRowHeight + metrics.select.listPaddingHeight,
     }
   }
 
   return {
-    width: Math.max(46, optionWidth + 22),
-    height: 21,
+    width: Math.max(metrics.select.minWidth, optionWidth + metrics.select.paddingWidth),
+    height: metrics.select.height,
   }
 }
 
@@ -271,11 +295,16 @@ function widestOptionTextWidth(element: Element, style: SupportedStyle, textMeas
   }, 0)
 }
 
-function buttonLikeIntrinsicSize(text: string, style: SupportedStyle, textMeasurer: TextMeasurer): Size<number> {
+function buttonLikeIntrinsicSize(
+  text: string,
+  style: SupportedStyle,
+  textMeasurer: TextMeasurer,
+  metrics: ReturnType<typeof getNativeControlMetrics>,
+): Size<number> {
   const label = text.trim()
 
   if (!label) {
-    return { width: 16, height: 6 }
+    return { width: metrics.button.emptyWidth, height: metrics.button.emptyHeight }
   }
 
   const measured = textMeasurer.measure({
@@ -288,8 +317,8 @@ function buttonLikeIntrinsicSize(text: string, style: SupportedStyle, textMeasur
   })
 
   return {
-    width: measured.width + 16,
-    height: 23,
+    width: measured.width + metrics.button.horizontalPadding,
+    height: metrics.button.height,
   }
 }
 

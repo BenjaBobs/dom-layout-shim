@@ -103,10 +103,17 @@ jobs:
         run: echo "Package checks are not affected by this change."
 
   browser-parity:
-    name: Chromium parity
+    name: Chromium parity (${{ matrix.os }})
     needs: affected
     if: always()
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-15
+          - windows-2025
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Require successful classification
         if: needs.affected.result != 'success'
@@ -134,12 +141,30 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
-        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
-        run: PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers pnpm exec playwright install --with-deps chromium
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true' && runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+
+      - name: Install Chromium without Linux system dependencies
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true' && runner.os != 'Linux'
+        run: pnpm exec playwright install chromium
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
 
       - name: Run Chromium parity tests
         if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: pnpm run test:browser-parity
+        env:
+          NATIVE_CONTROL_OBSERVATIONS_PATH: .tmp/native-control-observations.jsonl
+
+      - name: Upload native-control observations
+        if: always() && needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-control-observations-${{ matrix.os }}
+          path: .tmp/native-control-observations.jsonl
+          if-no-files-found: error
 
       - name: Report unaffected parity
         if: needs.affected.result == 'success' && needs.affected.outputs.parity != 'true'
