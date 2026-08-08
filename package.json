@@ -51,7 +51,7 @@
     "test": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
     "test:package": "pnpm run build && node scripts/test-package-consumer.mjs",
     "test:browser-parity": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers vitest run --config vitest.browser-parity.config.ts",
-    "bench": "pnpm run css:generate && node test/bench/hit-testing.bench.ts",
+    "bench": "pnpm run css:generate && node --expose-gc test/bench/hit-testing.bench.ts",
     "docs:serve": "pnpm run css:generate && node scripts/serve-css-support-status.mjs",
     "css:status": "pnpm run css:generate && node scripts/serve-css-support-status.mjs",
     "css:validate": "node scripts/css-support.mjs validate",
