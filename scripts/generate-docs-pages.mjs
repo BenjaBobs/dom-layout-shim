@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
+import { renderGuide } from '../docs-engine/render-guide.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const context = await readDocumentationContext(root)
@@ -13,12 +14,10 @@ for (const asset of ['site.css', 'site.js', 'css-support-search.js']) {
 
 const pages = [
   {
-    source: 'docs-engine/guide.template.html',
+    source: 'docs/guide.md',
     output: '.site/index.html',
-    title: 'DOM Layout Shim guide',
-    description: 'Guide to deterministic layout and hit testing with DOM Layout Shim.',
     page: 'index.html',
-    bodyPattern: /<main>[\s\S]*<\/main>/,
+    render: renderGuide,
   },
   {
     source: 'docs-engine/css-support-status.template.html',
@@ -33,12 +32,16 @@ const pages = [
 
 for (const page of pages) {
   const source = await readFile(resolve(root, page.source), 'utf8')
-  const pageStyles = requiredMatch(source, /<style>([\s\S]*?)<\/style>/, page.source, 'page styles')
-  const body = requiredMatch(source, page.bodyPattern, page.source, 'page body', 0)
-  const inlineModule = page.inlineModulePattern
-    ? requiredMatch(source, page.inlineModulePattern, page.source, 'inline module')
-    : ''
-  const output = renderDocumentationPage({ ...context, ...page, pageStyles, body, inlineModule })
+  const rendered = page.render
+    ? page.render(source)
+    : {
+        pageStyles: requiredMatch(source, /<style>([\s\S]*?)<\/style>/, page.source, 'page styles'),
+        body: requiredMatch(source, page.bodyPattern, page.source, 'page body', 0),
+        inlineModule: page.inlineModulePattern
+          ? requiredMatch(source, page.inlineModulePattern, page.source, 'inline module')
+          : '',
+      }
+  const output = renderDocumentationPage({ ...context, ...page, ...rendered })
   const outputPath = resolve(root, page.output)
 
   if (process.argv.includes('--check')) {

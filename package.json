@@ -71,6 +71,7 @@
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
     "happy-dom": "^20.11.2",
+    "markdown-it": "15.0.0",
     "opentype.js": "2.0.0",
     "tinybench": "^6.1.2",
     "typescript": "~6.0.2",
