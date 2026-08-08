@@ -15,6 +15,8 @@ const rules = [
   { match: prefix('tsconfig'), scopes: ['package', 'parity'] },
   { match: prefix('support/'), scopes: ['package', 'docs'] },
   { match: prefix('docs/'), scopes: ['docs'] },
+  // Retain the old path while its deletions and renames remain in open PR diffs.
+  { match: prefix('docs-src/'), scopes: ['docs'] },
   { match: prefix('docs-engine/'), scopes: ['docs'] },
   { match: oneOf('README.md', 'LICENSE'), scopes: ['package', 'docs'] },
   { match: oneOf('CONTRIBUTING.md', 'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md'), scopes: ['docs'] },

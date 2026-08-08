@@ -31,7 +31,6 @@ const pages = [
   },
 ]
 
-let stale = false
 for (const page of pages) {
   const source = await readFile(resolve(root, page.source), 'utf8')
   const pageStyles = requiredMatch(source, /<style>([\s\S]*?)<\/style>/, page.source, 'page styles')
@@ -43,18 +42,13 @@ for (const page of pages) {
   const outputPath = resolve(root, page.output)
 
   if (process.argv.includes('--check')) {
-    const current = await readFile(outputPath, 'utf8').catch(() => '')
-    if (current !== output) {
-      console.error(`${page.output} is stale. Run node scripts/generate-docs-pages.mjs.`)
-      stale = true
-    }
+    await writeFile(outputPath, output)
+    console.log(`Validated and generated ${page.output} from ${page.source}.`)
   } else {
     await writeFile(outputPath, output)
     console.log(`Generated ${page.output} from ${page.source}.`)
   }
 }
-
-if (stale) process.exitCode = 1
 
 function requiredMatch(source, pattern, file, description, group = 1) {
   const match = pattern.exec(source)

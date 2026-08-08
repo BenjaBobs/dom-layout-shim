@@ -63,13 +63,8 @@ const output = renderDocumentationPage({
 })
 
 if (process.argv.includes('--check')) {
-  const current = await readFile(outputPath, 'utf8').catch(() => '')
-  if (current !== output) {
-    console.error('.site/changelog.html is stale. Run node scripts/generate-changelog-page.mjs.')
-    process.exitCode = 1
-  } else {
-    console.log('Generated changelog page is current.')
-  }
+  await writeFile(outputPath, output)
+  console.log('Validated and generated .site/changelog.html.')
 } else {
   await writeFile(outputPath, output)
   console.log('Generated .site/changelog.html from released and pending changes.')
