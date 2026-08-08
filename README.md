@@ -38,7 +38,10 @@ The attachment patches `getBoundingClientRect()`, `offsetWidth`,
 testing.
 
 The default viewport is 1280×720. Inline styles and document `<style>` elements
-are discovered automatically. Configuration is only needed to override a
+are discovered automatically. Accessible `<link rel="stylesheet">` sheets and
+constructable sheets in `document.adoptedStyleSheets` also participate in their
+CSS cascade order. Changes to their rules, membership, or ordering invalidate
+the cached layout automatically. Configuration is only needed to override a
 default or supply additional stylesheet text:
 
 ```ts
@@ -48,6 +51,11 @@ await attachLayoutEngine({
   stylesheets: [appLayoutCss],
 })
 ```
+
+External sheets whose `cssRules` cannot be read, including cross-origin sheets,
+are routed through the unsupported CSS policy. The default policy warns and
+continues; strict mode throws instead of silently computing layout without the
+sheet.
 
 The attachment also answers `window.matchMedia()` from that configured
 viewport. It supports screen/all media types, width and height constraints,
