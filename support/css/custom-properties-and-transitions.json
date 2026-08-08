@@ -32,7 +32,7 @@
         },
         {
           "kind": "limitation",
-          "text": "CSS variable resolution is not implemented, so var() references in supported layout declarations remain unsupported."
+          "text": "CSS variable resolution is not implemented, so `var()` references in supported layout declarations remain unsupported."
         }
       ]
     }
