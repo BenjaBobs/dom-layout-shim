@@ -138,6 +138,11 @@ the changed paths:
 - `docs` covers the documentation site and CSS support inventory.
 - `release` covers Changesets and repository release automation.
 
+The three platform-specific Chromium jobs feed a stable aggregate check named
+`Chromium parity`. Branch protection requires that aggregate name so matrix
+labels can evolve without leaving pull requests waiting for a check that no
+workflow reports.
+
 Unknown paths and manual workflow runs select every scope. Changes to the
 classifier select every scope as well. Package and parity jobs fail rather than
 skip if classification fails, so the optimization cannot silently replace a

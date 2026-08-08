@@ -159,3 +159,19 @@ jobs:
       - name: Report unaffected parity
         if: needs.affected.result == 'success' && needs.affected.outputs.parity != 'true'
         run: echo "Chromium parity is not affected by this change."
+
+  browser-parity-status:
+    name: Chromium parity
+    needs: browser-parity
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful Chromium parity matrix
+        if: needs.browser-parity.result != 'success'
+        run: |
+          echo "::error title=Chromium parity failed::One or more platform matrix jobs did not succeed."
+          exit 1
+
+      - name: Report successful Chromium parity matrix
+        if: needs.browser-parity.result == 'success'
+        run: echo "All Chromium parity platform jobs succeeded."
