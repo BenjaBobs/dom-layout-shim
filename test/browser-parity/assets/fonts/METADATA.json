@@ -1,0 +1,13 @@
+{
+  "family": "DOM Layout Shim Deterministic",
+  "version": "1.0.0",
+  "license": "Unlicense",
+  "generator": "scripts/generate-test-font.mjs",
+  "generatorDependency": "opentype.js@2.0.0",
+  "unitsPerEm": 1000,
+  "advanceWidth": 500,
+  "ascender": 800,
+  "descender": -200,
+  "coverage": "U+0020-U+007E",
+  "sha256": "b07ec2d5a73eecacd434c618dc458002ccf318b58908b5f5f665c8354319a7a1"
+}
