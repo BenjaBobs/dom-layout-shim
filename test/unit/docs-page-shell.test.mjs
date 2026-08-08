@@ -14,5 +14,6 @@ describe('documentation page shell', () => {
     expect(output).toContain('<link rel="stylesheet" href="./site.css">')
     expect(output).toContain('<script type="module" src="./site.js"></script>')
     expect(output).toContain('<main>Example content</main>')
+    expect(output).not.toMatch(/^\s+$/m)
   })
 })
