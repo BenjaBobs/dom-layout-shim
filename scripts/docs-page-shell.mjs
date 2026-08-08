@@ -18,6 +18,17 @@ export function renderDocumentationPage({
   const pageScript = inlineModule
     ? `\n  <script type="module">\n${inlineModule.trim()}\n  </script>`
     : ''
+  const internalPages = [
+    ['index.html', './'],
+    ['css-support-status.html', './css-support-status.html'],
+    ['changelog.html', './changelog.html'],
+  ].filter(([file]) => file !== page)
+  const prefetch = internalPages
+    .map(([, href]) => `<link rel="prefetch" href="${href}" as="document">`)
+    .join('\n  ')
+  const speculationRules = JSON.stringify({
+    prerender: [{ source: 'list', urls: internalPages.map(([, href]) => href), eagerness: 'immediate' }],
+  })
 
   return `<!doctype html>
 <html lang="en">
@@ -26,6 +37,8 @@ export function renderDocumentationPage({
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeAttribute(description)}">
   <title>${escapeHtml(title)}</title>
+  ${prefetch}
+  <script type="speculationrules">${speculationRules}</script>
   <link rel="stylesheet" href="./site.css">${styles}
   <script type="module" src="./site.js"></script>${externalScripts}
 </head>
