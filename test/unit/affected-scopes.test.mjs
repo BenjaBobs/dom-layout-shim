@@ -56,6 +56,15 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('regenerates documentation when pending Changesets change', () => {
+    expect(classifyAffectedScopes(['.changeset/new-api.md'])).toMatchObject({
+      package: false,
+      parity: false,
+      docs: true,
+      release: true,
+    })
+  })
+
   it('does not run behavior checks for editor defaults', () => {
     expect(classifyAffectedScopes(['.gitattributes'])).toMatchObject({
       package: false,

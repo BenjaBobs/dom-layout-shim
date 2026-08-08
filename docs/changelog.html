@@ -19,6 +19,58 @@
 <body>
   <nav><a href="./">Guide</a><a href="./css-support-status.html">CSS support</a><a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a></nav>
   <main><h1>dom-layout-shim</h1>
+<h2>Upcoming</h2>
+<p>Merged to main but not included in the latest package release.</p>
+<h3>Minor Changes</h3>
+<ul>
+<li>Add explicit deterministic native-control profile selection and per-control</li>
+</ul>
+<p>metric overrides. The initial <code>portable</code> profile names and preserves the package&#039;s existing intrinsic control geometry instead of deriving it from the runtime host. Overrides can specialize one metric or replace the complete profile.</p>
+<pre><code data-language="ts">await attachLayoutEngine({
+  window,
+  nativeControls: {
+    profile: &#039;portable&#039;,
+    overrides: { textInput: { width: 220 } },
+  },
+})
+
+// An unstyled text input is 220×23 on Linux, macOS, and Windows:
+// the width is overridden while the portable height remains in effect.
+document.querySelector(&#039;input&#039;)?.getBoundingClientRect()</code></pre>
+<ul>
+<li>Support two-dimensional translation and scaling through both <code>transform</code></li>
+</ul>
+<p>functions and the individual <code>translate</code> and <code>scale</code> properties. Percentage values, transform origins, ordered function lists, transformed descendants, client rectangles, and point queries are included.</p>
+<pre><code data-language="css">/* Transform functions are now reflected in geometry and hit testing. */
+.dialog {
+  transform: translate(20px, 10px) scale(1.25);
+  transform-origin: left top;
+}
+
+/* The equivalent individual properties are also supported. */
+.popover {
+  translate: 50% 8px;
+  scale: 1.25;
+}</code></pre>
+<p>Layout flow and offset/client dimensions remain untransformed, matching browser behavior.</p>
+<h3>Patch Changes</h3>
+<ul>
+<li>Update the documentation site with a complete usage guide, syntax-highlighted</li>
+</ul>
+<p>code examples, highlighted CSS support search matches, automatic light and dark themes, and a package changelog that separates pending Changesets under <code>Upcoming</code> from versions confirmed by release tags.</p>
+<p>For example, after a feature merges but before its package release, its entry is shown as:</p>
+<pre><code data-language="text">Upcoming
+  Add the newly merged feature.</code></pre>
+<p>After the release tag is created, the same changelog section is shown under its published version instead.</p>
+<ul>
+<li>Improve browser-compatible wrapping in canvas-capable runtimes by updating</li>
+</ul>
+<p>Pretext to 0.0.8. Text such as <code>foo!bar</code>, <code>foo/bar</code>, and <code>foo♂bar</code> now keeps symbols that browsers treat as part of the word within the same breakable run. When wrapping at a soft hyphen, the line now ends at the rendered hyphen instead of incorrectly pulling letters from after the break onto the preceding line.</p>
+<p>For example, at a constrained width, a soft-hyphen break changes from:</p>
+<pre><code data-language="text">trans-a | tlantic</code></pre>
+<p>to the browser-compatible break:</p>
+<pre><code data-language="text">trans- | atlantic</code></pre>
+<p>Runtimes without Canvas 2D text measurement continue to use the deterministic fallback measurer and are unaffected by these Pretext-specific corrections.</p>
 <h2>0.2.0</h2>
 <h3>Minor Changes</h3>
 <ul>
@@ -31,8 +83,8 @@
 <p>They now describe the element relative to its layout-backed CSS offset parent, including positioned ancestors, borders, margins, and scrolling.</p>
 <ul>
 <li>a6bdc8b: Implement <code>Element.scrollIntoView()</code> against the layout snapshot so calls</li>
-<p>consistently affect layout-backed geometry instead of relying on the host DOM implementation.</p>
 </ul>
+<p>consistently affect layout-backed geometry instead of relying on the host DOM implementation.</p>
 <p>The method scrolls nested containers and the configured viewport using boolean or <code>block</code>/<code>inline</code> alignment options. Smooth behavior is applied immediately to keep test layout deterministic.</p>
 <ul>
 <li>8be6e4f: Support adjacent (<code>+</code>) and general (<code>~</code>) sibling combinators in stylesheet selectors.</li>
@@ -52,8 +104,8 @@
 <ul>
 <li>3724069: Recompute layout after style elements are added or changed and after existing CSSOM rules are edited or deleted.</li>
 <li>b26f8ce: Add an unsupported CSS reporter that reduces warning streams to a stable</li>
-<p>adoption-cost summary across a test suite.</p>
 </ul>
+<p>adoption-cost summary across a test suite.</p>
 <p>Previously, consumers had to build their own aggregation around <code>onWarning</code>:</p>
 <pre><code data-language="ts">  const warnings = [];
 
@@ -80,12 +132,12 @@
 <li>0bb1dbe: Establish the package as DOM Layout Shim, published as <code>dom-layout-shim</code>, with</li>
 <p>repository, issue tracker, and documentation metadata for the renamed project.</p>
 <li>7334dfa: Continue layout with deduplicated, actionable warnings when CSS is unsupported.</li>
-<p>Strict failures and deliberate suppression remain available through <code>unsupportedCss: { default: &#039;throw&#039; }</code> and <code>{ default: &#039;ignore&#039; }</code>.</p>
 </ul>
+<p>Strict failures and deliberate suppression remain available through <code>unsupportedCss: { default: &#039;throw&#039; }</code> and <code>{ default: &#039;ignore&#039; }</code>.</p>
 <h3>Patch Changes</h3>
 <ul>
 <li>100c77b: Clarify Chromium parity evidence for native text and form-control metrics that</li>
-<p>vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.</p>
-</ul></main>
+</ul>
+<p>vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.</p></main>
 </body>
 </html>
