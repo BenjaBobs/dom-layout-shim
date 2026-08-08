@@ -1,36 +1,28 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { readFileSync } from 'node:fs'
+import { expect, it } from 'vitest'
+import {
+  expectChromiumParity,
+  measureBrowserParityFixture,
+  type BrowserParityFixture,
+  type BrowserParityQuery,
+  type QueryResult,
+} from '../parity-harness.ts'
 
-const nativeButtonTolerance = {
-  tolerance: { width: 12, height: 2 },
-  toleranceReason: 'Native button font and theme metrics vary across Chromium host platforms.',
-} as const
+type NativeControlSizes = Record<string, [width: number, height: number]>
+type NativeControlSnapshots = {
+  chromium: Record<string, { chromiumVersion: string; runnerImage: string; sizes: NativeControlSizes }>
+  profiles: { portable: { sizes: NativeControlSizes } }
+}
 
-const nativeTextInputTolerance = {
-  tolerance: { width: 39, height: 2 },
-  toleranceReason: 'Recorded Chromium 147 native text input widths vary by up to 39px across Linux, macOS, and Windows hosts.',
-} as const
+const nativeControlSnapshots = JSON.parse(readFileSync(
+  new URL('../snapshots/native-control-sizes.json', import.meta.url),
+  'utf8',
+)) as NativeControlSnapshots
 
-const nativeFileInputTolerance = {
-  tolerance: { width: 24, height: 4 },
-  toleranceReason: 'Native file input labels and theme metrics vary across Chromium host platforms.',
-} as const
-
-const nativeSelectTolerance = {
-  tolerance: { width: 20, height: 4 },
-  toleranceReason: 'Native select option fonts and theme metrics vary across Chromium host platforms.',
-} as const
-
-const nativeControlTolerance = {
-  tolerance: { width: 2, height: 3 },
-  toleranceReason: 'Native control theme metrics vary across Chromium host platforms.',
-} as const
-
-it('common form controls expose native intrinsic sizes independently', async () => {
-  await expectChromiumParity({
-    viewport: { width: 500, height: 300 },
-    observationGroup: 'native-controls',
-    html: `
+const nativeControlFixture = {
+  viewport: { width: 500, height: 300 },
+  observationGroup: 'native-controls',
+  html: `
       <style>
         body {
           margin: 0;
@@ -82,39 +74,68 @@ it('common form controls expose native intrinsic sizes independently', async () 
       </select>
       <progress id="progress"></progress>
       <meter id="meter" value=".5"></meter>
-    `,
-    queries: [
-      { type: 'rect', selector: '#button', ...nativeButtonTolerance },
-      { type: 'rect', selector: '#text', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#text-sized', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#password-sized', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#search-sized', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#email-sized', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#number-sized', ...nativeTextInputTolerance },
-      { type: 'rect', selector: '#input-button', ...nativeButtonTolerance },
-      { type: 'rect', selector: '#input-submit', ...nativeButtonTolerance },
-      { type: 'rect', selector: '#input-reset', ...nativeButtonTolerance },
-      { type: 'rect', selector: '#checkbox', ...nativeControlTolerance },
-      { type: 'rect', selector: '#radio', ...nativeControlTolerance },
-      { type: 'rect', selector: '#range', ...nativeControlTolerance },
-      { type: 'rect', selector: '#color', ...nativeControlTolerance },
+  `,
+  queries: [
+      { type: 'rect', selector: '#button' },
+      { type: 'rect', selector: '#text' },
+      { type: 'rect', selector: '#text-sized' },
+      { type: 'rect', selector: '#password-sized' },
+      { type: 'rect', selector: '#search-sized' },
+      { type: 'rect', selector: '#email-sized' },
+      { type: 'rect', selector: '#number-sized' },
+      { type: 'rect', selector: '#input-button' },
+      { type: 'rect', selector: '#input-submit' },
+      { type: 'rect', selector: '#input-reset' },
+      { type: 'rect', selector: '#checkbox' },
+      { type: 'rect', selector: '#radio' },
+      { type: 'rect', selector: '#range' },
+      { type: 'rect', selector: '#color' },
       { type: 'rect', selector: '#hidden' },
       { type: 'rect', selector: '#image' },
-      { type: 'rect', selector: '#file', ...nativeFileInputTolerance },
-      { type: 'rect', selector: '#select', ...nativeSelectTolerance },
-      { type: 'rect', selector: '#select-long', ...nativeSelectTolerance },
-      { type: 'rect', selector: '#select-sized', ...nativeSelectTolerance },
-      { type: 'rect', selector: '#select-multiple', ...nativeSelectTolerance },
+      { type: 'rect', selector: '#file' },
+      { type: 'rect', selector: '#select' },
+      { type: 'rect', selector: '#select-long' },
+      { type: 'rect', selector: '#select-sized' },
+      { type: 'rect', selector: '#select-multiple' },
       { type: 'rect', selector: '#progress' },
       { type: 'rect', selector: '#meter' },
-    ],
-    observationQueries: [
       { type: 'rect', selector: '#time' },
       { type: 'rect', selector: '#textarea' },
       { type: 'rect', selector: '#textarea-sized' },
-    ],
-  })
+  ],
+} as const satisfies BrowserParityFixture
+
+it('native control sizes match the Chromium host and portable profile snapshots', async () => {
+  const result = await measureBrowserParityFixture(nativeControlFixture)
+  const platform = `${process.platform}-${process.arch}`
+  const chromiumSnapshot = nativeControlSnapshots.chromium[platform]
+
+  expect(extractNativeControlSizes(result.queries, result.engine)).toEqual(
+    nativeControlSnapshots.profiles.portable.sizes,
+  )
+
+  if (process.env.ImageOS) {
+    expect(chromiumSnapshot, `Missing native-control snapshot for ${platform}`).toBeDefined()
+    expect(chromiumSnapshot?.runnerImage.startsWith(`${process.env.ImageOS}@`)).toBe(true)
+    expect(result.chromiumVersion).toBe(chromiumSnapshot?.chromiumVersion)
+    expect(extractNativeControlSizes(result.queries, result.chromium)).toEqual(chromiumSnapshot?.sizes)
+  }
 })
+
+function extractNativeControlSizes(queries: BrowserParityQuery[], results: QueryResult[]): NativeControlSizes {
+  return Object.fromEntries(queries.map((query, index) => {
+    if (query.type !== 'rect') {
+      throw new Error(`Native-control snapshot query must be a rect query, received ${query.type}`)
+    }
+
+    const rect = results[index]?.rect
+    if (!rect) {
+      throw new Error(`Missing native-control rectangle for ${query.selector}`)
+    }
+
+    return [query.selector.slice(1), [rect.width, rect.height]]
+  }))
+}
 
 it('author width and height override form control intrinsic sizes', async () => {
   await expectChromiumParity({

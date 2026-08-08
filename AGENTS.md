@@ -77,6 +77,14 @@ values that Chromium itself varies across supported host platforms. Every
 tolerance must include a `toleranceReason` explaining the browser/platform
 variance; never use a tolerance merely to make an implementation mismatch pass.
 
+Native-control intrinsic sizes are an exception to direct cross-host parity:
+keep the complete observable suite in
+`test/browser-parity/snapshots/native-control-sizes.json`. Compare the selected
+engine profile exactly on every host, and compare Chromium exactly against the
+recorded GitHub runner snapshot in CI. Refresh all platform records from one
+matrix run so Chromium, runner, and profile changes produce a reviewable
+per-control diff; do not replace snapshot mismatches with broader tolerances.
+
 Keep the records in `support/css/` up to date whenever CSS parsing, layout
 behavior, hit-testing behavior, visual/inert CSS handling, parity coverage,
 implementation quirks, or tracked CSS TODOs change. Update claim support,

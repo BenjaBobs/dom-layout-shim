@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "sourceRun": "https://github.com/BenjaBobs/dom-layout-shim/actions/runs/31264608231",
+  "chromium": {
+    "linux-x64": {
+      "chromiumVersion": "147.0.7727.15",
+      "runnerImage": "ubuntu24@20260720.247.2",
+      "sizes": {
+        "button": [
+          46.3906,
+          21
+        ],
+        "text": [
+          185,
+          21
+        ],
+        "text-sized": [
+          105,
+          21
+        ],
+        "password-sized": [
+          105,
+          21
+        ],
+        "search-sized": [
+          105,
+          21
+        ],
+        "email-sized": [
+          105,
+          21
+        ],
+        "number-sized": [
+          185,
+          21
+        ],
+        "input-button": [
+          16,
+          21
+        ],
+        "input-submit": [
+          57.4844,
+          21
+        ],
+        "input-reset": [
+          50.8281,
+          21
+        ],
+        "checkbox": [
+          13,
+          13
+        ],
+        "radio": [
+          13,
+          13
+        ],
+        "range": [
+          129,
+          16
+        ],
+        "color": [
+          50,
+          27
+        ],
+        "hidden": [
+          0,
+          0
+        ],
+        "image": [
+          40,
+          30
+        ],
+        "file": [
+          253,
+          21
+        ],
+        "select": [
+          48,
+          19
+        ],
+        "select-long": [
+          92,
+          19
+        ],
+        "select-sized": [
+          40.8281,
+          70
+        ],
+        "select-multiple": [
+          31.2031,
+          70
+        ],
+        "progress": [
+          160,
+          16
+        ],
+        "meter": [
+          80,
+          16
+        ],
+        "time": [
+          104,
+          24
+        ],
+        "textarea": [
+          182,
+          36
+        ],
+        "textarea-sized": [
+          102,
+          66
+        ]
+      }
+    },
+    "darwin-arm64": {
+      "chromiumVersion": "147.0.7727.15",
+      "runnerImage": "macos15@20260727.0256.1",
+      "sizes": {
+        "button": [
+          46.3906,
+          21
+        ],
+        "text": [
+          153,
+          21
+        ],
+        "text-sized": [
+          83,
+          21
+        ],
+        "password-sized": [
+          83,
+          21
+        ],
+        "search-sized": [
+          83,
+          21
+        ],
+        "email-sized": [
+          83,
+          21
+        ],
+        "number-sized": [
+          153,
+          21
+        ],
+        "input-button": [
+          16,
+          21
+        ],
+        "input-submit": [
+          57.5,
+          21
+        ],
+        "input-reset": [
+          50.8281,
+          21
+        ],
+        "checkbox": [
+          13,
+          13
+        ],
+        "radio": [
+          13,
+          13
+        ],
+        "range": [
+          129,
+          16
+        ],
+        "color": [
+          50,
+          27
+        ],
+        "hidden": [
+          0,
+          0
+        ],
+        "image": [
+          40,
+          30
+        ],
+        "file": [
+          253,
+          21
+        ],
+        "select": [
+          48,
+          19
+        ],
+        "select-long": [
+          92,
+          19
+        ],
+        "select-sized": [
+          40.8281,
+          70
+        ],
+        "select-multiple": [
+          31.2031,
+          70
+        ],
+        "progress": [
+          160,
+          16
+        ],
+        "meter": [
+          80,
+          16
+        ],
+        "time": [
+          103,
+          24
+        ],
+        "textarea": [
+          181,
+          36
+        ],
+        "textarea-sized": [
+          101,
+          66
+        ]
+      }
+    },
+    "win32-x64": {
+      "chromiumVersion": "147.0.7727.15",
+      "runnerImage": "win25-vs2026@20260803.193.1",
+      "sizes": {
+        "button": [
+          46.3906,
+          21
+        ],
+        "text": [
+          177,
+          21
+        ],
+        "text-sized": [
+          107,
+          21
+        ],
+        "password-sized": [
+          107,
+          21
+        ],
+        "search-sized": [
+          107,
+          21
+        ],
+        "email-sized": [
+          107,
+          21
+        ],
+        "number-sized": [
+          177,
+          21
+        ],
+        "input-button": [
+          16,
+          21
+        ],
+        "input-submit": [
+          57.5,
+          21
+        ],
+        "input-reset": [
+          50.8281,
+          21
+        ],
+        "checkbox": [
+          13,
+          13
+        ],
+        "radio": [
+          13,
+          13
+        ],
+        "range": [
+          129,
+          16
+        ],
+        "color": [
+          50,
+          27
+        ],
+        "hidden": [
+          0,
+          0
+        ],
+        "image": [
+          40,
+          30
+        ],
+        "file": [
+          253,
+          21
+        ],
+        "select": [
+          48,
+          19
+        ],
+        "select-long": [
+          92,
+          19
+        ],
+        "select-sized": [
+          40.8281,
+          70
+        ],
+        "select-multiple": [
+          31.2031,
+          70
+        ],
+        "progress": [
+          160,
+          16
+        ],
+        "meter": [
+          80,
+          16
+        ],
+        "time": [
+          98,
+          24
+        ],
+        "textarea": [
+          168,
+          36
+        ],
+        "textarea-sized": [
+          95,
+          66
+        ]
+      }
+    }
+  },
+  "profiles": {
+    "portable": {
+      "sizes": {
+        "button": [
+          48,
+          23
+        ],
+        "text": [
+          192,
+          23
+        ],
+        "text-sized": [
+          112,
+          23
+        ],
+        "password-sized": [
+          112,
+          23
+        ],
+        "search-sized": [
+          112,
+          23
+        ],
+        "email-sized": [
+          112,
+          23
+        ],
+        "number-sized": [
+          192,
+          23
+        ],
+        "input-button": [
+          16,
+          23
+        ],
+        "input-submit": [
+          64,
+          23
+        ],
+        "input-reset": [
+          56,
+          23
+        ],
+        "checkbox": [
+          13,
+          13
+        ],
+        "radio": [
+          13,
+          13
+        ],
+        "range": [
+          129,
+          16
+        ],
+        "color": [
+          50,
+          27
+        ],
+        "hidden": [
+          0,
+          0
+        ],
+        "image": [
+          40,
+          30
+        ],
+        "file": [
+          272,
+          23
+        ],
+        "select": [
+          46,
+          21
+        ],
+        "select-long": [
+          110,
+          21
+        ],
+        "select-sized": [
+          46,
+          74
+        ],
+        "select-multiple": [
+          30,
+          74
+        ],
+        "progress": [
+          160,
+          16
+        ],
+        "meter": [
+          80,
+          16
+        ],
+        "time": [
+          103,
+          24
+        ],
+        "textarea": [
+          181,
+          40
+        ],
+        "textarea-sized": [
+          101,
+          74
+        ]
+      }
+    }
+  }
+}
