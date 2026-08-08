@@ -2,6 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { classifyAffectedScopes } from '../../scripts/affected-scopes.mjs'
 
 describe('affected scope classification', () => {
+  it('validates classifier changes through unit and documentation checks', () => {
+    expect(classifyAffectedScopes(['scripts/affected-scopes.mjs'])).toMatchObject({
+      package: true,
+      parity: false,
+      docs: true,
+      release: false,
+    })
+  })
+
   it('runs package and parity checks for implementation changes', () => {
     expect(classifyAffectedScopes(['src/api/attach-layout-engine.ts'])).toMatchObject({
       package: true,

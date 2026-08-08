@@ -32,7 +32,7 @@ const rules = [
     'scripts/generate-docs-pages.mjs',
   ), scopes: ['docs'] },
   { match: exact('scripts/check-pr-history.mjs'), scopes: ['release'] },
-  { match: exact('scripts/affected-scopes.mjs'), scopes },
+  { match: exact('scripts/affected-scopes.mjs'), scopes: ['package', 'docs'] },
   { match: exact('.github/workflows/ci.yml'), scopes: ['package', 'parity'] },
   { match: exact('.github/workflows/docs.yml'), scopes: ['docs'] },
   { match: exact('.github/workflows/release.yml'), scopes: ['release'] },
