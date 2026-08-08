@@ -17,32 +17,15 @@ export type CenterClickabilityQuery = {
   selector: string
 }
 
-type ExplainedTolerance<T extends string> =
-  | {
-      tolerance?: never
-      toleranceReason?: never
-    }
-  | {
-      tolerance: Partial<Record<T, number>>
-      toleranceReason: string
-    }
-
 export type RectQuery = {
   type: 'rect'
   selector: string
-} & ExplainedTolerance<'left' | 'top' | 'width' | 'height'>
+}
 
 export type DimensionsQuery = {
   type: 'dimensions'
   selector: string
-} & ExplainedTolerance<
-  | 'offsetWidth'
-  | 'offsetHeight'
-  | 'offsetTop'
-  | 'offsetLeft'
-  | 'clientWidth'
-  | 'clientHeight'
->
+}
 
 export type ScrollQuery = {
   type: 'scroll'
@@ -78,7 +61,6 @@ export type BrowserParityFixture = {
   typography?: 'deterministic'
   nativeControlProfile?: NativeControlProfile
   observationGroup?: 'native-controls'
-  observationQueries?: BrowserParityQuery[]
   queries: BrowserParityQuery[]
 }
 
@@ -142,7 +124,7 @@ export async function measureBrowserParityFixture(fixture: BrowserParityFixture)
   chromium: QueryResult[]
   engine: QueryResult[]
 }> {
-  const queries = fixtureQueries(fixture)
+  const queries = fixture.queries
   const chromiumResult = await runInChromium(fixture)
   const engineResult = await runInHappyDom(fixture)
 
@@ -171,42 +153,7 @@ function expectQueryParity(
     `Parity mismatch for query ${index}: ${describeQuery(query)}\n` +
     'Chromium result is expected; happy-dom engine result is received.'
 
-  if (query.type === 'rect' && query.tolerance) {
-    expectNumericRecordParity(
-      engineResult?.rect,
-      chromiumResult?.rect,
-      query.tolerance,
-      `${message}\nTolerance reason: ${query.toleranceReason}`,
-    )
-    return
-  }
-
-  if (query.type === 'dimensions' && query.tolerance) {
-    expectNumericRecordParity(
-      engineResult?.dimensions,
-      chromiumResult?.dimensions,
-      query.tolerance,
-      `${message}\nTolerance reason: ${query.toleranceReason}`,
-    )
-    return
-  }
-
   expect(engineResult, message).toEqual(chromiumResult)
-}
-
-function expectNumericRecordParity<T extends Record<string, number>>(
-  engineResult: T | undefined,
-  chromiumResult: T | undefined,
-  tolerance: Partial<Record<keyof T, number>>,
-  message: string,
-): void {
-  expect(engineResult, message).toBeDefined()
-  expect(chromiumResult, message).toBeDefined()
-
-  for (const key of Object.keys(chromiumResult ?? {}) as (keyof T)[]) {
-    const difference = Math.abs((engineResult?.[key] ?? Number.NaN) - (chromiumResult?.[key] ?? Number.NaN))
-    expect(difference, `${message}\nNumeric field: ${String(key)}`).toBeLessThanOrEqual(tolerance[key] ?? 0)
-  }
 }
 
 async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult[]> {
@@ -262,7 +209,7 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
 
         return runQueries(window as unknown as QueryWindow, queries)
       },
-      { queries: fixtureQueries(fixture), runQueriesSource: runQueries.toString() },
+      { queries: fixture.queries, runQueriesSource: runQueries.toString() },
     )
   } finally {
     await page.close().catch(() => {})
@@ -313,16 +260,10 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
     element.scrollIntoView(fixture.scrollIntoView.arg)
   }
 
-  const results = runQueries(window as unknown as QueryWindow, fixtureQueries(fixture))
+  const results = runQueries(window as unknown as QueryWindow, fixture.queries)
   window.close()
 
   return results
-}
-
-function fixtureQueries(fixture: BrowserParityFixture): BrowserParityQuery[] {
-  return process.env.NATIVE_CONTROL_OBSERVATIONS_PATH
-    ? [...fixture.queries, ...(fixture.observationQueries ?? [])]
-    : fixture.queries
 }
 
 function recordObservation(
