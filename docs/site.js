@@ -1,10 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
+  renderNavigation()
+
   for (const code of document.querySelectorAll('code[data-language]')) {
     code.innerHTML = highlight(code.textContent ?? '', code.dataset.language ?? '')
   }
 })
 
-function highlight(source, language) {
+export function renderNavigation(page = location.pathname.split('/').pop() || 'index.html') {
+  const navigation = document.querySelector('[data-site-nav]')
+  if (!navigation) return
+
+  const links = [
+    ['index.html', './', 'Guide'],
+    ['css-support-status.html', './css-support-status.html', 'CSS support'],
+    ['changelog.html', './changelog.html', 'Changelog'],
+  ]
+  navigation.className = 'site-nav'
+  navigation.setAttribute('aria-label', 'Main navigation')
+  navigation.innerHTML = `
+    <a class="site-wordmark" href="./">DOM Layout Shim</a>
+    <div class="site-nav-links">
+      ${links.map(([file, href, label]) => `
+        <a href="${href}"${page === file ? ' aria-current="page"' : ''}>${label}</a>
+      `).join('')}
+      <a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a>
+    </div>
+  `
+}
+
+export function highlight(source, language) {
   const definitions = language === 'css'
     ? [
         ['tok-comment', /\/\*[\s\S]*?\*\//g],
@@ -25,7 +49,26 @@ function highlight(source, language) {
       className,
       priority,
     })),
-  ).sort((left, right) => left.start - right.start || left.priority - right.priority)
+  )
+  const protectedRanges = tokens
+    .filter((token) => token.className === 'tok-comment' || token.className === 'tok-string')
+  const bracketDepth = new Map()
+  let depth = 0
+  for (const match of source.matchAll(/[()[\]{}]/g)) {
+    const start = match.index ?? 0
+    if (protectedRanges.some((range) => start >= range.start && start < range.end)) continue
+    if (')]}'.includes(match[0])) depth = Math.max(0, depth - 1)
+    bracketDepth.set(start, depth % 3)
+    if ('([{'.includes(match[0])) depth += 1
+    tokens.push({
+      start,
+      end: start + 1,
+      text: match[0],
+      className: `tok-bracket-${bracketDepth.get(start)}`,
+      priority: definitions.length,
+    })
+  }
+  tokens.sort((left, right) => left.start - right.start || left.priority - right.priority)
 
   let cursor = 0
   let output = ''

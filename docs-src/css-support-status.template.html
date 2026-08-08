@@ -3,11 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Searchable implementation and Chromium parity status for CSS supported by DOM Layout Shim.">
   <title>CSS Support Status</title>
   <link rel="stylesheet" href="./site.css">
   <style>
-:root {
+    :root {
       color-scheme: light dark;
       --bg: #f6f7f9;
       --panel: #ffffff;
@@ -433,7 +432,6 @@
       }
     }
   </style>
-  <script type="module" src="./site.js"></script>
 </head>
 <body>
   <nav data-site-nav></nav>
@@ -475,8 +473,10 @@
       </table>
     </section>
   </main>
+
+  <script type="module" src="./site.js"></script>
   <script type="module">
-import { rankSupportEntries } from './css-support-search.js'
+    import { rankSupportEntries } from './css-support-search.js'
 
     const sourcePath = './data/css-support.json'
     const statusOrder = ['supported', 'partial', 'unsupported', 'unknown']
