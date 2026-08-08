@@ -7,23 +7,46 @@
   <title>DOM Layout Shim changelog</title>
   <link rel="stylesheet" href="./site.css">
   <style>
-:root { color-scheme:light dark; --bg:#f5f7fa; --panel:#fff; --text:#16202a; --muted:#607080; --line:#d9e1e8; --brand:#176b52; --code:#17232b; --code-text:#e7f2ef; --inline:#edf2f5; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
-    @media (prefers-color-scheme:dark) { :root { --bg:#0f1519; --panel:#172126; --text:#e7eff2; --muted:#9eacb3; --line:#334149; --brand:#70d6ad; --code:#091014; --inline:#253138; } }
-    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); line-height:1.65; } a { color:var(--brand); }
-    main { width:min(980px,calc(100% - 40px)); margin:auto; padding:52px 0 80px; } h1 { margin:0 0 44px; font-size:44px; letter-spacing:-.035em; } h2 { margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+main { width:min(980px,calc(100% - 40px)); margin:auto; padding:32px 0 80px; } h1 { margin:0 0 24px; font-size:clamp(34px,8vw,44px); letter-spacing:-.035em; } h2 { scroll-margin-top:110px; margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+    .changelog-tools { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line); } .release-toc { display:flex; flex-wrap:wrap; gap:12px; align-items:center; } .release-toc a { color:var(--muted); } .change-filters { display:flex; gap:6px; } .change-filters button { padding:6px 10px; border:1px solid var(--line); border-radius:7px; background:var(--panel); color:var(--text); } .change-filters button[aria-pressed="true"] { border-color:var(--brand); color:var(--brand); }
+    .current-release { position:sticky; top:var(--site-nav-height); z-index:9; margin:0 -12px; padding:9px 12px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 95%,transparent); color:var(--muted); backdrop-filter:blur(10px); } .current-release strong { color:var(--text); }
+    .release-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; } .release-links { display:flex; gap:10px; font-size:13px; font-weight:400; }
     .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child { margin-bottom:0; } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
-    pre { overflow:auto; padding:18px; border:1px solid var(--line); border-radius:9px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
-    .tok-keyword { color:#ff9dca; } .tok-string { color:#a8e6a3; } .tok-comment { color:#84959e; font-style:italic; } .tok-number { color:#ffd580; } .tok-property { color:#8ed9ff; }
+    @media (max-width:700px) { .changelog-tools { align-items:flex-start; flex-direction:column; } .release-toc { max-height:80px; overflow:auto; } .release-heading { align-items:flex-start; flex-direction:column; } }
   </style>
   <script type="module" src="./site.js"></script>
 </head>
 <body>
-  <nav data-site-nav></nav>
-  <main><h1>dom-layout-shim</h1>
-<h2>Upcoming</h2>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <nav class="site-nav" data-site-nav aria-label="Main navigation">
+    <a class="site-wordmark" href="./">DOM Layout Shim</a>
+    <span class="site-context">
+      <a class="site-version" href="https://www.npmjs.com/package/dom-layout-shim/v/0.2.0">v0.2.0</a>
+      <a class="site-upcoming" href="./changelog.html#upcoming">Upcoming</a>
+    </span>
+    <button class="site-menu-button" type="button" aria-expanded="false" aria-controls="site-navigation-links">Menu</button>
+    <div class="site-nav-links" id="site-navigation-links">
+      <a href="./">Guide</a>
+      <a href="./css-support-status.html">CSS support</a>
+      <a href="./changelog.html" aria-current="page">Changelog</a>
+      <a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a>
+    </div>
+  </nav>
+  <main id="main-content" tabindex="-1">
+    <h1>dom-layout-shim</h1>
+    <div class="changelog-tools">
+      <nav class="release-toc" aria-label="Changelog versions"><strong>Releases</strong><a href="#upcoming">Upcoming</a><a href="#version-0-2-0">0.2.0</a><a href="#version-0-1-0">0.1.0</a></nav>
+      <div class="change-filters" role="group" aria-label="Filter changes by release type">
+        <button type="button" data-change-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-change-filter="minor" aria-pressed="false">Minor</button>
+        <button type="button" data-change-filter="patch" aria-pressed="false">Patch</button>
+      </div>
+    </div>
+    <div class="current-release" aria-live="polite">Viewing <strong>Upcoming</strong></div>
+    <div class="release-heading"><h2 id="upcoming" data-release="Upcoming">Upcoming</h2><span class="release-links"><a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v0.2.0...main">Compare with main</a></span></div>
 <p>Merged to main but not included in the latest package release.</p>
 <h3>Minor Changes</h3>
-<article class="change"><h4>Add explicit deterministic native-control profile selection and per-control metric overrides. The initial <code>portable</code> profile names and preserves the package&#039;s existing intrinsic control geometry instead of deriving it from the runtime host. Overrides can specialize one metric or replace the complete profile.</h4>
+<article class="change" data-change-type="minor"><h4>Add explicit deterministic native-control profile selection and per-control metric overrides. The initial <code>portable</code> profile names and preserves the package&#039;s existing intrinsic control geometry instead of deriving it from the runtime host. Overrides can specialize one metric or replace the complete profile.</h4>
 <pre><code data-language="ts">await attachLayoutEngine({
   window,
   nativeControls: {
@@ -36,7 +59,7 @@
 // the width is overridden while the portable height remains in effect.
 document.querySelector(&#039;input&#039;)?.getBoundingClientRect()</code></pre>
 </article>
-<article class="change"><h4>Support two-dimensional translation and scaling through both <code>transform</code> functions and the individual <code>translate</code> and <code>scale</code> properties. Percentage values, transform origins, ordered function lists, transformed descendants, client rectangles, and point queries are included.</h4>
+<article class="change" data-change-type="minor"><h4>Support two-dimensional translation and scaling through both <code>transform</code> functions and the individual <code>translate</code> and <code>scale</code> properties. Percentage values, transform origins, ordered function lists, transformed descendants, client rectangles, and point queries are included.</h4>
 <pre><code data-language="css">/* Transform functions are now reflected in geometry and hit testing. */
 .dialog {
   transform: translate(20px, 10px) scale(1.25);
@@ -51,7 +74,7 @@ document.querySelector(&#039;input&#039;)?.getBoundingClientRect()</code></pre>
 <p>Layout flow and offset/client dimensions remain untransformed, matching browser behavior.</p>
 </article>
 <h3>Patch Changes</h3>
-<article class="change"><h4>Update the documentation site with a complete usage guide, syntax-highlighted code examples, highlighted CSS support search matches, automatic light and dark themes, and a package changelog that separates pending Changesets under <code>Upcoming</code> from versions confirmed by release tags. Navigation is consistent and marks the current page, bracket pairs are depth-colored, CSS support results are relevance-ranked in a denser layout, and changelog commit references link to their source.</h4>
+<article class="change" data-change-type="patch"><h4>Update the documentation site with a complete usage guide, syntax-highlighted code examples, highlighted CSS support search matches, automatic light and dark themes, and a package changelog that separates pending Changesets under <code>Upcoming</code> from versions confirmed by release tags. Navigation is consistent and marks the current page, bracket pairs are depth-colored, CSS support results are relevance-ranked in a denser layout, and changelog commit references link to their source. Shared styles, flash-free generated navigation, responsive menus, visible release context, keyboard focus treatment, and reduced-motion support keep the experience consistent across pages and devices.</h4>
 <p>For example, after a feature merges but before its package release, its entry is shown as:</p>
 <pre><code data-language="text">Upcoming
   Add the newly merged feature.</code></pre>
@@ -60,29 +83,30 @@ document.querySelector(&#039;input&#039;)?.getBoundingClientRect()</code></pre>
 <pre><code data-language="text">Flex layout — exact property match
 Display model — supporting evidence match
 Grid layout — supporting evidence match</code></pre>
+<p>Support searches now report the filtered result count, expose labeled and resettable controls, and give every support area a stable link such as <code>css-support-status.html#flex-layout</code>. Guide navigation follows the currently visible section and accounts for the sticky header when following a section link. The changelog likewise keeps the current version visible while scrolling, links directly to release sections, and can show only minor or patch entries.</p>
 </article>
-<article class="change"><h4>Improve browser-compatible wrapping in canvas-capable runtimes by updating Pretext to 0.0.8. Text such as <code>foo!bar</code>, <code>foo/bar</code>, and <code>foo♂bar</code> now keeps symbols that browsers treat as part of the word within the same breakable run. When wrapping at a soft hyphen, the line now ends at the rendered hyphen instead of incorrectly pulling letters from after the break onto the preceding line.</h4>
+<article class="change" data-change-type="patch"><h4>Improve browser-compatible wrapping in canvas-capable runtimes by updating Pretext to 0.0.8. Text such as <code>foo!bar</code>, <code>foo/bar</code>, and <code>foo♂bar</code> now keeps symbols that browsers treat as part of the word within the same breakable run. When wrapping at a soft hyphen, the line now ends at the rendered hyphen instead of incorrectly pulling letters from after the break onto the preceding line.</h4>
 <p>For example, at a constrained width, a soft-hyphen break changes from:</p>
 <pre><code data-language="text">trans-a | tlantic</code></pre>
 <p>to the browser-compatible break:</p>
 <pre><code data-language="text">trans- | atlantic</code></pre>
 <p>Runtimes without Canvas 2D text measurement continue to use the deterministic fallback measurer and are unaffected by these Pretext-specific corrections.</p>
 </article>
-<h2>0.2.0</h2>
+<div class="release-heading"><h2 id="version-0-2-0" data-release="0.2.0">0.2.0</h2><span class="release-links"><a href="https://www.npmjs.com/package/dom-layout-shim/v/0.2.0">npm</a><a href="https://github.com/BenjaBobs/dom-layout-shim/releases/tag/v0.2.0">GitHub</a><a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v0.1.0...v0.2.0">Compare</a></span></div>
 <h3>Minor Changes</h3>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/ff1ef3b">ff1ef3b</a>: Patch <code>offsetTop</code>, <code>offsetLeft</code>, and <code>offsetParent</code> from the layout snapshot.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/ff1ef3b">ff1ef3b</a>: Patch <code>offsetTop</code>, <code>offsetLeft</code>, and <code>offsetParent</code> from the layout snapshot.</h4>
 <p>Previously, these properties came from the host DOM implementation and could disagree with the engine&#039;s geometry:</p>
 <pre><code data-language="ts">  element.offsetTop;
   element.offsetLeft;
   element.offsetParent;</code></pre>
 <p>They now describe the element relative to its layout-backed CSS offset parent, including positioned ancestors, borders, margins, and scrolling.</p>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/a6bdc8b">a6bdc8b</a>: Implement <code>Element.scrollIntoView()</code> against the layout snapshot so calls consistently affect layout-backed geometry instead of relying on the host DOM implementation.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/a6bdc8b">a6bdc8b</a>: Implement <code>Element.scrollIntoView()</code> against the layout snapshot so calls consistently affect layout-backed geometry instead of relying on the host DOM implementation.</h4>
 <p>The method scrolls nested containers and the configured viewport using boolean or <code>block</code>/<code>inline</code> alignment options. Smooth behavior is applied immediately to keep test layout deterministic.</p>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/8be6e4f">8be6e4f</a>: Support adjacent (<code>+</code>) and general (<code>~</code>) sibling combinators in stylesheet selectors.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/8be6e4f">8be6e4f</a>: Support adjacent (<code>+</code>) and general (<code>~</code>) sibling combinators in stylesheet selectors.</h4>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/68fc5d9">68fc5d9</a>: Answer <code>window.matchMedia()</code> queries from the configured layout viewport.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/68fc5d9">68fc5d9</a>: Answer <code>window.matchMedia()</code> queries from the configured layout viewport.</h4>
 <p>Previously, <code>matchMedia()</code> used the DOM environment&#039;s viewport, which could disagree with the dimensions used by the layout engine:</p>
 <pre><code data-language="ts">  await attachLayoutEngine({
     window,
@@ -95,9 +119,9 @@ Grid layout — supporting evidence match</code></pre>
 <pre><code data-language="ts">  // Now: true
   window.matchMedia(&quot;(max-width: 500px)&quot;).matches;</code></pre>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/3724069">3724069</a>: Recompute layout after style elements are added or changed and after existing CSSOM rules are edited or deleted.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/3724069">3724069</a>: Recompute layout after style elements are added or changed and after existing CSSOM rules are edited or deleted.</h4>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/b26f8ce">b26f8ce</a>: Add an unsupported CSS reporter that reduces warning streams to a stable adoption-cost summary across a test suite.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/b26f8ce">b26f8ce</a>: Add an unsupported CSS reporter that reduces warning streams to a stable adoption-cost summary across a test suite.</h4>
 <p>Previously, consumers had to build their own aggregation around <code>onWarning</code>:</p>
 <pre><code data-language="ts">  const warnings = [];
 
@@ -117,16 +141,35 @@ Grid layout — supporting evidence match</code></pre>
 
   const { unsupportedDeclarationCount, declarations } = reporter.getSummary();</code></pre>
 </article>
-<h2>0.1.0</h2>
+<div class="release-heading"><h2 id="version-0-1-0" data-release="0.1.0">0.1.0</h2><span class="release-links"><a href="https://www.npmjs.com/package/dom-layout-shim/v/0.1.0">npm</a><a href="https://github.com/BenjaBobs/dom-layout-shim/releases/tag/v0.1.0">GitHub</a></span></div>
 <h3>Minor Changes</h3>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/9d8958b">9d8958b</a>: Release the package into the public domain under the Unlicense, permitting use, copying, modification, publishing, compilation, sale, and distribution for any commercial or non-commercial purpose.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/9d8958b">9d8958b</a>: Release the package into the public domain under the Unlicense, permitting use, copying, modification, publishing, compilation, sale, and distribution for any commercial or non-commercial purpose.</h4>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/0bb1dbe">0bb1dbe</a>: Establish the package as DOM Layout Shim, published as <code>dom-layout-shim</code>, with repository, issue tracker, and documentation metadata for the renamed project.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/0bb1dbe">0bb1dbe</a>: Establish the package as DOM Layout Shim, published as <code>dom-layout-shim</code>, with repository, issue tracker, and documentation metadata for the renamed project.</h4>
 </article>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/7334dfa">7334dfa</a>: Continue layout with deduplicated, actionable warnings when CSS is unsupported. Strict failures and deliberate suppression remain available through <code>unsupportedCss: { default: &#039;throw&#039; }</code> and <code>{ default: &#039;ignore&#039; }</code>.</h4>
+<article class="change" data-change-type="minor"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/7334dfa">7334dfa</a>: Continue layout with deduplicated, actionable warnings when CSS is unsupported. Strict failures and deliberate suppression remain available through <code>unsupportedCss: { default: &#039;throw&#039; }</code> and <code>{ default: &#039;ignore&#039; }</code>.</h4>
 </article>
 <h3>Patch Changes</h3>
-<article class="change"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/100c77b">100c77b</a>: Clarify Chromium parity evidence for native text and form-control metrics that vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.</h4>
-</article></main>
+<article class="change" data-change-type="patch"><h4><a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/100c77b">100c77b</a>: Clarify Chromium parity evidence for native text and form-control metrics that vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.</h4>
+</article>
+  </main>
+  <script type="module">
+const indicator = document.querySelector('.current-release strong')
+    const headings = [...document.querySelectorAll('h2[data-release]')]
+    const updateRelease = () => {
+      const current = [...headings].reverse().find((heading) => heading.getBoundingClientRect().top <= 130) || headings[0]
+      if (current && indicator) indicator.textContent = current.dataset.release
+    }
+    addEventListener('scroll', updateRelease, { passive: true })
+    updateRelease()
+
+    for (const button of document.querySelectorAll('[data-change-filter]')) {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.changeFilter
+        for (const candidate of document.querySelectorAll('[data-change-filter]')) candidate.setAttribute('aria-pressed', String(candidate === button))
+        for (const change of document.querySelectorAll('.change')) change.hidden = filter !== 'all' && change.dataset.changeType !== filter
+      })
+    }
+  </script>
 </body>
 </html>
