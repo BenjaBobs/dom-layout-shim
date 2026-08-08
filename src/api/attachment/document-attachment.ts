@@ -15,7 +15,7 @@ import { documentStylesheetFingerprint } from '../../css-parity-implementation/c
 import type { TextMeasurer } from '../text-measurer.ts'
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts'
 import { matchesViewportMediaQuery } from './viewport-media-query.ts'
-import type { NativeControlProfile } from '../native-control-profile.ts'
+import type { NativeControlMetrics } from '../native-control-profile.ts'
 
 export type DocumentAttachmentOptions = {
   document: Document
@@ -23,7 +23,7 @@ export type DocumentAttachmentOptions = {
   unsupportedCss?: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
   stylesheets: readonly string[]
-  nativeControlProfile: NativeControlProfile
+  nativeControlMetrics: NativeControlMetrics
 }
 
 export class DocumentAttachment {
@@ -33,7 +33,7 @@ export class DocumentAttachment {
   private readonly unsupportedCss: UnsupportedCssPolicy | undefined
   private readonly textMeasurer: TextMeasurer
   private readonly stylesheets: readonly string[]
-  private readonly nativeControlProfile: NativeControlProfile
+  private readonly nativeControlMetrics: NativeControlMetrics
   private dirty = true
   private detached = false
   private snapshot: LayoutSnapshot | undefined
@@ -47,7 +47,7 @@ export class DocumentAttachment {
     this.unsupportedCss = options.unsupportedCss
     this.textMeasurer = options.textMeasurer
     this.stylesheets = options.stylesheets
-    this.nativeControlProfile = options.nativeControlProfile
+    this.nativeControlMetrics = options.nativeControlMetrics
     patchDomApis(this)
     this.mutationObserver = observeMutations(this.document, () => {
       this.dirty = true
@@ -81,7 +81,7 @@ export class DocumentAttachment {
       this.unsupportedCss,
       this.textMeasurer,
       this.stylesheets,
-      this.nativeControlProfile,
+      this.nativeControlMetrics,
     )
     this.snapshotScroll = scroll
     this.stylesheetFingerprint = documentStylesheetFingerprint(this.document)

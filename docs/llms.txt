@@ -20,6 +20,23 @@ include syntax, conditions, parity fixtures, limitations, known mismatches, and
 implementation quirks. Broad `current-supported-scope` claims are migrated
 legacy descriptions and should be interpreted conservatively.
 
+## Native-control geometry
+
+Unstyled native controls use the deterministic `portable` profile by default.
+Select it explicitly with `nativeControls: { profile: 'portable' }` when the
+test target should be visible in configuration. Profiles do not inspect or
+follow the runtime host.
+
+`nativeControls.overrides` merges individual metrics on top of the selected
+profile. For example, `{ overrides: { textInput: { width: 220 } } }` changes
+only the text-input width and retains its profile height. Consumers can replace
+every field in every group to define fully custom intrinsic geometry. The
+public `NativeControlMetrics` and `NativeControlOverrides` types describe all
+groups and fields.
+
+Profiles model deterministic outer geometry. They do not emulate operating-
+system painting, internal widget behavior, or native picker UI.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim

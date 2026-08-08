@@ -6,6 +6,11 @@ export type NativeControlOptions = {
    * Profiles never follow the runtime host automatically.
    */
   profile?: NativeControlProfile
+  /**
+   * Replaces individual metrics from the selected profile. Supplying every
+   * metric group defines a fully custom profile without host detection.
+   */
+  overrides?: NativeControlOverrides
 }
 
 export type NativeControlMetrics = {
@@ -23,6 +28,10 @@ export type NativeControlMetrics = {
   time: { width: number; height: number }
 }
 
+export type NativeControlOverrides = {
+  [Group in keyof NativeControlMetrics]?: Partial<NativeControlMetrics[Group]>
+}
+
 const portableMetrics: NativeControlMetrics = {
   button: { emptyWidth: 16, emptyHeight: 6, height: 23, horizontalPadding: 16 },
   checkboxRadio: { width: 13, height: 13 },
@@ -38,9 +47,29 @@ const portableMetrics: NativeControlMetrics = {
   time: { width: 103, height: 24 },
 }
 
-export function getNativeControlMetrics(profile: NativeControlProfile): NativeControlMetrics {
+export function getNativeControlMetrics(
+  profile: NativeControlProfile,
+  overrides: NativeControlOverrides = {},
+): NativeControlMetrics {
+  let profileMetrics: NativeControlMetrics
+
   switch (profile) {
     case 'portable':
-      return portableMetrics
+      profileMetrics = portableMetrics
+  }
+
+  return {
+    button: { ...profileMetrics.button, ...overrides.button },
+    checkboxRadio: { ...profileMetrics.checkboxRadio, ...overrides.checkboxRadio },
+    color: { ...profileMetrics.color, ...overrides.color },
+    file: { ...profileMetrics.file, ...overrides.file },
+    imageFallback: { ...profileMetrics.imageFallback, ...overrides.imageFallback },
+    meter: { ...profileMetrics.meter, ...overrides.meter },
+    progress: { ...profileMetrics.progress, ...overrides.progress },
+    range: { ...profileMetrics.range, ...overrides.range },
+    select: { ...profileMetrics.select, ...overrides.select },
+    textInput: { ...profileMetrics.textInput, ...overrides.textInput },
+    textarea: { ...profileMetrics.textarea, ...overrides.textarea },
+    time: { ...profileMetrics.time, ...overrides.time },
   }
 }

@@ -116,12 +116,23 @@ than follow the machine running the test:
 ```ts
 await attachLayoutEngine({
   window,
-  nativeControls: { profile: 'portable' },
+  nativeControls: {
+    profile: 'portable',
+    overrides: {
+      textInput: { width: 220 },
+      checkboxRadio: { width: 16, height: 16 },
+    },
+  },
 })
 
-// 192×23 on every host for an unstyled text input.
+// 220×23: the overridden width plus the profile's unchanged height.
 document.querySelector('input')?.getBoundingClientRect()
 ```
+
+Overrides are merged by control group and by metric. Override only the values a
+test environment needs to specialize, or provide every field in every group to
+define a fully custom profile. The exported `NativeControlMetrics` and
+`NativeControlOverrides` types describe the complete shape.
 
 Native-control profiles emulate outer geometry, not operating-system rendering
 or internal widget behavior. Additional Chromium platform profiles are added

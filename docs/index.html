@@ -39,7 +39,7 @@ const target = document.elementFromPoint(
 )</code></pre>
     </section>
     <div class="guide" id="guide">
-      <aside class="toc" aria-label="Guide contents"><strong>Guide</strong><a href="#install">Install</a><a href="#attach">Attach the engine</a><a href="#geometry">Read geometry</a><a href="#hit-testing">Test pointer targets</a><a href="#unsupported-css">Handle unsupported CSS</a><a href="#testing">Use it in tests</a></aside>
+      <aside class="toc" aria-label="Guide contents"><strong>Guide</strong><a href="#install">Install</a><a href="#attach">Attach the engine</a><a href="#native-controls">Configure native controls</a><a href="#geometry">Read geometry</a><a href="#hit-testing">Test pointer targets</a><a href="#unsupported-css">Handle unsupported CSS</a><a href="#testing">Use it in tests</a></aside>
       <article class="content">
         <section id="install"><p class="eyebrow">Step 1</p><h2>Install</h2><p>Install DOM Layout Shim alongside your DOM implementation. The engine supports Node.js 22 and newer.</p><pre><code data-language="shell">pnpm add -D dom-layout-shim happy-dom</code></pre></section>
         <section id="attach"><p class="eyebrow">Step 2</p><h2>Attach the engine</h2><p>Create the window normally, populate the document, then attach once. Set an explicit viewport when tests depend on available width or height.</p><pre><code data-language="ts">import { Window } from 'happy-dom'
@@ -54,6 +54,16 @@ await attachLayoutEngine({
   window,
   viewport: { width: 800, height: 600 },
 })</code></pre><p class="callout">Geometry is recomputed after DOM, class, inline-style, stylesheet, CSSOM, and scroll changes. Repeated reads use the cached snapshot.</p></section>
+        <section id="native-controls"><p class="eyebrow">Configuration</p><h2>Choose deterministic native-control geometry</h2><p>Unstyled controls use the cross-host <code>portable</code> profile by default. Select it explicitly to make the test target clear, then override only the control metrics your environment needs.</p><pre><code data-language="ts">await attachLayoutEngine({
+  window,
+  nativeControls: {
+    profile: 'portable',
+    overrides: {
+      textInput: { width: 220 },
+      checkboxRadio: { width: 16, height: 16 },
+    },
+  },
+})</code></pre><p>The text input is now 220 pixels wide while retaining the profile's 23-pixel height. Overrides merge by control group and metric; replacing every field in every group defines a fully custom profile. Profiles model outer geometry, not operating-system painting or internal widget behavior.</p></section>
         <section id="geometry"><p class="eyebrow">Step 3</p><h2>Read layout-backed geometry</h2><p>Bounding rectangles, offsets, client dimensions, offset parents, scrolling, and supported transforms come from one snapshot.</p><pre><code data-language="ts">const save = window.document.querySelector('#save')!
 const rect = save.getBoundingClientRect()
 

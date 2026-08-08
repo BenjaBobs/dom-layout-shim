@@ -3,7 +3,12 @@ export type { AttachLayoutEngineOptions } from './api/attach-layout-engine.ts'
 export { expectBlockedBy, expectReceivesPointer, guardedClick } from './api/pointer-assertions.ts'
 export type { PointerAssertionOptions } from './api/pointer-assertions.ts'
 export type { LayoutEngineConfig, Viewport } from './api/layout-engine-config.ts'
-export type { NativeControlOptions, NativeControlProfile } from './api/native-control-profile.ts'
+export type {
+  NativeControlMetrics,
+  NativeControlOptions,
+  NativeControlOverrides,
+  NativeControlProfile,
+} from './api/native-control-profile.ts'
 export { debugLayout } from './api/debug-layout.ts'
 export type {
   UnsupportedCssContext,

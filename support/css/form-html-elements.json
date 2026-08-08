@@ -43,7 +43,7 @@
         },
         {
           "kind": "implementation-quirk",
-          "text": "Intrinsic native-control geometry comes from an explicitly selected deterministic profile. The portable profile preserves the package's existing cross-host defaults; profiles never follow the runtime host automatically."
+          "text": "Intrinsic native-control geometry comes from an explicitly selected deterministic profile. The portable profile preserves the package's existing cross-host defaults; profiles never follow the runtime host automatically. Per-control metric overrides merge onto the selected profile and can replace every metric to define custom geometry."
         },
         {
           "kind": "implementation-quirk",
