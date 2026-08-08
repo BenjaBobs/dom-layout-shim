@@ -11,5 +11,6 @@
 
 The source workflow run and runner image versions are stored with the snapshot.
 When an intentional Chromium, runner, or profile update changes a value,
-download all three `native-control-observations-*` artifacts from one successful
-matrix run and review the complete per-control diff before updating this file.
+review the exact object diff reported by each matrix job. Update all affected
+platform records from the same run so the committed provenance remains
+coherent.
