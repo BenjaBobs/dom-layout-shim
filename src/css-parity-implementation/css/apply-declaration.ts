@@ -17,6 +17,8 @@ import type {
   OverflowValue,
   SupportedDimension,
   SupportedStyle,
+  SupportedTransform,
+  TransformOrigin,
 } from './supported-style.ts'
 export { createDefaultStyle } from './supported-style.ts'
 export type {
@@ -455,10 +457,10 @@ export function applyDeclaration(
       applyVisualFilter(normalizedValue, normalizedProperty, value, context)
       return
     case 'transform':
-      applyTransform(normalizedValue, normalizedProperty, value, context)
+      applyTransform(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'transform-origin':
-      applyTransformOrigin(normalizedValue, normalizedProperty, value, context)
+      applyTransformOrigin(style, normalizedValue, normalizedProperty, value, context)
       return
     case 'will-change':
       applyWillChange(normalizedValue, normalizedProperty, value, context)
@@ -1797,12 +1799,25 @@ function applyVisualFilter(
 }
 
 function applyTransform(
+  style: SupportedStyle,
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
 ): void {
   if (value === 'none' || value === '[]') {
+    style.transform = []
+    return
+  }
+
+  if (value === 'initial' || value === 'unset') {
+    style.transform = []
+    return
+  }
+
+  const transform = parseTransformList(value)
+  if (transform) {
+    style.transform = transform
     return
   }
 
@@ -1814,6 +1829,72 @@ function applyTransform(
     selector: context.selector,
     element: context.element,
   })
+}
+
+function parseTransformList(value: string): SupportedTransform[] | undefined {
+  const transforms: SupportedTransform[] = []
+  const functionPattern = /([a-z][a-z0-9]*)\(([^()]*)\)/gi
+  let consumed = 0
+
+  for (const match of value.matchAll(functionPattern)) {
+    if (match.index === undefined || value.slice(consumed, match.index).trim() !== '') {
+      return undefined
+    }
+
+    const transform = parseTransformFunction(match[1]?.toLowerCase() ?? '', match[2] ?? '')
+    if (!transform) {
+      return undefined
+    }
+
+    transforms.push(transform)
+    consumed = match.index + match[0].length
+  }
+
+  return transforms.length > 0 && value.slice(consumed).trim() === '' ? transforms : undefined
+}
+
+function parseTransformFunction(name: string, value: string): SupportedTransform | undefined {
+  const parts = value.split(/\s*,\s*|\s+/).filter(Boolean)
+
+  switch (name) {
+    case 'translate': {
+      const x = parseDimension(parts[0] ?? '')
+      const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '')
+      return parts.length <= 2 && x !== undefined && y !== undefined
+        ? { type: 'translate', x, y }
+        : undefined
+    }
+    case 'translatex': {
+      const x = parseDimension(parts[0] ?? '')
+      return parts.length === 1 && x !== undefined ? { type: 'translate', x, y: 0 } : undefined
+    }
+    case 'translatey': {
+      const y = parseDimension(parts[0] ?? '')
+      return parts.length === 1 && y !== undefined ? { type: 'translate', x: 0, y } : undefined
+    }
+    case 'scale': {
+      const x = parseFiniteNumber(parts[0] ?? '')
+      const y = parts.length === 1 ? x : parseFiniteNumber(parts[1] ?? '')
+      return parts.length <= 2 && x !== undefined && y !== undefined
+        ? { type: 'scale', x, y }
+        : undefined
+    }
+    case 'scalex': {
+      const x = parseFiniteNumber(parts[0] ?? '')
+      return parts.length === 1 && x !== undefined ? { type: 'scale', x, y: 1 } : undefined
+    }
+    case 'scaley': {
+      const y = parseFiniteNumber(parts[0] ?? '')
+      return parts.length === 1 && y !== undefined ? { type: 'scale', x: 1, y } : undefined
+    }
+    default:
+      return undefined
+  }
+}
+
+function parseFiniteNumber(value: string): number | undefined {
+  const number = Number(value)
+  return value.trim() !== '' && Number.isFinite(number) ? number : undefined
 }
 
 function parseVisualFilter(value: string): boolean {
@@ -1825,14 +1906,20 @@ function parseVisualFilter(value: string): boolean {
 }
 
 function applyTransformOrigin(
+  style: SupportedStyle,
   value: string,
   property: string,
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  if (value === 'initial' || value === 'unset') {
+    style.transformOrigin = { x: '50%', y: '50%' }
+    return
+  }
 
-  if (cssWideKeywords.has(value) || (parts.length >= 1 && parts.length <= 3 && parts.every(isTransformOriginPart))) {
+  const origin = parseTransformOrigin(value)
+  if (origin) {
+    style.transformOrigin = origin
     return
   }
 
@@ -1846,8 +1933,50 @@ function applyTransformOrigin(
   })
 }
 
-function isTransformOriginPart(value: string): boolean {
-  return ['left', 'right', 'top', 'bottom', 'center'].includes(value) || parseDimension(value) !== undefined
+function parseTransformOrigin(value: string): TransformOrigin | undefined {
+  const parts = value.split(/\s+/).filter(Boolean)
+  if (parts.length < 1 || parts.length > 2) {
+    return undefined
+  }
+
+  if (parts.length === 1) {
+    const part = parts[0] ?? ''
+    if (part === 'top' || part === 'bottom') {
+      return { x: '50%', y: originKeyword(part) }
+    }
+    const x = originHorizontal(part)
+    return x === undefined ? undefined : { x, y: '50%' }
+  }
+
+  let [horizontal, vertical] = parts
+  if (horizontal === 'top' || horizontal === 'bottom') {
+    ;[horizontal, vertical] = [vertical, horizontal]
+  }
+
+  const x = originHorizontal(horizontal ?? '')
+  const y = originVertical(vertical ?? '')
+  return x === undefined || y === undefined ? undefined : { x, y }
+}
+
+function originHorizontal(value: string): SupportedDimension | undefined {
+  if (value === 'left' || value === 'right' || value === 'center') {
+    return originKeyword(value)
+  }
+  return parseDimension(value)
+}
+
+function originVertical(value: string): SupportedDimension | undefined {
+  if (value === 'top' || value === 'bottom' || value === 'center') {
+    return originKeyword(value)
+  }
+  return parseDimension(value)
+}
+
+function originKeyword(value: 'left' | 'right' | 'top' | 'bottom' | 'center'): `${number}%` {
+  if (value === 'left' || value === 'top') {
+    return '0%'
+  }
+  return value === 'center' ? '50%' : '100%'
 }
 
 function applyWillChange(

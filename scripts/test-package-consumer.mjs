@@ -55,7 +55,7 @@ const window = new Window()
 const warnings: UnsupportedCssContext[] = []
 
 window.document.body.innerHTML = \`
-  <button id="save" style="width:120px; height:40px; transform:translateX(10px)">
+  <button id="save" style="width:120px; height:40px; transform:rotate(10deg)">
     Save
   </button>
 \`

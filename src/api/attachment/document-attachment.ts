@@ -89,11 +89,11 @@ export class DocumentAttachment {
   }
 
   offsetWidth(element: Element): number {
-    return roundCssPixel(this.getSnapshot().rects.get(element)?.width ?? 0)
+    return roundCssPixel(this.getSnapshot().layoutRects.get(element)?.width ?? 0)
   }
 
   offsetHeight(element: Element): number {
-    return roundCssPixel(this.getSnapshot().rects.get(element)?.height ?? 0)
+    return roundCssPixel(this.getSnapshot().layoutRects.get(element)?.height ?? 0)
   }
 
   offsetTop(element: Element): number {
@@ -262,7 +262,7 @@ export class DocumentAttachment {
 
   private offsetPosition(element: Element, axis: 'x' | 'y'): number {
     const snapshot = this.getSnapshot()
-    const box = snapshot.rects.get(element)
+    const box = snapshot.layoutRects.get(element)
     const offsetParent = snapshot.offsetParents.get(element)
 
     if (!box) {

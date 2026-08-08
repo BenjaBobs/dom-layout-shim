@@ -16,7 +16,6 @@
       "border-collapse",
       "border-spacing",
       "empty-cells",
-      "transform: non-none",
       "contain: layout/paint/size/style/content/strict",
       "container-type: size/inline-size/scroll-state",
       "container-name: <custom-ident>"

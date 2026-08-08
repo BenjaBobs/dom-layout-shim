@@ -11,6 +11,13 @@ import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 import type { Viewport } from '../../api/layout-engine-config.ts'
 import type { Box } from '../../api/box.ts'
 import type { HitBox } from '../../api/hit-box.ts'
+import {
+  elementTransform,
+  identityTransform,
+  multiplyTransforms,
+  transformBox,
+  type AffineTransform,
+} from '../geometry/transform.ts'
 import type { TextMeasurer } from '../../api/text-measurer.ts'
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts'
 import { canMeasureTextLeaf, createMeasureContext, measureTaffyNode, type MeasureContext } from './taffy/taffy-measure.ts'
@@ -223,16 +230,52 @@ function computeTaffyLayout(layoutTree: TaffyLayoutTree, viewport: Viewport): vo
 
 function collectTaffyLayoutSnapshot(document: Document, scroll: ScrollOffset, state: TaffyLayoutState): LayoutSnapshot {
   recordChildLayouts(document.body, { x: 0, y: 0 }, infiniteClipBounds(), scroll, false, false, state)
+  const layoutRects = new Map(state.rects)
+  applyVisualTransforms(document, state)
 
   return {
     boxes: state.boxes,
     rects: state.rects,
+    layoutRects,
     clientRects: state.clientRects,
     elementScrolls: state.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
     fixedElements: collectFixedElements(document, state),
   }
+}
+
+function applyVisualTransforms(document: Document, state: TaffyLayoutState): void {
+  // Taffy intentionally owns flow geometry and does not model CSS transforms.
+  // Apply transforms after collection so getBoundingClientRect and hit testing
+  // see visual geometry while offset/client APIs retain the layout boxes.
+  const transforms = new Map<Element, AffineTransform>()
+
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    const parentTransform = element.parentElement
+      ? transforms.get(element.parentElement) ?? identityTransform
+      : identityTransform
+    const box = state.rects.get(element)
+    const style = state.styles.get(element)
+    const localTransform = box && style && !state.contentsElements.has(element) && style.display !== 'none'
+      ? elementTransform(box, style.transform, style.transformOrigin)
+      : identityTransform
+    const transform = multiplyTransforms(parentTransform, localTransform)
+    transforms.set(element, transform)
+
+    if (box) {
+      state.rects.set(element, transformBox(box, transform))
+    }
+  }
+
+  state.boxes = state.boxes.map((box) => ({
+    ...transformBox(box, transforms.get(box.element) ?? identityTransform),
+    element: box.element,
+    zIndex: box.zIndex,
+    domOrder: box.domOrder,
+    pointerEvents: box.pointerEvents,
+    visibility: box.visibility,
+  }))
 }
 
 function collectOffsetParents(

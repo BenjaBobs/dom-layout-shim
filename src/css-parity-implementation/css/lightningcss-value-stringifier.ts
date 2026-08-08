@@ -37,6 +37,10 @@ function stringifyCssValue(property: string, value: unknown): string {
     return String(value)
   }
 
+  if (property === 'transform') {
+    return stringifyTransform(value)
+  }
+
   if (!isRecord(value)) {
     return String(value)
   }
@@ -270,6 +274,39 @@ function stringifyCssValue(property: string, value: unknown): string {
     default:
       return JSON.stringify(value)
   }
+}
+
+function stringifyTransform(value: unknown): string {
+  if (!Array.isArray(value)) {
+    return JSON.stringify(value)
+  }
+
+  if (value.length === 0) {
+    return 'none'
+  }
+
+  return value.map((item) => {
+    if (!isRecord(item) || typeof item.type !== 'string') {
+      return JSON.stringify(item)
+    }
+
+    const transformValue = Array.isArray(item.value)
+      ? item.value.map(stringifyTransformArgument).join(', ')
+      : stringifyTransformArgument(item.value)
+    return `${item.type}(${transformValue})`
+  }).join(' ')
+}
+
+function stringifyTransformArgument(value: unknown): string {
+  if (!isRecord(value)) {
+    return JSON.stringify(value)
+  }
+
+  if (value.type === 'number' && typeof value.value === 'number') {
+    return String(value.value)
+  }
+
+  return stringifyLength(value)
 }
 
 function stringifyDisplay(value: Record<string, unknown>): string {
