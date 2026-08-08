@@ -1,8 +1,15 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const readDocumentationSource = (name) => readFile(resolve(process.cwd(), name), 'utf8')
+
+afterEach(() => {
+  document.body.innerHTML = ''
+  history.replaceState({}, '', '/')
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
 
 describe('generated documentation experience', () => {
   it('renders accessible support controls and stable record links', async () => {
@@ -12,7 +19,66 @@ describe('generated documentation experience', () => {
     expect(page).toContain('id="resultCount" aria-live="polite"')
     expect(page).toContain('id="clearFilters"')
     expect(page).toContain('<tr id="${escapeHtml(entry.id)}">')
-    expect(page).toContain('href="#${escapeHtml(entry.id)}"')
+    expect(page).toContain('class="topic-permalink" href="#${escapeHtml(entry.id)}"')
+    expect(page).toContain("{ label: 'Support topics', value: inventory.length")
+    expect(page).toContain('class="metric${metric.status ? \' metric-filter\' : \'\'}"')
+    expect(page).toContain("statusField('Implementation support'")
+    expect(page).toContain("statusField('Chromium parity'")
+    expect(page).toContain("'browser-parity': { label: 'Verified behavior'")
+    expect(page).toContain('renderInlineCode(note.text, query)')
+  })
+
+  it('renders support dimensions, semantic notes, inline code, and summary filters', async () => {
+    const page = await readDocumentationSource('docs-engine/css-support-status.template.html')
+    const script = [...page.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)]
+      .map((match) => match[1])
+      .find((source) => source.includes('rankSupportEntries'))
+      .replace(
+        "import { rankSupportEntries } from './css-support-search.js'",
+        'const rankSupportEntries = (entries) => entries',
+      )
+    const record = {
+      id: 'variables',
+      title: 'CSS variables',
+      status: 'partial',
+      parityStatus: 'verified',
+      effect: 'layout',
+      owner: 'css-parser',
+      subjects: { properties: ['color'], elements: [] },
+      claims: [{
+        id: 'current-scope',
+        support: 'partial',
+        parity: { status: 'verified', fixtures: ['variables'] },
+        notes: [{ kind: 'limitation', text: 'Resolution of `var()` is not implemented.' }],
+      }],
+    }
+
+    document.body.innerHTML = `
+      <section id="summary"></section>
+      <section class="toolbar">
+        <input id="search"><select id="status"><option value=""></option><option value="partial"></option></select>
+        <select id="effect"><option value=""></option></select>
+        <select id="owner"><option value=""></option></select>
+        <select id="parityStatus"><option value=""></option></select>
+        <button id="clearFilters"></button>
+      </section>
+      <main><strong id="resultCount"></strong><table><tbody id="rows"></tbody></table></main>
+    `
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ records: [record] }))))
+
+    window.eval(script)
+    await vi.waitFor(() => expect(document.querySelector('#rows').textContent).toContain('CSS variables'))
+
+    expect(document.querySelector('.status-field').textContent).toContain('Implementation support')
+    expect(document.querySelector('.parity-verified').textContent).toContain('Supported scope verified')
+    expect(document.querySelector('.note-limitation .note-kind').textContent).toBe('Known limitation')
+    expect(document.querySelector('.note-text code').textContent).toBe('var()')
+    expect(document.querySelector('.title > span').textContent).toBe('CSS variables')
+    expect(document.querySelector('.title > span').closest('a')).toBeNull()
+
+    document.querySelector('[data-status="partial"]').click()
+    expect(document.querySelector('#status').value).toBe('partial')
+    expect(location.search).toBe('?status=partial')
   })
 
   it('renders anchored, filterable changelog releases with sticky context', async () => {

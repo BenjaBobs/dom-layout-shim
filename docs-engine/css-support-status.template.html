@@ -105,11 +105,67 @@
 
     .metric {
       min-height: 48px;
+      width: 100%;
       padding: 6px 10px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+      color: var(--text);
       box-shadow: var(--shadow-panel);
+      text-align: left;
+    }
+
+    button.metric {
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.metric:hover,
+    button.metric[aria-pressed="true"] {
+      border-color: var(--brand);
+      background: var(--panel-2);
+    }
+
+    [data-tooltip] {
+      position: relative;
+    }
+
+    [data-tooltip]::after {
+      position: absolute;
+      right: auto;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      z-index: 30;
+      width: max-content;
+      max-width: min(320px, 80vw);
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--heading-text);
+      color: var(--panel);
+      box-shadow: var(--shadow-panel);
+      content: attr(data-tooltip);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      text-align: left;
+      text-transform: none;
+      transform: translate(-50%, 3px);
+      transition: opacity 120ms ease, transform 120ms ease;
+      white-space: normal;
+    }
+
+    [data-tooltip]:hover::after,
+    [data-tooltip]:focus-visible::after {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .metric[data-tooltip]::after {
+      top: calc(100% + 7px);
+      bottom: auto;
     }
 
     .metric-label {
@@ -210,8 +266,53 @@
       margin-top: 7px;
     }
 
-    .title {
+    .status-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .status-field {
+      display: grid;
+      justify-items: start;
+      gap: 3px;
+    }
+
+    .status-field-label,
+    .meta-label {
+      color: var(--muted);
+      font-size: 10px;
       font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--gray-bg);
+    }
+
+    .title {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+      font-weight: 700;
+    }
+
+    .topic-permalink {
+      color: var(--muted);
+      font-weight: 500;
+      opacity: 0;
+      text-decoration: none;
+    }
+
+    .title:hover .topic-permalink,
+    .topic-permalink:focus-visible {
+      opacity: 1;
     }
 
     .id {
@@ -250,12 +351,21 @@
     }
 
     .status-todo,
-    .status-unsupported,
-    .status-unverified,
-    .status-known-mismatch {
+    .status-unsupported {
       color: var(--red);
       background: var(--red-bg);
     }
+
+    .parity-badge {
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+
+    .parity-verified { color: var(--green); }
+    .parity-partially-verified { color: var(--amber); }
+    .parity-unverified,
+    .parity-not-applicable { color: var(--muted); }
+    .parity-known-mismatch { color: var(--red); }
 
     .effect-layout {
       color: var(--blue);
@@ -337,7 +447,49 @@
     }
 
     .claim-section {
-      margin-top: 7px;
+      margin-top: 9px;
+    }
+
+    .claim-values {
+      padding: 7px 8px 8px;
+      border-left: 3px solid var(--muted);
+      border-radius: 5px;
+      background: var(--gray-bg);
+    }
+
+    .claim-values-properties {
+      border-left-color: var(--blue);
+      background: var(--blue-bg);
+    }
+
+    .claim-values-syntax {
+      border-left-color: var(--violet);
+      background: var(--violet-bg);
+    }
+
+    .claim-values-conditions {
+      border-left-color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .claim-values-evidence {
+      border-left-color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .claim-values-properties .claim-label { color: var(--blue); }
+    .claim-values-syntax .claim-label { color: var(--violet); }
+    .claim-values-conditions .claim-label { color: var(--amber); }
+    .claim-values-evidence .claim-label { color: var(--green); }
+
+    .claim-values .chip {
+      border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+      background: color-mix(in srgb, var(--panel) 76%, transparent);
+    }
+
+    .claim-values-conditions .chip {
+      line-height: 1.4;
+      white-space: normal;
     }
 
     .claim-label {
@@ -356,29 +508,51 @@
 
     .notes {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 6px;
+      gap: 8px;
       max-width: none;
     }
 
     .note {
       display: grid;
       grid-template-columns: 18px 1fr;
-      gap: 6px;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-left-width: 3px;
+      border-radius: 6px;
+      background: var(--panel);
     }
 
     .note svg {
       width: 15px;
       height: 15px;
       margin-top: 2px;
-      color: var(--muted);
+      color: currentColor;
     }
 
     .note-kind {
-      color: var(--muted);
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
+    }
+
+    .note-browser-parity { color: var(--green); border-left-color: var(--green); background: var(--green-bg); }
+    .note-behavior-quirk { color: var(--blue); border-left-color: var(--blue); background: var(--blue-bg); }
+    .note-implementation-quirk { color: var(--amber); border-left-color: var(--amber); background: var(--amber-bg); }
+    .note-taffy-compat { color: var(--violet); border-left-color: var(--violet); background: var(--violet-bg); }
+    .note-limitation { color: var(--red); border-left-color: var(--red); background: var(--red-bg); }
+    .note-todo { color: var(--muted); border-left-color: var(--muted); background: var(--gray-bg); }
+
+    .note-text { color: var(--text); }
+
+    .note-text code {
+      padding: 1px 4px;
+      border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--panel) 72%, transparent);
+      color: var(--chip-text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .92em;
     }
 
     .parity-count {
@@ -445,8 +619,7 @@
       .control-bar-inner { margin-top:16px; }
 
       tbody tr,
-      .claims,
-      .notes {
+      .claims {
         grid-template-columns: 1fr;
       }
 
@@ -489,14 +662,14 @@
   <main>
     <div class="result-status">
       <strong id="resultCount" aria-live="polite">Loading records…</strong>
-      <details class="status-help"><summary>What do these statuses mean?</summary><p><strong>Supported</strong> means the tracked behavior is implemented. <strong>Partial</strong> means documented syntax or conditions remain unsupported. Parity separately describes how much of that behavior has been verified against Chromium.</p></details>
+      <details class="status-help"><summary>What do these statuses mean?</summary><p><strong>Implementation support</strong> describes how much of the documented behavior is implemented. <strong>Chromium parity</strong> describes the comparison evidence for that behavior. A topic can have partial implementation support while its supported scope is fully verified against Chromium. Hover or focus a status for its precise meaning.</p></details>
     </div>
     <section class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Area</th>
-            <th>Status and parity</th>
+            <th>Support topic</th>
+            <th>Implementation and Chromium parity</th>
             <th>Properties / Elements</th>
             <th>Support claims and evidence</th>
           </tr>
@@ -524,7 +697,33 @@
       partial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v18"/><path d="M5 12h14"/></svg>',
       todo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>',
       note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>',
-      parity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M12 4v16"/><path d="m7 7 10 10"/><path d="m17 7-10 10"/></svg>'
+      parity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M12 4v16"/><path d="m7 7 10 10"/><path d="m17 7-10 10"/></svg>',
+      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7h.01"/></svg>',
+      wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 6a4 4 0 0 0-5 5L3 17l4 4 6-6a4 4 0 0 0 5-5l-3 3-4-4z"/></svg>',
+      warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 10 18H2z"/><path d="M12 9v5"/><path d="M12 18h.01"/></svg>',
+      layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>'
+    }
+
+    const supportHelp = {
+      supported: 'The complete behavior described by this support claim is implemented.',
+      partial: 'Some documented syntax, conditions, or behavior remain unsupported.',
+      unsupported: 'The behavior described by this support claim is not implemented.',
+      unknown: 'Implementation support has not yet been classified.',
+    }
+    const parityHelp = {
+      verified: 'The supported scope has exact comparison fixtures against Chromium.',
+      'partially-verified': 'Only part of the supported scope has Chromium comparison evidence.',
+      unverified: 'The behavior does not yet have Chromium comparison evidence.',
+      'known-mismatch': 'Comparison fixtures record a known difference from Chromium.',
+      'not-applicable': 'Chromium comparison does not apply to this package-specific behavior.',
+    }
+    const noteMetadata = {
+      'browser-parity': { label: 'Verified behavior', icon: 'verified', help: 'Exact Chromium comparison evidence and the behavior it covers.' },
+      'behavior-quirk': { label: 'Browser behavior', icon: 'info', help: 'Browser-observable behavior that may be surprising but is intentional.' },
+      'implementation-quirk': { label: 'Shim behavior', icon: 'wrench', help: 'A deliberate approximation or implementation-specific behavior in the shim.' },
+      'taffy-compat': { label: 'Taffy compatibility', icon: 'layers', help: 'A compatibility detail at the Taffy layout adapter boundary.' },
+      limitation: { label: 'Known limitation', icon: 'warning', help: 'A known unsupported case or behavioral restriction.' },
+      todo: { label: 'Planned work', icon: 'todo', help: 'Tracked work that has not yet been implemented.' },
     }
 
     init().catch((error) => {
@@ -634,9 +833,9 @@
       })
       const ranked = rankSupportEntries(filtered, query)
 
-      renderSummary(ranked)
+      renderSummary(status)
       renderRows(ranked, query)
-      document.getElementById('resultCount').textContent = `${ranked.length} of ${inventory.length} support areas shown`
+      document.getElementById('resultCount').textContent = `${ranked.length} of ${inventory.length} support topics shown`
     }
 
     function updateLocation({ query, status, effect, owner, parityStatus }) {
@@ -649,41 +848,51 @@
       history.replaceState(null, '', parameters.size > 0 ? `?${parameters}` : location.pathname)
     }
 
-    function renderSummary(entries) {
-      const implementedProperties = unique(
+    function renderSummary(activeStatus) {
+      const trackedProperties = unique(
         inventory
-          .filter((entry) => entry.status !== 'unsupported')
           .flatMap((entry) => entry.subjects.properties || [])
           .filter((property) => !property.includes('*')),
       )
       const metrics = [
-        ['Areas', entries.length],
-        ['Properties', implementedProperties.length],
-        ['Supported', inventory.filter((entry) => entry.status === 'supported').length],
-        ['Partial', inventory.filter((entry) => entry.status === 'partial').length],
-        ['Unsupported', inventory.filter((entry) => entry.status === 'unsupported').length],
+        { label: 'Support topics', value: inventory.length, help: 'Curated feature groups represented by records in support/css/.' },
+        { label: 'Tracked properties', value: trackedProperties.length, help: 'Unique concrete CSS properties named by all support topics, including unsupported topics.' },
+        { label: 'Fully supported topics', value: inventory.filter((entry) => entry.status === 'supported').length, status: 'supported', help: supportHelp.supported },
+        { label: 'Partially supported topics', value: inventory.filter((entry) => entry.status === 'partial').length, status: 'partial', help: supportHelp.partial },
+        { label: 'Unsupported topics', value: inventory.filter((entry) => entry.status === 'unsupported').length, status: 'unsupported', help: supportHelp.unsupported },
       ]
 
-      document.getElementById('summary').innerHTML = metrics.map(([name, value]) => `
-        <div class="metric">
-          <div class="metric-label">${escapeHtml(name)}</div>
-          <div class="metric-value">${value}</div>
-        </div>
+      document.getElementById('summary').innerHTML = metrics.map((metric) => `
+        <${metric.status ? 'button' : 'div'}
+          class="metric${metric.status ? ' metric-filter' : ''}"
+          data-tooltip="${escapeHtml(metric.help)}"
+          aria-label="${escapeHtml(`${metric.label}: ${metric.value}. ${metric.help}`)}"
+          ${metric.status ? `type="button" data-status="${metric.status}" aria-pressed="${String(activeStatus === metric.status)}"` : ''}
+        >
+          <div class="metric-label">${escapeHtml(metric.label)}</div>
+          <div class="metric-value">${metric.value}</div>
+        </${metric.status ? 'button' : 'div'}>
       `).join('')
+
+      document.querySelectorAll('.metric-filter').forEach((metric) => metric.addEventListener('click', () => {
+        const status = document.getElementById('status')
+        status.value = status.value === metric.dataset.status ? '' : metric.dataset.status
+        render()
+      }))
     }
 
     function renderRows(entries, query) {
       document.getElementById('rows').innerHTML = entries.map((entry) => `
         <tr id="${escapeHtml(entry.id)}">
           <td>
-            <div class="title"><a href="#${escapeHtml(entry.id)}" aria-label="Permalink to ${escapeHtml(entry.title)}">${highlight(entry.title, query)}</a></div>
+            <div class="title"><span>${highlight(entry.title, query)}</span><a class="topic-permalink" href="#${escapeHtml(entry.id)}" aria-label="Permalink to ${escapeHtml(entry.title)}" data-tooltip="Link directly to this support topic">#</a></div>
             <div class="id">${highlight(entry.id, query)}</div>
             <div class="area-meta">
-              ${badge(entry.effect, `effect-${entry.effect}`)}
-              ${badge(entry.owner, 'effect-source')}
+              ${metadataBadge('Affects', label(entry.effect), `This topic affects ${label(entry.effect).toLowerCase()} behavior.`, `effect-${entry.effect}`)}
+              ${metadataBadge('Owner', ownerLabel(entry.owner), 'The package subsystem responsible for this support topic.', 'effect-source')}
             </div>
           </td>
-          <td><div class="status-stack">${badge(entry.status, `status-${entry.status}`)}${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</div></td>
+          <td><div class="status-stack">${statusField('Implementation support', supportBadge(entry.status))}${statusField('Chromium parity', parityBadge(entry.parityStatus, entry.status))}</div></td>
           <td>
             ${propertyChips(entry.subjects.properties || [], 12, query)}
             ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12, query)}` : ''}
@@ -693,20 +902,36 @@
       `).join('')
     }
 
-    function badge(value, className) {
-      return `<span class="badge ${className}">${icons[value] || ''}${escapeHtml(label(value))}</span>`
+    function supportBadge(value) {
+      return badge(label(value === 'supported' ? 'full support' : value), `status-${value}`, supportHelp[value], icons[value] || '')
     }
 
-    function parityStatusClass(value) {
-      if (value === 'verified') {
-        return 'status-full'
-      }
+    function parityBadge(value, support) {
+      const display = value === 'verified' && support === 'partial' ? 'Supported scope verified' : label(value)
+      return badge(display, `parity-badge parity-${value}`, parityHelp[value], value === 'verified' ? icons.verified : '')
+    }
 
-      if (value === 'unverified' || value === 'known-mismatch') {
-        return 'status-todo'
-      }
+    function badge(value, className, help, icon = '') {
+      return `<span class="badge ${className}" data-tooltip="${escapeHtml(help)}" aria-label="${escapeHtml(`${value}. ${help}`)}" tabindex="0">${icon}${escapeHtml(value)}</span>`
+    }
 
-      return 'status-partial'
+    function statusField(name, value) {
+      return `<div class="status-field"><span class="status-field-label">${escapeHtml(name)}</span>${value}</div>`
+    }
+
+    function metadataBadge(name, value, help, className) {
+      return `<span class="meta-badge ${className}" data-tooltip="${escapeHtml(help)}" aria-label="${escapeHtml(`${name}: ${value}. ${help}`)}" tabindex="0"><span class="meta-label">${escapeHtml(name)}</span>${escapeHtml(value)}</span>`
+    }
+
+    function ownerLabel(value) {
+      const labels = {
+        'css-parser': 'CSS parser',
+        'taffy-adapter': 'Taffy adapter',
+        'hit-testing': 'Hit-testing engine',
+        text: 'Text measurement',
+        'dom-api': 'DOM API',
+      }
+      return labels[value] || label(value)
     }
 
     function propertyChips(values, limit, query) {
@@ -746,21 +971,21 @@
       const visible = propertyClaims.length > 0 ? propertyClaims : values
       return `
         <details class="claim-details"${query ? ' open' : ''}>
-          <summary>${visible.length} support ${visible.length === 1 ? 'claim' : 'claims'} and evidence</summary>
+          <summary data-tooltip="A topic can contain one broad support scope or several independently classified scopes.">${visible.length} support ${visible.length === 1 ? 'scope' : 'scopes'} and evidence</summary>
           <div class="claims">
           ${visible.map((claim) => `
             <article class="claim" id="${escapeHtml(claim.id)}">
               <div class="claim-head">
                 <span class="claim-title">${highlight(label(claim.id), query)}</span>
-                ${badge(claim.support, `status-${claim.support}`)}
-                ${badge(claim.parity.status, parityStatusClass(claim.parity.status))}
+                ${supportBadge(claim.support)}
+                ${parityBadge(claim.parity.status, claim.support)}
               </div>
               ${claim.description ? `<div class="claim-description">${highlight(claim.description, query)}</div>` : ''}
               ${claim.properties?.length ? claimValues('Properties', claim.properties, query) : ''}
               ${claim.syntax?.length ? claimValues('Syntax', claim.syntax, query) : ''}
               ${claim.conditions?.length ? claimValues('Conditions', claim.conditions, query) : ''}
               ${claim.parity.fixtures.length ? `
-                <div class="claim-section">
+                <div class="claim-section claim-values claim-values-evidence">
                   <div class="claim-label">Chromium parity evidence</div>
                   ${fixtureChips(claim.parity.fixtures, query)}
                 </div>
@@ -774,8 +999,9 @@
     }
 
     function claimValues(name, values, query) {
+      const section = name.toLowerCase()
       return `
-        <div class="claim-section">
+        <div class="claim-section claim-values claim-values-${section}">
           <div class="claim-label">${escapeHtml(name)}</div>
           ${chips(values, 20, query)}
         </div>
@@ -803,17 +1029,25 @@
 
       return `
         <div class="notes">
-          ${values.map((note) => `
-            <div class="note">
-              ${icons.note}
+          ${values.map((note) => {
+            const metadata = noteMetadata[note.kind]
+            return `
+            <div class="note note-${escapeHtml(note.kind)}">
+              ${icons[metadata.icon]}
               <div>
-                <div class="note-kind">${highlight(label(note.kind), query)}</div>
-                <div>${highlight(note.text, query)}</div>
+                <div class="note-kind" data-tooltip="${escapeHtml(metadata.help)}" tabindex="0">${highlight(metadata.label, query)}</div>
+                <div class="note-text">${renderInlineCode(note.text, query)}</div>
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `
+    }
+
+    function renderInlineCode(value, query) {
+      return String(value).split('`').map((part, index) =>
+        index % 2 === 1 ? `<code>${highlight(part, query)}</code>` : highlight(part, query),
+      ).join('')
     }
 
     function unique(values) {
