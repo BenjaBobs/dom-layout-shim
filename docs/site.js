@@ -1,31 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
-  renderNavigation()
+  enhanceNavigation()
+  enhanceScrollspy()
 
   for (const code of document.querySelectorAll('code[data-language]')) {
     code.innerHTML = highlight(code.textContent ?? '', code.dataset.language ?? '')
   }
 })
 
-export function renderNavigation(page = location.pathname.split('/').pop() || 'index.html') {
+export function enhanceNavigation() {
   const navigation = document.querySelector('[data-site-nav]')
   if (!navigation) return
+  const button = navigation.querySelector('.site-menu-button')
+  button?.addEventListener('click', () => {
+    const open = navigation.toggleAttribute('data-menu-open')
+    button.setAttribute('aria-expanded', String(open))
+  })
+  navigation.querySelector('.site-nav-links')?.addEventListener('click', () => {
+    navigation.removeAttribute('data-menu-open')
+    button?.setAttribute('aria-expanded', 'false')
+  })
+}
 
-  const links = [
-    ['index.html', './', 'Guide'],
-    ['css-support-status.html', './css-support-status.html', 'CSS support'],
-    ['changelog.html', './changelog.html', 'Changelog'],
-  ]
-  navigation.className = 'site-nav'
-  navigation.setAttribute('aria-label', 'Main navigation')
-  navigation.innerHTML = `
-    <a class="site-wordmark" href="./">DOM Layout Shim</a>
-    <div class="site-nav-links">
-      ${links.map(([file, href, label]) => `
-        <a href="${href}"${page === file ? ' aria-current="page"' : ''}>${label}</a>
-      `).join('')}
-      <a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a>
-    </div>
-  `
+export function enhanceScrollspy() {
+  for (const navigation of document.querySelectorAll('[data-scrollspy]')) {
+    const links = [...navigation.querySelectorAll('a[href^="#"]')]
+    const targets = links.map((link) => document.querySelector(link.hash)).filter(Boolean)
+    if (targets.length === 0) continue
+
+    const update = () => {
+      const readingLine = Math.min(140, innerHeight / 3)
+      const active = [...targets].reverse().find((target) => target.getBoundingClientRect().top <= readingLine) || targets[0]
+      for (const link of links) {
+        if (link.hash === `#${active.id}`) link.setAttribute('aria-current', 'location')
+        else link.removeAttribute('aria-current')
+      }
+    }
+    addEventListener('scroll', update, { passive: true })
+    addEventListener('resize', update)
+    update()
+  }
 }
 
 export function highlight(source, language) {

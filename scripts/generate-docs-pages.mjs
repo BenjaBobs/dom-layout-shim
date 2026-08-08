@@ -1,14 +1,16 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { renderDocumentationPage } from './docs-page-shell.mjs'
+import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
 
 const root = resolve(import.meta.dirname, '..')
+const context = await readDocumentationContext(root)
 const pages = [
   {
     source: 'docs-src/guide.template.html',
     output: 'docs/index.html',
     title: 'DOM Layout Shim guide',
     description: 'Guide to deterministic layout and hit testing with DOM Layout Shim.',
+    page: 'index.html',
     bodyPattern: /<main>[\s\S]*<\/main>/,
   },
   {
@@ -16,7 +18,8 @@ const pages = [
     output: 'docs/css-support-status.html',
     title: 'CSS Support Status',
     description: 'Searchable implementation and Chromium parity status for CSS supported by DOM Layout Shim.',
-    bodyPattern: /<header>[\s\S]*<\/header>\s*<main>[\s\S]*?<\/main>/,
+    page: 'css-support-status.html',
+    bodyPattern: /<header>[\s\S]*<\/header>[\s\S]*?<main>[\s\S]*?<\/main>/,
     inlineModulePattern: /<script type="module">([\s\S]*?)<\/script>/,
   },
 ]
@@ -29,7 +32,7 @@ for (const page of pages) {
   const inlineModule = page.inlineModulePattern
     ? requiredMatch(source, page.inlineModulePattern, page.source, 'inline module')
     : ''
-  const output = renderDocumentationPage({ ...page, pageStyles, body, inlineModule })
+  const output = renderDocumentationPage({ ...context, ...page, pageStyles, body, inlineModule })
   const outputPath = resolve(root, page.output)
 
   if (process.argv.includes('--check')) {

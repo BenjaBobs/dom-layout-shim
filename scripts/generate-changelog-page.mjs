@@ -2,29 +2,62 @@ import { execFileSync } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { insertUpcoming, markUntaggedReleaseUpcoming } from './changelog-source.mjs'
-import { renderDocumentationPage } from './docs-page-shell.mjs'
+import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
 
 const root = resolve(import.meta.dirname, '..')
+const context = await readDocumentationContext(root)
 const changelog = await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')
 const pendingChangesets = await readPendingChangesets()
 const markdown = pendingChangesets.length > 0
   ? insertUpcoming(changelog, pendingChangesets)
   : markUntaggedReleaseUpcoming(changelog, tagExists)
-const content = renderMarkdown(markdown)
+const releases = [...markdown.matchAll(/^##\s+(.+)$/gm)].map((match) => match[1])
+const content = renderMarkdown(markdown, releases)
 const outputPath = resolve(root, 'docs/changelog.html')
 
 const output = renderDocumentationPage({
+  ...context,
+  page: 'changelog.html',
   title: 'DOM Layout Shim changelog',
   description: 'DOM Layout Shim release changelog.',
-  body: `<main>${content}</main>`,
+  body: `<main>
+    <h1>dom-layout-shim</h1>
+    <div class="changelog-tools">
+      <nav class="release-toc" aria-label="Changelog versions"><strong>Releases</strong>${releases.map((release) => `<a href="#${releaseId(release)}">${escapeHtml(release)}</a>`).join('')}</nav>
+      <div class="change-filters" role="group" aria-label="Filter changes by release type">
+        <button type="button" data-change-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-change-filter="minor" aria-pressed="false">Minor</button>
+        <button type="button" data-change-filter="patch" aria-pressed="false">Patch</button>
+      </div>
+    </div>
+    <div class="current-release" aria-live="polite">Viewing <strong>${escapeHtml(releases[0] || 'Changelog')}</strong></div>
+    ${content}
+  </main>`,
   pageStyles: `
-    :root { color-scheme:light dark; --bg:#f5f7fa; --panel:#fff; --text:#16202a; --muted:#607080; --line:#d9e1e8; --brand:#176b52; --code:#17232b; --code-text:#e7f2ef; --inline:#edf2f5; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
-    @media (prefers-color-scheme:dark) { :root { --bg:#0f1519; --panel:#172126; --text:#e7eff2; --muted:#9eacb3; --line:#334149; --brand:#70d6ad; --code:#091014; --inline:#253138; } }
-    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); line-height:1.65; } a { color:var(--brand); }
-    main { width:min(980px,calc(100% - 40px)); margin:auto; padding:52px 0 80px; } h1 { margin:0 0 44px; font-size:44px; letter-spacing:-.035em; } h2 { margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+    main { width:min(980px,calc(100% - 40px)); margin:auto; padding:32px 0 80px; } h1 { margin:0 0 24px; font-size:clamp(34px,8vw,44px); letter-spacing:-.035em; } h2 { scroll-margin-top:110px; margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+    .changelog-tools { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line); } .release-toc { display:flex; flex-wrap:wrap; gap:12px; align-items:center; } .release-toc a { color:var(--muted); } .change-filters { display:flex; gap:6px; } .change-filters button { padding:6px 10px; border:1px solid var(--line); border-radius:7px; background:var(--panel); color:var(--text); } .change-filters button[aria-pressed="true"] { border-color:var(--brand); color:var(--brand); }
+    .current-release { position:sticky; top:var(--site-nav-height); z-index:9; margin:0 -12px; padding:9px 12px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 95%,transparent); color:var(--muted); backdrop-filter:blur(10px); } .current-release strong { color:var(--text); }
+    .release-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; } .release-links { display:flex; gap:10px; font-size:13px; font-weight:400; }
     .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child { margin-bottom:0; } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
-    pre { overflow:auto; padding:18px; border:1px solid var(--line); border-radius:9px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
-    .tok-keyword { color:#ff9dca; } .tok-string { color:#a8e6a3; } .tok-comment { color:#84959e; font-style:italic; } .tok-number { color:#ffd580; } .tok-property { color:#8ed9ff; }
+    @media (max-width:700px) { .changelog-tools { align-items:flex-start; flex-direction:column; } .release-toc { max-height:80px; overflow:auto; } .release-heading { align-items:flex-start; flex-direction:column; } }
+  `,
+  inlineModule: `
+    const indicator = document.querySelector('.current-release strong')
+    const headings = [...document.querySelectorAll('h2[data-release]')]
+    const updateRelease = () => {
+      const current = [...headings].reverse().find((heading) => heading.getBoundingClientRect().top <= 130) || headings[0]
+      if (current && indicator) indicator.textContent = current.dataset.release
+    }
+    addEventListener('scroll', updateRelease, { passive: true })
+    updateRelease()
+
+    for (const button of document.querySelectorAll('[data-change-filter]')) {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.changeFilter
+        for (const candidate of document.querySelectorAll('[data-change-filter]')) candidate.setAttribute('aria-pressed', String(candidate === button))
+        for (const change of document.querySelectorAll('.change')) change.hidden = filter !== 'all' && change.dataset.changeType !== filter
+      })
+    }
   `,
 })
 
@@ -70,7 +103,7 @@ function tagExists(tag) {
   }
 }
 
-function renderMarkdown(source) {
+function renderMarkdown(source, releases) {
   const output = []
   const lines = source.split('\n')
   let paragraph = []
@@ -79,6 +112,8 @@ function renderMarkdown(source) {
   let changeTitle = []
   let codeLanguage
   let code = []
+  let changeType = ''
+  let releaseIndex = 0
 
   const flushParagraph = () => {
     if (paragraph.length > 0) output.push(`<p>${inline(paragraph.join(' '))}</p>`)
@@ -86,7 +121,7 @@ function renderMarkdown(source) {
   }
   const openChange = () => {
     if (!inChange || changeOpen) return
-    output.push(`<article class="change"><h4>${inline(changeTitle.join(' '))}</h4>`)
+    output.push(`<article class="change" data-change-type="${escapeHtml(changeType)}"><h4>${inline(changeTitle.join(' '))}</h4>`)
     changeOpen = true
   }
   const closeChange = () => {
@@ -121,7 +156,18 @@ function renderMarkdown(source) {
     if (heading) {
       closeChange()
       const level = heading[1].length
-      output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+      if (level === 2) {
+        const release = heading[2]
+        const previous = releases[releaseIndex + 1]
+        const links = release === 'Upcoming'
+          ? '<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v' + escapeHtml(releases[1] || '') + '...main">Compare with main</a>'
+          : `<a href="https://www.npmjs.com/package/dom-layout-shim/v/${escapeHtml(release)}">npm</a><a href="https://github.com/BenjaBobs/dom-layout-shim/releases/tag/v${escapeHtml(release)}">GitHub</a>${previous && previous !== 'Upcoming' ? `<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v${escapeHtml(previous)}...v${escapeHtml(release)}">Compare</a>` : ''}`
+        output.push(`<div class="release-heading"><h2 id="${releaseId(release)}" data-release="${escapeHtml(release)}">${inline(release)}</h2><span class="release-links">${links}</span></div>`)
+        releaseIndex += 1
+      } else if (level !== 1) {
+        if (level === 3) changeType = heading[2].toLowerCase().startsWith('minor') ? 'minor' : heading[2].toLowerCase().startsWith('patch') ? 'patch' : ''
+        output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+      }
       continue
     }
     const item = /^-\s+(.+)$/.exec(line)
@@ -144,6 +190,11 @@ function renderMarkdown(source) {
   }
   closeChange()
   return output.join('\n')
+}
+
+function releaseId(release) {
+  if (release === 'Upcoming') return 'upcoming'
+  return `version-${release.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
 }
 
 function inline(value) {

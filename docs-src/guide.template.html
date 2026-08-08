@@ -7,20 +7,14 @@
   <title>DOM Layout Shim guide</title>
   <link rel="stylesheet" href="./site.css">
   <style>
-    :root { color-scheme: light dark; --bg:#f5f7fa; --panel:#fff; --text:#16202a; --muted:#607080; --line:#d9e1e8; --brand:#176b52; --soft:#dff3eb; --code:#17232b; --code-text:#e7f2ef; --inline:#edf2f5; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
-    @media (prefers-color-scheme: dark) { :root { --bg:#0f1519; --panel:#172126; --text:#e7eff2; --muted:#9eacb3; --line:#334149; --brand:#70d6ad; --soft:#173c31; --code:#091014; --inline:#253138; } }
-    * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; background:var(--bg); color:var(--text); line-height:1.6; } a { color:var(--brand); }
-    nav { position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; min-height:64px; padding:0 28px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--panel) 92%,transparent); backdrop-filter:blur(10px); }
-    .wordmark { color:var(--text); font-weight:760; text-decoration:none; } .nav-links { display:flex; gap:20px; font-size:14px; } .nav-links a { color:var(--muted); text-decoration:none; }
     main { width:min(1080px,calc(100% - 40px)); margin:auto; padding:64px 0; } .hero { display:grid; grid-template-columns:1.2fr .8fr; gap:52px; align-items:center; padding-bottom:72px; }
     .eyebrow { margin:0 0 10px; color:var(--brand); font-size:13px; font-weight:760; letter-spacing:.08em; text-transform:uppercase; } h1 { margin:0; font-size:clamp(40px,7vw,68px); line-height:1.02; letter-spacing:-.04em; } .lede { max-width:680px; margin:24px 0 0; color:var(--muted); font-size:19px; }
     .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; } .button { padding:9px 15px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); font-weight:700; text-decoration:none; } .button.primary { border-color:var(--brand); background:var(--brand); color:var(--bg); }
-    .guide { display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; } .toc { position:sticky; top:88px; align-self:start; display:grid; gap:7px; padding:18px; border:1px solid var(--line); border-radius:10px; background:var(--panel); } .toc strong { margin-bottom:4px; } .toc a { color:var(--muted); text-decoration:none; }
-    .content { min-width:0; } .content section { padding-bottom:56px; } h2 { margin:0 0 12px; font-size:30px; letter-spacing:-.02em; } p { max-width:760px; } .callout { padding:16px 18px; border-left:4px solid var(--brand); border-radius:6px; background:var(--soft); }
-    pre { overflow:auto; margin:18px 0; padding:20px; border:1px solid var(--line); border-radius:10px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
-    .tok-keyword { color:#ff9dca; } .tok-string { color:#a8e6a3; } .tok-comment { color:#84959e; font-style:italic; } .tok-number { color:#ffd580; } .tok-property { color:#8ed9ff; }
+    .guide { display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; } .toc { position:sticky; top:88px; align-self:start; display:grid; gap:7px; padding:18px; border:1px solid var(--line); border-radius:10px; background:var(--panel); } .toc strong { margin-bottom:4px; } .toc a { padding-left:9px; border-left:2px solid transparent; color:var(--muted); text-decoration:none; } .toc a[aria-current='location'] { border-left-color:var(--brand); color:var(--text); font-weight:700; }
+    .content { min-width:0; } .content section { scroll-margin-top:calc(var(--site-nav-height) + 24px); padding-bottom:56px; } h2 { margin:0 0 12px; font-size:30px; letter-spacing:-.02em; } p { max-width:760px; } .callout { padding:16px 18px; border-left:4px solid var(--brand); border-radius:6px; background:var(--soft); }
+    pre { margin:18px 0; }
     footer { margin-top:40px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
-    @media (max-width:800px) { .hero,.guide { grid-template-columns:1fr; } .toc { position:static; } nav { padding:0 20px; } .nav-links a:nth-child(2) { display:none; } main { padding-top:42px; } }
+    @media (max-width:800px) { .hero,.guide { grid-template-columns:1fr; } .toc { position:static; } main { padding-top:42px; } }
   </style>
   <script type="module" src="./site.js"></script>
 </head>
@@ -42,7 +36,7 @@ const target = document.elementFromPoint(
 )</code></pre>
     </section>
     <div class="guide" id="guide">
-      <aside class="toc" aria-label="Guide contents"><strong>Guide</strong><a href="#install">Install</a><a href="#attach">Attach the engine</a><a href="#native-controls">Configure native controls</a><a href="#geometry">Read geometry</a><a href="#hit-testing">Test pointer targets</a><a href="#unsupported-css">Handle unsupported CSS</a><a href="#testing">Use it in tests</a></aside>
+      <aside class="toc" data-scrollspy aria-label="Guide contents"><strong>Guide</strong><a href="#install">Install</a><a href="#attach">Attach the engine</a><a href="#native-controls">Configure native controls</a><a href="#geometry">Read geometry</a><a href="#hit-testing">Test pointer targets</a><a href="#unsupported-css">Handle unsupported CSS</a><a href="#testing">Use it in tests</a></aside>
       <article class="content">
         <section id="install"><p class="eyebrow">Step 1</p><h2>Install</h2><p>Install DOM Layout Shim alongside your DOM implementation. The engine supports Node.js 22 and newer.</p><pre><code data-language="shell"># Install both packages as test-only dependencies.
 pnpm add -D dom-layout-shim happy-dom</code></pre></section>
