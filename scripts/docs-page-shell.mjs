@@ -10,13 +10,13 @@ export function renderDocumentationPage({
   scripts = [],
 }) {
   const styles = pageStyles
-    ? `\n  <style>\n${pageStyles.trim()}\n  </style>`
+    ? `\n  <style data-page-styles>\n${pageStyles.trim()}\n  </style>`
     : ''
   const externalScripts = scripts.length > 0
     ? `\n  ${scripts.map((source) => `<script type="module" src="${escapeAttribute(source)}"></script>`).join('\n  ')}`
     : ''
   const pageScript = inlineModule
-    ? `\n  <script type="module">\n${inlineModule.trim()}\n  </script>`
+    ? `\n  <script type="module" data-page-script>\n${inlineModule.trim()}\n  </script>`
     : ''
   const internalPages = [
     ['index.html', './'],
@@ -45,7 +45,9 @@ export function renderDocumentationPage({
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   ${renderNavigation({ page, version, upcoming })}
-  ${body.trim().replace(/<(main)(\s|>)/, '<$1 id="main-content" tabindex="-1"$2')}${pageScript}
+  <div data-page-content>
+    ${body.trim().replace(/<(main)(\s|>)/, '<$1 id="main-content" tabindex="-1"$2')}
+  </div>${pageScript}
 </body>
 </html>
 `
