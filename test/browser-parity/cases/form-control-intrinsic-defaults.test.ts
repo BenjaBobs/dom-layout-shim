@@ -21,7 +21,7 @@ const nativeControlSnapshots = JSON.parse(readFileSync(
 
 const nativeControlFixture = {
   viewport: { width: 500, height: 300 },
-  observationGroup: 'native-controls',
+  nativeControlProfile: 'portable',
   html: `
       <style>
         body {
