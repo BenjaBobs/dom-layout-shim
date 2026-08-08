@@ -4,6 +4,7 @@ import { expectChromiumParity } from '../parity-harness.ts'
 it('native inline phrasing elements contribute text without block breaks', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -64,6 +65,7 @@ it('author display overrides native inline phrasing defaults', async () => {
 it('native inline phrasing elements preserve br line breaks in ancestor text measurement', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
