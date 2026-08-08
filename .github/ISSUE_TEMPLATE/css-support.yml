@@ -4,34 +4,10 @@ title: "css: "
 labels:
   - enhancement
 body:
-  - type: input
-    id: feature
+  - type: textarea
+    id: request
     attributes:
-      label: CSS feature
-      placeholder: percentage row-gap in wrapped flex layouts
+      label: CSS support request
+      description: Describe the CSS feature, testing use case, minimal HTML and CSS, and expected Chromium behavior.
     validations:
       required: true
-  - type: textarea
-    id: use-case
-    attributes:
-      label: Testing use case
-      description: Explain why deterministic support matters to the test harness.
-    validations:
-      required: true
-  - type: textarea
-    id: example
-    attributes:
-      label: Minimal HTML and CSS
-      render: html
-    validations:
-      required: true
-  - type: textarea
-    id: chromium
-    attributes:
-      label: Expected Chromium behavior
-    validations:
-      required: true
-  - type: textarea
-    id: related
-    attributes:
-      label: Related support record or issue
