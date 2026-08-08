@@ -109,6 +109,24 @@ Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
 also be overridden by property. Text measurement falls back to a deterministic
 approximation in Node-like runtimes without canvas text measurement.
 
+Native-control intrinsic geometry uses the deterministic `portable` profile by
+default. Select it explicitly when a test wants to document that target rather
+than follow the machine running the test:
+
+```ts
+await attachLayoutEngine({
+  window,
+  nativeControls: { profile: 'portable' },
+})
+
+// 192×23 on every host for an unstyled text input.
+document.querySelector('input')?.getBoundingClientRect()
+```
+
+Native-control profiles emulate outer geometry, not operating-system rendering
+or internal widget behavior. Additional Chromium platform profiles are added
+only from recorded cross-platform parity evidence.
+
 The package requires Node.js 22 or newer and uses standard ES modules.
 
 See [docs/index.html](docs/index.html) for the documentation site and

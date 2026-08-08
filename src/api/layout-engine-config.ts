@@ -1,5 +1,6 @@
 import type { UnsupportedCssPolicy } from './unsupported-css-policy.ts'
 import { createDefaultTextMeasurer, type TextMeasurer } from './text-measurer.ts'
+import type { NativeControlOptions, NativeControlProfile } from './native-control-profile.ts'
 
 export type Viewport = {
   width: number
@@ -16,6 +17,7 @@ export type LayoutEngineConfig = {
   unsupportedCss?: UnsupportedCssPolicy
   textMeasurer?: TextMeasurer
   stylesheets?: readonly string[]
+  nativeControls?: NativeControlOptions
 }
 
 export type NormalizedLayoutEngineConfig = {
@@ -23,6 +25,7 @@ export type NormalizedLayoutEngineConfig = {
   unsupportedCss: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
   stylesheets: readonly string[]
+  nativeControlProfile: NativeControlProfile
 }
 
 export function normalizeConfig(config: LayoutEngineConfig = {}): NormalizedLayoutEngineConfig {
@@ -31,5 +34,6 @@ export function normalizeConfig(config: LayoutEngineConfig = {}): NormalizedLayo
     unsupportedCss: { default: 'warn', ...config.unsupportedCss },
     textMeasurer: config.textMeasurer ?? createDefaultTextMeasurer(),
     stylesheets: config.stylesheets ?? [],
+    nativeControlProfile: config.nativeControls?.profile ?? 'portable',
   }
 }

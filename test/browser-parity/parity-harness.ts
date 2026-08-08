@@ -1,8 +1,10 @@
 import { chromium, type Browser } from '@playwright/test'
-import { readFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { Window as HappyDomWindow } from 'happy-dom'
 import { expect, inject } from 'vitest'
 import { attachLayoutEngine } from '../../src/index.ts'
+import type { NativeControlProfile } from '../../src/index.ts'
 
 export type PointQuery = {
   type: 'point'
@@ -74,6 +76,9 @@ export type BrowserParityFixture = {
   }
   html: string
   typography?: 'deterministic'
+  nativeControlProfile?: NativeControlProfile
+  observationGroup?: 'native-controls'
+  observationQueries?: BrowserParityQuery[]
   queries: BrowserParityQuery[]
 }
 
@@ -117,20 +122,25 @@ type QueryWindow = {
 }
 
 let browserPromise: Promise<Browser> | undefined
+let chromiumVersion: string | undefined
 const deterministicFontFamily = 'DOM Layout Shim Deterministic'
 const deterministicFontData = readFileSync(
   new URL('./assets/fonts/deterministic-layout.otf', import.meta.url),
 ).toString('base64')
 
 export async function expectChromiumParity(fixture: BrowserParityFixture): Promise<void> {
+  const queries = fixtureQueries(fixture)
   const chromiumResult = await runInChromium(fixture)
   const engineResult = await runInHappyDom(fixture)
 
-  expect(engineResult.length, 'Parity result count should match query count').toBe(fixture.queries.length)
-  expect(chromiumResult.length, 'Chromium result count should match query count').toBe(fixture.queries.length)
+  expect(engineResult.length, 'Parity result count should match query count').toBe(queries.length)
+  expect(chromiumResult.length, 'Chromium result count should match query count').toBe(queries.length)
 
-  for (const [index, query] of fixture.queries.entries()) {
-    expectQueryParity(engineResult[index], chromiumResult[index], query, index)
+  for (const [index, query] of queries.entries()) {
+    recordObservation(fixture, query, engineResult[index], chromiumResult[index])
+    if (index < fixture.queries.length) {
+      expectQueryParity(engineResult[index], chromiumResult[index], query, index)
+    }
   }
 }
 
@@ -184,6 +194,7 @@ function expectNumericRecordParity<T extends Record<string, number>>(
 
 async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult[]> {
   const browser = await getChromiumBrowser()
+  chromiumVersion ??= browser.version()
   const page = await browser.newPage({ viewport: fixture.viewport })
 
   try {
@@ -234,7 +245,7 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
 
         return runQueries(window as unknown as QueryWindow, queries)
       },
-      { queries: fixture.queries, runQueriesSource: runQueries.toString() },
+      { queries: fixtureQueries(fixture), runQueriesSource: runQueries.toString() },
     )
   } finally {
     await page.close().catch(() => {})
@@ -270,7 +281,11 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
     }
   }
 
-  await attachLayoutEngine({ window, viewport: fixture.viewport })
+  await attachLayoutEngine({
+    window,
+    viewport: fixture.viewport,
+    nativeControls: { profile: fixture.nativeControlProfile ?? 'portable' },
+  })
   if (fixture.scrollIntoView) {
     const element = document.querySelector(fixture.scrollIntoView.selector)
 
@@ -281,10 +296,44 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
     element.scrollIntoView(fixture.scrollIntoView.arg)
   }
 
-  const results = runQueries(window as unknown as QueryWindow, fixture.queries)
+  const results = runQueries(window as unknown as QueryWindow, fixtureQueries(fixture))
   window.close()
 
   return results
+}
+
+function fixtureQueries(fixture: BrowserParityFixture): BrowserParityQuery[] {
+  return process.env.NATIVE_CONTROL_OBSERVATIONS_PATH
+    ? [...fixture.queries, ...(fixture.observationQueries ?? [])]
+    : fixture.queries
+}
+
+function recordObservation(
+  fixture: BrowserParityFixture,
+  query: BrowserParityQuery,
+  engineResult: QueryResult | undefined,
+  chromiumResult: QueryResult | undefined,
+): void {
+  const outputPath = process.env.NATIVE_CONTROL_OBSERVATIONS_PATH
+
+  if (!outputPath || fixture.observationGroup !== 'native-controls') {
+    return
+  }
+
+  mkdirSync(dirname(outputPath), { recursive: true })
+  appendFileSync(outputPath, `${JSON.stringify({
+    test: expect.getState().currentTestName,
+    platform: process.platform,
+    architecture: process.arch,
+    chromiumVersion,
+    runnerImage: process.env.ImageOS,
+    runnerImageVersion: process.env.ImageVersion,
+    profile: fixture.nativeControlProfile ?? 'portable',
+    group: fixture.observationGroup,
+    query,
+    chromium: chromiumResult,
+    engine: engineResult,
+  })}\n`)
 }
 
 function fixtureHtml(fixture: BrowserParityFixture, includeFontFace: boolean): string {

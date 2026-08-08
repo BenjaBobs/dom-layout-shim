@@ -29,6 +29,7 @@ const nativeControlTolerance = {
 it('common form controls expose native intrinsic sizes independently', async () => {
   await expectChromiumParity({
     viewport: { width: 500, height: 300 },
+    observationGroup: 'native-controls',
     html: `
       <style>
         body {
@@ -106,6 +107,11 @@ it('common form controls expose native intrinsic sizes independently', async () 
       { type: 'rect', selector: '#select-multiple', ...nativeSelectTolerance },
       { type: 'rect', selector: '#progress' },
       { type: 'rect', selector: '#meter' },
+    ],
+    observationQueries: [
+      { type: 'rect', selector: '#time' },
+      { type: 'rect', selector: '#textarea' },
+      { type: 'rect', selector: '#textarea-sized' },
     ],
   })
 })

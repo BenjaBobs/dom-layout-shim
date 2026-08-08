@@ -7,6 +7,16 @@ afterEach(() => {
 })
 
 describe('layout DOM API and package contracts', () => {
+  it('accepts the explicit portable native-control profile', async () => {
+    document.body.innerHTML = '<input id="text">'
+
+    await attach({ nativeControls: { profile: 'portable' } })
+
+    const rect = requiredElement('#text').getBoundingClientRect()
+    expect(rect.width).toBe(192)
+    expect(rect.height).toBe(23)
+  })
+
   it('patches element dimension APIs from the computed layout snapshot', async () => {
     document.body.innerHTML = `
       <div
