@@ -47,6 +47,7 @@ jobs:
         run: |
           node scripts/css-support.mjs validate
           node scripts/css-support.mjs generate
+          node scripts/generate-docs-pages.mjs
           node scripts/generate-changelog-page.mjs
 
       - name: Upload Pages artifact

@@ -47,6 +47,15 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('limits documentation page source changes to documentation checks', () => {
+    expect(classifyAffectedScopes(['docs-src/guide.template.html'])).toMatchObject({
+      package: false,
+      parity: false,
+      docs: true,
+      release: false,
+    })
+  })
+
   it('regenerates documentation when the changelog changes', () => {
     expect(classifyAffectedScopes(['CHANGELOG.md'])).toMatchObject({
       package: false,

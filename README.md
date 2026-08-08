@@ -150,8 +150,10 @@ editing it, or `pnpm run css:query -- flex-basis` to query it from a terminal.
 Ignored, generated JSON for documentation and agent consumers is written to
 `docs/data/`.
 
-Run `pnpm run docs:serve` to generate the support data and serve the complete
-documentation site locally. Pass a port when needed, for example
+Run `pnpm run docs:generate` to rebuild every HTML page and its support data,
+or `pnpm run docs:check` to verify that committed output is current. Run
+`pnpm run docs:serve` to generate and serve the complete documentation site
+locally. Pass a port when needed, for example
 `pnpm run docs:serve -- 4174`.
 
 Run `pnpm run test:package` to build and pack the exact npm artifact, install it

@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { insertUpcoming, markUntaggedReleaseUpcoming } from './changelog-source.mjs'
+import { renderDocumentationPage } from './docs-page-shell.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const changelog = await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')
@@ -12,30 +13,20 @@ const markdown = pendingChangesets.length > 0
 const content = renderMarkdown(markdown)
 const outputPath = resolve(root, 'docs/changelog.html')
 
-const output = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="DOM Layout Shim release changelog.">
-  <title>DOM Layout Shim changelog</title>
-  <style>
+const output = renderDocumentationPage({
+  title: 'DOM Layout Shim changelog',
+  description: 'DOM Layout Shim release changelog.',
+  body: `<main>${content}</main>`,
+  pageStyles: `
     :root { color-scheme:light dark; --bg:#f5f7fa; --panel:#fff; --text:#16202a; --muted:#607080; --line:#d9e1e8; --brand:#176b52; --code:#17232b; --code-text:#e7f2ef; --inline:#edf2f5; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
     @media (prefers-color-scheme:dark) { :root { --bg:#0f1519; --panel:#172126; --text:#e7eff2; --muted:#9eacb3; --line:#334149; --brand:#70d6ad; --code:#091014; --inline:#253138; } }
     * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); line-height:1.65; } a { color:var(--brand); }
-    nav { display:flex; gap:20px; padding:20px max(20px,calc((100% - 820px)/2)); border-bottom:1px solid var(--line); background:var(--panel); } nav a { text-decoration:none; font-weight:700; }
-    main { width:min(820px,calc(100% - 40px)); margin:auto; padding:52px 0 80px; } h1 { font-size:44px; letter-spacing:-.035em; } h2 { margin-top:52px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin-top:30px; color:var(--muted); }
-    li { margin:10px 0; } pre { overflow:auto; padding:18px; border:1px solid var(--line); border-radius:9px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
+    main { width:min(980px,calc(100% - 40px)); margin:auto; padding:52px 0 80px; } h1 { margin:0 0 44px; font-size:44px; letter-spacing:-.035em; } h2 { margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
+    .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child { margin-bottom:0; } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
+    pre { overflow:auto; padding:18px; border:1px solid var(--line); border-radius:9px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
     .tok-keyword { color:#ff9dca; } .tok-string { color:#a8e6a3; } .tok-comment { color:#84959e; font-style:italic; } .tok-number { color:#ffd580; } .tok-property { color:#8ed9ff; }
-  </style>
-  <script src="./site.js" defer></script>
-</head>
-<body>
-  <nav><a href="./">Guide</a><a href="./css-support-status.html">CSS support</a><a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a></nav>
-  <main>${content}</main>
-</body>
-</html>
-`
+  `,
+})
 
 if (process.argv.includes('--check')) {
   const current = await readFile(outputPath, 'utf8').catch(() => '')
@@ -83,7 +74,9 @@ function renderMarkdown(source) {
   const output = []
   const lines = source.split('\n')
   let paragraph = []
-  let inList = false
+  let inChange = false
+  let changeOpen = false
+  let changeTitle = []
   let codeLanguage
   let code = []
 
@@ -91,9 +84,18 @@ function renderMarkdown(source) {
     if (paragraph.length > 0) output.push(`<p>${inline(paragraph.join(' '))}</p>`)
     paragraph = []
   }
-  const closeList = () => {
-    if (inList) output.push('</ul>')
-    inList = false
+  const openChange = () => {
+    if (!inChange || changeOpen) return
+    output.push(`<article class="change"><h4>${inline(changeTitle.join(' '))}</h4>`)
+    changeOpen = true
+  }
+  const closeChange = () => {
+    openChange()
+    flushParagraph()
+    if (changeOpen) output.push('</article>')
+    inChange = false
+    changeOpen = false
+    changeTitle = []
   }
 
   for (const line of lines) {
@@ -104,7 +106,7 @@ function renderMarkdown(source) {
         codeLanguage = undefined
         code = []
       } else {
-        closeList()
+        openChange()
         flushParagraph()
         codeLanguage = fence[1] || 'text'
       }
@@ -117,34 +119,38 @@ function renderMarkdown(source) {
 
     const heading = /^(#{1,3})\s+(.+)$/.exec(line)
     if (heading) {
-      closeList()
-      flushParagraph()
+      closeChange()
       const level = heading[1].length
       output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
       continue
     }
     const item = /^-\s+(.+)$/.exec(line)
     if (item) {
-      flushParagraph()
-      if (!inList) output.push('<ul>')
-      inList = true
-      output.push(`<li>${inline(item[1])}</li>`)
+      closeChange()
+      inChange = true
+      changeTitle = [item[1]]
       continue
     }
     if (line.trim() === '') {
-      closeList()
+      openChange()
       flushParagraph()
+      continue
+    }
+    if (inChange && !changeOpen) {
+      changeTitle.push(line.trim())
       continue
     }
     paragraph.push(line.trim())
   }
-  flushParagraph()
-  closeList()
+  closeChange()
   return output.join('\n')
 }
 
 function inline(value) {
-  return escapeHtml(value).replace(/`([^`]+)`/g, '<code>$1</code>')
+  return escapeHtml(value)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\b([0-9a-f]{7,40}):/g, '<a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/$1">$1</a>:')
+    .replace(/(^|\s)#(\d+)\b/g, '$1<a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/pull/$2">#$2</a>')
 }
 
 function escapeHtml(value) {
