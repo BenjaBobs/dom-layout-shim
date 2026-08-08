@@ -15,8 +15,8 @@ describe('documentation page shell', () => {
 
     expect(output.match(/<nav class="site-nav" data-site-nav/g)).toHaveLength(1)
     expect(output).toContain('aria-current="page">Changelog</a>')
-    expect(output).toContain('v1.2.3</a>')
-    expect(output).toContain('href="./changelog.html#upcoming">Upcoming</a>')
+    expect(output).toContain('Latest v1.2.3</a>')
+    expect(output).toContain('href="./changelog.html#upcoming">Unreleased</a>')
     expect(output).toContain('<a class="skip-link" href="#main-content">Skip to content</a>')
     expect(output).toContain('<main id="main-content" tabindex="-1">')
     expect(output).toContain('<link rel="stylesheet" href="./site.css">')

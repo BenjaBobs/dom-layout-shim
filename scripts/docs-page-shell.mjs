@@ -48,8 +48,8 @@ export function renderNavigation({ page, version, upcoming }) {
   return `<nav class="site-nav" data-site-nav aria-label="Main navigation">
     <a class="site-wordmark" href="./">DOM Layout Shim</a>
     <span class="site-context">
-      ${version ? `<a class="site-version" href="https://www.npmjs.com/package/dom-layout-shim/v/${escapeAttribute(version)}">v${escapeHtml(version)}</a>` : ''}
-      ${upcoming ? '<a class="site-upcoming" href="./changelog.html#upcoming">Upcoming</a>' : ''}
+      ${version ? `<a class="site-version" href="https://www.npmjs.com/package/dom-layout-shim/v/${escapeAttribute(version)}">Latest v${escapeHtml(version)}</a>` : ''}
+      ${upcoming ? '<a class="site-upcoming" href="./changelog.html#upcoming">Unreleased</a>' : ''}
     </span>
     <button class="site-menu-button" type="button" aria-expanded="false" aria-controls="site-navigation-links">Menu</button>
     <div class="site-nav-links" id="site-navigation-links">

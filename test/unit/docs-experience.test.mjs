@@ -19,6 +19,9 @@ describe('generated documentation experience', () => {
     const page = await readDocumentationSource('scripts/generate-changelog-page.mjs')
 
     expect(page).toContain('class="current-release" aria-live="polite"')
+    expect(page).toContain('data-current-section')
+    expect(page).toContain('class="release-anchor"')
+    expect(page).toContain('data-change-filter="major"')
     expect(page).toContain('data-change-filter="minor"')
     expect(page).toContain('id="${releaseId(release)}" data-release="${escapeHtml(release)}"')
     expect(page).toContain("if (release === 'Upcoming') return 'upcoming'")

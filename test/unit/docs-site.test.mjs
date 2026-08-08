@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { enhanceNavigation, enhanceScrollspy, highlight } from '../../docs-engine/assets/site.js'
+import { enhanceExternalLinks, enhanceNavigation, enhanceScrollspy, highlight } from '../../docs-engine/assets/site.js'
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -37,5 +37,15 @@ describe('documentation site behavior', () => {
 
     expect(document.querySelector('[href="#two"]').getAttribute('aria-current')).toBe('location')
     expect(document.querySelector('[href="#one"]').hasAttribute('aria-current')).toBe(false)
+  })
+
+  it('opens external links in a separate tab without exposing the opener', () => {
+    document.body.innerHTML = '<a href="./guide">Internal</a><a href="https://example.com">External</a>'
+
+    enhanceExternalLinks(document.body)
+
+    expect(document.querySelector('[href="./guide"]').target).toBe('')
+    expect(document.querySelector('[href="https://example.com"]').target).toBe('_blank')
+    expect(document.querySelector('[href="https://example.com"]').rel).toBe('noopener noreferrer')
   })
 })

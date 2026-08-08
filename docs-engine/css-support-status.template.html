@@ -54,7 +54,8 @@
       }
     }
 
-    body {
+    header,
+    main {
       font-size: 14px;
       line-height: 1.45;
     }
@@ -395,6 +396,14 @@
 
     .fixture-link {
       color: inherit;
+      text-decoration: underline;
+      text-decoration-color: var(--muted);
+      text-underline-offset: 2px;
+    }
+
+    .fixture-link::after {
+      content: ' ↗';
+      color: var(--brand);
     }
 
     .fixture-link:hover {
@@ -780,6 +789,7 @@
             <a
               class="chip fixture-link"
               href="https://github.com/BenjaBobs/dom-layout-shim/blob/main/test/browser-parity/cases/${encodeURIComponent(value)}.test.ts"
+              title="Open ${escapeHtml(value)} parity test source in GitHub"
             >${highlight(value, query)}</a>
           `).join('')}
         </div>

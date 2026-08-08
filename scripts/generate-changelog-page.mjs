@@ -27,30 +27,38 @@ const output = renderDocumentationPage({
       <nav class="release-toc" aria-label="Changelog versions"><strong>Releases</strong>${releases.map((release) => `<a href="#${releaseId(release)}">${escapeHtml(release)}</a>`).join('')}</nav>
       <div class="change-filters" role="group" aria-label="Filter changes by release type">
         <button type="button" data-change-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-change-filter="major" aria-pressed="false">Major</button>
         <button type="button" data-change-filter="minor" aria-pressed="false">Minor</button>
         <button type="button" data-change-filter="patch" aria-pressed="false">Patch</button>
       </div>
     </div>
-    <div class="current-release" aria-live="polite">Viewing <strong>${escapeHtml(releases[0] || 'Changelog')}</strong></div>
+    <div class="current-release" aria-live="polite"><a data-current-release href="#${releaseId(releases[0] || 'Changelog')}">${escapeHtml(releases[0] || 'Changelog')}</a><span aria-hidden="true">·</span><strong data-current-section>Overview</strong></div>
     ${content}
   </main>`,
   pageStyles: `
     main { width:min(980px,calc(100% - 40px)); margin:auto; padding:32px 0 80px; } h1 { margin:0 0 24px; font-size:clamp(34px,8vw,44px); letter-spacing:-.035em; } h2 { scroll-margin-top:110px; margin-top:56px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin:34px 0 14px; color:var(--muted); font-size:15px; letter-spacing:.06em; text-transform:uppercase; }
     .changelog-tools { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line); } .release-toc { display:flex; flex-wrap:wrap; gap:12px; align-items:center; } .release-toc a { color:var(--muted); } .change-filters { display:flex; gap:6px; } .change-filters button { padding:6px 10px; border:1px solid var(--line); border-radius:7px; background:var(--panel); color:var(--text); } .change-filters button[aria-pressed="true"] { border-color:var(--brand); color:var(--brand); }
-    .current-release { position:sticky; top:var(--site-nav-height); z-index:9; margin:0 -12px; padding:9px 12px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 95%,transparent); color:var(--muted); backdrop-filter:blur(10px); } .current-release strong { color:var(--text); }
-    .release-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; } .release-links { display:flex; gap:10px; font-size:13px; font-weight:400; }
+    .current-release { position:sticky; top:var(--site-nav-height); z-index:9; display:flex; gap:8px; margin:0 -12px; padding:9px 12px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 95%,transparent); color:var(--muted); backdrop-filter:blur(10px); } .current-release a,.current-release strong { color:var(--text); font-weight:700; } .current-release a { text-decoration-color:var(--brand); text-underline-offset:3px; }
+    .release-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; } .release-anchor { color:var(--text); text-decoration-color:transparent; text-underline-offset:4px; } .release-anchor:hover { text-decoration-color:var(--brand); } .release-links { display:flex; gap:10px; font-size:13px; font-weight:400; }
     .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); box-shadow:var(--shadow-panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child { margin-bottom:0; } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
     @media (max-width:700px) { .changelog-tools { align-items:flex-start; flex-direction:column; } .release-toc { max-height:80px; overflow:auto; } .release-heading { align-items:flex-start; flex-direction:column; } }
   `,
   inlineModule: `
-    const indicator = document.querySelector('.current-release strong')
-    const headings = [...document.querySelectorAll('h2[data-release]')]
-    const updateRelease = () => {
-      const current = [...headings].reverse().find((heading) => heading.getBoundingClientRect().top <= 130) || headings[0]
-      if (current && indicator) indicator.textContent = current.dataset.release
+    const releaseIndicator = document.querySelector('[data-current-release]')
+    const sectionIndicator = document.querySelector('[data-current-section]')
+    const releaseHeadings = [...document.querySelectorAll('h2[data-release]')]
+    const sectionHeadings = [...document.querySelectorAll('h3[data-change-section]')]
+    const updateContext = () => {
+      const release = [...releaseHeadings].reverse().find((heading) => heading.getBoundingClientRect().top <= 130) || releaseHeadings[0]
+      const section = [...sectionHeadings].reverse().find((heading) => heading.getBoundingClientRect().top <= 130 && (!release || heading.compareDocumentPosition(release) & Node.DOCUMENT_POSITION_PRECEDING))
+      if (release && releaseIndicator) {
+        releaseIndicator.textContent = release.dataset.release
+        releaseIndicator.href = '#' + release.id
+      }
+      if (sectionIndicator) sectionIndicator.textContent = section?.dataset.changeSection || 'Overview'
     }
-    addEventListener('scroll', updateRelease, { passive: true })
-    updateRelease()
+    addEventListener('scroll', updateContext, { passive: true })
+    updateContext()
 
     for (const button of document.querySelectorAll('[data-change-filter]')) {
       button.addEventListener('click', () => {
@@ -158,11 +166,11 @@ function renderMarkdown(source, releases) {
         const links = release === 'Upcoming'
           ? '<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v' + escapeHtml(releases[1] || '') + '...main">Compare with main</a>'
           : `<a href="https://www.npmjs.com/package/dom-layout-shim/v/${escapeHtml(release)}">npm</a><a href="https://github.com/BenjaBobs/dom-layout-shim/releases/tag/v${escapeHtml(release)}">GitHub</a>${previous && previous !== 'Upcoming' ? `<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v${escapeHtml(previous)}...v${escapeHtml(release)}">Compare</a>` : ''}`
-        output.push(`<div class="release-heading"><h2 id="${releaseId(release)}" data-release="${escapeHtml(release)}">${inline(release)}</h2><span class="release-links">${links}</span></div>`)
+        output.push(`<div class="release-heading"><h2 id="${releaseId(release)}" data-release="${escapeHtml(release)}"><a class="release-anchor" href="#${releaseId(release)}">${inline(release)}</a></h2><span class="release-links">${links}</span></div>`)
         releaseIndex += 1
       } else if (level !== 1) {
-        if (level === 3) changeType = heading[2].toLowerCase().startsWith('minor') ? 'minor' : heading[2].toLowerCase().startsWith('patch') ? 'patch' : ''
-        output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+        if (level === 3) changeType = heading[2].toLowerCase().startsWith('major') ? 'major' : heading[2].toLowerCase().startsWith('minor') ? 'minor' : heading[2].toLowerCase().startsWith('patch') ? 'patch' : ''
+        output.push(`<h${level}${level === 3 ? ` data-change-section="${escapeHtml(heading[2])}"` : ''}>${inline(heading[2])}</h${level}>`)
       }
       continue
     }
