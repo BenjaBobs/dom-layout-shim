@@ -17,7 +17,9 @@ changes should use separate Changesets.
 
 Write for package consumers rather than repeating the commit subject. Explain
 the capability, correction, compatibility evidence, or migration requirement
-that matters after upgrading.
+that matters after upgrading, and include a concise public-facing example that
+demonstrates the observable effect. Prefer a before-and-after comparison when
+behavior changes.
 
 See `CONTRIBUTING.md` and `docs/releasing.md` for the contribution, release, and
 versioning policies.

@@ -28,8 +28,9 @@ reverted, and released independently.
 ## Writing release notes
 
 Summaries must stand on their own without the commit or pull request. Lead with
-the user-visible outcome and include constraints or migration guidance where
-needed.
+the user-visible outcome, include constraints or migration guidance where
+needed, and include a concise example that demonstrates the observable effect
+of upgrading.
 
 Prefer:
 
@@ -54,10 +55,10 @@ opposing logical insets.
 
 ### Code examples
 
-Changeset descriptions are Markdown, so they may include fenced code examples.
-Use them when a short before-and-after comparison makes the consumer-visible
-change or required migration materially clearer. Keep examples concise, use the
-public API, and state the observable difference:
+Changeset descriptions are Markdown and must include a concise example of the
+consumer-visible outcome. Prefer a short before-and-after comparison for a
+behavior change or required migration. Use the public API or observable output
+and state the difference explicitly:
 
 ````md
 Previously, media queries used the DOM environment's viewport:
@@ -75,8 +76,9 @@ window.matchMedia('(max-width: 500px)').matches
 ```
 ````
 
-Do not add examples merely to restate the prose, and avoid test setup or
-implementation details unless consumers need them to understand the change.
+The example should substantiate rather than merely repeat the prose. Avoid test
+setup or implementation details unless consumers need them to understand the
+change.
 
 ## Version policy before 1.0
 
