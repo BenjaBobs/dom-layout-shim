@@ -44,7 +44,10 @@ jobs:
 
       - name: Validate and generate support data
         if: steps.scopes.outputs.docs == 'true'
-        run: node scripts/css-support.mjs validate && node scripts/css-support.mjs generate
+        run: |
+          node scripts/css-support.mjs validate
+          node scripts/css-support.mjs generate
+          node scripts/generate-changelog-page.mjs
 
       - name: Upload Pages artifact
         if: steps.scopes.outputs.docs == 'true' && github.event.repository.visibility == 'public'

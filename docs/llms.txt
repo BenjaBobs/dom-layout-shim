@@ -6,6 +6,7 @@ harnesses.
 ## CSS support data
 
 - Compatibility explorer: ./css-support-status.html
+- Package changelog: ./changelog.html
 - Complete normalized inventory: ./data/css-support.json
 - CSS property-to-record index: ./data/css-property-index.json
 - JSON Schema: ./data/css-support.schema.json
@@ -24,4 +25,4 @@ legacy descriptions and should be interpreted conservatively.
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim
 - Implementation phases: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/implementation-phases.md
 - Taffy pipeline roadmap: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/taffy-pipeline-roadmap.md
-- Release and changelog policy: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/releasing.md
+- Release policy: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/releasing.md

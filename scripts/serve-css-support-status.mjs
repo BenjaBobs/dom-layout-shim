@@ -3,9 +3,9 @@ import { createServer } from 'node:http'
 import { extname, resolve, sep } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
+const docsRoot = resolve(root, 'docs')
 const portArgument = process.argv.slice(2).find((argument) => /^\d+$/.test(argument))
 const requestedPort = Number(process.env.PORT ?? portArgument ?? 4173)
-const docsPath = '/docs/index.html'
 const contentTypes = {
   '.html': 'text/html; charset=utf-8',
   '.ts': 'text/plain; charset=utf-8',
@@ -17,10 +17,10 @@ const contentTypes = {
 
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`)
-  const pathname = url.pathname === '/' ? docsPath : decodeURIComponent(url.pathname)
-  const filePath = resolve(root, `.${pathname}`)
+  const pathname = url.pathname === '/' ? '/index.html' : decodeURIComponent(url.pathname)
+  const filePath = resolve(docsRoot, `.${pathname}`)
 
-  if (!isWithinRoot(filePath)) {
+  if (!isWithinDocs(filePath)) {
     response.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' })
     response.end('Forbidden')
     return
@@ -50,7 +50,7 @@ server.listen(requestedPort, '127.0.0.1', () => {
   const port = typeof address === 'object' && address ? address.port : requestedPort
 
   console.log(`Documentation site: http://localhost:${port}/`)
-  console.log(`CSS support overview: http://localhost:${port}/docs/css-support-status.html`)
+  console.log(`CSS support overview: http://localhost:${port}/css-support-status.html`)
   console.log('Press Ctrl+C to stop the server.')
 })
 
@@ -64,6 +64,6 @@ server.on('error', (error) => {
   throw error
 })
 
-function isWithinRoot(filePath) {
-  return filePath === root || filePath.startsWith(`${root}${sep}`)
+function isWithinDocs(filePath) {
+  return filePath === docsRoot || filePath.startsWith(`${docsRoot}${sep}`)
 }

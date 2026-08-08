@@ -6,7 +6,7 @@
   <title>CSS Support Status</title>
   <style>
     :root {
-      color-scheme: light;
+      color-scheme: light dark;
       --bg: #f6f7f9;
       --panel: #ffffff;
       --panel-2: #eef3f8;
@@ -24,9 +24,47 @@
       --violet: #7251a4;
       --violet-bg: #eee7f8;
       --gray-bg: #edf0f3;
+      --claim-bg: #fbfcfd;
+      --heading-text: #394654;
+      --chip-text: #34414f;
+      --error-line: #e3b4b4;
+      --error-bg: #fff1f1;
+      --error-text: #7b2525;
+      --mark-bg: #ffe58a;
+      --mark-text: #332400;
       font-family:
         Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
         "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1519;
+        --panel: #172126;
+        --panel-2: #202d34;
+        --text: #e7eff2;
+        --muted: #9eacb3;
+        --line: #334149;
+        --green: #70d6ad;
+        --green-bg: #173c31;
+        --amber: #ffd078;
+        --amber-bg: #493919;
+        --red: #ff9b9b;
+        --red-bg: #492526;
+        --blue: #8dccff;
+        --blue-bg: #19364b;
+        --violet: #c4a7f5;
+        --violet-bg: #34294a;
+        --gray-bg: #29353b;
+        --claim-bg: #121b20;
+        --heading-text: #c7d4da;
+        --chip-text: #d6e1e5;
+        --error-line: #744244;
+        --error-bg: #3b2022;
+        --error-text: #ffb9b9;
+        --mark-bg: #735d16;
+        --mark-text: #fff2b0;
+      }
     }
 
     * {
@@ -136,7 +174,7 @@
       top: 0;
       z-index: 1;
       background: var(--panel-2);
-      color: #394654;
+      color: var(--heading-text);
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
@@ -208,7 +246,7 @@
     .effect-inert,
     .effect-accepted-inert,
     .effect-source {
-      color: #4f5b67;
+      color: var(--muted);
       background: var(--gray-bg);
     }
 
@@ -223,7 +261,7 @@
       padding: 2px 6px;
       border-radius: 5px;
       background: var(--gray-bg);
-      color: #34414f;
+      color: var(--chip-text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
       white-space: nowrap;
@@ -249,7 +287,7 @@
       padding: 10px;
       border: 1px solid var(--line);
       border-radius: 7px;
-      background: #fbfcfd;
+      background: var(--claim-bg);
     }
 
     .claim-head {
@@ -337,10 +375,17 @@
 
     .error {
       padding: 16px;
-      border: 1px solid #e3b4b4;
+      border: 1px solid var(--error-line);
       border-radius: 8px;
-      background: #fff1f1;
-      color: #7b2525;
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    mark {
+      padding: 0 1px;
+      border-radius: 2px;
+      background: var(--mark-bg);
+      color: var(--mark-text);
     }
 
     @media (max-width: 900px) {
@@ -519,7 +564,7 @@
       })
 
       renderSummary(filtered)
-      renderRows(filtered)
+      renderRows(filtered, query)
     }
 
     function updateLocation({ query, status, effect, owner, parityStatus }) {
@@ -555,20 +600,20 @@
       `).join('')
     }
 
-    function renderRows(entries) {
+    function renderRows(entries, query) {
       document.getElementById('rows').innerHTML = entries.map((entry) => `
         <tr>
           <td>
-            <div class="title">${escapeHtml(entry.title)}</div>
-            <div class="id">${escapeHtml(entry.id)}</div>
+            <div class="title">${highlight(entry.title, query)}</div>
+            <div class="id">${highlight(entry.id, query)}</div>
           </td>
           <td>${badge(entry.status, `status-${entry.status}`)}</td>
           <td>${badge(entry.effect, `effect-${entry.effect}`)}</td>
           <td>${badge(entry.owner, 'effect-source')}</td>
           <td>${badge(entry.parityStatus, parityStatusClass(entry.parityStatus))}</td>
           <td>
-            ${propertyChips(entry.subjects.properties || [], 12)}
-            ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12)}` : ''}
+            ${propertyChips(entry.subjects.properties || [], 12, query)}
+            ${entry.subjects.elements?.length ? `<div class="id">Elements</div>${chips(entry.subjects.elements, 12, query)}` : ''}
           </td>
           <td>${claims(entry.claims, document.getElementById('search').value.trim().toLowerCase())}</td>
         </tr>
@@ -591,33 +636,33 @@
       return 'status-partial'
     }
 
-    function propertyChips(values, limit) {
+    function propertyChips(values, limit, query) {
       if (values.length === 0) {
         return '<span class="more">None</span>'
       }
 
-      const visible = values.slice(0, limit)
+      const visible = prioritizeMatches(values, query).slice(0, limit)
       const hidden = values.length - visible.length
       return `
         <div class="chips">
           ${visible.map((value) => `
-            <a class="chip" href="?q=${encodeURIComponent(value)}" title="Show support for ${escapeHtml(value)}">${escapeHtml(value)}</a>
+            <a class="chip" href="?q=${encodeURIComponent(value)}" title="Show support for ${escapeHtml(value)}">${highlight(value, query)}</a>
           `).join('')}
           ${hidden > 0 ? `<span class="chip more">+${hidden}</span>` : ''}
         </div>
       `
     }
 
-    function chips(values, limit) {
+    function chips(values, limit, query = '') {
       if (values.length === 0) {
         return '<span class="more">None</span>'
       }
 
-      const visible = values.slice(0, limit)
+      const visible = prioritizeMatches(values, query).slice(0, limit)
       const hidden = values.length - visible.length
       return `
         <div class="chips">
-          ${visible.map((value) => `<span class="chip">${escapeHtml(value)}</span>`).join('')}
+          ${visible.map((value) => `<span class="chip">${highlight(value, query)}</span>`).join('')}
           ${hidden > 0 ? `<span class="chip more">+${hidden}</span>` : ''}
         </div>
       `
@@ -631,50 +676,50 @@
           ${visible.map((claim) => `
             <article class="claim" id="${escapeHtml(claim.id)}">
               <div class="claim-head">
-                <span class="claim-title">${escapeHtml(label(claim.id))}</span>
+                <span class="claim-title">${highlight(label(claim.id), query)}</span>
                 ${badge(claim.support, `status-${claim.support}`)}
                 ${badge(claim.parity.status, parityStatusClass(claim.parity.status))}
               </div>
-              ${claim.description ? `<div class="claim-description">${escapeHtml(claim.description)}</div>` : ''}
-              ${claim.properties?.length ? claimValues('Properties', claim.properties) : ''}
-              ${claim.syntax?.length ? claimValues('Syntax', claim.syntax) : ''}
-              ${claim.conditions?.length ? claimValues('Conditions', claim.conditions) : ''}
+              ${claim.description ? `<div class="claim-description">${highlight(claim.description, query)}</div>` : ''}
+              ${claim.properties?.length ? claimValues('Properties', claim.properties, query) : ''}
+              ${claim.syntax?.length ? claimValues('Syntax', claim.syntax, query) : ''}
+              ${claim.conditions?.length ? claimValues('Conditions', claim.conditions, query) : ''}
               ${claim.parity.fixtures.length ? `
                 <div class="claim-section">
                   <div class="claim-label">Chromium parity evidence</div>
-                  ${fixtureChips(claim.parity.fixtures)}
+                  ${fixtureChips(claim.parity.fixtures, query)}
                 </div>
               ` : ''}
-              ${claim.notes.length ? `<div class="claim-section">${notes(claim.notes)}</div>` : ''}
+              ${claim.notes.length ? `<div class="claim-section">${notes(claim.notes, query)}</div>` : ''}
             </article>
           `).join('')}
         </div>
       `
     }
 
-    function claimValues(name, values) {
+    function claimValues(name, values, query) {
       return `
         <div class="claim-section">
           <div class="claim-label">${escapeHtml(name)}</div>
-          ${chips(values, 20)}
+          ${chips(values, 20, query)}
         </div>
       `
     }
 
-    function fixtureChips(values) {
+    function fixtureChips(values, query) {
       return `
         <div class="chips">
           ${values.map((value) => `
             <a
               class="chip fixture-link"
               href="https://github.com/BenjaBobs/dom-layout-shim/blob/main/test/browser-parity/cases/${encodeURIComponent(value)}.test.ts"
-            >${escapeHtml(value)}</a>
+            >${highlight(value, query)}</a>
           `).join('')}
         </div>
       `
     }
 
-    function notes(values) {
+    function notes(values, query) {
       if (values.length === 0) {
         return '<span class="more">No notes</span>'
       }
@@ -685,8 +730,8 @@
             <div class="note">
               ${icons.note}
               <div>
-                <div class="note-kind">${escapeHtml(label(note.kind))}</div>
-                <div>${escapeHtml(note.text)}</div>
+                <div class="note-kind">${highlight(label(note.kind), query)}</div>
+                <div>${highlight(note.text, query)}</div>
               </div>
             </div>
           `).join('')}
@@ -696,6 +741,29 @@
 
     function unique(values) {
       return [...new Set(values)]
+    }
+
+    function prioritizeMatches(values, query) {
+      if (!query) return values
+      return [...values].sort((left, right) =>
+        Number(String(right).toLowerCase().includes(query)) - Number(String(left).toLowerCase().includes(query)),
+      )
+    }
+
+    function highlight(value, query) {
+      const text = String(value)
+      if (!query) return escapeHtml(text)
+      const normalized = text.toLowerCase()
+      let cursor = 0
+      let output = ''
+      let index = normalized.indexOf(query)
+      while (index !== -1) {
+        output += escapeHtml(text.slice(cursor, index))
+        output += `<mark>${escapeHtml(text.slice(index, index + query.length))}</mark>`
+        cursor = index + query.length
+        index = normalized.indexOf(query, cursor)
+      }
+      return output + escapeHtml(text.slice(cursor))
     }
 
     function label(value) {

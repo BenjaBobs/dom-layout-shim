@@ -22,6 +22,7 @@ const rules = [
   { match: oneOf('scripts/extract-release-notes.mjs', 'scripts/inspect-release-state.mjs'), scopes: ['release'] },
   { match: exact('scripts/sync-dependency-update-issues.mjs'), scopes: ['package', 'release'] },
   { match: exact('scripts/serve-css-support-status.mjs'), scopes: ['docs'] },
+  { match: exact('scripts/generate-changelog-page.mjs'), scopes: ['docs'] },
   { match: exact('scripts/check-pr-history.mjs'), scopes: ['release'] },
   { match: exact('scripts/affected-scopes.mjs'), scopes },
   { match: exact('.github/workflows/ci.yml'), scopes: ['package', 'parity'] },
@@ -29,7 +30,7 @@ const rules = [
   { match: exact('.github/workflows/release.yml'), scopes: ['release'] },
   { match: prefix('.github/'), scopes: ['release'] },
   { match: prefix('.changeset/'), scopes: ['release'] },
-  { match: exact('CHANGELOG.md'), scopes: ['release'] },
+  { match: exact('CHANGELOG.md'), scopes: ['docs', 'release'] },
   { match: oneOf(
     'AGENTS.md',
     '.editorconfig',
