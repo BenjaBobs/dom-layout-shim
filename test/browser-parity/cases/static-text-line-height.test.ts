@@ -4,6 +4,7 @@ import { expectChromiumParity } from '../parity-harness.ts'
 it('static text line height determines block height', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -25,6 +26,7 @@ it('static text line height determines block height', async () => {
 it('percentage line height resolves against font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -46,6 +48,7 @@ it('percentage line height resolves against font size', async () => {
 it('em line height resolves against font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -67,6 +70,7 @@ it('em line height resolves against font size', async () => {
 it('rem line height resolves against the root font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         html {
@@ -92,6 +96,7 @@ it('rem line height resolves against the root font size', async () => {
 it('nested text inherits parent font metrics', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -118,6 +123,7 @@ it('nested text inherits parent font metrics', async () => {
 it('percentage font size resolves against inherited parent font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -145,6 +151,7 @@ it('percentage font size resolves against inherited parent font size', async () 
 it('em font size resolves against inherited parent font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -172,6 +179,7 @@ it('em font size resolves against inherited parent font size', async () => {
 it('rem font size resolves against the root font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         html {
@@ -203,6 +211,7 @@ it('rem font size resolves against the root font size', async () => {
 it('inherited text declarations preserve parent text metrics', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -234,6 +243,7 @@ World</div></div>
 it('font-size initial resets inherited parent font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -259,6 +269,7 @@ it('font-size initial resets inherited parent font size', async () => {
 it('font-size unset preserves inherited parent font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -284,6 +295,7 @@ it('font-size unset preserves inherited parent font size', async () => {
 it('white-space initial resets inherited pre-wrap behavior', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {

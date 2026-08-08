@@ -4,6 +4,7 @@ import { expectChromiumParity } from '../parity-harness.ts'
 it('pre-wrap text preserves explicit line breaks', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -27,6 +28,7 @@ World</div>
 it('pre text preserves hard breaks without soft wrapping', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -50,6 +52,7 @@ Again</div>
 it('pre-line text preserves hard breaks and collapses spaces', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
@@ -73,6 +76,7 @@ Again</div>
 it('br elements create hard breaks in text leaves', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body {
