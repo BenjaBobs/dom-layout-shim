@@ -48,7 +48,7 @@ assets used to present it. The CSS support explorer remains a purpose-built HTML
 template because its controls and generated inventory are application-like. The
 ignored `.site/` directory is generated deployment output and must not be
 committed. Edit shared shell behavior in `scripts/docs-page-shell.mjs`, guide
-rendering in `docs-engine/render-guide.mjs`, shared styles and browser behavior
+Markdown rendering in `docs-engine/render-md.mjs`, shared styles and browser behavior
 in `docs-engine/assets/`, and changelog rendering in
 `scripts/generate-changelog-page.mjs`. Run `pnpm run docs:generate` after edits
 and `pnpm run docs:check` before committing.

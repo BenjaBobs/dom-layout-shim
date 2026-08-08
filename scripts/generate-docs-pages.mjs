@@ -1,7 +1,7 @@
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
-import { renderGuide } from '../docs-engine/render-guide.mjs'
+import { guideLayout, renderMarkdownPage } from '../docs-engine/render-md.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const context = await readDocumentationContext(root)
@@ -17,7 +17,7 @@ const pages = [
     source: 'docs/guide.md',
     output: '.site/index.html',
     page: 'index.html',
-    render: renderGuide,
+    render: (source) => renderMarkdownPage(source, guideLayout),
   },
   {
     source: 'docs-engine/css-support-status.template.html',

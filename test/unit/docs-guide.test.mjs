@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { renderGuide } from '../../docs-engine/render-guide.mjs'
+import { guideLayout, renderMarkdownPage } from '../../docs-engine/render-md.mjs'
+
+const renderGuide = (source) => renderMarkdownPage(source, guideLayout)
 
 const guide = `---
 title: Test guide
@@ -27,6 +29,16 @@ Continue here.
 `
 
 describe('Markdown guide rendering', () => {
+  it('lets another page layout reuse parsed Markdown and frontmatter', () => {
+    const rendered = renderMarkdownPage(guide, ({ attributes, markdown, tokens }) => ({
+      title: attributes.title,
+      body: markdown.renderer.render(tokens, markdown.options, {}),
+    }))
+
+    expect(rendered.title).toBe('Test guide')
+    expect(rendered.body).toContain('<h2>First step</h2>')
+  })
+
   it('renders metadata, the hero, navigation, and numbered sections', () => {
     const rendered = renderGuide(guide)
 
