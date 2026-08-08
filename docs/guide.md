@@ -122,6 +122,28 @@ console.log(save.offsetTop, save.offsetLeft, save.offsetParent)
 save.scrollIntoView({ block: 'center', inline: 'nearest' })
 ```
 
+## Test sticky UI
+
+`position: sticky` uses physical `top`, `right`, `bottom`, and `left` insets
+against the nearest supported scrolling ancestor, or against the configured
+viewport when no such ancestor exists. Sticky boxes remain in normal flow,
+move their descendants and hit targets together, and stop at the edge of their
+containing block. Table header groups and cells use the same behavior.
+
+```ts
+window.document.body.innerHTML = `
+  <div style="height:80px; overflow:auto">
+    <header id="toolbar" style="position:sticky; top:0; height:30px"></header>
+    <main style="height:300px"></main>
+  </div>
+`
+
+await attachLayoutEngine({ window })
+
+// The toolbar remains at the scrollport top after its container scrolls.
+toolbar.getBoundingClientRect().top
+```
+
 ## Test pointer targets
 
 Point queries respect layout, stacking order, visibility, pointer events,

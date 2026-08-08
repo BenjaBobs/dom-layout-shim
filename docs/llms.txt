@@ -50,6 +50,15 @@ Cross-origin and otherwise unavailable sheets are routed through the existing
 unsupported CSS policy as `stylesheet` / `unsupported-rule`; warning is the
 default and strict policy throws.
 
+## Sticky positioning
+
+`position: sticky` supports physical `top`, `right`, `bottom`, and `left`
+insets. The nearest ancestor with supported scrolling overflow defines the
+scrollport; otherwise the configured viewport is used. Sticky boxes remain in
+normal flow while their visual geometry, descendants, and hit targets move
+together. They stop at the containing-block edge and apply to ordinary boxes
+and simple table parts.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim
