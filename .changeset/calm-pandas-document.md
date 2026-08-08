@@ -38,3 +38,7 @@ resettable controls, and give every support area a stable link such as
 visible section and accounts for the sticky header when following a section
 link. The changelog likewise keeps the current version visible while scrolling,
 links directly to release sections, and can show only minor or patch entries.
+
+The generated website is deployed from an ignored build directory rather than
+being bundled into the npm package. Authored Markdown and machine-readable
+documentation remain included in the package.

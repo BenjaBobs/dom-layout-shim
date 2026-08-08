@@ -53,7 +53,7 @@
     "test:browser-parity": "pnpm run css:generate && pnpm run font:check && node scripts/run-browser-parity.mjs",
     "bench": "pnpm run css:generate && node --expose-gc test/bench/hit-testing.bench.ts",
     "docs:generate": "pnpm run css:generate && node scripts/generate-docs-pages.mjs && node scripts/generate-changelog-page.mjs",
-    "docs:check": "pnpm run css:check && node scripts/generate-docs-pages.mjs --check && node scripts/generate-changelog-page.mjs --check",
+    "docs:check": "pnpm run docs:generate && node scripts/generate-docs-pages.mjs --check && node scripts/generate-changelog-page.mjs --check",
     "docs:serve": "pnpm run docs:generate && node scripts/serve-css-support-status.mjs",
     "font:check": "node scripts/generate-test-font.mjs --check",
     "font:generate": "node scripts/generate-test-font.mjs",

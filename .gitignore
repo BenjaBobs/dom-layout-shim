@@ -14,7 +14,7 @@
 
 # production
 /build
-/docs/data/
+/.site/
 /src/api/css-support-inventory.generated.ts
 
 # misc

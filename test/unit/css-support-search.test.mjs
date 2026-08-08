@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rankSupportEntries } from '../../docs/css-support-search.js'
+import { rankSupportEntries } from '../../docs-engine/assets/css-support-search.js'
 
 const entry = (id, title, properties = [], notes = []) => ({
   id,

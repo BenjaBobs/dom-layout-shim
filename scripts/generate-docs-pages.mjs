@@ -1,21 +1,28 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const context = await readDocumentationContext(root)
+const siteRoot = resolve(root, '.site')
+await mkdir(siteRoot, { recursive: true })
+
+for (const asset of ['site.css', 'site.js', 'css-support-search.js']) {
+  await copyFile(resolve(root, 'docs-engine/assets', asset), resolve(siteRoot, asset))
+}
+
 const pages = [
   {
-    source: 'docs-src/guide.template.html',
-    output: 'docs/index.html',
+    source: 'docs-engine/guide.template.html',
+    output: '.site/index.html',
     title: 'DOM Layout Shim guide',
     description: 'Guide to deterministic layout and hit testing with DOM Layout Shim.',
     page: 'index.html',
     bodyPattern: /<main>[\s\S]*<\/main>/,
   },
   {
-    source: 'docs-src/css-support-status.template.html',
-    output: 'docs/css-support-status.html',
+    source: 'docs-engine/css-support-status.template.html',
+    output: '.site/css-support-status.html',
     title: 'CSS Support Status',
     description: 'Searchable implementation and Chromium parity status for CSS supported by DOM Layout Shim.',
     page: 'css-support-status.html',
