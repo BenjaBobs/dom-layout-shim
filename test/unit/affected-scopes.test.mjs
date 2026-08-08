@@ -20,6 +20,24 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('runs package and parity checks for workspace configuration changes', () => {
+    expect(classifyAffectedScopes(['pnpm-workspace.yaml'])).toMatchObject({
+      package: true,
+      parity: true,
+      docs: false,
+      release: false,
+    })
+  })
+
+  it('runs package checks for example changes', () => {
+    expect(classifyAffectedScopes(['examples/basic/test/app.test.ts'])).toMatchObject({
+      package: true,
+      parity: false,
+      docs: false,
+      release: false,
+    })
+  })
+
   it('limits Pages action updates to documentation checks', () => {
     expect(classifyAffectedScopes(['.github/workflows/docs.yml'])).toMatchObject({
       package: false,
