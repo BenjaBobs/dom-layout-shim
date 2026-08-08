@@ -555,34 +555,130 @@
       font-size: .92em;
     }
 
-    .parity-count {
+    .fixture-evidence {
       display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 700;
+      align-items: stretch;
     }
 
-    .parity-count svg {
-      width: 15px;
-      height: 15px;
-      flex: 0 0 auto;
+    .fixture-preview,
+    .fixture-source-link {
+      border: 0;
+      font: inherit;
+      cursor: pointer;
     }
 
-    .fixture-link {
-      color: inherit;
-      text-decoration: underline;
-      text-decoration-color: var(--muted);
-      text-underline-offset: 2px;
+    .fixture-preview {
+      border-radius: 5px 0 0 5px;
     }
 
-    .fixture-link::after {
-      content: ' ↗';
+    .fixture-source-link {
+      display: inline-grid;
+      place-items: center;
+      min-width: 25px;
+      padding: 2px 5px;
+      border-left: 1px solid var(--line);
+      border-radius: 0 5px 5px 0;
+      background: var(--gray-bg);
       color: var(--brand);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      text-decoration: none;
     }
 
-    .fixture-link:hover {
+    .fixture-source-link:hover {
+      background: var(--blue-bg);
       color: var(--blue);
-      text-decoration: underline;
+    }
+
+    .fixture-dialog {
+      width: min(980px, calc(100vw - 32px));
+      max-width: none;
+      max-height: min(820px, calc(100vh - 32px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: 0 24px 80px rgb(0 0 0 / .35);
+    }
+
+    .fixture-dialog::backdrop {
+      background: rgb(0 0 0 / .58);
+      backdrop-filter: blur(2px);
+    }
+
+    .fixture-dialog-head,
+    .fixture-dialog-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 14px;
+    }
+
+    .fixture-dialog-head {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .fixture-dialog-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .fixture-dialog-head p {
+      margin: 0 0 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .fixture-dialog-close,
+    .fixture-copy {
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .fixture-dialog-close {
+      min-width: 34px;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .fixture-dialog-status {
+      margin: 0;
+      padding: 10px 14px;
+      color: var(--muted);
+    }
+
+    .fixture-dialog pre {
+      max-height: min(620px, calc(100vh - 210px));
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      border-block: 1px solid var(--line);
+      background: var(--code-bg);
+      line-height: 1.55;
+      tab-size: 2;
+    }
+
+    .fixture-dialog code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre;
+    }
+
+    .fixture-dialog-actions {
+      justify-content: flex-end;
+    }
+
+    .fixture-dialog-actions a {
+      margin-right: auto;
     }
 
     .error {
@@ -677,11 +773,24 @@
         <tbody id="rows"></tbody>
       </table>
     </section>
+    <dialog class="fixture-dialog" id="fixtureDialog" aria-labelledby="fixtureDialogTitle">
+      <div class="fixture-dialog-head">
+        <div><p>Chromium parity fixture</p><h2 id="fixtureDialogTitle">Fixture source</h2></div>
+        <button class="fixture-dialog-close" id="fixtureDialogClose" type="button" aria-label="Close source preview">×</button>
+      </div>
+      <p class="fixture-dialog-status" id="fixtureDialogStatus" role="status">Choose a fixture to preview its source.</p>
+      <pre id="fixtureDialogSource" hidden><code data-language="ts"></code></pre>
+      <div class="fixture-dialog-actions">
+        <a id="fixtureDialogGithub" href="https://github.com/BenjaBobs/dom-layout-shim" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+        <button class="fixture-copy" id="fixtureDialogCopy" type="button" disabled>Copy source</button>
+      </div>
+    </dialog>
   </main>
 
   <script type="module" src="./site.js"></script>
   <script type="module">
     import { rankSupportEntries } from './css-support-search.js'
+    import { highlight as highlightSource } from './site.js'
 
     const sourcePath = './data/css-support.json'
     const statusOrder = ['supported', 'partial', 'unsupported', 'unknown']
@@ -689,6 +798,9 @@
     const ownerOrder = ['css-parser', 'taffy-adapter', 'hit-testing', 'text', 'dom-api']
     const parityStatusOrder = ['verified', 'partially-verified', 'unverified', 'known-mismatch', 'not-applicable']
     let inventory = []
+    const fixtureSourceCache = new Map()
+    let fixtureDialogTrigger
+    let activeFixture
 
     const icons = {
       full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>',
@@ -749,6 +861,16 @@
       document.getElementById('owner').addEventListener('change', render)
       document.getElementById('parityStatus').addEventListener('change', render)
       document.getElementById('clearFilters').addEventListener('click', clearFilters)
+      document.getElementById('rows').addEventListener('click', handleFixturePreview)
+      document.getElementById('fixtureDialogClose').addEventListener('click', closeFixtureDialog)
+      document.getElementById('fixtureDialogCopy').addEventListener('click', copyFixtureSource)
+      document.getElementById('fixtureDialog').addEventListener('click', (event) => {
+        if (event.target === event.currentTarget) closeFixtureDialog()
+      })
+      document.getElementById('fixtureDialog').addEventListener('close', () => {
+        fixtureDialogTrigger?.focus()
+        fixtureDialogTrigger = undefined
+      })
       if (location.hash) requestAnimationFrame(() => document.querySelector(location.hash)?.scrollIntoView())
     }
 
@@ -1012,14 +1134,106 @@
       return `
         <div class="chips">
           ${values.map((value) => `
-            <a
-              class="chip fixture-link"
-              href="https://github.com/BenjaBobs/dom-layout-shim/blob/main/test/browser-parity/cases/${encodeURIComponent(value)}.test.ts"
-              title="Open ${escapeHtml(value)} parity test source in GitHub"
-            >${highlight(value, query)}</a>
+            <span class="fixture-evidence">
+              <button
+                class="chip fixture-preview"
+                type="button"
+                data-fixture="${escapeHtml(value)}"
+                data-tooltip="Preview this Chromium parity fixture"
+              >${highlight(value, query)}</button>
+              <a
+                class="fixture-source-link"
+                href="${githubFixtureUrl(value)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View ${escapeHtml(value)} source on GitHub"
+                data-tooltip="View source on GitHub"
+              >↗</a>
+            </span>
           `).join('')}
         </div>
       `
+    }
+
+    function handleFixturePreview(event) {
+      const trigger = event.target.closest?.('[data-fixture]')
+      if (!trigger) return
+      openFixturePreview(trigger.dataset.fixture, trigger)
+    }
+
+    async function openFixturePreview(fixture, trigger) {
+      const dialog = document.getElementById('fixtureDialog')
+      const status = document.getElementById('fixtureDialogStatus')
+      const sourceContainer = document.getElementById('fixtureDialogSource')
+      const source = sourceContainer.querySelector('code')
+      const copy = document.getElementById('fixtureDialogCopy')
+      fixtureDialogTrigger = trigger
+      activeFixture = fixture
+      document.getElementById('fixtureDialogTitle').textContent = label(fixture)
+      document.getElementById('fixtureDialogGithub').href = githubFixtureUrl(fixture)
+      status.textContent = 'Loading fixture source…'
+      status.hidden = false
+      sourceContainer.hidden = true
+      source.textContent = ''
+      copy.disabled = true
+      if (!dialog.open) {
+        if (typeof dialog.showModal === 'function') dialog.showModal()
+        else dialog.setAttribute('open', '')
+      }
+
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(fixture)) {
+        showFixtureError('This fixture name is not valid.')
+        return
+      }
+
+      try {
+        let contents = fixtureSourceCache.get(fixture)
+        if (contents === undefined) {
+          const response = await fetch(`./data/parity-sources/${encodeURIComponent(fixture)}.test.ts`)
+          if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${response.statusText}`)
+          contents = await response.text()
+          fixtureSourceCache.set(fixture, contents)
+        }
+        if (activeFixture !== fixture) return
+        source.innerHTML = highlightSource(contents, 'ts')
+        source.dataset.source = contents
+        status.hidden = true
+        sourceContainer.hidden = false
+        copy.disabled = false
+      } catch (error) {
+        if (activeFixture === fixture) showFixtureError(`Could not load fixture source: ${error.message}`)
+      }
+    }
+
+    function showFixtureError(message) {
+      const status = document.getElementById('fixtureDialogStatus')
+      status.textContent = message
+      status.hidden = false
+      document.getElementById('fixtureDialogSource').hidden = true
+    }
+
+    function closeFixtureDialog() {
+      const dialog = document.getElementById('fixtureDialog')
+      activeFixture = undefined
+      if (typeof dialog.close === 'function') dialog.close()
+      else {
+        dialog.removeAttribute('open')
+        fixtureDialogTrigger?.focus()
+        fixtureDialogTrigger = undefined
+      }
+    }
+
+    async function copyFixtureSource() {
+      const copy = document.getElementById('fixtureDialogCopy')
+      const contents = document.querySelector('#fixtureDialogSource code').dataset.source
+      if (!contents || !navigator.clipboard?.writeText) return
+      await navigator.clipboard.writeText(contents)
+      copy.textContent = 'Copied'
+      setTimeout(() => copy.textContent = 'Copy source', 1200)
+    }
+
+    function githubFixtureUrl(value) {
+      return `https://github.com/BenjaBobs/dom-layout-shim/blob/main/test/browser-parity/cases/${encodeURIComponent(value)}.test.ts`
     }
 
     function notes(values, query) {
