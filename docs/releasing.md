@@ -100,6 +100,15 @@ change.
 6. After approval, the deployment repeats the complete validation suite,
    publishes through npm trusted publishing, creates the version tag, and
    creates a GitHub Release from the human-authored changelog section.
+7. The release workflow redeploys the documentation from the published tag so
+   the changelog replaces its `Upcoming` heading with the released version.
+
+The documentation changelog renders pending `.changeset/*.md` files under an
+`Upcoming` heading. After the Version Packages pull request consumes those
+files, its new topmost `CHANGELOG.md` version remains labelled `Upcoming` on the
+site until a matching Git tag exists. This keeps documentation-only deployments
+independent from package releases without claiming that a prepared version is
+already available.
 
 The publish job does not use an npm token. npm authenticates the exact
 `release.yml` workflow through a short-lived GitHub OIDC identity. Arbitrary

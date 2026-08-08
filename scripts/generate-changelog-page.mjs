@@ -1,8 +1,14 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { insertUpcoming, markUntaggedReleaseUpcoming } from './changelog-source.mjs'
 
 const root = resolve(import.meta.dirname, '..')
-const markdown = await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')
+const changelog = await readFile(resolve(root, 'CHANGELOG.md'), 'utf8')
+const pendingChangesets = await readPendingChangesets()
+const markdown = pendingChangesets.length > 0
+  ? insertUpcoming(changelog, pendingChangesets)
+  : markUntaggedReleaseUpcoming(changelog, tagExists)
 const content = renderMarkdown(markdown)
 const outputPath = resolve(root, 'docs/changelog.html')
 
@@ -41,7 +47,36 @@ if (process.argv.includes('--check')) {
   }
 } else {
   await writeFile(outputPath, output)
-  console.log('Generated docs/changelog.html from CHANGELOG.md.')
+  console.log('Generated docs/changelog.html from released and pending changes.')
+}
+
+async function readPendingChangesets() {
+  const directory = resolve(root, '.changeset')
+  const files = (await readdir(directory)).filter((file) => file.endsWith('.md') && file !== 'README.md').sort()
+
+  return Promise.all(files.map(async (file) => {
+    const source = await readFile(resolve(directory, file), 'utf8')
+    const match = /^---\n([\s\S]*?)\n---\n+([\s\S]*?)\s*$/.exec(source)
+
+    if (!match) {
+      throw new Error(`Invalid Changeset frontmatter in .changeset/${file}`)
+    }
+
+    const releaseType = /:\s*(major|minor|patch)\s*$/m.exec(match[1])?.[1]
+    if (!releaseType) {
+      throw new Error(`Missing release type in .changeset/${file}`)
+    }
+
+    return { releaseType, body: match[2].trim() }
+  }))
+}
+
+function tagExists(tag) {
+  try {
+    return execFileSync('git', ['tag', '--list', tag], { cwd: root, encoding: 'utf8' }).trim() === tag
+  } catch {
+    return false
+  }
 }
 
 function renderMarkdown(source) {
@@ -69,8 +104,8 @@ function renderMarkdown(source) {
         codeLanguage = undefined
         code = []
       } else {
-        flushParagraph()
         closeList()
+        flushParagraph()
         codeLanguage = fence[1] || 'text'
       }
       continue
@@ -82,8 +117,8 @@ function renderMarkdown(source) {
 
     const heading = /^(#{1,3})\s+(.+)$/.exec(line)
     if (heading) {
-      flushParagraph()
       closeList()
+      flushParagraph()
       const level = heading[1].length
       output.push(`<h${level}>${inline(heading[2])}</h${level}>`)
       continue
@@ -97,8 +132,8 @@ function renderMarkdown(source) {
       continue
     }
     if (line.trim() === '') {
-      flushParagraph()
       closeList()
+      flushParagraph()
       continue
     }
     paragraph.push(line.trim())

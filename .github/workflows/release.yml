@@ -79,6 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
+      actions: write
       contents: write
       id-token: write
     steps:
@@ -139,5 +140,10 @@ jobs:
           --verify-tag
           --title "${{ needs.inspect.outputs.package_name }} ${{ needs.inspect.outputs.version }}"
           --notes-file .tmp/release-notes.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy documentation for the published tag
+        run: gh workflow run docs.yml --ref "${{ needs.inspect.outputs.tag }}" -f deploy=true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

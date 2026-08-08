@@ -38,7 +38,9 @@ machine-readable guide in `docs/llms.txt` in the same change. Examples should
 use the public API and show the resulting consumer-visible behavior. Also keep
 the Changeset and any affected `support/css/` records consistent with those
 docs. Do not consider a public API change complete while its documented usage
-or outcome is stale.
+or outcome is stale. The documentation changelog derives its `Upcoming` section
+from pending Changesets; do not manually copy pending entries into
+`CHANGELOG.md`.
 
 ## Testing Guidelines
 
