@@ -1,8 +1,12 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { enhanceExternalLinks, enhanceNavigation, enhanceScrollspy, highlight } from '../../docs-engine/assets/site.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { enhanceExternalLinks, enhanceNavigation, enhanceScrollspy, highlight, navigate } from '../../docs-engine/assets/site.js'
 
 afterEach(() => {
   document.body.innerHTML = ''
+  document.head.querySelector('[data-page-styles]')?.remove()
+  history.replaceState({}, '', '/')
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('documentation site behavior', () => {
@@ -47,5 +51,19 @@ describe('documentation site behavior', () => {
     expect(document.querySelector('[href="./guide"]').target).toBe('')
     expect(document.querySelector('[href="https://example.com"]').target).toBe('_blank')
     expect(document.querySelector('[href="https://example.com"]').rel).toBe('noopener noreferrer')
+  })
+
+  it('navigates by replacing page content, styles, title, and history', async () => {
+    document.head.insertAdjacentHTML('beforeend', '<style data-page-styles>.old { color: red }</style>')
+    document.body.innerHTML = '<nav class="site-nav-links"><a href="./">Guide</a><a href="./changelog.html">Changelog</a></nav><div data-page-content><main id="main-content">Guide</main></div>'
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(`<!doctype html><html><head><title>Changelog</title><style data-page-styles>.new { color: green }</style></head><body><div data-page-content><main id="main-content">Release notes</main></div></body></html>`)))
+
+    await navigate(new URL('/changelog.html', location.href))
+
+    expect(document.title).toBe('Changelog')
+    expect(document.querySelector('[data-page-content]').textContent).toContain('Release notes')
+    expect(document.querySelector('[data-page-styles]').textContent).toContain('.new')
+    expect(location.pathname).toBe('/changelog.html')
+    expect(document.querySelector('[href="./changelog.html"]').getAttribute('aria-current')).toBe('page')
   })
 })

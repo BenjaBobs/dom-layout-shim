@@ -44,6 +44,9 @@ const output = renderDocumentationPage({
     @media (max-width:700px) { .changelog-tools { align-items:flex-start; flex-direction:column; } .release-toc { max-height:80px; overflow:auto; } .release-heading { align-items:flex-start; flex-direction:column; } }
   `,
   inlineModule: `
+    window.__docsPageAbort?.abort()
+    const pageAbort = new AbortController()
+    window.__docsPageAbort = pageAbort
     const releaseIndicator = document.querySelector('[data-current-release]')
     const sectionIndicator = document.querySelector('[data-current-section]')
     const releaseHeadings = [...document.querySelectorAll('h2[data-release]')]
@@ -57,7 +60,7 @@ const output = renderDocumentationPage({
       }
       if (sectionIndicator) sectionIndicator.textContent = section?.dataset.changeSection || 'Overview'
     }
-    addEventListener('scroll', updateContext, { passive: true })
+    addEventListener('scroll', updateContext, { passive: true, signal: pageAbort.signal })
     updateContext()
 
     for (const button of document.querySelectorAll('[data-change-filter]')) {

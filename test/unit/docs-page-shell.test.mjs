@@ -19,6 +19,8 @@ describe('documentation page shell', () => {
     expect(output).toContain('href="./changelog.html#upcoming">Unreleased</a>')
     expect(output).toContain('<a class="skip-link" href="#main-content">Skip to content</a>')
     expect(output).toContain('<main id="main-content" tabindex="-1">')
+    expect(output).toContain('<div data-page-content>')
+    expect(output).toContain('<style data-page-styles>')
     expect(output).toContain('<link rel="stylesheet" href="./site.css">')
     expect(output).toContain('<script type="module" src="./site.js"></script>')
     expect(output).toContain('<link rel="prefetch" href="./" as="document">')
