@@ -1,7 +1,16 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { classifyAffectedScopes } from '../../scripts/affected-scopes.mjs'
 
 describe('affected scope classification', () => {
+  it('includes the publishable root package in workspace discovery', () => {
+    const workspace = readFileSync(resolve('pnpm-workspace.yaml'), 'utf8')
+
+    expect(workspace).toContain("  - '.'")
+    expect(workspace).toContain("  - 'examples/*'")
+  })
+
   it('validates classifier changes through unit and documentation checks', () => {
     expect(classifyAffectedScopes(['scripts/affected-scopes.mjs'])).toMatchObject({
       package: true,
