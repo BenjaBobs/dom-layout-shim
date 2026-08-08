@@ -7,9 +7,13 @@ markdown.renderer.rules.fence = (tokens, index) => {
   return `<pre><code data-language="${markdown.utils.escapeHtml(language)}">${markdown.utils.escapeHtml(token.content)}</code></pre>`
 }
 
-export function renderGuide(source) {
+export function renderMarkdownPage(source, layout) {
   const { attributes, content } = parseFrontmatter(source)
   const tokens = markdown.parse(content, {})
+  return layout({ attributes, markdown, tokens })
+}
+
+export function guideLayout({ attributes, markdown, tokens }) {
   const firstSection = tokens.findIndex((token) => token.type === 'heading_open' && token.tag === 'h2')
   if (firstSection < 0) throw new Error('Guide requires at least one level-two heading')
 
