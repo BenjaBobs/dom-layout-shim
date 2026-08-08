@@ -17,8 +17,11 @@ layout support. Aggregate record statuses are derived from their claims.
 
 Each record identifies its authoring source under `support/css/`. Claims may
 include syntax, conditions, parity fixtures, limitations, known mismatches, and
-implementation quirks. Broad `current-supported-scope` claims are migrated
-legacy descriptions and should be interpreted conservatively.
+implementation quirks. Every topic is divided into named, behavior-specific
+claims so evidence and limitations apply to an explicit scope. Backticked CSS
+syntax, DOM APIs, and other identifiers in claim prose are inline code. The
+explorer can preview parity fixture source from generated same-origin assets and
+links separately to the corresponding GitHub source.
 
 ## Native-control geometry
 

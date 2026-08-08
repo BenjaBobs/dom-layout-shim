@@ -21,6 +21,36 @@ describe('CSS support inventory', () => {
     expect(missing).toEqual([])
   })
 
+  it('divides every support topic into meaningful documented claims', () => {
+    const invalid = cssSupportInventory.flatMap((entry) => [
+      ...(entry.claims.length < 2 ? [`${entry.id}: fewer than two claims`] : []),
+      ...entry.claims.flatMap((claim) => {
+        const location = `${entry.id}#${claim.id}`
+        return [
+          ...(!claim.description ? [`${location}: missing description`] : []),
+          ...(['current-supported-scope', 'tracked-unsupported-scope'].includes(claim.id)
+            ? [`${location}: generic claim id`]
+            : []),
+        ]
+      }),
+    ])
+
+    expect(invalid).toEqual([])
+  })
+
+  it('uses balanced inline-code markup in claim prose', () => {
+    const malformed = cssSupportInventory.flatMap((entry) => entry.claims.flatMap((claim) => [
+      ...(claim.description && countBackticks(claim.description) % 2 !== 0
+        ? [`${entry.id}#${claim.id}: description`]
+        : []),
+      ...claim.notes
+        .filter((note) => countBackticks(note.text) % 2 !== 0)
+        .map((note) => `${entry.id}#${claim.id}: ${note.kind}`),
+    ]))
+
+    expect(malformed).toEqual([])
+  })
+
   it('tracks major HTML element layout categories', () => {
     const inventoried = new Set(getInventoriedHtmlElements())
     const expected = [
@@ -81,6 +111,10 @@ describe('CSS support inventory', () => {
     expect(duplicates).toEqual([])
   })
 })
+
+function countBackticks(value: string): number {
+  return value.length - value.replaceAll('`', '').length
+}
 
 function handledDeclarationProperties(): string[] {
   const source = readFileSync(resolve('src/css-parity-implementation/css/apply-declaration.ts'), 'utf8')

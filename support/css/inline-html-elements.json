@@ -30,10 +30,11 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
-      "support": "partial",
+      "id": "text-contribution",
+      "description": "Native phrasing elements contribute text through ancestor measurement without introducing block-flow breaks.",
+      "support": "supported",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "inline-html-defaults"
         ]
@@ -41,11 +42,34 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Native inline phrasing elements contribute text through ancestor text measurement without introducing block-flow breaks, including hard line breaks from br elements in inline-only text subtrees."
-        },
+          "text": "Native phrasing elements contribute text through ancestor measurement without introducing block-flow breaks."
+        }
+      ]
+    },
+    {
+      "id": "hard-line-breaks",
+      "description": "`br` elements introduce hard line breaks in inline-only text subtrees.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "inline-html-defaults"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "inline-fragment-geometry",
+      "description": "Inline fragment rectangles and hit boxes are not modeled.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Inline fragment rectangles, inline hit boxes, mixed inline/block formatting, and baseline effects for sub/sup are not modeled; native inline elements currently expose zero rects unless author CSS changes their display."
+          "text": "Inline fragment rectangles, inline hit boxes, mixed inline/block formatting, and baseline effects for `sub` and `sup` are not modeled; native inline elements currently expose zero rects unless author CSS changes their `display`."
         }
       ]
     }

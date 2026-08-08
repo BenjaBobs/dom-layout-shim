@@ -39,37 +39,91 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "ordinary-block-elements",
+      "description": "Ordinary structural elements participate in supported block flow.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "generic-html-defaults",
+          "static-block-flow"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "The layout tree gives ordinary elements the same default block style unless author CSS overrides them."
+        }
+      ]
+    },
+    {
+      "id": "text-block-defaults",
+      "description": "Text-oriented block elements receive a narrow set of user-agent spacing and text defaults.",
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
-          "details-summary-defaults",
-          "dialog-html-defaults",
           "generic-html-defaults",
-          "hidden-attribute",
           "figure-html-defaults",
           "hr-html-defaults",
-          "static-block-flow",
           "static-pre-wrap-text-lines"
         ]
       },
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "The layout tree treats ordinary elements with the same default block style unless author CSS overrides them; address, p, headings, blockquote, figure, and pre receive a narrow set of UA text metrics and spacing defaults."
-        },
+          "text": "`address`, `p`, headings, `blockquote`, `figure`, and `pre` receive a narrow set of user-agent text metrics and spacing defaults."
+        }
+      ]
+    },
+    {
+      "id": "details-and-summary",
+      "description": "`details` and `summary` elements expose supported open and closed layout behavior.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "details-summary-defaults"
+        ]
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Native dialog centering, modal top-layer behavior, and backdrops are not modeled."
-        },
+          "text": "Closed `details` content is suppressed from layout and hit testing; Chromium still exposes non-zero rectangles for suppressed descendants, which this engine does not model."
+        }
+      ]
+    },
+    {
+      "id": "dialog-open-state",
+      "description": "Basic `dialog` open and closed state controls box generation.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "dialog-html-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Native `dialog` centering, modal top-layer behavior, and `::backdrop` are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "hidden-attribute",
+      "description": "The hidden attribute suppresses supported element layout.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "hidden-attribute"
+        ]
+      },
+      "notes": [
         {
           "kind": "browser-parity",
-          "text": "Address, paragraph, blockquote, figure, pre, hr, details/summary, hidden including until-found, and basic dialog open/closed behavior have parity coverage in non-collapsing block flow; text element spacing is verified with explicit line metrics so host fonts do not change the oracle."
-        },
-        {
-          "kind": "limitation",
-          "text": "Closed details content is suppressed from layout and hit testing; Chromium still exposes non-zero rects for the suppressed descendants, which this engine does not model."
+          "text": "Both ordinary `hidden` and `hidden=until-found` have parity coverage for supported box suppression."
         }
       ]
     }

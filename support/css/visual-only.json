@@ -54,10 +54,131 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "color-and-background",
+      "description": "Color and background declarations are accepted without affecting geometry or hit testing.",
+      "properties": [
+        "color",
+        "background-color",
+        "background",
+        "background-image",
+        "background-repeat",
+        "background-position",
+        "background-size",
+        "background-origin",
+        "background-clip",
+        "background-attachment"
+      ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Background painting and visual overflow are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "opacity-and-effects",
+      "description": "Opacity, shadows, and filter declarations are accepted without affecting geometry or point queries.",
+      "properties": [
+        "opacity",
+        "box-shadow",
+        "filter",
+        "backdrop-filter"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Compositing, shadows, filters, and their visual overflow are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "border-and-outline-decoration",
+      "description": "Border color, radius, and outline declarations are accepted without painting.",
+      "properties": [
+        "border-color",
+        "border-inline-color",
+        "border-block-color",
+        "border-top-color",
+        "border-right-color",
+        "border-bottom-color",
+        "border-left-color",
+        "border-inline-start-color",
+        "border-inline-end-color",
+        "border-block-start-color",
+        "border-block-end-color",
+        "outline",
+        "outline-width",
+        "outline-style",
+        "outline-color",
+        "outline-offset",
+        "border-radius",
+        "border-top-left-radius",
+        "border-top-right-radius",
+        "border-bottom-right-radius",
+        "border-bottom-left-radius"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Border decoration, corner clipping, outlines, and visual overflow are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "text-decoration",
+      "description": "Text decoration declarations are accepted without painting decorations.",
+      "properties": [
+        "text-decoration",
+        "text-decoration-line",
+        "text-decoration-color",
+        "text-decoration-style",
+        "text-decoration-thickness"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "visual-only-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Text decoration painting is not modeled."
+        }
+      ]
+    },
+    {
+      "id": "replaced-content-painting",
+      "description": "Object fitting and positioning declarations are accepted without changing replaced-element geometry.",
+      "properties": [
+        "object-fit",
+        "object-position"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
         "fixtures": [
           "visual-only-properties"
         ]
@@ -65,11 +186,11 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Accepted visual-only declarations have parity coverage that they do not affect rectangles or point queries under this package contract."
+          "text": "Accepted `object-fit` and `object-position` declarations have parity coverage that they do not affect rectangles or point queries under this package contract."
         },
         {
           "kind": "limitation",
-          "text": "Painting, decoration rendering, and visual overflow are not modeled."
+          "text": "Replaced-content painting is not modeled."
         }
       ]
     }

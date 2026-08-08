@@ -26,36 +26,109 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "box-sizing",
+      "description": "Content-box and border-box sizing determine how authored dimensions include padding and borders.",
+      "properties": [
+        "box-sizing"
+      ],
       "syntax": [
         "content-box",
-        "border-box",
+        "border-box"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "box-sizing-min-max-size-constraints"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "preferred-dimensions",
+      "description": "Physical and logical preferred dimensions resolve supported fixed and percentage sizes.",
+      "properties": [
+        "width",
+        "height",
+        "inline-size",
+        "block-size"
+      ],
+      "syntax": [
         "<px>",
         "<percentage>",
-        "auto",
-        "none",
-        "<number>",
-        "<ratio>"
+        "auto"
       ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
-          "aspect-ratio",
-          "box-sizing-min-max-size-constraints",
-          "min-max-size-constraints",
           "offset-geometry",
           "percentage-sizing"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Box sizing including CSS-wide content-box resets, physical and logical min/max constraints, percentages, aspect ratio in both axes with constraint interaction, and offset geometry have parity fixtures."
-        },
+          "kind": "limitation",
+          "text": "Length support is intentionally narrow: pixels, percentages where listed, reset keywords, and literal zero."
+        }
+      ]
+    },
+    {
+      "id": "minimum-and-maximum-dimensions",
+      "description": "Physical and logical minimum and maximum constraints bound computed sizes.",
+      "properties": [
+        "min-width",
+        "min-height",
+        "min-inline-size",
+        "min-block-size",
+        "max-width",
+        "max-height",
+        "max-inline-size",
+        "max-block-size"
+      ],
+      "syntax": [
+        "<px>",
+        "<percentage>",
+        "auto",
+        "none"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "box-sizing-min-max-size-constraints",
+          "min-max-size-constraints"
+        ]
+      },
+      "notes": [
         {
           "kind": "limitation",
           "text": "Length support is intentionally narrow: pixels, percentages where listed, reset keywords, and literal zero."
+        }
+      ]
+    },
+    {
+      "id": "aspect-ratio",
+      "description": "Preferred aspect ratios affect either axis and interact with supported size constraints.",
+      "properties": [
+        "aspect-ratio"
+      ],
+      "syntax": [
+        "auto",
+        "<number>",
+        "<ratio>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "aspect-ratio"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Complex intrinsic sizing interactions outside the supported dimension subset are not modeled."
         }
       ]
     }

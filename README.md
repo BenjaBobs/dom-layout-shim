@@ -154,7 +154,11 @@ See the [documentation site](https://benjabobs.github.io/dom-layout-shim/) and
 its [filterable CSS support overview](https://benjabobs.github.io/dom-layout-shim/css-support-status.html).
 The underlying source of truth is
 the machine-readable records in [support/css](support/css). Each record follows
-[support/css-support.schema.json](support/css-support.schema.json). Run
+[support/css-support.schema.json](support/css-support.schema.json). Topics are
+divided into behavior-specific claims so support level, Chromium evidence,
+conditions, and limitations remain scoped to the behavior they describe. The
+explorer can preview each linked parity fixture locally or open its source on
+GitHub. Run
 `pnpm run css:validate` to check the inventory, `pnpm run css:generate` after
 editing it, or `pnpm run css:query -- flex-basis` to query it from a terminal.
 Ignored documentation-site output, including generated CSS support JSON, is

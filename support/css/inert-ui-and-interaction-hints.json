@@ -41,10 +41,35 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "current-supported-scope",
-      "support": "partial",
+      "id": "accepted-ui-hints",
+      "description": "Common interaction, scrolling, environment, and compositing hints are accepted as inert declarations.",
+      "properties": [
+        "will-change",
+        "appearance",
+        "accent-color",
+        "caret-color",
+        "scroll-behavior",
+        "scrollbar-width",
+        "scrollbar-color",
+        "overscroll-behavior",
+        "overscroll-behavior-x",
+        "overscroll-behavior-y",
+        "isolation",
+        "mix-blend-mode",
+        "list-style",
+        "list-style-type",
+        "list-style-position",
+        "list-style-image",
+        "forced-color-adjust",
+        "color-scheme",
+        "cursor",
+        "user-select",
+        "touch-action",
+        "resize"
+      ],
+      "support": "supported",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "visual-only-properties"
         ]
@@ -53,18 +78,75 @@
         {
           "kind": "implementation-quirk",
           "text": "These declarations are parsed so common application CSS can pass unsupported-CSS policy, but they do not affect layout or hit testing."
-        },
+        }
+      ]
+    },
+    {
+      "id": "writing-direction-defaults",
+      "description": "Default left-to-right horizontal writing declarations are accepted without changing layout.",
+      "properties": [
+        "direction",
+        "writing-mode"
+      ],
+      "syntax": [
+        "ltr",
+        "horizontal-tb"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Only direction:ltr and writing-mode:horizontal-tb are accepted; non-default writing directions remain unsupported because logical layout is mapped as horizontal-tb LTR."
-        },
+          "text": "Only `direction: ltr` and `writing-mode: horizontal-tb` are accepted; non-default writing directions remain unsupported because logical layout is mapped as `horizontal-tb` LTR."
+        }
+      ]
+    },
+    {
+      "id": "float-defaults",
+      "description": "Non-floating defaults are accepted while floated layout remains unsupported.",
+      "properties": [
+        "float",
+        "clear"
+      ],
+      "syntax": [
+        "none"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Only float:none and clear:none are accepted; floated layout and float clearance are not modeled."
-        },
+          "text": "Only `float: none` and `clear: none` are accepted; floated layout and float clearance are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "containment-defaults",
+      "description": "Non-containing defaults are accepted while containment and container queries remain unsupported.",
+      "properties": [
+        "contain",
+        "container-type",
+        "container-name"
+      ],
+      "syntax": [
+        "none",
+        "normal"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Only contain:none, container-type:normal, and container-name:none are accepted; containment and container query behavior are not modeled."
+          "text": "Only `contain: none`, `container-type: normal`, and `container-name: none` are accepted; containment and container-query behavior are not modeled."
         }
       ]
     }

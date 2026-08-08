@@ -1093,7 +1093,7 @@
       const visible = propertyClaims.length > 0 ? propertyClaims : values
       return `
         <details class="claim-details"${query ? ' open' : ''}>
-          <summary data-tooltip="A topic can contain one broad support scope or several independently classified scopes.">${visible.length} support ${visible.length === 1 ? 'scope' : 'scopes'} and evidence</summary>
+          <summary data-tooltip="Each topic divides support into independently classified behavior scopes.">${visible.length} support ${visible.length === 1 ? 'scope' : 'scopes'} and evidence</summary>
           <div class="claims">
           ${visible.map((claim) => `
             <article class="claim" id="${escapeHtml(claim.id)}">
@@ -1102,7 +1102,7 @@
                 ${supportBadge(claim.support)}
                 ${parityBadge(claim.parity.status, claim.support)}
               </div>
-              ${claim.description ? `<div class="claim-description">${highlight(claim.description, query)}</div>` : ''}
+              ${claim.description ? `<div class="claim-description">${renderInlineCode(claim.description, query)}</div>` : ''}
               ${claim.properties?.length ? claimValues('Properties', claim.properties, query) : ''}
               ${claim.syntax?.length ? claimValues('Syntax', claim.syntax, query) : ''}
               ${claim.conditions?.length ? claimValues('Conditions', claim.conditions, query) : ''}

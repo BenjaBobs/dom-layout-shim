@@ -24,65 +24,156 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "explicit-tracks",
+      "description": "Explicit row and column tracks support fixed, percentage, fractional, minimum/maximum, and repeated sizing.",
+      "properties": [
+        "grid-template-columns",
+        "grid-template-rows"
+      ],
       "syntax": [
         "none",
         "<px>",
         "<percentage>",
         "<fr>",
         "minmax(<track-breadth>, <track-breadth>)",
-        "repeat(<integer>, <track-list>)",
-        "auto",
-        "<integer>",
-        "span <integer>",
-        "row",
-        "column",
-        "dense"
+        "repeat(<integer>, <track-list>)"
       ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
-          "grid-auto-flow",
-          "grid-auto-tracks",
-          "grid-content-alignment",
           "grid-explicit-tracks",
           "grid-fr-tracks",
-          "grid-gap",
-          "grid-area-placement",
-          "grid-line-placement",
-          "grid-item-stretch",
           "grid-minmax-tracks",
-          "grid-order",
           "grid-percentage-tracks",
-          "grid-repeat-tracks",
+          "grid-repeat-tracks"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "`auto-fill` and `auto-fit` repeat counts, named lines, `fit-content()`, named grid areas, and `grid-template-areas` are not implemented."
+        },
+        {
+          "kind": "limitation",
+          "text": "`repeat()` supports positive integer counts with the already-supported track breadth values inside the repeated track list."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Explicit `minmax()` row caps can diverge from Chromium in Taffy 0.9.2."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Flexible `fr` tracks are mapped to Taffy min/max tracks with minimum zero and maximum `Nfr` because Taffy accepts `fr` only as a maximum track sizing function."
+        }
+      ]
+    },
+    {
+      "id": "implicit-tracks-and-auto-flow",
+      "description": "Auto-placement creates implicit tracks using configured row and column sizing.",
+      "properties": [
+        "grid-auto-flow",
+        "grid-auto-columns",
+        "grid-auto-rows"
+      ],
+      "syntax": [
+        "row",
+        "column",
+        "dense",
+        "auto",
+        "<px>",
+        "<percentage>",
+        "<fr>",
+        "minmax(<track-breadth>, <track-breadth>)"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "grid-auto-flow",
+          "grid-auto-tracks"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "taffy-compat",
+          "text": "Auto-height grids with empty implicit `minmax()` rows can diverge from Chromium in Taffy 0.9.2; parity coverage therefore uses a definite grid height."
+        }
+      ]
+    },
+    {
+      "id": "line-and-span-placement",
+      "description": "Grid items can use numeric lines and numeric spans on either axis.",
+      "properties": [
+        "grid-column",
+        "grid-row",
+        "grid-column-start",
+        "grid-column-end",
+        "grid-row-start",
+        "grid-row-end"
+      ],
+      "syntax": [
+        "auto",
+        "<integer>",
+        "span <integer>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "grid-line-placement",
           "grid-span-placement"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Explicit tracks, auto flow including CSS-wide resets, implicit row and column tracks, fr tracks, gaps, content and item alignment, line placement including CSS-wide resets, grid-area shorthand placement including CSS-wide resets, minmax tracks, order, percentage tracks, fixed-count repeat tracks, and numeric spans have parity fixtures."
-        },
+          "kind": "limitation",
+          "text": "Named lines and named spans are not implemented."
+        }
+      ]
+    },
+    {
+      "id": "area-shorthand-placement",
+      "description": "The `grid-area` shorthand maps supported numeric row and column placements.",
+      "properties": [
+        "grid-area"
+      ],
+      "syntax": [
+        "auto",
+        "<integer>",
+        "span <integer>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "grid-area-placement"
+        ]
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "auto-fill/auto-fit repeat counts, named lines, named spans, fit-content(), named grid areas, and grid-template-areas are not implemented."
-        },
-        {
-          "kind": "limitation",
-          "text": "repeat() currently supports positive integer counts with the already-supported track breadth values inside the repeated track list."
-        },
-        {
-          "kind": "taffy-compat",
-          "text": "Explicit minmax row caps and auto-height grids with empty implicit minmax rows can diverge from Chromium in Taffy 0.9.2; implicit row minmax parity coverage therefore uses a definite grid height."
-        },
-        {
-          "kind": "taffy-compat",
-          "text": "Flexible fr tracks are mapped to Taffy min/max tracks with min 0 and max Nfr because Taffy only accepts fr as a max track sizing function."
-        },
+          "text": "Named grid areas and `grid-template-areas` are not implemented."
+        }
+      ]
+    },
+    {
+      "id": "shared-grid-placement-behavior",
+      "description": "Shared gap, alignment, stretching, and order behavior participates in grid placement.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "grid-content-alignment",
+          "grid-gap",
+          "grid-item-stretch",
+          "grid-order"
+        ]
+      },
+      "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "The CSS order property is applied by sorting grid children before building the Taffy tree, so auto-placement sees order-modified children."
+          "text": "The CSS `order` property is applied by sorting grid children before building the Taffy tree, so auto-placement sees order-modified children."
         }
       ]
     }

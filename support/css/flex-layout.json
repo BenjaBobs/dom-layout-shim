@@ -30,7 +30,7 @@
   "claims": [
     {
       "id": "direction-and-wrapping",
-      "description": "Flex direction, reversal, wrapping, and the flex-flow shorthand affect placement on row and column axes.",
+      "description": "Flex direction, reversal, wrapping, and the `flex-flow` shorthand affect placement on row and column axes.",
       "properties": [
         "flex-direction",
         "flex-wrap",
@@ -59,7 +59,7 @@
     },
     {
       "id": "flexible-lengths",
-      "description": "Grow and shrink factors distribute free space and respect supported min/max constraints.",
+      "description": "`flex-grow` and `flex-shrink` factors distribute free space and respect supported min/max constraints.",
       "properties": [
         "flex-grow",
         "flex-shrink"
@@ -79,7 +79,7 @@
     },
     {
       "id": "flex-basis",
-      "description": "Pixel, percentage, and auto flex bases resolve on row and column main axes.",
+      "description": "Pixel, percentage, and `auto` flex bases resolve on row and column main axes.",
       "properties": [
         "flex-basis"
       ],
@@ -101,13 +101,13 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "The content keyword and general CSS length units are not implemented."
+          "text": "The `content` keyword and general CSS length units are not implemented."
         }
       ]
     },
     {
       "id": "flex-shorthand",
-      "description": "The flex shorthand expands supported factor and basis forms, including its CSS-wide reset behavior.",
+      "description": "The `flex` shorthand expands supported factor and basis forms, including its CSS-wide reset behavior.",
       "properties": [
         "flex"
       ],
@@ -175,7 +175,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Flex children are sorted before the Taffy tree is built."
+          "text": "Flex children are sorted by `order` before the Taffy tree is built."
         }
       ]
     },

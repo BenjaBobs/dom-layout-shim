@@ -17,44 +17,104 @@
   "owner": "hit-testing",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "point-query-ordering",
+      "description": "Point queries return the frontmost eligible box and preserve front-to-back ordering.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "center-click-blocked-by-overlay",
+          "elements-from-point-order"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "pointer-event-participation",
+      "description": "`pointer-events` controls whether boxes and descendants participate in point queries.",
+      "properties": [
+        "pointer-events"
+      ],
       "syntax": [
         "auto",
-        "none",
+        "none"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "pointer-events-none"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "visibility-participation",
+      "description": "`visibility` controls point-query participation while retaining layout boxes.",
+      "properties": [
+        "visibility"
+      ],
+      "syntax": [
         "visible",
         "hidden",
-        "collapse",
+        "collapse"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "visibility-hidden"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "`visibility: collapse` is treated as `hidden` for DOM-like box hit testing; table row and column collapse layout is not modeled."
+        }
+      ]
+    },
+    {
+      "id": "overflow-clipping",
+      "description": "Overflow modes clip descendant hit boxes to the padding box.",
+      "properties": [
+        "overflow",
+        "overflow-x",
+        "overflow-y"
+      ],
+      "syntax": [
+        "visible",
+        "hidden",
         "clip",
+        "auto",
         "scroll"
       ],
       "support": "partial",
       "parity": {
         "status": "verified",
         "fixtures": [
-          "center-click-blocked-by-overlay",
-          "element-scroll-offsets",
-          "elements-from-point-order",
-          "overflow-clipping",
-          "pointer-events-none",
-          "scroll-into-view",
-          "visibility-hidden",
-          "window-scroll-offsets"
+          "overflow-clipping"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Point query ordering, pointer-events none including descendant inheritance, inherit/unset preservation, and auto/initial overrides, visibility hidden including descendant inheritance, inherit/unset preservation, and visible/initial overrides, center blocking, overflow clipping, element and window scroll offsets, and scrollIntoView have parity fixtures."
-        },
-        {
           "kind": "behavior-quirk",
-          "text": "Overflow hidden, clip, auto, and scroll clip descendant hit boxes to the padding box; getBoundingClientRect output is not clipped."
-        },
-        {
-          "kind": "implementation-quirk",
-          "text": "visibility: collapse is treated as hidden for DOM-like box hit testing; table row and column collapse layout is not modeled."
+          "text": "`hidden`, `clip`, `auto`, and `scroll` clip descendant hit boxes to the padding box; `getBoundingClientRect()` output is not clipped."
         }
       ]
+    },
+    {
+      "id": "scroll-offsets-and-visibility",
+      "description": "Element and viewport scrolling offset geometry and update point-query visibility.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "element-scroll-offsets",
+          "scroll-into-view",
+          "window-scroll-offsets"
+        ]
+      },
+      "notes": []
     }
   ]
 }

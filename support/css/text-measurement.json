@@ -16,15 +16,68 @@
   "owner": "text",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "font-family-and-size",
+      "description": "Inherited `font-family` and supported `font-size` units feed deterministic text measurement.",
+      "properties": [
+        "font-family",
+        "font-size"
+      ],
       "syntax": [
         "<family-list>",
         "<px>",
         "<percentage>",
         "<em>",
-        "<rem>",
+        "<rem>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "partially-verified",
+        "fixtures": [
+          "static-text-line-height"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Nested text inherits parent font metrics; `inherit`, `unset`, and `initial` are accepted where supported. Percentage and `em` sizes resolve against the inherited parent size, while `rem` resolves against the computed root size."
+        }
+      ]
+    },
+    {
+      "id": "line-height",
+      "description": "Supported `line-height` values determine measured line boxes.",
+      "properties": [
+        "line-height"
+      ],
+      "syntax": [
         "<number>",
         "normal",
+        "<px>",
+        "<percentage>",
+        "<em>",
+        "<rem>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "static-text-line-height"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "The engine does not preserve the browser distinction between inherited numeric and resolved `line-height` values."
+        }
+      ]
+    },
+    {
+      "id": "white-space-and-line-breaks",
+      "description": "Supported `white-space` modes control text preservation and wrapping.",
+      "properties": [
+        "white-space"
+      ],
+      "syntax": [
         "pre",
         "pre-line",
         "pre-wrap",
@@ -32,24 +85,30 @@
       ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
-          "static-pre-wrap-text-lines",
-          "static-text-line-height"
+          "static-pre-wrap-text-lines"
         ]
       },
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Text-only leaf elements and direct text-plus-br leaves are measured through the configured TextMeasurer; the default uses Pretext with deterministic fallback."
-        },
-        {
-          "kind": "browser-parity",
-          "text": "Nested text elements inherit parent font metrics; explicit inherit/unset is accepted for inherited text declarations; initial resets are accepted for font-family, font-size, and white-space; percentage/em font-size values resolve against the inherited parent font size; rem font-size values resolve against the computed root font size; percentage/em line-height values resolve against the element font size; rem line-height values resolve against the computed root font size."
-        },
+          "text": "Text-only leaf elements and direct text-plus-`br` leaves are measured through the configured `TextMeasurer`; the default uses Pretext with deterministic fallback."
+        }
+      ]
+    },
+    {
+      "id": "inline-formatting",
+      "description": "Full inline formatting remains outside deterministic text measurement.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "The engine does not implement full inline formatting or preserve the distinction between inherited numeric and resolved line-height values."
+          "text": "The engine does not implement full inline formatting."
         }
       ]
     }
