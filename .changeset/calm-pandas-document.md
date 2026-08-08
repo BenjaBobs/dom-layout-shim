@@ -45,3 +45,7 @@ rather than inert metadata chips.
 The generated website is deployed from an ignored build directory rather than
 being bundled into the npm package. Authored Markdown and machine-readable
 documentation remain included in the package.
+
+Internal pages are prefetched and prerendered where the browser supports it, so
+documentation navigation responds immediately without an artificial transition
+delay.

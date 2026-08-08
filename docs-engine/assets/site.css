@@ -73,12 +73,8 @@ pre code { padding: 0; background: transparent; }
 .tok-property, .tok-bracket-2 { color: #7dddf5; }
 .tok-bracket-1 { color: #d9a7ff; }
 
-@view-transition { navigation: auto; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: 140ms; }
-
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0s; }
 }
 
 @media (max-width: 700px) {
