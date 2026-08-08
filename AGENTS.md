@@ -29,6 +29,17 @@ Write TypeScript as ES modules. Use explicit `.ts` extensions for local relative
 
 Follow the existing style: two-space indentation, no semicolons, single quotes, concise type names, and kebab-case file names such as `create-layout-engine.ts`. There is no separate formatter or linter configured; rely on `pnpm run typecheck` and local consistency.
 
+## Documentation Guidelines
+
+Treat documentation as part of every public API change. When adding, changing,
+or removing a public export, option, contract, or consumer-visible behavior,
+review and update the README, the public guide in `docs/index.html`, and the
+machine-readable guide in `docs/llms.txt` in the same change. Examples should
+use the public API and show the resulting consumer-visible behavior. Also keep
+the Changeset and any affected `support/css/` records consistent with those
+docs. Do not consider a public API change complete while its documented usage
+or outcome is stale.
+
 ## Testing Guidelines
 
 Use both unit tests and Chromium parity tests, but keep their responsibilities
