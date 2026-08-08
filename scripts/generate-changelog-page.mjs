@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { insertUpcoming, markUntaggedReleaseUpcoming } from './changelog-source.mjs'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
@@ -13,7 +13,8 @@ const markdown = pendingChangesets.length > 0
   : markUntaggedReleaseUpcoming(changelog, tagExists)
 const releases = [...markdown.matchAll(/^##\s+(.+)$/gm)].map((match) => match[1])
 const content = renderMarkdown(markdown, releases)
-const outputPath = resolve(root, 'docs/changelog.html')
+const outputPath = resolve(root, '.site/changelog.html')
+await mkdir(resolve(root, '.site'), { recursive: true })
 
 const output = renderDocumentationPage({
   ...context,
@@ -64,14 +65,14 @@ const output = renderDocumentationPage({
 if (process.argv.includes('--check')) {
   const current = await readFile(outputPath, 'utf8').catch(() => '')
   if (current !== output) {
-    console.error('docs/changelog.html is stale. Run node scripts/generate-changelog-page.mjs.')
+    console.error('.site/changelog.html is stale. Run node scripts/generate-changelog-page.mjs.')
     process.exitCode = 1
   } else {
     console.log('Generated changelog page is current.')
   }
 } else {
   await writeFile(outputPath, output)
-  console.log('Generated docs/changelog.html from released and pending changes.')
+  console.log('Generated .site/changelog.html from released and pending changes.')
 }
 
 async function readPendingChangesets() {

@@ -3,7 +3,7 @@ import { createServer } from 'node:http'
 import { extname, resolve, sep } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
-const docsRoot = resolve(root, 'docs')
+const docsRoot = resolve(root, '.site')
 const portArgument = process.argv.slice(2).find((argument) => /^\d+$/.test(argument))
 const requestedPort = Number(process.env.PORT ?? portArgument ?? 4173)
 const contentTypes = {

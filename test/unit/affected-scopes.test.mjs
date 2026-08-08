@@ -48,7 +48,7 @@ describe('affected scope classification', () => {
   })
 
   it('limits documentation page source changes to documentation checks', () => {
-    expect(classifyAffectedScopes(['docs-src/guide.template.html'])).toMatchObject({
+    expect(classifyAffectedScopes(['docs-engine/guide.template.html'])).toMatchObject({
       package: false,
       parity: false,
       docs: true,

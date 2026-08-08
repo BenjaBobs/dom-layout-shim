@@ -9,7 +9,7 @@ for CSS parsing, layout, geometry, and hit-testing algorithms. Public exports
 are centralized in `src/index.ts`; CSS parity implementation modules must not
 be exported directly from it.
 
-Tests live under `test/`: unit coverage is in `test/unit/`, Chromium parity cases are in `test/browser-parity/`, shared parity fixtures are in `test/browser-parity/fixtures/`, and performance checks are in `test/bench/`. Documentation lives in `docs/`; generated output is `dist/`.
+Tests live under `test/`: unit coverage is in `test/unit/`, Chromium parity cases are in `test/browser-parity/`, shared parity fixtures are in `test/browser-parity/fixtures/`, and performance checks are in `test/bench/`. Authored documentation lives in `docs/`, the site implementation lives in `docs-engine/`, and ignored site output is generated in `.site/`. Package build output is `dist/`.
 
 ## Build, Test, and Development Commands
 
@@ -33,7 +33,7 @@ Follow the existing style: two-space indentation, no semicolons, single quotes, 
 
 Treat documentation as part of every public API change. When adding, changing,
 or removing a public export, option, contract, or consumer-visible behavior,
-review and update the README, the public guide source in `docs-src/`, and the
+review and update the README, the public guide source in `docs-engine/`, and the
 machine-readable guide in `docs/llms.txt` in the same change. Examples should
 use the public API and show the resulting consumer-visible behavior. Also keep
 the Changeset and any affected `support/css/` records consistent with those
@@ -42,11 +42,13 @@ or outcome is stale. The documentation changelog derives its `Upcoming` section
 from pending Changesets; do not manually copy pending entries into
 `CHANGELOG.md`.
 
-HTML pages in `docs/` are generated output. Edit guide and support-page content
-in `docs-src/`, shared shell behavior in `scripts/docs-page-shell.mjs`, shared
-styles and browser behavior in `docs/site.css` and `docs/site.js`, and changelog
-rendering in `scripts/generate-changelog-page.mjs`. Run `pnpm run docs:generate`
-after edits and `pnpm run docs:check` before committing.
+`docs/` contains authored documentation content, while `docs-engine/` contains
+the web templates and assets used to present it. The ignored `.site/` directory
+is generated deployment output and must not be committed. Edit shared shell
+behavior in `scripts/docs-page-shell.mjs`, shared styles and browser behavior in
+`docs-engine/assets/`, and changelog rendering in
+`scripts/generate-changelog-page.mjs`. Run `pnpm run docs:generate` after edits
+and `pnpm run docs:check` before committing.
 
 ## Testing Guidelines
 

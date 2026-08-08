@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { enhanceNavigation, enhanceScrollspy, highlight } from '../../docs/site.js'
+import { enhanceNavigation, enhanceScrollspy, highlight } from '../../docs-engine/assets/site.js'
 
 afterEach(() => {
   document.body.innerHTML = ''

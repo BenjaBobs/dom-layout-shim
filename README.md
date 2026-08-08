@@ -140,18 +140,18 @@ only from recorded cross-platform parity evidence.
 
 The package requires Node.js 22 or newer and uses standard ES modules.
 
-See [docs/index.html](docs/index.html) for the documentation site and
-[docs/css-support-status.html](docs/css-support-status.html) for its filterable
-CSS support overview. The underlying source of truth is
+See the [documentation site](https://benjabobs.github.io/dom-layout-shim/) and
+its [filterable CSS support overview](https://benjabobs.github.io/dom-layout-shim/css-support-status.html).
+The underlying source of truth is
 the machine-readable records in [support/css](support/css). Each record follows
 [support/css-support.schema.json](support/css-support.schema.json). Run
 `pnpm run css:validate` to check the inventory, `pnpm run css:generate` after
 editing it, or `pnpm run css:query -- flex-basis` to query it from a terminal.
-Ignored, generated JSON for documentation and agent consumers is written to
-`docs/data/`.
+Ignored documentation-site output, including generated CSS support JSON, is
+written to `.site/`.
 
-Run `pnpm run docs:generate` to rebuild every HTML page and its support data,
-or `pnpm run docs:check` to verify that committed output is current. Run
+Run `pnpm run docs:generate` to rebuild the ignored `.site/` deployment output,
+or `pnpm run docs:check` to validate and regenerate it. Run
 `pnpm run docs:serve` to generate and serve the complete documentation site
 locally. Pass a port when needed, for example
 `pnpm run docs:serve -- 4174`.

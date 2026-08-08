@@ -6,9 +6,9 @@ import process from 'node:process'
 const root = resolve(import.meta.dirname, '..')
 const recordsDirectory = resolve(root, 'support/css')
 const fixtureDirectory = resolve(root, 'test/browser-parity/cases')
-const generatedJsonPath = resolve(root, 'docs/data/css-support.json')
-const generatedIndexPath = resolve(root, 'docs/data/css-property-index.json')
-const generatedSchemaPath = resolve(root, 'docs/data/css-support.schema.json')
+const generatedJsonPath = resolve(root, '.site/data/css-support.json')
+const generatedIndexPath = resolve(root, '.site/data/css-property-index.json')
+const generatedSchemaPath = resolve(root, '.site/data/css-support.schema.json')
 const generatedTypeScriptPath = resolve(root, 'src/api/css-support-inventory.generated.ts')
 const schemaSource = await readFile(resolve(root, 'support/css-support.schema.json'), 'utf8')
 
@@ -145,7 +145,7 @@ function requireValue(errors, location, condition, message) {
 
 async function generate(records) {
   const generated = buildGeneratedOutputs(records)
-  await mkdir(resolve(root, 'docs/data'), { recursive: true })
+  await mkdir(resolve(root, '.site/data'), { recursive: true })
   await writeFile(generatedJsonPath, generated.inventory)
   await writeFile(generatedIndexPath, generated.propertyIndex)
   await writeFile(generatedSchemaPath, generated.schema)

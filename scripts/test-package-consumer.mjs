@@ -11,7 +11,7 @@ rmSync(consumerRoot, { recursive: true, force: true })
 mkdirSync(consumerRoot, { recursive: true })
 
 runPnpm(['pack', '--pack-destination', consumerRoot], repositoryRoot)
-assertTestFontsExcluded()
+assertGeneratedAssetsExcluded()
 
 const tarballName = `${packageJson.name}-${packageJson.version}.tgz`
 const tarballPath = join(consumerRoot, tarballName)
@@ -97,7 +97,7 @@ execFileSync(process.execPath, ['consumer.ts'], {
 
 console.log('Packed package passed consumer typecheck and runtime smoke test.')
 
-function assertTestFontsExcluded() {
+function assertGeneratedAssetsExcluded() {
   const packManifest = JSON.parse(execFileSync('pnpm', ['pack', '--dry-run', '--json'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
@@ -109,6 +109,14 @@ function assertTestFontsExcluded() {
 
   if (testFontFiles.length > 0) {
     throw new Error(`Packed package contains test font assets: ${testFontFiles.join(', ')}`)
+  }
+
+  const generatedDocumentation = packedFiles.filter((path) =>
+    path.startsWith('.site/') || path.startsWith('docs/data/') || path.endsWith('.html'),
+  )
+
+  if (generatedDocumentation.length > 0) {
+    throw new Error(`Packed package contains generated documentation: ${generatedDocumentation.join(', ')}`)
   }
 }
 
