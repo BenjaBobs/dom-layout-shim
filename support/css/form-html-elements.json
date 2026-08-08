@@ -47,7 +47,7 @@
         },
         {
           "kind": "implementation-quirk",
-          "text": "Native button text metrics vary with the host Chromium platform; their parity checks use narrow, field-specific tolerances while other claimed control dimensions remain exact."
+          "text": "Native button and text-input metrics vary with the host Chromium platform; their parity checks use field-specific tolerances capped by recorded Chromium 147 differences while platform-specific profiles are populated. Other claimed control dimensions remain exact."
         },
         {
           "kind": "limitation",
