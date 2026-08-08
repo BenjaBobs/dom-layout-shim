@@ -15,6 +15,14 @@ pnpm install
 pnpm test
 ```
 
+The repository is a pnpm workspace. Packages under `examples/` are private
+consumers that depend on the root package with the `workspace:*` protocol. Run
+all example builds, typechecks, and tests with:
+
+```sh
+pnpm run examples:check
+```
+
 The package uses TypeScript ES modules. Local relative imports include explicit
 `.ts` extensions so Node can execute the source directly.
 
@@ -60,6 +68,7 @@ Use the checks appropriate to the files and behavior changed:
 - `pnpm run css:check`: validate and generate the CSS support inventory.
 - `pnpm run build`: verify publishing-facing changes.
 - `pnpm run test:package`: build and exercise the packed npm artifact.
+- `pnpm run examples:check`: build the package and validate every example.
 
 Keep unit and Chromium parity responsibilities separate. Browser-observable
 layout behavior belongs in browser parity tests; lifecycle, invalidation,

@@ -1,0 +1,17 @@
+{
+  "name": "@dom-layout-shim/example-basic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "dom-layout-shim": "workspace:*",
+    "happy-dom": "^20.11.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10"
+  }
+}

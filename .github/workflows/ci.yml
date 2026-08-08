@@ -94,6 +94,10 @@ jobs:
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm test
 
+      - name: Check examples
+        if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
+        run: pnpm run examples:check
+
       - name: Test packed package
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run test:package
