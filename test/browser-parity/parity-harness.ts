@@ -82,7 +82,7 @@ export type BrowserParityFixture = {
   queries: BrowserParityQuery[]
 }
 
-type QueryResult = {
+export type QueryResult = {
   elementFromPoint?: string | null
   elementsFromPoint?: string[]
   rect?: SerializedRect
@@ -129,6 +129,19 @@ const deterministicFontData = readFileSync(
 ).toString('base64')
 
 export async function expectChromiumParity(fixture: BrowserParityFixture): Promise<void> {
+  const { chromium: chromiumResult, engine: engineResult } = await measureBrowserParityFixture(fixture)
+
+  for (const [index, query] of fixture.queries.entries()) {
+    expectQueryParity(engineResult[index], chromiumResult[index], query, index)
+  }
+}
+
+export async function measureBrowserParityFixture(fixture: BrowserParityFixture): Promise<{
+  chromiumVersion: string
+  queries: BrowserParityQuery[]
+  chromium: QueryResult[]
+  engine: QueryResult[]
+}> {
   const queries = fixtureQueries(fixture)
   const chromiumResult = await runInChromium(fixture)
   const engineResult = await runInHappyDom(fixture)
@@ -140,8 +153,11 @@ export async function expectChromiumParity(fixture: BrowserParityFixture): Promi
     recordObservation(fixture, query, engineResult[index], chromiumResult[index])
   }
 
-  for (const [index, query] of fixture.queries.entries()) {
-    expectQueryParity(engineResult[index], chromiumResult[index], query, index)
+  return {
+    chromiumVersion: chromiumVersion ?? 'unknown',
+    queries,
+    chromium: chromiumResult,
+    engine: engineResult,
   }
 }
 

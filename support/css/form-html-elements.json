@@ -47,7 +47,7 @@
         },
         {
           "kind": "implementation-quirk",
-          "text": "Native button and text-input metrics vary with the host Chromium platform; their parity checks use field-specific tolerances capped by recorded Chromium 147 differences while platform-specific profiles are populated. Other claimed control dimensions remain exact."
+          "text": "The full native-control fixture is checked exactly against the selected portable engine profile on every host and against committed Chromium 147 snapshots on the recorded Linux, macOS, and Windows CI runner families. Local Chromium is observed but not matched to a CI snapshot because fonts and themes can change native metrics within the same operating system."
         },
         {
           "kind": "limitation",
