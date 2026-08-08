@@ -1,4 +1,5 @@
 import { chromium, type Browser } from '@playwright/test'
+import { readFileSync } from 'node:fs'
 import { Window as HappyDomWindow } from 'happy-dom'
 import { expect, inject } from 'vitest'
 import { attachLayoutEngine } from '../../src/index.ts'
@@ -72,6 +73,7 @@ export type BrowserParityFixture = {
     arg?: boolean | ScrollIntoViewOptions
   }
   html: string
+  typography?: 'deterministic'
   queries: BrowserParityQuery[]
 }
 
@@ -115,6 +117,10 @@ type QueryWindow = {
 }
 
 let browserPromise: Promise<Browser> | undefined
+const deterministicFontFamily = 'DOM Layout Shim Deterministic'
+const deterministicFontData = readFileSync(
+  new URL('./assets/fonts/deterministic-layout.otf', import.meta.url),
+).toString('base64')
 
 export async function expectChromiumParity(fixture: BrowserParityFixture): Promise<void> {
   const chromiumResult = await runInChromium(fixture)
@@ -181,7 +187,16 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
   const page = await browser.newPage({ viewport: fixture.viewport })
 
   try {
-    await page.setContent(fixture.html)
+    await page.setContent(fixtureHtml(fixture, true))
+    if (fixture.typography === 'deterministic') {
+      await page.evaluate(async (fontFamily) => {
+        await document.fonts.load(`20px "${fontFamily}"`)
+        await document.fonts.ready
+        if (!document.fonts.check(`20px "${fontFamily}"`)) {
+          throw new Error(`Deterministic parity font did not load: ${fontFamily}`)
+        }
+      }, deterministicFontFamily)
+    }
     if (fixture.scroll) {
       await page.evaluate(({ x, y }) => window.scrollTo(x, y), fixture.scroll)
     }
@@ -239,7 +254,7 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
     height: fixture.viewport.height,
   })
   const document = window.document
-  document.body.innerHTML = fixture.html
+  document.body.innerHTML = fixtureHtml(fixture, false)
   if (fixture.scroll) {
     window.scrollTo(fixture.scroll.x, fixture.scroll.y)
   }
@@ -270,6 +285,30 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   window.close()
 
   return results
+}
+
+function fixtureHtml(fixture: BrowserParityFixture, includeFontFace: boolean): string {
+  if (fixture.typography !== 'deterministic') {
+    return fixture.html
+  }
+
+  const fontFace = includeFontFace
+    ? `@font-face {
+        font-family: '${deterministicFontFamily}';
+        src: url(data:font/otf;base64,${deterministicFontData}) format('opentype');
+        font-style: normal;
+        font-weight: 400;
+      }`
+    : ''
+
+  return `<style>
+    ${fontFace}
+    html {
+      font-family: '${deterministicFontFamily}';
+      font-size: 20px;
+      line-height: 20px;
+    }
+  </style>${fixture.html}`
 }
 
 function describeQuery(query: BrowserParityQuery): string {
