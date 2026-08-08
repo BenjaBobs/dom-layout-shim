@@ -31,6 +31,7 @@
         "relative",
         "absolute",
         "fixed",
+        "sticky",
         "<px>",
         "auto",
         "<integer>"
@@ -46,17 +47,18 @@
           "inset-two-value-shorthand",
           "relative-offset-flow",
           "right-bottom-positioning",
+          "sticky-positioning",
           "z-index-dom-order"
         ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, physical and logical opposing/end insets, CSS-wide static resets, and z-index ordering have parity fixtures."
+          "text": "Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, physical-inset sticky positioning, sticky table headers, containing-block limits, physical and logical opposing/end insets, CSS-wide static resets, and z-index ordering have parity fixtures."
         },
         {
           "kind": "taffy-compat",
-          "text": "Fixed positioning is represented through Taffy absolute positioning in the viewport-rooted layout tree."
+          "text": "Fixed positioning is represented through Taffy absolute positioning in the viewport-rooted layout tree. Taffy does not implement sticky positioning, so sticky boxes remain in Taffy normal flow and are constrained against their supported scrollport during geometry collection."
         }
       ]
     }

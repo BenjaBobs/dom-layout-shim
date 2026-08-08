@@ -69,8 +69,10 @@ are supported. Smooth behavior completes immediately so subsequent test
 assertions remain deterministic.
 
 The current implementation uses Lightning CSS for `<style>` parsing and supports
-a small CSS subset for proof-of-concept block, flex, absolute, and fixed
-positioned fixtures. Unsupported declarations are ignored with deduplicated
+a small CSS subset for proof-of-concept block, flex, absolute, fixed, and sticky
+positioned fixtures. Sticky boxes honor physical insets against the nearest
+supported scrolling ancestor or the viewport, including sticky table headers,
+and stop at their containing block. Unsupported declarations are ignored with deduplicated
 warnings so applications can continue using the supported subset. Each warning
 identifies the declaration and links to its compatibility entry.
 

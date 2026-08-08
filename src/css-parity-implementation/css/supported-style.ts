@@ -82,7 +82,7 @@ export type SupportedStyle = {
     | 'table-column'
     | 'contents'
     | 'none'
-  position: 'static' | 'relative' | 'absolute' | 'fixed'
+  position: 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky'
   boxSizing: 'content-box' | 'border-box'
   flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
   flexWrap: FlexWrapValue

@@ -73,7 +73,7 @@ export function applyDeclaration(
         style,
         'position',
         normalizedValue,
-        ['static', 'relative', 'absolute', 'fixed'],
+        ['static', 'relative', 'absolute', 'fixed', 'sticky'],
         normalizedProperty,
         value,
         context,

@@ -27,6 +27,8 @@ import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts'
 type TaffyLayoutState = {
   boxes: HitBox[]
   rects: Map<Element, Box>
+  layoutRects: Map<Element, Box>
+  normalRects: Map<Element, Box>
   clientRects: Map<Element, Box>
   elementScrolls: Map<Element, ScrollOffset>
   elementNodes: Map<Element, bigint>
@@ -183,7 +185,7 @@ export function computeTaffyDocumentLayout(
 ): LayoutSnapshot {
   const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, nativeControlMetrics)
   computeTaffyLayout(layoutTree, viewport)
-  return collectTaffyLayoutSnapshot(document, scroll, layoutTree.state)
+  return collectTaffyLayoutSnapshot(document, viewport, scroll, layoutTree.state)
 }
 
 function buildTaffyLayoutTree(
@@ -202,6 +204,8 @@ function buildTaffyLayoutTree(
   const state: TaffyLayoutState = {
     boxes: [],
     rects: new Map<Element, Box>(),
+    layoutRects: new Map<Element, Box>(),
+    normalRects: new Map<Element, Box>(),
     clientRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
@@ -233,15 +237,29 @@ function computeTaffyLayout(layoutTree: TaffyLayoutTree, viewport: Viewport): vo
   )
 }
 
-function collectTaffyLayoutSnapshot(document: Document, scroll: ScrollOffset, state: TaffyLayoutState): LayoutSnapshot {
-  recordChildLayouts(document.body, { x: 0, y: 0 }, infiniteClipBounds(), scroll, false, false, state)
-  const layoutRects = new Map(state.rects)
+function collectTaffyLayoutSnapshot(
+  document: Document,
+  viewport: Viewport,
+  scroll: ScrollOffset,
+  state: TaffyLayoutState,
+): LayoutSnapshot {
+  recordChildLayouts(
+    document.body,
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    infiniteClipBounds(),
+    viewport,
+    scroll,
+    false,
+    false,
+    state,
+  )
   applyVisualTransforms(document, state)
 
   return {
     boxes: state.boxes,
     rects: state.rects,
-    layoutRects,
+    layoutRects: state.layoutRects,
     clientRects: state.clientRects,
     elementScrolls: state.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
@@ -459,7 +477,9 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
 function recordChildLayouts(
   parent: Element | null,
   origin: { x: number; y: number },
+  layoutOrigin: { x: number; y: number },
   clipBounds: ClipBounds,
+  viewport: Viewport,
   scroll: ScrollOffset,
   fixedContainingBlock: boolean,
   suppressedByHiddenUntilFound: boolean,
@@ -475,7 +495,17 @@ function recordChildLayouts(
     if (!node) {
       if (state.contentsElements.has(element)) {
         markElementNoBox(element, state)
-        recordChildLayouts(element, origin, clipBounds, scroll, fixedContainingBlock, suppressedByHiddenUntilFound, state)
+        recordChildLayouts(
+          element,
+          origin,
+          layoutOrigin,
+          clipBounds,
+          viewport,
+          scroll,
+          fixedContainingBlock,
+          suppressedByHiddenUntilFound,
+          state,
+        )
       }
 
       continue
@@ -486,33 +516,68 @@ function recordChildLayouts(
     const layout = state.tree.getLayout(node)
     // Taffy models fixed as absolute, so collection re-roots fixed boxes to
     // viewport coordinates instead of inheriting a scrolled ancestor origin.
-    const layoutBox = {
+    const normalLayoutBox = {
+      x: style.position === 'fixed' ? layout.x : layoutOrigin.x + layout.x,
+      y: style.position === 'fixed' ? layout.y : layoutOrigin.y + layout.y,
+      width: layout.width,
+      height: layout.height,
+    }
+    const visualLayoutBox = {
       x: style.position === 'fixed' ? layout.x : origin.x + layout.x,
       y: style.position === 'fixed' ? layout.y : origin.y + layout.y,
       width: layout.width,
       height: layout.height,
     }
-    const box = toViewportBox(layoutBox, scroll, fixedSubtree)
+    const normalBox = toViewportBox(normalLayoutBox, scroll, fixedSubtree)
+    const box = applyStickyPosition(
+      element,
+      style,
+      toViewportBox(visualLayoutBox, scroll, fixedSubtree),
+      viewport,
+      state,
+    )
+    const adjustedLayoutBox = fixedSubtree
+      ? box
+      : { ...box, x: box.x + scroll.x, y: box.y + scroll.y }
     const domOrder = state.domOrder
     state.domOrder += 1
 
     const elementScroll = readElementScrollOffset(element)
     const hitClipBounds = style.position === 'fixed' ? infiniteClipBounds() : clipBounds
     state.elementScrolls.set(element, elementScroll)
-    recordBox(element, style, box, hitClipBounds, domOrder, !suppressedByHiddenUntilFound, state)
+    recordBox(
+      element,
+      style,
+      box,
+      hitClipBounds,
+      domOrder,
+      !suppressedByHiddenUntilFound,
+      state,
+      style.position === 'sticky' ? adjustedLayoutBox : normalBox,
+      normalBox,
+    )
     const tableLayout = state.tableLayouts.get(element)
     if (tableLayout) {
-      recordSimpleTableLayout(tableLayout, box, hitClipBounds, state)
+      recordSimpleTableLayout(tableLayout, normalBox, hitClipBounds, viewport, scroll, state)
       continue
     }
 
     recordChildLayouts(
       element,
       {
-        x: layoutBox.x - elementScroll.x,
-        y: layoutBox.y - elementScroll.y,
+        x: adjustedLayoutBox.x - elementScroll.x,
+        y: adjustedLayoutBox.y - elementScroll.y,
+      },
+      {
+        x:
+          (style.position === 'sticky' ? adjustedLayoutBox.x : normalLayoutBox.x) -
+          elementScroll.x,
+        y:
+          (style.position === 'sticky' ? adjustedLayoutBox.y : normalLayoutBox.y) -
+          elementScroll.y,
       },
       childClipBounds(style, box, hitClipBounds),
+      viewport,
       scroll,
       fixedSubtree,
       suppressedByHiddenUntilFound || isHiddenUntilFound(element),
@@ -534,6 +599,131 @@ function toViewportBox(box: Box, scroll: ScrollOffset, fixedSubtree: boolean): B
   }
 }
 
+function applyStickyPosition(
+  element: Element,
+  style: SupportedStyle,
+  box: Box,
+  viewport: Viewport,
+  state: TaffyLayoutState,
+): Box {
+  if (style.position !== 'sticky') {
+    return box
+  }
+
+  // Taffy intentionally leaves sticky nodes in normal flow. Clamp the visual
+  // box against the nearest supported scrolling ancestor during collection so
+  // descendants, clipping, and hit testing inherit the same translated origin.
+  const horizontalBounds = stickyScrollport(element, 'x', viewport, state)
+  const verticalBounds = stickyScrollport(element, 'y', viewport, state)
+  const adjusted = {
+    ...box,
+    x: clampStickyAxis(box.x, box.width, style.left, style.right, horizontalBounds),
+    y: clampStickyAxis(box.y, box.height, style.top, style.bottom, verticalBounds),
+  }
+
+  return constrainStickyToContainingBlock(element, style, adjusted, state)
+}
+
+function constrainStickyToContainingBlock(
+  element: Element,
+  style: SupportedStyle,
+  box: Box,
+  state: TaffyLayoutState,
+): Box {
+  const containingBlock = element.parentElement
+    ? state.clientRects.get(element.parentElement)
+    : undefined
+
+  if (!containingBlock) {
+    return box
+  }
+
+  const minimumX = containingBlock.x
+  const maximumX = containingBlock.x + containingBlock.width - box.width
+  const minimumY = containingBlock.y
+  const maximumY = containingBlock.y + containingBlock.height - box.height
+
+  return {
+    ...box,
+    x:
+      style.left === undefined && style.right === undefined
+        ? box.x
+        : clampToContainingRange(box.x, minimumX, maximumX, style.left !== undefined),
+    y:
+      style.top === undefined && style.bottom === undefined
+        ? box.y
+        : clampToContainingRange(box.y, minimumY, maximumY, style.top !== undefined),
+  }
+}
+
+function clampToContainingRange(
+  position: number,
+  minimum: number,
+  maximum: number,
+  startSideWins: boolean,
+): number {
+  if (maximum < minimum) {
+    return startSideWins ? minimum : maximum
+  }
+
+  return Math.min(Math.max(position, minimum), maximum)
+}
+
+function stickyScrollport(
+  element: Element,
+  axis: 'x' | 'y',
+  viewport: Viewport,
+  state: TaffyLayoutState,
+): { start: number; end: number } {
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    const style = resolveSupportedStyle(ancestor, state)
+    const overflow = axis === 'x' ? style.overflowX : style.overflowY
+
+    if (!isProgrammaticallyScrollable(overflow)) {
+      continue
+    }
+
+    const clientBox = state.clientRects.get(ancestor)
+
+    if (clientBox) {
+      const start = axis === 'x' ? clientBox.x : clientBox.y
+      const size = axis === 'x' ? clientBox.width : clientBox.height
+      return { start, end: start + size }
+    }
+  }
+
+  return {
+    start: 0,
+    end: axis === 'x' ? viewport.width : viewport.height,
+  }
+}
+
+function clampStickyAxis(
+  position: number,
+  size: number,
+  startInset: number | undefined,
+  endInset: number | undefined,
+  bounds: { start: number; end: number },
+): number {
+  let result = position
+
+  if (startInset !== undefined) {
+    result = Math.max(result, bounds.start + startInset)
+  }
+
+  if (endInset !== undefined) {
+    const endPosition = bounds.end - endInset - size
+    // CSS weakens the end inset when both constraints cannot fit, so the
+    // start-side constraint wins for the physical left-to-right/top-to-bottom
+    // axes supported by this engine.
+    if (startInset === undefined || endPosition >= bounds.start + startInset) {
+      result = Math.min(result, endPosition)
+    }
+  }
+
+  return result
+}
+
 function readElementScrollOffset(element: Element): ScrollOffset {
   return {
     x: element.scrollLeft,
@@ -542,7 +732,10 @@ function readElementScrollOffset(element: Element): ScrollOffset {
 }
 
 function markElementNoBox(element: Element, state: TaffyLayoutState): void {
-  state.rects.set(element, { x: 0, y: 0, width: 0, height: 0 })
+  const box = { x: 0, y: 0, width: 0, height: 0 }
+  state.rects.set(element, box)
+  state.layoutRects.set(element, box)
+  state.normalRects.set(element, box)
   state.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 })
   state.elementScrolls.set(element, readElementScrollOffset(element))
 }
@@ -565,52 +758,196 @@ function markSubtreeNoBox(element: Element, state: TaffyLayoutState): void {
 
 function recordSimpleTableLayout(
   tableLayout: SimpleTableLayout,
-  tableBox: Box,
+  normalTableBox: Box,
   clipBounds: ClipBounds,
+  viewport: Viewport,
+  scroll: ScrollOffset,
   state: TaffyLayoutState,
 ): void {
   if (tableLayout.caption) {
     const captionStyle = resolveSupportedStyle(tableLayout.caption.element, state)
-    const captionBox = offsetTableBox(tableBox, tableLayout.caption)
+    const normalCaptionBox = offsetTableBox(normalTableBox, tableLayout.caption)
+    const captionBox = tablePartVisualBox(
+      tableLayout.caption.element,
+      captionStyle,
+      normalCaptionBox,
+      viewport,
+      state,
+    )
     state.elementScrolls.set(tableLayout.caption.element, readElementScrollOffset(tableLayout.caption.element))
-    recordBox(tableLayout.caption.element, captionStyle, captionBox, clipBounds, nextDomOrder(state), true, state)
+    recordBox(
+      tableLayout.caption.element,
+      captionStyle,
+      captionBox,
+      clipBounds,
+      nextDomOrder(state),
+      true,
+      state,
+      stickyLayoutBox(captionStyle, captionBox, normalCaptionBox, scroll),
+      normalCaptionBox,
+    )
   }
 
   for (const columnGroup of tableLayout.columnGroups) {
     const columnGroupStyle = resolveSupportedStyle(columnGroup.element, state)
-    const columnGroupBox = offsetTableBox(tableBox, columnGroup)
+    const normalColumnGroupBox = offsetTableBox(normalTableBox, columnGroup)
+    const columnGroupBox = tablePartVisualBox(
+      columnGroup.element,
+      columnGroupStyle,
+      normalColumnGroupBox,
+      viewport,
+      state,
+    )
     state.elementScrolls.set(columnGroup.element, readElementScrollOffset(columnGroup.element))
-    recordBox(columnGroup.element, columnGroupStyle, columnGroupBox, clipBounds, nextDomOrder(state), false, state)
+    recordBox(
+      columnGroup.element,
+      columnGroupStyle,
+      columnGroupBox,
+      clipBounds,
+      nextDomOrder(state),
+      false,
+      state,
+      stickyLayoutBox(columnGroupStyle, columnGroupBox, normalColumnGroupBox, scroll),
+      normalColumnGroupBox,
+    )
 
     for (const column of columnGroup.columns) {
       const columnStyle = resolveSupportedStyle(column.element, state)
-      const columnBox = offsetTableBox(tableBox, column)
+      const normalColumnBox = offsetTableBox(normalTableBox, column)
+      const columnBox = tablePartVisualBox(
+        column.element,
+        columnStyle,
+        normalColumnBox,
+        viewport,
+        state,
+      )
       state.elementScrolls.set(column.element, readElementScrollOffset(column.element))
-      recordBox(column.element, columnStyle, columnBox, clipBounds, nextDomOrder(state), false, state)
+      recordBox(
+        column.element,
+        columnStyle,
+        columnBox,
+        clipBounds,
+        nextDomOrder(state),
+        false,
+        state,
+        stickyLayoutBox(columnStyle, columnBox, normalColumnBox, scroll),
+        normalColumnBox,
+      )
     }
   }
 
   for (const section of tableLayout.sections) {
     const sectionStyle = resolveSupportedStyle(section.element, state)
-    const sectionBox = offsetTableBox(tableBox, section)
+    const normalSectionBox = offsetTableBox(normalTableBox, section)
+    const sectionBox = tablePartVisualBox(
+      section.element,
+      sectionStyle,
+      normalSectionBox,
+      viewport,
+      state,
+    )
     state.elementScrolls.set(section.element, readElementScrollOffset(section.element))
-    recordBox(section.element, sectionStyle, sectionBox, clipBounds, nextDomOrder(state), false, state)
+    recordBox(
+      section.element,
+      sectionStyle,
+      sectionBox,
+      clipBounds,
+      nextDomOrder(state),
+      false,
+      state,
+      stickyLayoutBox(sectionStyle, sectionBox, normalSectionBox, scroll),
+      normalSectionBox,
+    )
 
     for (const row of section.rows) {
       const rowStyle = resolveSupportedStyle(row.element, state)
-      const rowBox = offsetTableBox(tableBox, row)
+      const normalRowBox = offsetTableBox(normalTableBox, row)
+      const rowBox = tablePartVisualBox(
+        row.element,
+        rowStyle,
+        normalRowBox,
+        viewport,
+        state,
+      )
       state.elementScrolls.set(row.element, readElementScrollOffset(row.element))
-      recordBox(row.element, rowStyle, rowBox, clipBounds, nextDomOrder(state), false, state)
+      recordBox(
+        row.element,
+        rowStyle,
+        rowBox,
+        clipBounds,
+        nextDomOrder(state),
+        false,
+        state,
+        stickyLayoutBox(rowStyle, rowBox, normalRowBox, scroll),
+        normalRowBox,
+      )
 
       for (const cell of row.cells) {
         const cellStyle = resolveSupportedStyle(cell.element, state)
-        const cellBox = offsetTableBox(tableBox, cell)
+        const normalCellBox = offsetTableBox(normalTableBox, cell)
+        const cellBox = tablePartVisualBox(
+          cell.element,
+          cellStyle,
+          normalCellBox,
+          viewport,
+          state,
+        )
         const includeHitBox = tableCellIncludesHitBox(cell.element, cellStyle, state)
         state.elementScrolls.set(cell.element, readElementScrollOffset(cell.element))
-        recordBox(cell.element, cellStyle, cellBox, clipBounds, nextDomOrder(state), includeHitBox, state)
+        recordBox(
+          cell.element,
+          cellStyle,
+          cellBox,
+          clipBounds,
+          nextDomOrder(state),
+          includeHitBox,
+          state,
+          stickyLayoutBox(cellStyle, cellBox, normalCellBox, scroll),
+          normalCellBox,
+        )
       }
     }
   }
+}
+
+function stickyLayoutBox(
+  style: SupportedStyle,
+  visualBox: Box,
+  normalBox: Box,
+  scroll: ScrollOffset,
+): Box {
+  if (style.position !== 'sticky') {
+    return normalBox
+  }
+
+  return {
+    ...visualBox,
+    x: visualBox.x + scroll.x,
+    y: visualBox.y + scroll.y,
+  }
+}
+
+function tablePartVisualBox(
+  element: Element,
+  style: SupportedStyle,
+  normalBox: Box,
+  viewport: Viewport,
+  state: TaffyLayoutState,
+): Box {
+  const parent = element.parentElement
+  const parentVisualBox = parent ? state.rects.get(parent) : undefined
+  const parentLayoutBox = parent ? state.normalRects.get(parent) : undefined
+  const inheritedOffset = {
+    x: (parentVisualBox?.x ?? 0) - (parentLayoutBox?.x ?? 0),
+    y: (parentVisualBox?.y ?? 0) - (parentLayoutBox?.y ?? 0),
+  }
+  const visualBox = {
+    ...normalBox,
+    x: normalBox.x + inheritedOffset.x,
+    y: normalBox.y + inheritedOffset.y,
+  }
+
+  return applyStickyPosition(element, style, visualBox, viewport, state)
 }
 
 function offsetTableBox(origin: Box, box: { x: number; y: number; width: number; height: number }): Box {
@@ -644,8 +981,12 @@ function recordBox(
   domOrder: number,
   includeHitBox: boolean,
   state: TaffyLayoutState,
+  layoutBox: Box = box,
+  normalBox: Box = layoutBox,
 ): void {
   state.rects.set(element, box)
+  state.layoutRects.set(element, layoutBox)
+  state.normalRects.set(element, normalBox)
   state.clientRects.set(element, computeClientBox(box, style))
 
   if (!includeHitBox) {
@@ -661,11 +1002,24 @@ function recordBox(
   state.boxes.push({
     ...hitBox,
     element,
-    zIndex: style.zIndex,
+    // Sticky positioning always creates a stacking context. The hit-testing
+    // model uses a flat numeric order, so lift an auto/zero sticky subtree
+    // above ordinary in-flow content while preserving explicit z-index values.
+    zIndex: style.zIndex === 0 && hasStickyAncestor(element, state) ? 0.5 : style.zIndex,
     domOrder,
     pointerEvents: style.pointerEvents,
     visibility: style.visibility,
   })
+}
+
+function hasStickyAncestor(element: Element, state: TaffyLayoutState): boolean {
+  for (let current: Element | null = element; current; current = current.parentElement) {
+    if (resolveSupportedStyle(current, state).position === 'sticky') {
+      return true
+    }
+  }
+
+  return false
 }
 
 function childClipBounds(style: SupportedStyle, box: Box, clipBounds: ClipBounds): ClipBounds {

@@ -80,10 +80,12 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
     height: style.rowGap,
   }
   taffyStyle.inset = {
-    left: style.position === 'static' ? 'auto' : style.left ?? 'auto',
-    right: style.position === 'static' ? 'auto' : style.right ?? 'auto',
-    top: style.position === 'static' ? 'auto' : style.top ?? 'auto',
-    bottom: style.position === 'static' ? 'auto' : style.bottom ?? 'auto',
+    // Taffy has no sticky positioning. Keep sticky nodes in their normal-flow
+    // location here; collection applies their scrollport constraints later.
+    left: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.left ?? 'auto',
+    right: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.right ?? 'auto',
+    top: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.top ?? 'auto',
+    bottom: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.bottom ?? 'auto',
   }
 
   return taffyStyle
