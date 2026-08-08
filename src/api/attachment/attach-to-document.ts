@@ -9,6 +9,6 @@ export function attachToDocument(document: DocumentLike, config: NormalizedLayou
     unsupportedCss: config.unsupportedCss,
     textMeasurer: config.textMeasurer,
     stylesheets: config.stylesheets,
-    nativeControlProfile: config.nativeControlProfile,
+    nativeControlMetrics: config.nativeControlMetrics,
   })
 }

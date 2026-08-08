@@ -19,7 +19,7 @@ import {
   type AffineTransform,
 } from '../geometry/transform.ts'
 import type { TextMeasurer } from '../../api/text-measurer.ts'
-import type { NativeControlProfile } from '../../api/native-control-profile.ts'
+import type { NativeControlMetrics } from '../../api/native-control-profile.ts'
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts'
 import { canMeasureTextLeaf, createMeasureContext, measureTaffyNode, type MeasureContext } from './taffy/taffy-measure.ts'
 import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts'
@@ -37,7 +37,7 @@ type TaffyLayoutState = {
   rules: ReturnType<typeof readStyleRules>
   policy: UnsupportedCssPolicy | undefined
   textMeasurer: TextMeasurer
-  nativeControlProfile: NativeControlProfile
+  nativeControlMetrics: NativeControlMetrics
   domOrder: number
 }
 
@@ -179,9 +179,9 @@ export function computeTaffyDocumentLayout(
   policy: UnsupportedCssPolicy | undefined,
   textMeasurer: TextMeasurer,
   stylesheets: readonly string[],
-  nativeControlProfile: NativeControlProfile,
+  nativeControlMetrics: NativeControlMetrics,
 ): LayoutSnapshot {
-  const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, nativeControlProfile)
+  const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, nativeControlMetrics)
   computeTaffyLayout(layoutTree, viewport)
   return collectTaffyLayoutSnapshot(document, scroll, layoutTree.state)
 }
@@ -192,7 +192,7 @@ function buildTaffyLayoutTree(
   policy: UnsupportedCssPolicy | undefined,
   textMeasurer: TextMeasurer,
   stylesheets: readonly string[],
-  nativeControlProfile: NativeControlProfile,
+  nativeControlMetrics: NativeControlMetrics,
 ): TaffyLayoutTree {
   const tree = new TaffyTree()
   // Taffy's JS wrapper enables whole-pixel rounding by default, while DOM
@@ -212,7 +212,7 @@ function buildTaffyLayoutTree(
     rules: readStyleRules(document, policy, stylesheets),
     policy,
     textMeasurer,
-    nativeControlProfile,
+    nativeControlMetrics,
     domOrder: 0,
   }
 
@@ -444,7 +444,7 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
     return [node]
   }
 
-  const context = createMeasureContext(element, style, state.textMeasurer, state.nativeControlProfile)
+  const context = createMeasureContext(element, style, state.textMeasurer, state.nativeControlMetrics)
   const children = context?.replacedSize || canMeasureTextLeaf(element) ? [] : buildChildNodes(element, state)
   const taffyStyle = toTaffyStyle(style, context)
   const node =

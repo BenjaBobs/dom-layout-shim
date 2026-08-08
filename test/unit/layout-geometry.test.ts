@@ -17,6 +17,25 @@ describe('layout DOM API and package contracts', () => {
     expect(rect.height).toBe(23)
   })
 
+  it('merges native-control overrides with the selected profile', async () => {
+    document.body.innerHTML = '<input id="text"><input id="checkbox" type="checkbox">'
+
+    await attach({
+      nativeControls: {
+        profile: 'portable',
+        overrides: {
+          textInput: { width: 240 },
+          checkboxRadio: { width: 18, height: 16 },
+        },
+      },
+    })
+
+    const textRect = requiredElement('#text').getBoundingClientRect()
+    const checkboxRect = requiredElement('#checkbox').getBoundingClientRect()
+    expect({ width: textRect.width, height: textRect.height }).toEqual({ width: 240, height: 23 })
+    expect({ width: checkboxRect.width, height: checkboxRect.height }).toEqual({ width: 18, height: 16 })
+  })
+
   it('patches element dimension APIs from the computed layout snapshot', async () => {
     document.body.innerHTML = `
       <div

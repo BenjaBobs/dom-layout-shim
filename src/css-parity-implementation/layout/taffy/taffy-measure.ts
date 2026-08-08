@@ -1,7 +1,7 @@
 import type { MeasureFunction, Size } from 'taffy-layout'
 import type { SupportedStyle } from '../../css/supported-style.ts'
 import type { TextMeasurer } from '../../../api/text-measurer.ts'
-import { getNativeControlMetrics, type NativeControlProfile } from '../../../api/native-control-profile.ts'
+import type { NativeControlMetrics } from '../../../api/native-control-profile.ts'
 
 const elementNodeType = 1
 const textNodeType = 3
@@ -21,13 +21,13 @@ export function createMeasureContext(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
-  nativeControlProfile: NativeControlProfile,
+  nativeControlMetrics: NativeControlMetrics,
 ): MeasureContext | undefined {
   const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(
     element,
     style,
     textMeasurer,
-    nativeControlProfile,
+    nativeControlMetrics,
   )
 
   if (replacedSize) {
@@ -160,9 +160,8 @@ function formControlIntrinsicSize(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
-  nativeControlProfile: NativeControlProfile,
+  metrics: NativeControlMetrics,
 ): Size<number> | undefined {
-  const metrics = getNativeControlMetrics(nativeControlProfile)
   const tagName = element.tagName.toLowerCase()
 
   if (tagName === 'textarea') {
@@ -239,7 +238,7 @@ function formControlIntrinsicSize(
   }
 }
 
-function inputTextLikeIntrinsicWidth(element: Element, type: string, metrics: ReturnType<typeof getNativeControlMetrics>): number {
+function inputTextLikeIntrinsicWidth(element: Element, type: string, metrics: NativeControlMetrics): number {
   if (!textLikeInputSizeAttributeApplies(type)) {
     return metrics.textInput.width
   }
@@ -258,7 +257,7 @@ function selectIntrinsicSize(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
-  metrics: ReturnType<typeof getNativeControlMetrics>,
+  metrics: NativeControlMetrics,
 ): Size<number> {
   const size = readPositiveIntegerAttribute(element, 'size')
   const listRows = size && size > 1 ? size : element.hasAttribute('multiple') ? 4 : undefined
@@ -299,7 +298,7 @@ function buttonLikeIntrinsicSize(
   text: string,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
-  metrics: ReturnType<typeof getNativeControlMetrics>,
+  metrics: NativeControlMetrics,
 ): Size<number> {
   const label = text.trim()
 
