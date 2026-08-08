@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DOM Layout Shim release changelog.">
+  <title>DOM Layout Shim changelog</title>
+  <style>
+    :root { color-scheme:light dark; --bg:#f5f7fa; --panel:#fff; --text:#16202a; --muted:#607080; --line:#d9e1e8; --brand:#176b52; --code:#17232b; --code-text:#e7f2ef; --inline:#edf2f5; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+    @media (prefers-color-scheme:dark) { :root { --bg:#0f1519; --panel:#172126; --text:#e7eff2; --muted:#9eacb3; --line:#334149; --brand:#70d6ad; --code:#091014; --inline:#253138; } }
+    * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); line-height:1.65; } a { color:var(--brand); }
+    nav { display:flex; gap:20px; padding:20px max(20px,calc((100% - 820px)/2)); border-bottom:1px solid var(--line); background:var(--panel); } nav a { text-decoration:none; font-weight:700; }
+    main { width:min(820px,calc(100% - 40px)); margin:auto; padding:52px 0 80px; } h1 { font-size:44px; letter-spacing:-.035em; } h2 { margin-top:52px; padding-bottom:8px; border-bottom:1px solid var(--line); } h3 { margin-top:30px; color:var(--muted); }
+    li { margin:10px 0; } pre { overflow:auto; padding:18px; border:1px solid var(--line); border-radius:9px; background:var(--code); color:var(--code-text); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; } code { padding:2px 5px; border-radius:5px; background:var(--inline); font:.9em ui-monospace,SFMono-Regular,Menlo,monospace; } pre code { padding:0; background:transparent; }
+    .tok-keyword { color:#ff9dca; } .tok-string { color:#a8e6a3; } .tok-comment { color:#84959e; font-style:italic; } .tok-number { color:#ffd580; } .tok-property { color:#8ed9ff; }
+  </style>
+  <script src="./site.js" defer></script>
+</head>
+<body>
+  <nav><a href="./">Guide</a><a href="./css-support-status.html">CSS support</a><a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a></nav>
+  <main><h1>dom-layout-shim</h1>
+<h2>0.2.0</h2>
+<h3>Minor Changes</h3>
+<ul>
+<li>ff1ef3b: Patch <code>offsetTop</code>, <code>offsetLeft</code>, and <code>offsetParent</code> from the layout snapshot.</li>
+</ul>
+<p>Previously, these properties came from the host DOM implementation and could disagree with the engine&#039;s geometry:</p>
+<pre><code data-language="ts">  element.offsetTop;
+  element.offsetLeft;
+  element.offsetParent;</code></pre>
+<p>They now describe the element relative to its layout-backed CSS offset parent, including positioned ancestors, borders, margins, and scrolling.</p>
+<ul>
+<li>a6bdc8b: Implement <code>Element.scrollIntoView()</code> against the layout snapshot so calls</li>
+<p>consistently affect layout-backed geometry instead of relying on the host DOM implementation.</p>
+</ul>
+<p>The method scrolls nested containers and the configured viewport using boolean or <code>block</code>/<code>inline</code> alignment options. Smooth behavior is applied immediately to keep test layout deterministic.</p>
+<ul>
+<li>8be6e4f: Support adjacent (<code>+</code>) and general (<code>~</code>) sibling combinators in stylesheet selectors.</li>
+<li>68fc5d9: Answer <code>window.matchMedia()</code> queries from the configured layout viewport.</li>
+</ul>
+<p>Previously, <code>matchMedia()</code> used the DOM environment&#039;s viewport, which could disagree with the dimensions used by the layout engine:</p>
+<pre><code data-language="ts">  await attachLayoutEngine({
+    window,
+    viewport: { width: 320, height: 640 },
+  });
+
+  // Previously: false when the DOM environment was wider than 500px
+  window.matchMedia(&quot;(max-width: 500px)&quot;).matches;</code></pre>
+<p>It now evaluates the query against the configured 320px-wide layout viewport:</p>
+<pre><code data-language="ts">  // Now: true
+  window.matchMedia(&quot;(max-width: 500px)&quot;).matches;</code></pre>
+<ul>
+<li>3724069: Recompute layout after style elements are added or changed and after existing CSSOM rules are edited or deleted.</li>
+<li>b26f8ce: Add an unsupported CSS reporter that reduces warning streams to a stable</li>
+<p>adoption-cost summary across a test suite.</p>
+</ul>
+<p>Previously, consumers had to build their own aggregation around <code>onWarning</code>:</p>
+<pre><code data-language="ts">  const warnings = [];
+
+  await attachLayoutEngine({
+    window,
+    unsupportedCss: {
+      onWarning: (warning) =&gt; warnings.push(warning),
+    },
+  });</code></pre>
+<p>The reporter now deduplicates declarations and exposes one headline count with sorted diagnostic details:</p>
+<pre><code data-language="ts">  const reporter = createUnsupportedCssReporter();
+
+  await attachLayoutEngine({
+    window,
+    unsupportedCss: { onWarning: reporter.onWarning },
+  });
+
+  const { unsupportedDeclarationCount, declarations } = reporter.getSummary();</code></pre>
+<h2>0.1.0</h2>
+<h3>Minor Changes</h3>
+<ul>
+<li>9d8958b: Release the package into the public domain under the Unlicense, permitting use,</li>
+<p>copying, modification, publishing, compilation, sale, and distribution for any commercial or non-commercial purpose.</p>
+<li>0bb1dbe: Establish the package as DOM Layout Shim, published as <code>dom-layout-shim</code>, with</li>
+<p>repository, issue tracker, and documentation metadata for the renamed project.</p>
+<li>7334dfa: Continue layout with deduplicated, actionable warnings when CSS is unsupported.</li>
+<p>Strict failures and deliberate suppression remain available through <code>unsupportedCss: { default: &#039;throw&#039; }</code> and <code>{ default: &#039;ignore&#039; }</code>.</p>
+</ul>
+<h3>Patch Changes</h3>
+<ul>
+<li>100c77b: Clarify Chromium parity evidence for native text and form-control metrics that</li>
+<p>vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.</p>
+</ul></main>
+</body>
+</html>
