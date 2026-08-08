@@ -4,7 +4,6 @@ import {
   getNativeControlMetrics,
   type NativeControlMetrics,
   type NativeControlOptions,
-  type NativeControlProfile,
 } from './native-control-profile.ts'
 
 export type Viewport = {
@@ -30,7 +29,6 @@ export type NormalizedLayoutEngineConfig = {
   unsupportedCss: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
   stylesheets: readonly string[]
-  nativeControlProfile: NativeControlProfile
   nativeControlMetrics: NativeControlMetrics
 }
 
@@ -42,7 +40,6 @@ export function normalizeConfig(config: LayoutEngineConfig = {}): NormalizedLayo
     unsupportedCss: { default: 'warn', ...config.unsupportedCss },
     textMeasurer: config.textMeasurer ?? createDefaultTextMeasurer(),
     stylesheets: config.stylesheets ?? [],
-    nativeControlProfile,
     nativeControlMetrics: getNativeControlMetrics(nativeControlProfile, config.nativeControls?.overrides),
   }
 }
