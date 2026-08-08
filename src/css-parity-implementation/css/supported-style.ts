@@ -136,6 +136,8 @@ export type SupportedStyle = {
   lineHeight: number
   whiteSpace: WhiteSpace
   transform: SupportedTransform[]
+  translate?: Extract<SupportedTransform, { type: 'translate' }>
+  scale?: Extract<SupportedTransform, { type: 'scale' }>
   transformOrigin: TransformOrigin
 }
 

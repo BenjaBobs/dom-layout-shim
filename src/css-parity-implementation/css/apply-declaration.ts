@@ -459,6 +459,12 @@ export function applyDeclaration(
     case 'transform':
       applyTransform(style, normalizedValue, normalizedProperty, value, context)
       return
+    case 'translate':
+      applyIndividualTranslate(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'scale':
+      applyIndividualScale(style, normalizedValue, normalizedProperty, value, context)
+      return
     case 'transform-origin':
       applyTransformOrigin(style, normalizedValue, normalizedProperty, value, context)
       return
@@ -1895,6 +1901,74 @@ function parseTransformFunction(name: string, value: string): SupportedTransform
 function parseFiniteNumber(value: string): number | undefined {
   const number = Number(value)
   return value.trim() !== '' && Number.isFinite(number) ? number : undefined
+}
+
+function applyIndividualTranslate(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'none' || value === 'initial' || value === 'unset') {
+    style.translate = undefined
+    return
+  }
+
+  const parts = value.split(/\s+/).filter(Boolean)
+  const x = parseDimension(parts[0] ?? '')
+  const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '')
+
+  if (parts.length <= 2 && x !== undefined && y !== undefined) {
+    style.translate = { type: 'translate', x, y }
+    return
+  }
+
+  reportUnsupportedTransformProperty(property, originalValue, context)
+}
+
+function applyIndividualScale(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'none' || value === 'initial' || value === 'unset') {
+    style.scale = undefined
+    return
+  }
+
+  const parts = value.split(/\s+/).filter(Boolean)
+  const x = parseScaleFactor(parts[0] ?? '')
+  const y = parts.length === 1 ? x : parseScaleFactor(parts[1] ?? '')
+
+  if (parts.length <= 2 && x !== undefined && y !== undefined) {
+    style.scale = { type: 'scale', x, y }
+    return
+  }
+
+  reportUnsupportedTransformProperty(property, originalValue, context)
+}
+
+function parseScaleFactor(value: string): number | undefined {
+  const percentage = parsePercentage(value)
+  return percentage === undefined ? parseFiniteNumber(value) : percentage / 100
+}
+
+function reportUnsupportedTransformProperty(
+  property: string,
+  value: string,
+  context: DeclarationContext,
+): void {
+  handleUnsupportedCss(context.policy, {
+    property,
+    value,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  })
 }
 
 function parseVisualFilter(value: string): boolean {
