@@ -45,8 +45,6 @@
       "text-decoration-thickness",
       "filter",
       "backdrop-filter",
-      "transform",
-      "transform-origin",
       "object-fit",
       "object-position"
     ],
@@ -71,7 +69,7 @@
         },
         {
           "kind": "limitation",
-          "text": "Painting, transforms, decoration rendering, and visual overflow are not modeled."
+          "text": "Painting, decoration rendering, and visual overflow are not modeled."
         }
       ]
     }

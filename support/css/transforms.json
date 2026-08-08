@@ -1,0 +1,55 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "transforms",
+  "title": "Two-dimensional transforms",
+  "subjects": {
+    "properties": [
+      "transform",
+      "transform-origin"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "taffy-adapter",
+  "claims": [
+    {
+      "id": "translate-and-scale",
+      "syntax": [
+        "none",
+        "translate(<px-or-percentage>, <px-or-percentage>?)",
+        "translateX(<px-or-percentage>)",
+        "translateY(<px-or-percentage>)",
+        "scale(<number>, <number>?)",
+        "scaleX(<number>)",
+        "scaleY(<number>)",
+        "transform-origin: <keyword-or-px-or-percentage>{1,2}"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "transform"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Translation, scaling, transform-list order, default and explicit origins, percentage translation, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Taffy computes untransformed layout; the adapter projects border rectangles and hit boxes through ancestor and local affine transforms after layout, matching the browser distinction between layout geometry and transformed client geometry."
+        },
+        {
+          "kind": "limitation",
+          "text": "Rotation, skew, matrix(), perspective, and 3D transform functions remain unsupported and route through the configured unsupported CSS policy."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Overflow clipping is computed before transforms, and transform-created stacking contexts and containing blocks are not modeled. These can differ from Chromium when a transformed descendant crosses an overflow clip, participates in stacking-context ordering, or uses absolute/fixed positioning relative to a transformed ancestor."
+        }
+      ]
+    }
+  ]
+}

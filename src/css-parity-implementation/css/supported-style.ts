@@ -56,6 +56,15 @@ export type TableBorderSpacing = {
   vertical: number
 }
 
+export type SupportedTransform =
+  | { type: 'translate'; x: SupportedDimension; y: SupportedDimension }
+  | { type: 'scale'; x: number; y: number }
+
+export type TransformOrigin = {
+  x: SupportedDimension
+  y: SupportedDimension
+}
+
 export type SupportedStyle = {
   display:
     | 'block'
@@ -126,6 +135,8 @@ export type SupportedStyle = {
   fontSize: number
   lineHeight: number
   whiteSpace: WhiteSpace
+  transform: SupportedTransform[]
+  transformOrigin: TransformOrigin
 }
 
 export function createDefaultStyle(): SupportedStyle {
@@ -174,6 +185,8 @@ export function createDefaultStyle(): SupportedStyle {
     fontSize: 16,
     lineHeight: 19.2,
     whiteSpace: 'normal',
+    transform: [],
+    transformOrigin: { x: '50%', y: '50%' },
   }
 }
 
