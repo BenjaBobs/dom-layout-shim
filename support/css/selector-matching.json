@@ -11,26 +11,62 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "current-supported-scope",
-      "support": "partial",
+      "id": "selector-lists-and-combinators",
+      "description": "Selector lists and supported relationship combinators match elements.",
+      "support": "supported",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "selector-matching",
-          "selector-sibling-combinators",
-          "selector-source-order-tie",
-          "selector-specificity"
+          "selector-sibling-combinators"
         ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Selector lists, descendant, child, adjacent-sibling, and general-sibling combinators, supported attribute and functional pseudo-class selectors, specificity, and source-order ties are covered by browser parity fixtures."
-        },
+          "text": "Selector lists plus descendant, child, adjacent-sibling, and general-sibling combinators have parity coverage."
+        }
+      ]
+    },
+    {
+      "id": "attribute-and-functional-selectors",
+      "description": "Supported attribute and functional pseudo-class selectors participate in matching.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "selector-matching"
+        ]
+      },
+      "notes": [
         {
           "kind": "limitation",
           "text": "Pseudo-elements and most pseudo-classes are not implemented."
-        },
+        }
+      ]
+    },
+    {
+      "id": "specificity-and-source-order",
+      "description": "Specificity and source-order ties determine the winning supported rule.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "selector-source-order-tie",
+          "selector-specificity"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "unsupported-selector-policy",
+      "description": "Unsupported selectors route through the configured unsupported CSS policy.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "implementation-quirk",
           "text": "Unsupported CSS and selectors are ignored with one actionable warning per distinct input by default; strict throw and silent ignore policies remain configurable."

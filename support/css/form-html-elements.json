@@ -24,10 +24,11 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "profiled-native-controls",
+      "description": "Common native controls receive deterministic intrinsic dimensions from the selected native-control profile.",
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "form-control-intrinsic-defaults"
         ]
@@ -35,31 +36,70 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "button, input text-like controls including size attributes, input button/reset/submit, checkbox, radio, range, color, hidden, file, image with explicit attributes, select including size/multiple attributes, progress, and meter intrinsic sizes have parity coverage as independently positioned controls. Time inputs and textareas have exact parity coverage when author-sized."
+          "text": "`button`, text-like `input` controls including `size`, `button`/`reset`/`submit` inputs, checkbox, radio, range, color, hidden, file, image with explicit attributes, `select` including `size` and `multiple`, `progress`, and `meter` have intrinsic-size parity coverage as independently positioned controls."
         },
         {
           "kind": "implementation-quirk",
-          "text": "Common form controls are measured as replaced leaves so option children and anonymous control internals do not participate in the layout tree."
+          "text": "Common form controls are measured as replaced leaves so `option` children and anonymous control internals do not participate in the layout tree."
         },
         {
           "kind": "implementation-quirk",
-          "text": "Intrinsic native-control geometry comes from an explicitly selected deterministic profile. The portable profile preserves the package's existing cross-host defaults; profiles never follow the runtime host automatically. Per-control metric overrides merge onto the selected profile and can replace every metric to define custom geometry."
+          "text": "Intrinsic native-control geometry comes from an explicitly selected deterministic profile. The `portable` profile preserves cross-host defaults; profiles never follow the runtime host automatically."
         },
         {
           "kind": "implementation-quirk",
           "text": "The full native-control fixture is checked exactly against the selected portable engine profile on every host and against committed Chromium 147 snapshots on the recorded Linux, macOS, and Windows CI runner families. Local Chromium is observed but not matched to a CI snapshot because fonts and themes can change native metrics within the same operating system."
+        }
+      ]
+    },
+    {
+      "id": "native-control-overrides",
+      "description": "Per-control metric overrides customize deterministic native-control geometry.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Per-control metric overrides merge onto the selected profile and can replace every metric to define custom geometry."
+        }
+      ]
+    },
+    {
+      "id": "author-sized-time-and-textarea",
+      "description": "Time `input` elements and `textarea` elements have deterministic geometry when author-sized.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "form-control-intrinsic-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "The intrinsic width of `input[type=time]` depends on Chromium's host-native picker UI, so its deterministic default is not claimed as cross-platform pixel parity."
         },
         {
           "kind": "limitation",
-          "text": "The intrinsic width of input[type=time] depends on Chromium's host-native picker UI, so its deterministic default is not claimed as cross-platform pixel parity."
-        },
+          "text": "Native `textarea` dimensions derived from default `rows` and `cols` depend on Chromium host font metrics, so deterministic intrinsic dimensions are not claimed as cross-platform pixel parity."
+        }
+      ]
+    },
+    {
+      "id": "form-control-internals",
+      "description": "Complex native control internals and specialized form layout remain outside the modeled subset.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Native textarea dimensions derived from default rows/cols depend on Chromium host font metrics, so deterministic intrinsic textarea dimensions are not claimed as cross-platform pixel parity."
-        },
-        {
-          "kind": "limitation",
-          "text": "Inline form-control formatting, fieldset and legend layout, option popup layout, placeholder text, and most control-specific UA styling are not modeled."
+          "text": "Inline form-control formatting, `fieldset` and `legend` layout, `option` popup layout, placeholder text, and most control-specific user-agent styling are not modeled."
         }
       ]
     }

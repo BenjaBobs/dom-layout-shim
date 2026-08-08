@@ -58,6 +58,7 @@ describe('generated documentation experience', () => {
       subjects: { properties: ['color'], elements: [] },
       claims: [{
         id: 'current-scope',
+        description: 'Resolves `var()` references.',
         support: 'partial',
         parity: { status: 'verified', fixtures: ['variables'] },
         notes: [{ kind: 'limitation', text: 'Resolution of `var()` is not implemented.' }],
@@ -94,6 +95,7 @@ describe('generated documentation experience', () => {
     expect(document.querySelector('.parity-verified').textContent).toContain('Supported scope verified')
     expect(document.querySelector('.note-limitation .note-kind').textContent).toBe('Known limitation')
     expect(document.querySelector('.note-text code').textContent).toBe('var()')
+    expect(document.querySelector('.claim-description code').textContent).toBe('var()')
     expect(document.querySelector('.title > span').textContent).toBe('CSS variables')
     expect(document.querySelector('.title > span').closest('a')).toBeNull()
 

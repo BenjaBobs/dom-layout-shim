@@ -16,17 +16,76 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "translate-and-scale",
+      "id": "translation",
+      "description": "Transform-list and individual translation functions project client geometry and hit boxes.",
+      "properties": [
+        "transform",
+        "translate"
+      ],
       "syntax": [
         "none",
         "translate(<px-or-percentage>, <px-or-percentage>?)",
         "translateX(<px-or-percentage>)",
         "translateY(<px-or-percentage>)",
+        "translate: none | <px-or-percentage> <px-or-percentage>?"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "transform"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Translation, percentages, transform-list order, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Taffy computes untransformed layout; the adapter projects border rectangles and hit boxes through ancestor and local affine transforms after layout."
+        }
+      ]
+    },
+    {
+      "id": "scaling",
+      "description": "Transform-list and individual scale functions project client geometry and hit boxes.",
+      "properties": [
+        "transform",
+        "scale"
+      ],
+      "syntax": [
+        "none",
         "scale(<number>, <number>?)",
         "scaleX(<number>)",
         "scaleY(<number>)",
-        "translate: none | <px-or-percentage> <px-or-percentage>?",
-        "scale: none | <number-or-percentage> <number-or-percentage>?",
+        "scale: none | <number-or-percentage> <number-or-percentage>?"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "transform"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Scaling, percentages, browser-defined individual-property composition, transform-list order, descendant propagation, and transformed point queries have exact Chromium parity coverage."
+        },
+        {
+          "kind": "limitation",
+          "text": "Rotation, skew, `matrix()`, perspective, and 3D transform functions remain unsupported and route through the configured unsupported CSS policy."
+        }
+      ]
+    },
+    {
+      "id": "transform-origin",
+      "description": "Supported transform origins change the projection center without affecting layout flow.",
+      "properties": [
+        "transform-origin"
+      ],
+      "syntax": [
         "transform-origin: <keyword-or-px-or-percentage>{1,2}"
       ],
       "support": "partial",
@@ -39,16 +98,19 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Translation and scaling through transform functions and individual properties, their browser-defined composition order, transform-list order, default and explicit origins, percentages, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."
-        },
-        {
-          "kind": "taffy-compat",
-          "text": "Taffy computes untransformed layout; the adapter projects border rectangles and hit boxes through ancestor and local affine transforms after layout, matching the browser distinction between layout geometry and transformed client geometry."
-        },
-        {
-          "kind": "limitation",
-          "text": "Rotation, skew, matrix(), perspective, and 3D transform functions remain unsupported and route through the configured unsupported CSS policy."
-        },
+          "text": "Default and explicit origins, including percentages, have exact Chromium parity coverage."
+        }
+      ]
+    },
+    {
+      "id": "transform-interactions",
+      "description": "Some transform interactions with clipping, stacking, and containing blocks remain unsupported.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "implementation-quirk",
           "text": "Overflow clipping is computed before transforms, and transform-created stacking contexts and containing blocks are not modeled. These can differ from Chromium when a transformed descendant crosses an overflow clip, participates in stacking-context ordering, or uses absolute/fixed positioning relative to a transformed ancestor."

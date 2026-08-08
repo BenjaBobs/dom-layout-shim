@@ -175,7 +175,9 @@ await attachLayoutEngine({
 ```
 
 Check the [CSS support explorer](./css-support-status.html) for exact syntax,
-Chromium fixtures, and limitations.
+behavior-specific support claims, Chromium fixtures, and limitations. Select a
+fixture to preview its test source without leaving the explorer, or follow its
+GitHub link to inspect the repository version.
 
 ## Use it in a test lifecycle
 

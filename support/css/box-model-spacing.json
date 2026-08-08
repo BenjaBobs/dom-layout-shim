@@ -64,11 +64,154 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "margins",
+      "description": "Physical and logical margins participate in normal flow and supported auto-margin behavior.",
+      "properties": [
+        "margin",
+        "margin-inline",
+        "margin-block",
+        "margin-inline-start",
+        "margin-inline-end",
+        "margin-block-start",
+        "margin-block-end",
+        "margin-top",
+        "margin-right",
+        "margin-bottom",
+        "margin-left"
+      ],
       "syntax": [
         "<px>",
         "<percentage>",
-        "auto",
+        "auto"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "logical-properties",
+          "static-margin-flow"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Margin collapse is not implemented."
+        },
+        {
+          "kind": "limitation",
+          "text": "Length support is limited to pixels, percentages, `auto`, reset keywords, and literal zero."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Logical margins are mapped as `horizontal-tb` LTR; non-default `direction` and `writing-mode` are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "padding",
+      "description": "Physical and logical padding contributes to box geometry.",
+      "properties": [
+        "padding",
+        "padding-inline",
+        "padding-block",
+        "padding-inline-start",
+        "padding-inline-end",
+        "padding-block-start",
+        "padding-block-end",
+        "padding-top",
+        "padding-right",
+        "padding-bottom",
+        "padding-left"
+      ],
+      "syntax": [
+        "<px>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "border-box-padding-border",
+          "content-box-padding-border",
+          "logical-properties",
+          "static-parent-padding-border"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Percentage padding and general CSS length units are not implemented."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Logical padding is mapped as `horizontal-tb` LTR."
+        }
+      ]
+    },
+    {
+      "id": "layout-gaps",
+      "description": "Row and column gaps separate supported flex and grid tracks.",
+      "properties": [
+        "gap",
+        "row-gap",
+        "column-gap"
+      ],
+      "syntax": [
+        "<px>",
+        "<percentage>",
+        "normal"
+      ],
+      "conditions": [
+        "Percentage gaps require a definite container size on the corresponding axis."
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "flex-gap",
+          "grid-gap"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "General CSS length units are not implemented."
+        }
+      ]
+    },
+    {
+      "id": "border-geometry",
+      "description": "Supported border widths and styles contribute to box geometry without painting borders.",
+      "properties": [
+        "border",
+        "border-top",
+        "border-right",
+        "border-bottom",
+        "border-left",
+        "border-width",
+        "border-inline-width",
+        "border-block-width",
+        "border-inline-start-width",
+        "border-inline-end-width",
+        "border-block-start-width",
+        "border-block-end-width",
+        "border-top-width",
+        "border-right-width",
+        "border-bottom-width",
+        "border-left-width",
+        "border-style",
+        "border-inline-style",
+        "border-block-style",
+        "border-inline-start-style",
+        "border-inline-end-style",
+        "border-block-start-style",
+        "border-block-end-style",
+        "border-top-style",
+        "border-right-style",
+        "border-bottom-style",
+        "border-left-style"
+      ],
+      "syntax": [
+        "<px>",
         "thin",
         "medium",
         "thick",
@@ -81,44 +224,30 @@
         "groove",
         "ridge",
         "inset",
-        "outset",
-        "normal"
+        "outset"
       ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
-          "border-box-padding-border",
           "border-shorthand",
           "border-width-keywords",
           "border-width-none-style",
-          "content-box-padding-border",
-          "flex-gap",
-          "logical-properties",
-          "static-margin-flow",
-          "static-parent-padding-border"
+          "logical-properties"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Physical and logical box spacing, border geometry, flex and grid gaps on both axes, wrapped flex row gaps, and percentage gaps against definite container sizes have parity fixtures."
+          "kind": "implementation-quirk",
+          "text": "Border widths affect geometry for supported line styles except `none` and `hidden`; border painting is not modeled."
         },
         {
           "kind": "limitation",
-          "text": "Margin collapse is not implemented."
+          "text": "Border widths are limited to pixels, listed keywords, reset keywords, and literal zero."
         },
         {
           "kind": "implementation-quirk",
-          "text": "Border widths affect geometry for supported border line styles except none and hidden; border painting is not modeled."
-        },
-        {
-          "kind": "limitation",
-          "text": "Percentage spacing values are supported for gap and margin properties; padding and border widths remain limited to pixels and listed keywords."
-        },
-        {
-          "kind": "implementation-quirk",
-          "text": "Logical spacing and border edges are mapped as horizontal-tb LTR; direction and writing-mode are not modeled."
+          "text": "Logical border edges are mapped as `horizontal-tb` LTR."
         }
       ]
     }

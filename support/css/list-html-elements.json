@@ -19,10 +19,11 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "list-block-spacing",
+      "description": "Native list containers and description lists receive supported block spacing defaults.",
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "list-html-defaults"
         ]
@@ -30,11 +31,26 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Native ul/ol/menu block margins, inline-start padding, and dd indentation have parity coverage."
+          "text": "Native `ul`, `ol`, and `menu` block margins, inline-start padding, and `dd` indentation have parity coverage."
         },
         {
           "kind": "limitation",
-          "text": "Marker boxes, marker painting, list-style-position, and browser margin collapse are not modeled."
+          "text": "Browser margin collapse is not modeled."
+        }
+      ]
+    },
+    {
+      "id": "list-markers",
+      "description": "List marker boxes and painting are not modeled.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Marker boxes, marker painting, and `list-style-position` are not modeled."
         }
       ]
     }

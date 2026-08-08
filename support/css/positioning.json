@@ -25,16 +25,77 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "normal-flow-positioning",
+      "description": "`position: static` retains normal-flow placement and resets supported positioned behavior.",
+      "properties": [
+        "position"
+      ],
       "syntax": [
-        "static",
+        "static"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "static-block-flow"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "relative-positioning",
+      "description": "Relative offsets move boxes without removing their normal-flow space.",
+      "properties": [
+        "position",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "inset",
+        "inset-inline",
+        "inset-block",
+        "inset-inline-start",
+        "inset-inline-end",
+        "inset-block-start",
+        "inset-block-end"
+      ],
+      "syntax": [
         "relative",
-        "absolute",
-        "fixed",
-        "sticky",
         "<px>",
-        "auto",
-        "<integer>"
+        "auto"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "inset-two-value-shorthand",
+          "relative-offset-flow",
+          "right-bottom-positioning"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "absolute-positioning",
+      "description": "Absolute boxes resolve supported insets against their containing block.",
+      "properties": [
+        "position",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "inset",
+        "inset-inline",
+        "inset-block",
+        "inset-inline-start",
+        "inset-inline-end",
+        "inset-block-start",
+        "inset-block-end"
+      ],
+      "syntax": [
+        "absolute",
+        "<px>",
+        "auto"
       ],
       "support": "partial",
       "parity": {
@@ -42,23 +103,102 @@
         "fixtures": [
           "absolute-overlap",
           "absolute-positioned-containing-block",
+          "right-bottom-positioning"
+        ]
+      },
+      "notes": []
+    },
+    {
+      "id": "fixed-positioning",
+      "description": "Fixed boxes resolve against the configured viewport and ignore ancestor scrolling.",
+      "properties": [
+        "position",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "inset",
+        "inset-inline",
+        "inset-block",
+        "inset-inline-start",
+        "inset-inline-end",
+        "inset-block-start",
+        "inset-block-end"
+      ],
+      "syntax": [
+        "fixed",
+        "<px>",
+        "auto"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
           "fixed-inside-scrolled-ancestor",
-          "fixed-inset-full-viewport",
-          "inset-two-value-shorthand",
-          "relative-offset-flow",
-          "right-bottom-positioning",
-          "sticky-positioning",
+          "fixed-inset-full-viewport"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "taffy-compat",
+          "text": "Fixed positioning is represented through Taffy absolute positioning in the viewport-rooted layout tree."
+        }
+      ]
+    },
+    {
+      "id": "sticky-positioning",
+      "description": "Sticky boxes remain in flow and are constrained by supported physical insets and scrollports.",
+      "properties": [
+        "position",
+        "left",
+        "right",
+        "top",
+        "bottom"
+      ],
+      "syntax": [
+        "sticky",
+        "<px>",
+        "auto"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "sticky-positioning"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "taffy-compat",
+          "text": "Taffy does not implement sticky positioning, so sticky boxes remain in Taffy normal flow and are constrained against their supported scrollport during geometry collection."
+        }
+      ]
+    },
+    {
+      "id": "stacking-order",
+      "description": "Integer `z-index` values and DOM order determine supported point-query stacking.",
+      "properties": [
+        "z-index"
+      ],
+      "syntax": [
+        "auto",
+        "<integer>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
           "z-index-dom-order"
         ]
       },
       "notes": [
         {
-          "kind": "browser-parity",
-          "text": "Relative offsets, absolute containing blocks, fixed viewport positioning, fixed descendants in scrolled ancestors, physical-inset sticky positioning, sticky table headers, containing-block limits, physical and logical opposing/end insets, CSS-wide static resets, and z-index ordering have parity fixtures."
+          "kind": "limitation",
+          "text": "The engine implements supported stacking order but not the complete browser stacking-context model."
         },
         {
-          "kind": "taffy-compat",
-          "text": "Fixed positioning is represented through Taffy absolute positioning in the viewport-rooted layout tree. Taffy does not implement sticky positioning, so sticky boxes remain in Taffy normal flow and are constrained against their supported scrollport during geometry collection."
+          "kind": "browser-parity",
+          "text": "Integer `z-index` values and DOM-order fallback have parity coverage."
         }
       ]
     }

@@ -19,7 +19,11 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "custom-properties",
+      "description": "Custom property declarations are accepted so application stylesheets can be parsed.",
+      "properties": [
+        "--*"
+      ],
       "support": "partial",
       "parity": {
         "status": "not-applicable",
@@ -28,11 +32,34 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Custom properties and transition declarations are accepted as inert declarations before value parsing."
+          "text": "Custom property declarations are accepted as inert declarations before value parsing."
         },
         {
           "kind": "limitation",
           "text": "CSS variable resolution is not implemented, so `var()` references in supported layout declarations remain unsupported."
+        }
+      ]
+    },
+    {
+      "id": "transitions",
+      "description": "Transition declarations are accepted without affecting deterministic layout or hit testing.",
+      "properties": [
+        "transition",
+        "transition-property",
+        "transition-duration",
+        "transition-timing-function",
+        "transition-delay",
+        "transition-behavior"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Transition declarations are accepted as inert declarations; animation timing and interpolated values are not modeled."
         }
       ]
     }

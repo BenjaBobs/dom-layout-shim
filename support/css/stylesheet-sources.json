@@ -11,23 +11,66 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "configured-and-document-styles",
+      "description": "Configured CSS text and document style elements contribute rules in cascade order.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Configured stylesheet text and document `style` elements are combined with other supported stylesheet sources in cascade order."
+        }
+      ]
+    },
+    {
+      "id": "linked-stylesheets",
+      "description": "Accessible linked stylesheets contribute readable CSS rules.",
       "support": "partial",
       "parity": {
         "status": "partially-verified",
         "fixtures": [
-          "adopted-stylesheet-cascade",
           "selector-matching"
         ]
       },
       "notes": [
         {
+          "kind": "limitation",
+          "text": "Cross-origin or otherwise inaccessible linked stylesheets cannot contribute rules and route through the unsupported CSS policy."
+        }
+      ]
+    },
+    {
+      "id": "adopted-stylesheets",
+      "description": "`document.adoptedStyleSheets` participate in their configured cascade order.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "adopted-stylesheet-cascade"
+        ]
+      },
+      "notes": [
+        {
           "kind": "browser-parity",
-          "text": "Configured stylesheet text, document style and accessible linked stylesheets, and document.adoptedStyleSheets are read in cascade order. Adopted-sheet ordering is verified against Chromium; configured, external, CSSOM mutation, and invalidation behavior is covered by package-contract tests."
-        },
+          "text": "`document.adoptedStyleSheets` ordering is verified against Chromium."
+        }
+      ]
+    },
+    {
+      "id": "at-rules",
+      "description": "General stylesheet at-rules are not part of the supported source subset.",
+      "support": "unsupported",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "limitation",
-          "text": "Cross-origin or otherwise inaccessible linked stylesheets cannot contribute rules. They are routed through the unsupported CSS policy as an unsupported stylesheet rule. At-rules remain unsupported."
+          "text": "At-rules remain unsupported."
         }
       ]
     }

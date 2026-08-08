@@ -11,7 +11,8 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "style-element-and-cssom-mutations",
+      "id": "style-element-mutations",
+      "description": "Adding, removing, or editing style elements invalidates cached layout snapshots.",
       "support": "supported",
       "parity": {
         "status": "not-applicable",
@@ -20,11 +21,22 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Package-contract tests verify snapshot invalidation when style elements are added, removed, or edited and when CSSOM rules are inserted, changed, or deleted."
-        },
+          "text": "Package-contract tests verify snapshot invalidation when `style` elements are added, removed, or edited."
+        }
+      ]
+    },
+    {
+      "id": "cssom-rule-mutations",
+      "description": "Inserting, changing, or deleting CSSOM rules invalidates cached layout snapshots.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "The engine fingerprints live style-element CSSOM state before cached snapshot reads because CSSOM rule mutations do not emit DOM mutation records."
+          "text": "The engine fingerprints live style-element CSSOM state before cached snapshot reads because CSSOM rule mutations do not emit `MutationObserver` records."
         }
       ]
     }

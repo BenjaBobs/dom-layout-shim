@@ -13,28 +13,53 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "block-and-inline-aliases",
+      "description": "Block flow and supported inline display aliases produce deterministic layout boxes.",
+      "properties": [
+        "display"
+      ],
       "syntax": [
         "block",
         "inline",
         "inline-block",
         "flow-root",
-        "list-item",
-        "flex",
-        "inline-flex",
-        "grid",
-        "inline-grid",
-        "contents",
-        "none"
+        "list-item"
       ],
       "support": "partial",
       "parity": {
-        "status": "partially-verified",
+        "status": "verified",
         "fixtures": [
           "display-aliases",
-          "display-contents",
-          "display-none",
-          "static-block-flow",
+          "static-block-flow"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "taffy-compat",
+          "text": "Authored `inline`, `inline-block`, `flow-root`, and `list-item` values are blockified."
+        },
+        {
+          "kind": "limitation",
+          "text": "Inline formatting and list marker layout are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "flex-and-grid-containers",
+      "description": "Flex and grid display values select the corresponding layout model.",
+      "properties": [
+        "display"
+      ],
+      "syntax": [
+        "flex",
+        "inline-flex",
+        "grid",
+        "inline-grid"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
           "flex-row",
           "grid-explicit-tracks"
         ]
@@ -42,15 +67,32 @@
       "notes": [
         {
           "kind": "taffy-compat",
-          "text": "Authored inline, inline-block, flow-root, and list-item are blockified; inline-flex and inline-grid are mapped to flex and grid."
-        },
-        {
-          "kind": "limitation",
-          "text": "Inline formatting and list marker layout are not modeled."
-        },
+          "text": "`inline-flex` and `inline-grid` are mapped to `flex` and `grid`; their inline-level outer display behavior is not modeled."
+        }
+      ]
+    },
+    {
+      "id": "box-generation",
+      "description": "Box suppression and child flattening follow supported display semantics.",
+      "properties": [
+        "display"
+      ],
+      "syntax": [
+        "contents",
+        "none"
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "display-contents",
+          "display-none"
+        ]
+      },
+      "notes": [
         {
           "kind": "browser-parity",
-          "text": "display: contents has parity coverage for parent box removal plus block and flex child flattening."
+          "text": "`display: contents` has parity coverage for parent box removal plus block and flex child flattening."
         }
       ]
     }

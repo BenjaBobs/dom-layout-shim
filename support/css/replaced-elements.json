@@ -19,7 +19,8 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "image-attributes",
+      "description": "Images use supported width and height attributes for intrinsic sizing.",
       "support": "partial",
       "parity": {
         "status": "verified",
@@ -30,7 +31,56 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "img can use width/height attributes, with missing dimensions treated as zero for no-resource images; svg, canvas, video, iframe, and empty object elements use native 300x150 fallback dimensions with width/height attribute overrides; object elements without type/data resource hints lay out fallback children; audio elements without controls are non-rendered and audio controls use native 300x54 fallback dimensions; any element can use data-layout-width and data-layout-height metadata."
+          "text": "`img` can use `width` and `height` attributes, with missing dimensions treated as zero for images without a resource."
+        }
+      ]
+    },
+    {
+      "id": "generic-replaced-fallbacks",
+      "description": "`svg`, `canvas`, `video`, `iframe`, and empty `object` elements use deterministic fallback dimensions.",
+      "support": "partial",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "`svg`, `canvas`, `video`, `iframe`, and empty `object` elements use native `300x150` fallback dimensions with `width` and `height` attribute overrides."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "`object` elements without `type` or `data` resource hints lay out fallback children."
+        }
+      ]
+    },
+    {
+      "id": "audio-fallbacks",
+      "description": "`audio` elements distinguish non-rendered media from controls with deterministic fallback geometry.",
+      "support": "partial",
+      "parity": {
+        "status": "unverified",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "`audio` elements without `controls` are non-rendered; audio controls use native `300x54` fallback dimensions."
+        }
+      ]
+    },
+    {
+      "id": "layout-metadata-overrides",
+      "description": "Package metadata can provide deterministic intrinsic dimensions for any element.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Any element can use `data-layout-width` and `data-layout-height` metadata."
         }
       ]
     }

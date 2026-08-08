@@ -21,7 +21,8 @@
   "owner": "taffy-adapter",
   "claims": [
     {
-      "id": "current-supported-scope",
+      "id": "document-metadata",
+      "description": "Document metadata elements do not generate CSS boxes.",
       "support": "supported",
       "parity": {
         "status": "verified",
@@ -32,9 +33,38 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Metadata, raw-text, template, noscript, and wbr elements with no CSS box are skipped when building the layout and hit-test tree."
+          "text": "`base`, `link`, `meta`, and `title` elements are skipped when building the layout and hit-test tree."
         }
       ]
+    },
+    {
+      "id": "source-and-template-content",
+      "description": "Source, fallback, and `template` elements do not generate layout boxes in the supported document model.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "non-rendered-elements"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "`script`, `style`, `template`, and `noscript` elements are skipped when building the layout and hit-test tree."
+        }
+      ]
+    },
+    {
+      "id": "word-break-opportunities",
+      "description": "`wbr` contributes no standalone layout box in the supported text model.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "non-rendered-elements"
+        ]
+      },
+      "notes": []
     }
   ]
 }
