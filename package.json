@@ -75,7 +75,7 @@
     "opentype.js": "2.0.0",
     "tinybench": "^6.1.2",
     "typescript": "~6.0.2",
-    "vite": "^8.0.10",
+    "vite": "^8.2.1",
     "vitest": "^4.1.10"
   },
   "dependencies": {
