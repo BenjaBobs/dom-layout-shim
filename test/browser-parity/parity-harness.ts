@@ -57,6 +57,7 @@ export type BrowserParityFixture = {
     arg?: boolean | ScrollIntoViewOptions
   }
   html: string
+  adoptedStylesheets?: string[]
   typography?: 'deterministic'
   nativeControlProfile?: NativeControlProfile
   queries: BrowserParityQuery[]
@@ -157,6 +158,15 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
 
   try {
     await page.setContent(fixtureHtml(fixture, true))
+    if (fixture.adoptedStylesheets) {
+      await page.evaluate((stylesheets) => {
+        document.adoptedStyleSheets = stylesheets.map((cssText) => {
+          const sheet = new CSSStyleSheet()
+          sheet.replaceSync(cssText)
+          return sheet
+        })
+      }, fixture.adoptedStylesheets)
+    }
     if (fixture.typography === 'deterministic') {
       await page.evaluate(async (fontFamily) => {
         await document.fonts.load(`20px "${fontFamily}"`)
@@ -224,6 +234,13 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   })
   const document = window.document
   document.body.innerHTML = fixtureHtml(fixture, false)
+  if (fixture.adoptedStylesheets) {
+    document.adoptedStyleSheets = fixture.adoptedStylesheets.map((cssText) => {
+      const sheet = new window.CSSStyleSheet()
+      sheet.replaceSync(cssText)
+      return sheet
+    })
+  }
   if (fixture.scroll) {
     window.scrollTo(fixture.scroll.x, fixture.scroll.y)
   }

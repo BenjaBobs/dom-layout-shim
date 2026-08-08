@@ -37,6 +37,19 @@ groups and fields.
 Profiles model deterministic outer geometry. They do not emulate operating-
 system painting, internal widget behavior, or native picker UI.
 
+## Stylesheet sources
+
+The engine reads configured stylesheet strings first, followed by document
+`<style>` and accessible `<link rel="stylesheet">` sheets in DOM order, then
+constructable sheets in `document.adoptedStyleSheets` adoption order. CSSOM
+rule mutations and changes to adopted-sheet membership or order invalidate the
+cached layout snapshot.
+
+Linked sheets contribute rules only when their `cssRules` are accessible.
+Cross-origin and otherwise unavailable sheets are routed through the existing
+unsupported CSS policy as `stylesheet` / `unsupported-rule`; warning is the
+default and strict policy throws.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim

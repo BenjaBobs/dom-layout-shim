@@ -58,6 +58,30 @@ await attachLayoutEngine({
 > Geometry is recomputed after DOM, class, inline-style, stylesheet, CSSOM, and
 > scroll changes. Repeated reads use the cached snapshot.
 
+## Use document stylesheets
+
+The engine reads document `<style>` elements, accessible linked stylesheets,
+and constructable stylesheets in `document.adoptedStyleSheets`. Document sheets
+follow DOM order, and adopted sheets follow them in adoption order, matching
+the browser cascade.
+
+```ts
+const layoutSheet = new window.CSSStyleSheet()
+layoutSheet.replaceSync('.dialog { position:fixed; inset:0 }')
+window.document.adoptedStyleSheets = [layoutSheet]
+
+await attachLayoutEngine({ window })
+
+// CSSOM changes and adopted-sheet reordering invalidate cached geometry.
+layoutSheet.replaceSync('.dialog { position:fixed; inset:20px }')
+dialog.getBoundingClientRect()
+```
+
+The engine reads external rules only when the DOM implementation exposes their
+`cssRules`. Cross-origin and otherwise inaccessible linked sheets are reported
+through `unsupportedCss`: the default policy warns and continues, while strict
+mode throws rather than silently omitting the sheet.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

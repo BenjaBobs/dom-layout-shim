@@ -11,6 +11,16 @@ export type StyleRule = {
   order: number
 }
 
+type DocumentStylesheetSource = {
+  element: Element
+  sheet: CSSStyleSheet | null
+  type: 'style' | 'external'
+  filename: string
+}
+
+const stylesheetIds = new WeakMap<StyleSheet, number>()
+let nextStylesheetId = 1
+
 export function readStyleRules(
   document: Document,
   policy: UnsupportedCssPolicy | undefined,
@@ -22,20 +32,50 @@ export function readStyleRules(
     readCssRules(cssText, `configured-style-${index}.css`, policy, rules)
   }
 
-  for (const [index, styleElement] of Array.from(document.querySelectorAll('style')).entries()) {
-    readCssRules(readStyleElementCssText(styleElement), `style-${index}.css`, policy, rules)
+  for (const source of documentStylesheetSources(document)) {
+    if (source.sheet?.disabled) {
+      continue
+    }
+
+    const cssText = readDocumentStylesheetCssText(source, policy)
+
+    if (cssText !== undefined) {
+      readCssRules(cssText, source.filename, policy, rules)
+    }
+  }
+
+  for (const [index, sheet] of adoptedStylesheets(document).entries()) {
+    if (sheet.disabled) {
+      continue
+    }
+
+    const cssText = readCssomRules(sheet, `adopted stylesheet ${index}`, policy)
+
+    if (cssText !== undefined) {
+      readCssRules(cssText, `adopted-style-${index}.css`, policy, rules)
+    }
   }
 
   return rules
 }
 
 export function documentStylesheetFingerprint(document: Document): string {
-  return Array.from(document.querySelectorAll('style'))
-    .map((styleElement) => {
-      const cssText = readStyleElementCssText(styleElement)
-      return `${cssText.length}:${cssText}`
-    })
-    .join('|')
+  // MutationObserver cannot see CSSOM edits or adoptedStyleSheets assignment.
+  // Include sheet identity as well as serialized rules so replacement and
+  // reordering invalidate layout even when two sheets have identical content.
+  const documentSources = documentStylesheetSources(document).map((source) => {
+    const identity = source.sheet ? stylesheetIdentity(source.sheet) : 'none'
+    const disabled = source.sheet?.disabled ? 'disabled' : 'enabled'
+    const cssText = readDocumentStylesheetCssText(source, undefined, false)
+    return fingerprintPart(source.type, identity, disabled, cssText ?? 'inaccessible')
+  })
+  const adoptedSources = adoptedStylesheets(document).map((sheet) => {
+    const disabled = sheet.disabled ? 'disabled' : 'enabled'
+    const cssText = readCssomRules(sheet, 'adopted stylesheet', undefined, false)
+    return fingerprintPart('adopted', stylesheetIdentity(sheet), disabled, cssText ?? 'inaccessible')
+  })
+
+  return [...documentSources, ...adoptedSources].join('|')
 }
 
 export function applyStyleRules(
@@ -166,6 +206,124 @@ function readStyleElementCssText(styleElement: Element): string {
     // element's own text remains the best deterministic source in that case.
     return authoredCssText
   }
+}
+
+function documentStylesheetSources(document: Document): DocumentStylesheetSource[] {
+  let styleIndex = 0
+  let externalIndex = 0
+
+  return Array.from(document.querySelectorAll('style, link'))
+    .flatMap((element): DocumentStylesheetSource[] => {
+      if (element.localName === 'style') {
+        return [{
+          element,
+          sheet: (element as HTMLStyleElement).sheet,
+          type: 'style',
+          filename: `style-${styleIndex++}.css`,
+        }]
+      }
+
+      const link = element as HTMLLinkElement
+      const rels = link.rel.toLowerCase().split(/\s+/)
+
+      if (!rels.includes('stylesheet')) {
+        return []
+      }
+
+      return [{
+        element,
+        sheet: link.sheet,
+        type: 'external',
+        filename: `external-style-${externalIndex++}.css`,
+      }]
+    })
+}
+
+function adoptedStylesheets(document: Document): CSSStyleSheet[] {
+  return Array.from(document.adoptedStyleSheets ?? [])
+}
+
+function readDocumentStylesheetCssText(
+  source: DocumentStylesheetSource,
+  policy?: UnsupportedCssPolicy,
+  reportUnavailable = true,
+): string | undefined {
+  if (source.type === 'style') {
+    return readStyleElementCssText(source.element)
+  }
+
+  if (!source.sheet) {
+    if (reportUnavailable) {
+      reportUnavailableStylesheet(policy, describeExternalStylesheet(source.element), 'is unavailable')
+    }
+    return undefined
+  }
+
+  return readCssomRules(
+    source.sheet,
+    describeExternalStylesheet(source.element),
+    policy,
+    reportUnavailable,
+  )
+}
+
+function readCssomRules(
+  sheet: CSSStyleSheet,
+  description: string,
+  policy?: UnsupportedCssPolicy,
+  reportUnavailable = true,
+): string | undefined {
+  try {
+    return Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n')
+  } catch (error) {
+    if (reportUnavailable) {
+      reportUnavailableStylesheet(
+        policy,
+        description,
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+    return undefined
+  }
+}
+
+function reportUnavailableStylesheet(
+  policy: UnsupportedCssPolicy | undefined,
+  description: string,
+  detail: string,
+): void {
+  handleUnsupportedCss(policy, {
+    property: 'stylesheet',
+    value: `${description} ${detail}`,
+    reason: 'unsupported-rule',
+    source: 'stylesheet',
+  })
+}
+
+function describeExternalStylesheet(element: Element): string {
+  const href = (element as HTMLLinkElement).href || element.getAttribute('href') || '<unknown>'
+  return `external stylesheet "${href}"`
+}
+
+function stylesheetIdentity(sheet: StyleSheet): number {
+  const existing = stylesheetIds.get(sheet)
+
+  if (existing !== undefined) {
+    return existing
+  }
+
+  const identity = nextStylesheetId++
+  stylesheetIds.set(sheet, identity)
+  return identity
+}
+
+function fingerprintPart(
+  type: string,
+  identity: string | number,
+  disabled: string,
+  cssText: string,
+): string {
+  return `${type}:${identity}:${disabled}:${cssText.length}:${cssText}`
 }
 
 function canonicalCssRules(document: Document, cssText: string): string[] | undefined {
