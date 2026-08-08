@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
 import { guideLayout, renderMarkdownPage } from '../docs-engine/render-md.mjs'
@@ -11,6 +11,17 @@ await mkdir(siteRoot, { recursive: true })
 for (const asset of ['site.css', 'site.js', 'css-support-search.js']) {
   await copyFile(resolve(root, 'docs-engine/assets', asset), resolve(siteRoot, asset))
 }
+
+const paritySourceDirectory = resolve(root, 'test/browser-parity/cases')
+const paritySourceOutput = resolve(siteRoot, 'data/parity-sources')
+const paritySourceFiles = (await readdir(paritySourceDirectory))
+  .filter((file) => file.endsWith('.test.ts'))
+  .sort()
+await mkdir(paritySourceOutput, { recursive: true })
+await Promise.all(paritySourceFiles.map((file) =>
+  copyFile(resolve(paritySourceDirectory, file), resolve(paritySourceOutput, file)),
+))
+console.log(`Generated ${paritySourceFiles.length} parity source previews.`)
 
 const pages = [
   {

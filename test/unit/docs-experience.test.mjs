@@ -26,6 +26,13 @@ describe('generated documentation experience', () => {
     expect(page).toContain("statusField('Chromium parity'")
     expect(page).toContain("'browser-parity': { label: 'Verified behavior'")
     expect(page).toContain('renderInlineCode(note.text, query)')
+    expect(page).toContain('id="fixtureDialog" aria-labelledby="fixtureDialogTitle"')
+    expect(page).toContain('class="chip fixture-preview"')
+    expect(page).toContain('class="fixture-source-link"')
+
+    const generator = await readDocumentationSource('scripts/generate-docs-pages.mjs')
+    expect(generator).toContain("const paritySourceOutput = resolve(siteRoot, 'data/parity-sources')")
+    expect(generator).toContain(".filter((file) => file.endsWith('.test.ts'))")
   })
 
   it('renders support dimensions, semantic notes, inline code, and summary filters', async () => {
@@ -36,6 +43,10 @@ describe('generated documentation experience', () => {
       .replace(
         "import { rankSupportEntries } from './css-support-search.js'",
         'const rankSupportEntries = (entries) => entries',
+      )
+      .replace(
+        "import { highlight as highlightSource } from './site.js'",
+        'const highlightSource = (source) => source',
       )
     const record = {
       id: 'variables',
@@ -62,9 +73,19 @@ describe('generated documentation experience', () => {
         <select id="parityStatus"><option value=""></option></select>
         <button id="clearFilters"></button>
       </section>
-      <main><strong id="resultCount"></strong><table><tbody id="rows"></tbody></table></main>
+      <main>
+        <strong id="resultCount"></strong><table><tbody id="rows"></tbody></table>
+        <dialog id="fixtureDialog">
+          <h2 id="fixtureDialogTitle"></h2><button id="fixtureDialogClose"></button>
+          <p id="fixtureDialogStatus"></p><pre id="fixtureDialogSource" hidden><code></code></pre>
+          <a id="fixtureDialogGithub"></a><button id="fixtureDialogCopy"></button>
+        </dialog>
+      </main>
     `
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ records: [record] }))))
+    const fetch = vi.fn(async (input) => String(input).includes('css-support.json')
+      ? new Response(JSON.stringify({ records: [record] }))
+      : new Response("it('matches Chromium', () => {})"))
+    vi.stubGlobal('fetch', fetch)
 
     window.eval(script)
     await vi.waitFor(() => expect(document.querySelector('#rows').textContent).toContain('CSS variables'))
@@ -79,6 +100,12 @@ describe('generated documentation experience', () => {
     document.querySelector('[data-status="partial"]').click()
     expect(document.querySelector('#status').value).toBe('partial')
     expect(location.search).toBe('?status=partial')
+
+    document.querySelector('[data-fixture="variables"]').click()
+    await vi.waitFor(() => expect(document.querySelector('#fixtureDialogSource code').dataset.source).toContain('matches Chromium'))
+    expect(document.querySelector('#fixtureDialog').hasAttribute('open')).toBe(true)
+    expect(document.querySelector('#fixtureDialogGithub').href).toContain('/variables.test.ts')
+    expect(fetch).toHaveBeenCalledWith('./data/parity-sources/variables.test.ts')
   })
 
   it('renders anchored, filterable changelog releases with sticky context', async () => {
