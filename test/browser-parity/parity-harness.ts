@@ -138,9 +138,10 @@ export async function expectChromiumParity(fixture: BrowserParityFixture): Promi
 
   for (const [index, query] of queries.entries()) {
     recordObservation(fixture, query, engineResult[index], chromiumResult[index])
-    if (index < fixture.queries.length) {
-      expectQueryParity(engineResult[index], chromiumResult[index], query, index)
-    }
+  }
+
+  for (const [index, query] of fixture.queries.entries()) {
+    expectQueryParity(engineResult[index], chromiumResult[index], query, index)
   }
 }
 

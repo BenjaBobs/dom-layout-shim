@@ -7,8 +7,8 @@ const nativeButtonTolerance = {
 } as const
 
 const nativeTextInputTolerance = {
-  tolerance: { width: 8, height: 2 },
-  toleranceReason: 'Native text input font and theme metrics vary across Chromium host platforms.',
+  tolerance: { width: 39, height: 2 },
+  toleranceReason: 'Recorded Chromium 147 native text input widths vary by up to 39px across Linux, macOS, and Windows hosts.',
 } as const
 
 const nativeFileInputTolerance = {
