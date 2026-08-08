@@ -56,6 +56,15 @@ describe('affected scope classification', () => {
     })
   })
 
+  it('keeps deleted legacy documentation sources docs-only', () => {
+    expect(classifyAffectedScopes(['docs-src/guide.template.html'])).toMatchObject({
+      package: false,
+      parity: false,
+      docs: true,
+      release: false,
+    })
+  })
+
   it('regenerates documentation when the changelog changes', () => {
     expect(classifyAffectedScopes(['CHANGELOG.md'])).toMatchObject({
       package: false,
