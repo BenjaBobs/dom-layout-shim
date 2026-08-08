@@ -159,6 +159,10 @@ function stringifyCssValue(property: string, value: unknown): string {
       return stringifyFilter(value)
     case 'transform-origin':
       return stringifyTransformOrigin(value)
+    case 'translate':
+      return stringifyIndividualTranslate(value)
+    case 'scale':
+      return stringifyIndividualScale(value)
     case 'caption-side':
     case 'empty-cells':
     case 'border-collapse':
@@ -821,6 +825,27 @@ function stringifyTransformOrigin(value: Record<string, unknown>): string {
     .map(stringifyTransformOriginPart)
 
   return parts.length > 0 ? parts.join(' ') : JSON.stringify(value)
+}
+
+function stringifyIndividualTranslate(value: Record<string, unknown>): string {
+  const x = stringifyLength(value.x)
+  const y = stringifyLength(value.y)
+  const z = stringifyLength(value.z)
+  return z === '0px' || z === '0' ? `${x} ${y}` : JSON.stringify(value)
+}
+
+function stringifyIndividualScale(value: Record<string, unknown>): string {
+  const x = stringifyScaleFactor(value.x)
+  const y = stringifyScaleFactor(value.y)
+  const z = stringifyScaleFactor(value.z)
+  return z === '1' ? `${x} ${y}` : JSON.stringify(value)
+}
+
+function stringifyScaleFactor(value: unknown): string {
+  if (isRecord(value) && value.type === 'percentage' && typeof value.value === 'number') {
+    return `${value.value * 100}%`
+  }
+  return stringifyTransformArgument(value)
 }
 
 function stringifyContainerName(value: Record<string, unknown>): string {

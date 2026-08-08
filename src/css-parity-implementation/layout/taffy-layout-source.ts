@@ -258,7 +258,11 @@ function applyVisualTransforms(document: Document, state: TaffyLayoutState): voi
     const box = state.rects.get(element)
     const style = state.styles.get(element)
     const localTransform = box && style && !state.contentsElements.has(element) && style.display !== 'none'
-      ? elementTransform(box, style.transform, style.transformOrigin)
+      ? elementTransform(
+          box,
+          [style.translate, style.scale, ...style.transform].filter((value) => value !== undefined),
+          style.transformOrigin,
+        )
       : identityTransform
     const transform = multiplyTransforms(parentTransform, localTransform)
     transforms.set(element, transform)

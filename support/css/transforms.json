@@ -6,7 +6,9 @@
   "subjects": {
     "properties": [
       "transform",
-      "transform-origin"
+      "transform-origin",
+      "translate",
+      "scale"
     ],
     "elements": []
   },
@@ -23,6 +25,8 @@
         "scale(<number>, <number>?)",
         "scaleX(<number>)",
         "scaleY(<number>)",
+        "translate: none | <px-or-percentage> <px-or-percentage>?",
+        "scale: none | <number-or-percentage> <number-or-percentage>?",
         "transform-origin: <keyword-or-px-or-percentage>{1,2}"
       ],
       "support": "partial",
@@ -35,7 +39,7 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Translation, scaling, transform-list order, default and explicit origins, percentage translation, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."
+          "text": "Translation and scaling through transform functions and individual properties, their browser-defined composition order, transform-list order, default and explicit origins, percentages, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."
         },
         {
           "kind": "taffy-compat",

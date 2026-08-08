@@ -134,3 +134,36 @@ it('ancestor transforms propagate to descendant geometry and hit testing', async
     ],
   })
 })
+
+it('individual translate and scale properties compose before transform functions', async () => {
+  await expectChromiumParity({
+    viewport: { width: 500, height: 300 },
+    html: `
+      <style>
+        body { margin: 0; }
+        #stylesheet-box {
+          position: absolute;
+          left: 50px;
+          top: 50px;
+          width: 100px;
+          height: 40px;
+          translate: 20px 10px;
+          scale: 2 0.5;
+          transform: translateX(10px);
+          transform-origin: left top;
+        }
+      </style>
+      <div id="stylesheet-box"></div>
+      <div
+        id="inline-box"
+        style="position:absolute; left:250px; top:100px; width:100px; height:40px; translate:50% 10px; scale:150% 2"
+      ></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#stylesheet-box' },
+      { type: 'dimensions', selector: '#stylesheet-box' },
+      { type: 'rect', selector: '#inline-box' },
+      { type: 'point', x: 100, y: 65 },
+    ],
+  })
+})
