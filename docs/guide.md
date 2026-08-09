@@ -103,6 +103,27 @@ Missing and cyclic references use their declaration fallback when present. An
 unresolved supported declaration without a fallback is reported through
 `unsupportedCss`.
 
+Responsive `@media` rules use the viewport passed to `attachLayoutEngine`, not
+the DOM host's window dimensions:
+
+```ts
+const layoutSheet = new window.CSSStyleSheet()
+layoutSheet.replaceSync(`
+  .sidebar { width: 240px }
+  @media (max-width: 600px) { .sidebar { width: 100px } }
+`)
+window.document.adoptedStyleSheets = [layoutSheet]
+
+await attachLayoutEngine({ window, viewport: { width: 480, height: 800 } })
+
+// 100: the narrow responsive branch matches the configured viewport.
+sidebar.getBoundingClientRect().width
+```
+
+Media types, width and height ranges, orientation, aspect ratio, query lists,
+conjunctions, and nested media rules share the `matchMedia()` evaluator.
+Unsupported media features are reported through `unsupportedCss`.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

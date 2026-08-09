@@ -259,18 +259,19 @@ describe('stylesheet source handling', () => {
     )
   })
 
-  it('routes unsupported configured stylesheet rules through the unsupported CSS policy', async () => {
+  it('applies configured media rules against the layout viewport', async () => {
     document.body.innerHTML = `
       <div id="box"></div>
     `
 
     await attach({
+      viewport: { width: 320, height: 640 },
       unsupportedCss: {
         default: 'throw',
       },
       stylesheets: [
         `
-          @media (min-width: 1px) {
+          @media (width: 320px) and (orientation: portrait) {
             #box {
               position: absolute;
               left: 0;
@@ -283,13 +284,13 @@ describe('stylesheet source handling', () => {
       ],
     })
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
+    expect(requiredElement('#box').getBoundingClientRect()).toMatchObject({ width: 100, height: 100 })
   })
 
-  it('routes unsupported at-rules through the unsupported CSS policy', async () => {
+  it('routes unsupported media features through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
       <style>
-        @media (min-width: 1px) {
+        @media (prefers-color-scheme: dark) {
           #box {
             position: absolute;
             left: 0;
@@ -304,7 +305,22 @@ describe('stylesheet source handling', () => {
 
     await attachStrict()
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule: @media: media/)
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule.*@media/)
+  })
+
+  it('continues to route non-media at-rules through the unsupported CSS policy', async () => {
+    document.body.innerHTML = `
+      <style>
+        @supports (display: grid) {
+          #box { width: 100px; }
+        }
+      </style>
+      <div id="box"></div>
+    `
+
+    await attachStrict()
+
+    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule.*@supports/)
   })
 
   it('routes unsupported selectors through the unsupported CSS policy', async () => {

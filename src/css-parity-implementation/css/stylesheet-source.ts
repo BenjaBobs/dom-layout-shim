@@ -4,6 +4,8 @@ import { readSelectorList } from './selector-parser.ts'
 import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
 import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 import { applyCustomPropertyDeclaration, type CustomProperties } from './custom-properties.ts'
+import { matchesViewportMediaQuery } from '../../api/attachment/viewport-media-query.ts'
+import type { Viewport } from '../../api/layout-engine-config.ts'
 
 export type StyleRule = {
   selector: string
@@ -26,11 +28,12 @@ export function readStyleRules(
   document: Document,
   policy: UnsupportedCssPolicy | undefined,
   configuredStylesheets: readonly string[] = [],
+  viewport?: Viewport,
 ): StyleRule[] {
   const rules: StyleRule[] = []
 
   for (const [index, cssText] of configuredStylesheets.entries()) {
-    readCssRules(cssText, `configured-style-${index}.css`, policy, rules)
+    readCssRules(cssText, `configured-style-${index}.css`, policy, rules, viewport)
   }
 
   for (const source of documentStylesheetSources(document)) {
@@ -41,7 +44,7 @@ export function readStyleRules(
     const cssText = readDocumentStylesheetCssText(source, policy)
 
     if (cssText !== undefined) {
-      readCssRules(cssText, source.filename, policy, rules)
+      readCssRules(cssText, source.filename, policy, rules, viewport)
     }
   }
 
@@ -53,7 +56,7 @@ export function readStyleRules(
     const cssText = readCssomRules(sheet, `adopted stylesheet ${index}`, policy)
 
     if (cssText !== undefined) {
-      readCssRules(cssText, `adopted-style-${index}.css`, policy, rules)
+      readCssRules(cssText, `adopted-style-${index}.css`, policy, rules, viewport)
     }
   }
 
@@ -153,6 +156,7 @@ function readCssRules(
   filename: string,
   policy: UnsupportedCssPolicy | undefined,
   rules: StyleRule[],
+  viewport: Viewport | undefined,
 ): void {
   try {
     transform({
@@ -161,20 +165,25 @@ function readCssRules(
       errorRecovery: true,
       visitor: {
         Rule(rule) {
-          if (rule.type !== 'style') {
-            handleUnsupportedCss(policy, {
-              property: `@${rule.type}`,
-              value: rule.type,
-              reason: 'unsupported-rule',
-              source: 'stylesheet',
-            })
+          if (rule.type === 'style') {
+            collectStyleRule(rule.value, policy, rules)
+            // This transform is collection-only. Returning a rule containing
+            // unresolved var() tokens makes Lightning CSS serialize its internal
+            // unparsed-token representation, which its Node binding cannot round-trip.
             return []
           }
 
-          collectStyleRule(rule.value, policy, rules)
-          // This transform is collection-only. Returning a rule containing
-          // unresolved var() tokens makes Lightning CSS serialize its internal
-          // unparsed-token representation, which its Node binding cannot round-trip.
+          if (rule.type === 'media') {
+            collectMediaRule(rule.value, policy, rules, viewport)
+            return []
+          }
+
+          handleUnsupportedCss(policy, {
+            property: `@${rule.type}`,
+            value: rule.type,
+            reason: 'unsupported-rule',
+            source: 'stylesheet',
+          })
           return []
         },
       },
@@ -187,6 +196,187 @@ function readCssRules(
       source: 'stylesheet',
     })
   }
+}
+
+function collectMediaRule(
+  mediaRule: unknown,
+  policy: UnsupportedCssPolicy | undefined,
+  rules: StyleRule[],
+  viewport: Viewport | undefined,
+): void {
+  if (!isRecord(mediaRule) || !Array.isArray(mediaRule.rules)) {
+    reportUnsupportedMediaRule(policy, mediaRule)
+    return
+  }
+
+  const query = stringifyMediaQueryList(mediaRule.query)
+
+  if (viewport === undefined || query === undefined) {
+    reportUnsupportedMediaRule(policy, mediaRule.query)
+    return
+  }
+
+  if (!matchesViewportMediaQuery(query, viewport)) {
+    return
+  }
+
+  for (const nestedRule of mediaRule.rules) {
+    if (!isRecord(nestedRule) || typeof nestedRule.type !== 'string') {
+      reportUnsupportedMediaRule(policy, nestedRule)
+    } else if (nestedRule.type === 'style') {
+      collectStyleRule(nestedRule.value as Parameters<typeof collectStyleRule>[0], policy, rules)
+    } else if (nestedRule.type === 'media') {
+      collectMediaRule(nestedRule.value, policy, rules, viewport)
+    } else {
+      handleUnsupportedCss(policy, {
+        property: `@${nestedRule.type}`,
+        value: nestedRule.type,
+        reason: 'unsupported-rule',
+        source: 'stylesheet',
+      })
+    }
+  }
+}
+
+function reportUnsupportedMediaRule(
+  policy: UnsupportedCssPolicy | undefined,
+  value: unknown,
+): void {
+  handleUnsupportedCss(policy, {
+    property: '@media',
+    value: JSON.stringify(value),
+    reason: 'unsupported-rule',
+    source: 'stylesheet',
+  })
+}
+
+function stringifyMediaQueryList(value: unknown): string | undefined {
+  if (!isRecord(value) || !Array.isArray(value.mediaQueries)) {
+    return undefined
+  }
+
+  const queries = value.mediaQueries.map(stringifyMediaQuery)
+  return queries.every((query): query is string => query !== undefined)
+    ? queries.join(', ')
+    : undefined
+}
+
+function stringifyMediaQuery(value: unknown): string | undefined {
+  if (!isRecord(value) || typeof value.mediaType !== 'string') {
+    return undefined
+  }
+
+  const qualifier = value.qualifier === 'not' || value.qualifier === 'only'
+    ? `${value.qualifier} `
+    : ''
+  const condition = value.condition === null ? undefined : stringifyMediaCondition(value.condition)
+
+  if (value.condition !== null && condition === undefined) {
+    return undefined
+  }
+
+  if (value.mediaType === 'all' && !qualifier && condition) {
+    return condition
+  }
+
+  return `${qualifier}${value.mediaType}${condition ? ` and ${condition}` : ''}`
+}
+
+function stringifyMediaCondition(value: unknown): string | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  if (value.type === 'feature') {
+    return stringifyMediaFeature(value.value)
+  }
+
+  if (value.type === 'operation' && value.operator === 'and' && Array.isArray(value.conditions)) {
+    const conditions = value.conditions.map(stringifyMediaCondition)
+    return conditions.every((condition): condition is string => condition !== undefined)
+      ? conditions.join(' and ')
+      : undefined
+  }
+
+  return undefined
+}
+
+function stringifyMediaFeature(value: unknown): string | undefined {
+  if (!isRecord(value) || typeof value.name !== 'string') {
+    return undefined
+  }
+
+  if (value.type === 'boolean' && (value.name === 'width' || value.name === 'height')) {
+    return `(${value.name})`
+  }
+
+  if (value.type === 'plain') {
+    if (!['width', 'height', 'orientation', 'aspect-ratio'].includes(value.name)) {
+      return undefined
+    }
+
+    const featureValue = stringifyMediaFeatureValue(value.value)
+    return featureValue === undefined ? undefined : `(${value.name}: ${featureValue})`
+  }
+
+  if (value.type === 'range') {
+    const operator = {
+      'equal': '=',
+      'less-than': '<',
+      'less-than-equal': '<=',
+      'greater-than': '>',
+      'greater-than-equal': '>=',
+    }[String(value.operator)]
+    const featureValue = stringifyMediaFeatureValue(value.value)
+
+    if (value.name === 'aspect-ratio') {
+      const prefix = operator === '>=' ? 'min-' : operator === '<=' ? 'max-' : operator === '=' ? '' : undefined
+      return prefix === undefined || featureValue === undefined
+        ? undefined
+        : `(${prefix}aspect-ratio: ${featureValue})`
+    }
+
+    if (value.name !== 'width' && value.name !== 'height') {
+      return undefined
+    }
+
+    return operator === undefined || featureValue === undefined
+      ? undefined
+      : `(${value.name} ${operator} ${featureValue})`
+  }
+
+  return undefined
+}
+
+function stringifyMediaFeatureValue(value: unknown): string | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  if (value.type === 'ident' && typeof value.value === 'string') {
+    return value.value
+  }
+
+  if (value.type === 'ratio' && Array.isArray(value.value)) {
+    const [numerator, denominator] = value.value
+    return typeof numerator === 'number' && typeof denominator === 'number'
+      ? `${numerator} / ${denominator}`
+      : undefined
+  }
+
+  if (value.type === 'length' && isRecord(value.value)) {
+    const length = value.value.type === 'value' ? value.value.value : value.value
+
+    if (isRecord(length) && typeof length.value === 'number' && typeof length.unit === 'string') {
+      return `${length.value}${length.unit}`
+    }
+  }
+
+  return undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 function readStyleElementCssText(styleElement: Element): string {

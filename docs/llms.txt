@@ -60,6 +60,12 @@ the consuming `var()` fallback when available. If the value remains unresolved,
 the declaration routes through the unsupported CSS policy as
 `unsupported-value` with its authored value.
 
+Stylesheet `@media` rules evaluate against the configured layout viewport.
+Supported queries include screen/all media types, width and height constraints,
+orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media
+rules. Non-matching rules do not enter the cascade. Unsupported media features
+route through the unsupported CSS policy as `@media` / `unsupported-rule`.
+
 ## Sticky positioning
 
 `position: sticky` supports physical `top`, `right`, `bottom`, and `left`
