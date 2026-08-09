@@ -57,6 +57,27 @@ are routed through the unsupported CSS policy. The default policy warns and
 continues; strict mode throws instead of silently computing layout without the
 sheet.
 
+Custom properties in inline and document styles resolve before supported
+layout values are parsed. Values inherit through the element tree, local
+declarations override inherited values, and nested fallbacks recover missing or
+cyclic references:
+
+```ts
+window.document.body.innerHTML = `
+  <main style="--card-width: 288px">
+    <article style="width:var(--card-width); padding:var(--space, 12px)"></article>
+  </main>
+`
+
+await attachLayoutEngine({ window })
+
+// The article is 288px wide with 12px fallback padding.
+window.document.querySelector('article')?.getBoundingClientRect()
+```
+
+If a reference remains unresolved, the declaration follows the configured
+unsupported CSS policy rather than contributing an incorrect layout value.
+
 The attachment also answers `window.matchMedia()` from that configured
 viewport. It supports screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, and `not`/`and` combinations.

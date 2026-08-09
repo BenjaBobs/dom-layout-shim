@@ -4,9 +4,10 @@ import {
   TaffyTree,
   loadTaffy,
 } from 'taffy-layout'
-import { applyInlineStyle } from '../css/inline-style-source.ts'
+import { applyInlineCustomProperties, applyInlineStyle } from '../css/inline-style-source.ts'
 import { createDefaultStyle, zeroEdges, type Edges, type SupportedStyle } from '../css/supported-style.ts'
-import { applyStyleRules, readStyleRules } from '../css/stylesheet-source.ts'
+import { applyStylesheetCustomProperties, applyStyleRules, readStyleRules } from '../css/stylesheet-source.ts'
+import type { CustomProperties } from '../css/custom-properties.ts'
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 import type { Viewport } from '../../api/layout-engine-config.ts'
 import type { Box } from '../../api/box.ts'
@@ -35,6 +36,7 @@ type TaffyLayoutState = {
   contentsElements: Set<Element>
   tableLayouts: Map<Element, SimpleTableLayout>
   styles: WeakMap<Element, SupportedStyle>
+  customProperties: WeakMap<Element, CustomProperties>
   tree: TaffyTree
   rules: ReturnType<typeof readStyleRules>
   policy: UnsupportedCssPolicy | undefined
@@ -212,6 +214,7 @@ function buildTaffyLayoutTree(
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     styles: new WeakMap<Element, SupportedStyle>(),
+    customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
     rules: readStyleRules(document, policy, stylesheets),
     policy,
@@ -1078,14 +1081,35 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
   }
 
   const style = createDefaultStyle()
+  const customProperties = resolveElementCustomProperties(element, state)
   applyInheritedTextDefaults(style, element, state)
   applyUserAgentDefaults(style, element)
   const rootFontSize = resolveRootFontSize(element, state)
-  applyStyleRules(style, element, state.rules, state.policy, rootFontSize)
-  applyInlineStyle(style, element, state.policy, rootFontSize)
+  applyStyleRules(style, element, state.rules, state.policy, rootFontSize, customProperties)
+  applyInlineStyle(style, element, state.policy, rootFontSize, customProperties)
   applyPostAuthorUserAgentDefaults(style, element)
   state.styles.set(element, style)
   return style
+}
+
+function resolveElementCustomProperties(
+  element: Element,
+  state: TaffyLayoutState,
+): CustomProperties {
+  const cached = state.customProperties.get(element)
+
+  if (cached) {
+    return cached
+  }
+
+  const inherited = element.parentElement
+    ? resolveElementCustomProperties(element.parentElement, state)
+    : new Map<string, string>()
+  const properties = new Map(inherited)
+  applyStylesheetCustomProperties(properties, inherited, element, state.rules, state.policy)
+  applyInlineCustomProperties(properties, inherited, element)
+  state.customProperties.set(element, properties)
+  return properties
 }
 
 function resolveRootFontSize(element: Element, state: TaffyLayoutState): number {

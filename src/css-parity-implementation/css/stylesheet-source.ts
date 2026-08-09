@@ -3,6 +3,7 @@ import { readDeclaration } from './lightningcss-value-stringifier.ts'
 import { readSelectorList } from './selector-parser.ts'
 import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
 import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
+import { applyCustomPropertyDeclaration, type CustomProperties } from './custom-properties.ts'
 
 export type StyleRule = {
   selector: string
@@ -84,6 +85,7 @@ export function applyStyleRules(
   rules: readonly StyleRule[],
   policy: UnsupportedCssPolicy | undefined,
   rootFontSize?: number,
+  customProperties?: CustomProperties,
 ): void {
   rules
     .filter((rule) => matchesSelector(element, rule.selector, policy))
@@ -96,9 +98,26 @@ export function applyStyleRules(
           selector: rule.selector,
           element,
           rootFontSize,
+          customProperties,
         })
       }
     })
+}
+
+export function applyStylesheetCustomProperties(
+  properties: Map<string, string>,
+  inherited: CustomProperties,
+  element: Element,
+  rules: readonly StyleRule[],
+  policy: UnsupportedCssPolicy | undefined,
+): void {
+  for (const rule of rules
+    .filter((candidate) => matchesSelector(element, candidate.selector, policy))
+    .toSorted(compareStyleRuleCascadeOrder)) {
+    for (const declaration of rule.declarations) {
+      applyCustomPropertyDeclaration(properties, inherited, declaration.property, declaration.value)
+    }
+  }
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {
@@ -153,7 +172,10 @@ function readCssRules(
           }
 
           collectStyleRule(rule.value, policy, rules)
-          return rule
+          // This transform is collection-only. Returning a rule containing
+          // unresolved var() tokens makes Lightning CSS serialize its internal
+          // unparsed-token representation, which its Node binding cannot round-trip.
+          return []
         },
       },
     })

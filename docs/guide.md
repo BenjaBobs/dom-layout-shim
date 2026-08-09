@@ -82,6 +82,27 @@ The engine reads external rules only when the DOM implementation exposes their
 through `unsupportedCss`: the default policy warns and continues, while strict
 mode throws rather than silently omitting the sheet.
 
+Custom properties inherit and cascade before supported layout declarations are
+parsed. Local values override inherited values, and fallbacks can contain other
+`var()` references:
+
+```ts
+window.document.body.innerHTML = `
+  <main style="--panel-width: 320px">
+    <section id="panel" style="width:var(--panel-width); gap:var(--gap, 8px)"></section>
+  </main>
+`
+
+await attachLayoutEngine({ window })
+
+// 320: inherited from <main>; --gap uses its 8px fallback.
+panel.getBoundingClientRect().width
+```
+
+Missing and cyclic references use their declaration fallback when present. An
+unresolved supported declaration without a fallback is reported through
+`unsupportedCss`.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

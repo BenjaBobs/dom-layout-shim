@@ -158,9 +158,9 @@ describe('unsupported CSS policy', () => {
     expect(document.elementFromPoint(50, 50)).toBe(requiredElement('#box'))
   })
 
-  it('throws when custom properties are referenced from supported layout declarations', async () => {
+  it('throws when an unresolved custom property is referenced from a supported layout declaration', async () => {
     document.body.innerHTML = `
-      <div id="box" style="--box-size:100px; position:absolute; left:0; top:0; width:var(--box-size); height:100px"></div>
+      <div id="box" style="position:absolute; left:0; top:0; width:var(--missing-size); height:100px"></div>
     `
 
     await attachStrict()
