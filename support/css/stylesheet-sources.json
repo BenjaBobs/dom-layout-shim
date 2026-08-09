@@ -60,8 +60,33 @@
       ]
     },
     {
+      "id": "viewport-media-rules",
+      "description": "Viewport media rules select stylesheet branches from the configured layout viewport.",
+      "syntax": [
+        "@media <media-query-list> { <style-rules> }"
+      ],
+      "conditions": [
+        "Supported media types are `screen` and `all`; other media types do not match.",
+        "Width, height, orientation, and aspect-ratio features use the configured viewport.",
+        "Query lists, `not`, `only`, `and`, and nested media rules are supported."
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "media-queries"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Wide landscape and narrow portrait fixtures verify matching and non-matching responsive branches against Chromium."
+        }
+      ]
+    },
+    {
       "id": "at-rules",
-      "description": "General stylesheet at-rules are not part of the supported source subset.",
+      "description": "Stylesheet at-rules other than supported viewport media rules are not part of the source subset.",
       "support": "unsupported",
       "parity": {
         "status": "unverified",
@@ -70,7 +95,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "At-rules remain unsupported."
+          "text": "Unsupported media features and other at-rules route through the configured unsupported CSS policy."
         }
       ]
     }

@@ -84,6 +84,12 @@ orientation, aspect ratio, query lists, and `not`/`and` combinations.
 Non-viewport media features that the deterministic configuration does not
 define evaluate to false.
 
+Stylesheet `@media` rules use the same configured viewport, so responsive
+layout branches agree with `matchMedia()` instead of using the DOM host's
+window size. Matching supports screen/all media types, width and height ranges,
+orientation, aspect ratio, query lists, conjunctions, and nested media rules.
+Unsupported media features route through the unsupported CSS policy.
+
 Calling `element.scrollIntoView()` scrolls layout-backed ancestors and the
 configured viewport. Boolean arguments and `block`/`inline` alignment options
 are supported. Smooth behavior completes immediately so subsequent test

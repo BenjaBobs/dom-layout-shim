@@ -216,7 +216,7 @@ function buildTaffyLayoutTree(
     styles: new WeakMap<Element, SupportedStyle>(),
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
-    rules: readStyleRules(document, policy, stylesheets),
+    rules: readStyleRules(document, policy, stylesheets, viewport),
     policy,
     textMeasurer,
     nativeControlMetrics,
