@@ -1,5 +1,117 @@
 # dom-layout-shim
 
+## 0.4.0
+
+### Minor Changes
+
+- 1a58c8d: Include accessible linked stylesheets and constructable stylesheets in layout.
+  The engine now follows document and adoption order and automatically recomputes
+  geometry after CSSOM edits or changes to `document.adoptedStyleSheets`.
+
+  ```ts
+  const sheet = new window.CSSStyleSheet();
+  sheet.replaceSync(".dialog { position: fixed; inset: 0 }");
+  window.document.adoptedStyleSheets = [sheet];
+
+  await attachLayoutEngine({ window });
+
+  // Now covers the configured viewport; previously this sheet was ignored.
+  dialog.getBoundingClientRect();
+  ```
+
+- 5189aa2: Apply responsive stylesheet `@media` rules against the viewport configured for
+  the layout engine. Media types, dimensions, orientation, aspect ratio, query
+  lists, conjunctions, and nested rules now select the same branches as Chromium.
+
+  Previously, media rules were rejected by the unsupported CSS policy. After
+  upgrading, matching rules contribute layout:
+
+  ```ts
+  document.head.innerHTML = `
+    <style>@media (max-width: 600px) { #panel { width: 100px } }</style>
+  `;
+  document.body.innerHTML = '<div id="panel"></div>';
+
+  await attachLayoutEngine({ window, viewport: { width: 480, height: 800 } });
+  document.querySelector("#panel").offsetWidth; // 100
+  ```
+
+- 2b49074: Support rectangular named grid templates through `grid-template-areas` and
+  single-name `grid-area` placement. Named areas can span rows and columns and may
+  be arranged around unnamed `.` cells.
+
+  Previously, named templates were rejected as unsupported CSS. After upgrading,
+  items use the declared area bounds:
+
+  ```ts
+  document.body.innerHTML = `
+    <main style='display:grid; grid-template-columns:80px 120px;
+      grid-template-areas:"nav content"'>
+      <article id="content" style="grid-area:content"></article>
+    </main>
+  `;
+
+  await attachLayoutEngine({ window });
+  document.querySelector("#content").offsetLeft; // 80
+  ```
+
+- c86fc03: Resolve CSS custom properties before parsing supported layout declarations.
+  Inherited values, local overrides, forward references, nested fallbacks, and
+  cyclic references now follow their CSS variable semantics, while values that
+  remain unresolved route through `unsupportedCss`.
+
+  Previously, a supported declaration such as `width: var(--card-width)` was
+  ignored as an unsupported value. After upgrading, it contributes layout:
+
+  ```ts
+  document.body.innerHTML = `
+    <main style="--card-width: 240px">
+      <article id="card" style="width:var(--card-width)"></article>
+    </main>
+  `;
+
+  await attachLayoutEngine({ window });
+  document.querySelector("#card").offsetWidth; // 240
+  ```
+
+- 97a9a85: Support `position: sticky` for physical insets, scrolling ancestors, viewport
+  scrolling, containing-block limits, hit testing, and simple table headers.
+
+  ```ts
+  scroller.scrollTop = 50;
+
+  // Now remains at the scroller's top inset; previously `sticky` was rejected.
+  toolbar.getBoundingClientRect().top;
+  ```
+
+### Patch Changes
+
+- fa4068f: Make CSS support evidence explain the independently supported behaviors within
+  each topic. The exported inventory now provides descriptive, behavior-specific
+  claims instead of broad `current-supported-scope` entries, and its prose marks
+  CSS syntax and API names as inline code for documentation renderers.
+
+  ```ts
+  const grid = cssSupportInventory.find((topic) => topic.id === "grid-layout");
+
+  // Now identifies explicit tracks, auto flow, line placement, area placement,
+  // and shared placement behavior as separate claims with their own evidence.
+  grid?.claims.map((claim) => claim.id);
+  ```
+
+  The CSS support explorer also separates implementation support from Chromium
+  verification, explains metadata with tooltips, groups dense claim sections,
+  and previews parity test sources without leaving the page.
+
+- a8f464c: Make documentation navigation respond immediately after the initial page load.
+  The shared shell now swaps internal page content and styles without reloading
+  the document, while direct URLs, refreshes, Back and Forward navigation, scroll
+  restoration, page-specific behavior, and no-JavaScript fallback navigation
+  continue to work normally.
+
+  For example, following the `CSS support` navigation link updates the URL and
+  support explorer in place instead of triggering another document load.
+
 ## 0.3.0
 
 ### Minor Changes
