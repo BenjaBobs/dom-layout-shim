@@ -11,7 +11,6 @@
       "clear: left/right/both/inline-start/inline-end",
       "display: inline formatting",
       "display: list-item markers",
-      "grid-template-areas",
       "border-collapse",
       "border-spacing",
       "empty-cells",
@@ -78,24 +77,6 @@
         {
           "kind": "todo",
           "text": "Inline fragment layout and list marker boxes are not implemented."
-        }
-      ]
-    },
-    {
-      "id": "named-grid-areas",
-      "description": "Named grid areas are tracked but unsupported.",
-      "properties": [
-        "grid-template-areas"
-      ],
-      "support": "unsupported",
-      "parity": {
-        "status": "unverified",
-        "fixtures": []
-      },
-      "notes": [
-        {
-          "kind": "todo",
-          "text": "Named grid area definition and placement are not implemented."
         }
       ]
     },

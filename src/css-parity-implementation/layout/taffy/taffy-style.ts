@@ -53,12 +53,12 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
   taffyStyle.gridAutoColumns = toTaffyAutoGridTracks(style.gridAutoColumns)
   taffyStyle.gridAutoRows = toTaffyAutoGridTracks(style.gridAutoRows)
   taffyStyle.gridColumn = {
-    start: style.gridColumnStart,
-    end: style.gridColumnEnd,
+    start: toTaffyGridPlacement(style.gridColumnStart),
+    end: toTaffyGridPlacement(style.gridColumnEnd),
   }
   taffyStyle.gridRow = {
-    start: style.gridRowStart,
-    end: style.gridRowEnd,
+    start: toTaffyGridPlacement(style.gridRowStart),
+    end: toTaffyGridPlacement(style.gridRowEnd),
   }
   taffyStyle.size = {
     width: style.width ?? context?.replacedSize?.width ?? 'auto',
@@ -89,6 +89,10 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
   }
 
   return taffyStyle
+}
+
+function toTaffyGridPlacement(value: SupportedStyle['gridColumnStart']): 'auto' | number | { span: number } {
+  return typeof value === 'object' && 'area' in value ? 'auto' : value
 }
 
 export function effectiveBorderWidth(style: SupportedStyle): Edges {

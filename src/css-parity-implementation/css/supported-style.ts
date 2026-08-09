@@ -46,7 +46,13 @@ export type GridMinTrackBreadth = number | `${number}%` | 'auto' | 'min-content'
 export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`
 export type GridTrack = GridMinTrackBreadth | `${number}fr` | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }
 export type GridTemplateTrack = GridTrack | { repeat: number; tracks: GridTrack[] }
-export type GridPlacementValue = 'auto' | number | { span: number }
+export type GridPlacementValue = 'auto' | number | { span: number } | { area: string }
+export type GridTemplateArea = {
+  rowStart: number
+  rowEnd: number
+  columnStart: number
+  columnEnd: number
+}
 export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense'
 export type CaptionSideValue = 'top' | 'bottom'
 export type EmptyCellsValue = 'show' | 'hide'
@@ -100,6 +106,7 @@ export type SupportedStyle = {
   gridAutoFlow: GridAutoFlowValue
   gridTemplateColumns: GridTemplateTrack[]
   gridTemplateRows: GridTemplateTrack[]
+  gridTemplateAreas?: Map<string, GridTemplateArea>
   gridAutoColumns: GridTrack[]
   gridAutoRows: GridTrack[]
   gridColumnStart: GridPlacementValue

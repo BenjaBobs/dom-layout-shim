@@ -164,6 +164,29 @@ console.log(save.offsetTop, save.offsetLeft, save.offsetParent)
 save.scrollIntoView({ block: 'center', inline: 'nearest' })
 ```
 
+## Place named grid areas
+
+Rectangular `grid-template-areas` definitions place children whose `grid-area`
+names match the template. Areas may span rows and columns, and `.` leaves an
+unnamed cell:
+
+```ts
+window.document.body.innerHTML = `
+  <main style='display:grid; grid-template-columns:80px 120px;
+    grid-template-areas:"nav content"'>
+    <nav style="grid-area:nav"></nav>
+    <article id="content" style="grid-area:content"></article>
+  </main>
+`
+
+await attachLayoutEngine({ window })
+
+// The article begins after the 80px navigation track.
+content.getBoundingClientRect().left
+```
+
+Named grid lines and escaped area identifiers remain unsupported.
+
 ## Test sticky UI
 
 `position: sticky` uses physical `top`, `right`, `bottom`, and `left` insets

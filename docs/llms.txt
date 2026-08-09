@@ -66,6 +66,14 @@ orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media
 rules. Non-matching rules do not enter the cascade. Unsupported media features
 route through the unsupported CSS policy as `@media` / `unsupported-rule`.
 
+## Named grid areas
+
+`grid-template-areas` accepts equal-width quoted rows containing custom
+identifiers and unnamed `.` cells. Repeated names must form one filled
+rectangle. `grid-area: <custom-ident>` places an item at that area's numeric
+row and column bounds, including areas spanning multiple tracks. Named grid
+lines and escaped area identifiers remain unsupported.
+
 ## Sticky positioning
 
 `position: sticky` supports physical `top`, `right`, `bottom`, and `left`

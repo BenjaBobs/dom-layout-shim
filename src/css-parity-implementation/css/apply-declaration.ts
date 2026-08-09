@@ -10,6 +10,7 @@ import type {
   GridMaxTrackBreadth,
   GridMinTrackBreadth,
   GridPlacementValue,
+  GridTemplateArea,
   GridTemplateTrack,
   GridTrack,
   JustifyContentValue,
@@ -279,6 +280,9 @@ export function applyDeclaration(
     case 'grid-template-rows':
       applyGridTemplate(style, 'gridTemplateRows', normalizedValue, normalizedProperty, value, context)
       return
+    case 'grid-template-areas':
+      applyGridTemplateAreas(style, resolvedValue.trim(), normalizedProperty, value, context)
+      return
     case 'grid-auto-columns':
       applyGridAutoTracks(style, 'gridAutoColumns', normalizedValue, normalizedProperty, value, context)
       return
@@ -305,7 +309,7 @@ export function applyDeclaration(
         style.gridColumnEnd = 'auto'
         return
       }
-      applyGridArea(style, normalizedValue, normalizedProperty, value, context)
+      applyGridArea(style, resolvedValue.trim(), normalizedProperty, value, context)
       return
     case 'grid-column-start':
       if (resetGridPlacement(style, 'gridColumnStart', normalizedValue)) {
@@ -3247,6 +3251,92 @@ function applyGridLine(
   style[endKey] = end
 }
 
+function applyGridTemplateAreas(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value.toLowerCase() === 'none' || value.toLowerCase() === 'initial' || value.toLowerCase() === 'unset') {
+    style.gridTemplateAreas = undefined
+    return
+  }
+
+  const rows = [...value.matchAll(/(["'])(.*?)\1/g)].map((match) =>
+    (match[2] ?? '').trim().split(/\s+/))
+  const withoutRows = value.replace(/(["'])(.*?)\1/g, '').trim()
+
+  if (
+    rows.length === 0 ||
+    withoutRows !== '' ||
+    rows[0]?.length === 0 ||
+    rows.some((row) => row.length !== rows[0]?.length)
+  ) {
+    reportUnsupportedDeclaration(property, originalValue, context)
+    return
+  }
+
+  const areas = new Map<string, GridTemplateArea>()
+
+  for (const [rowIndex, row] of rows.entries()) {
+    for (const [columnIndex, name] of row.entries()) {
+      if (name === '.' || /^\.+$/.test(name)) {
+        continue
+      }
+
+      if (!isGridAreaName(name)) {
+        reportUnsupportedDeclaration(property, originalValue, context)
+        return
+      }
+
+      const area = areas.get(name)
+
+      if (area) {
+        area.rowStart = Math.min(area.rowStart, rowIndex + 1)
+        area.rowEnd = Math.max(area.rowEnd, rowIndex + 2)
+        area.columnStart = Math.min(area.columnStart, columnIndex + 1)
+        area.columnEnd = Math.max(area.columnEnd, columnIndex + 2)
+      } else {
+        areas.set(name, {
+          rowStart: rowIndex + 1,
+          rowEnd: rowIndex + 2,
+          columnStart: columnIndex + 1,
+          columnEnd: columnIndex + 2,
+        })
+      }
+    }
+  }
+
+  for (const [name, area] of areas) {
+    for (let row = area.rowStart - 1; row < area.rowEnd - 1; row += 1) {
+      for (let column = area.columnStart - 1; column < area.columnEnd - 1; column += 1) {
+        if (rows[row]?.[column] !== name) {
+          reportUnsupportedDeclaration(property, originalValue, context)
+          return
+        }
+      }
+    }
+  }
+
+  style.gridTemplateAreas = areas
+}
+
+function reportUnsupportedDeclaration(
+  property: string,
+  value: string,
+  context: DeclarationContext,
+): void {
+  handleUnsupportedCss(context.policy, {
+    property,
+    value,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  })
+}
+
 function applyGridArea(
   style: SupportedStyle,
   value: string,
@@ -3255,6 +3345,15 @@ function applyGridArea(
   context: DeclarationContext,
 ): void {
   const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+
+  if (parts.length === 1 && isGridAreaName(parts[0] ?? '')) {
+    const area = { area: parts[0] ?? '' }
+    style.gridRowStart = area
+    style.gridColumnStart = area
+    style.gridRowEnd = area
+    style.gridColumnEnd = area
+    return
+  }
 
   if (parts.length !== 4) {
     handleUnsupportedCss(context.policy, {
@@ -3268,7 +3367,8 @@ function applyGridArea(
     return
   }
 
-  const [rowStart, columnStart, rowEnd, columnEnd] = parts.map(parseGridPlacement)
+  const [rowStart, columnStart, rowEnd, columnEnd] = parts.map((part) =>
+    parseGridPlacement(part, true))
 
   if (
     rowStart === undefined ||
@@ -3318,19 +3418,40 @@ function applyGridPlacement(
   style[key] = placement
 }
 
-function parseGridPlacement(value: string): GridPlacementValue | undefined {
-  if (value === 'auto') {
+function parseGridPlacement(value: string, allowArea = false): GridPlacementValue | undefined {
+  const normalizedValue = value.toLowerCase()
+
+  if (normalizedValue === 'auto') {
     return 'auto'
   }
 
-  const span = parseGridSpan(value)
+  const span = parseGridSpan(normalizedValue)
 
   if (span) {
     return span
   }
 
   const number = Number(value)
-  return Number.isInteger(number) && number !== 0 ? number : undefined
+  if (Number.isInteger(number) && number !== 0) {
+    return number
+  }
+
+  return allowArea && isGridAreaName(value) ? { area: value } : undefined
+}
+
+const reservedGridAreaNames = new Set([
+  'auto',
+  'default',
+  'inherit',
+  'initial',
+  'revert',
+  'revert-layer',
+  'span',
+  'unset',
+])
+
+function isGridAreaName(value: string): boolean {
+  return /^-?[_a-zA-Z][_a-zA-Z0-9-]*$/.test(value) && !reservedGridAreaNames.has(value.toLowerCase())
 }
 
 function parseGridSpan(value: string): { span: number } | undefined {

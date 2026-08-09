@@ -168,6 +168,30 @@ describe('unsupported CSS policy', () => {
     expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-value/)
   })
 
+  it('throws when named grid areas do not form rectangles', async () => {
+    document.body.innerHTML = `
+      <div id="grid" style='display:grid; grid-template-areas:"a a" "a b"'></div>
+    `
+
+    await attachStrict()
+
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      /Unsupported CSS unsupported-value.*grid-template-areas/,
+    )
+  })
+
+  it('keeps named grid lines on the unsupported CSS policy path', async () => {
+    document.body.innerHTML = `
+      <div id="item" style="grid-column-start:content-start"></div>
+    `
+
+    await attachStrict()
+
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      /Unsupported CSS unsupported-value.*grid-column-start/,
+    )
+  })
+
   it('throws on unsupported border shorthand styles in strict mode', async () => {
     document.body.innerHTML = `
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; border:1px wave red"></div>
