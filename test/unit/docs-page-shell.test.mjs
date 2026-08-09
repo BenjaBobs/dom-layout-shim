@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { renderDocumentationPage } from '../../scripts/docs-page-shell.mjs'
 
@@ -31,5 +32,12 @@ describe('documentation page shell', () => {
     expect(speculationRules.prerender[0].urls).toEqual(['./', './css-support-status.html'])
     expect(output).toContain('<main id="main-content" tabindex="-1">Example content</main>')
     expect(output).not.toMatch(/^\s+$/m)
+  })
+
+  it('keeps the published version visible instead of the unreleased badge on mobile', async () => {
+    const styles = await readFile('docs-engine/assets/site.css', 'utf8')
+
+    expect(styles).toMatch(/@media \(max-width: 700px\)[\s\S]*\.site-upcoming \{ display: none; \}/)
+    expect(styles).not.toMatch(/@media \(max-width: 700px\)[\s\S]*\.site-version \{ display: none; \}/)
   })
 })

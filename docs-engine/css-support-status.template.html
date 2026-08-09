@@ -18,6 +18,8 @@
       --blue-bg: #e4f1fb;
       --violet: #7251a4;
       --violet-bg: #eee7f8;
+      --teal: #087b83;
+      --teal-bg: #def4f3;
       --gray-bg: #edf0f3;
       --claim-bg: #fbfcfd;
       --heading-text: #394654;
@@ -42,6 +44,8 @@
         --blue-bg: #19364b;
         --violet: #c4a7f5;
         --violet-bg: #34294a;
+        --teal: #72d9dc;
+        --teal-bg: #153b3e;
         --gray-bg: #29353b;
         --claim-bg: #121b20;
         --heading-text: #c7d4da;
@@ -88,6 +92,7 @@
 
     main {
       width: min(1500px, 100%);
+      min-width: 0;
       margin: auto;
       padding: 12px 28px 32px;
     }
@@ -229,6 +234,7 @@
     }
 
     td {
+      min-width: 0;
       padding: 9px 10px;
       vertical-align: top;
       text-align: left;
@@ -242,6 +248,7 @@
     }
 
     tbody tr {
+      position: relative;
       scroll-margin-top: 190px;
       display: grid;
       grid-template-columns: minmax(180px, 1.1fr) minmax(150px, .8fr) minmax(260px, 1.6fr);
@@ -249,7 +256,11 @@
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow-panel);
-      overflow: hidden;
+    }
+
+    tbody tr:hover,
+    tbody tr:focus-within {
+      z-index: 1;
     }
 
     tbody td:nth-child(4) {
@@ -288,6 +299,7 @@
 
     .meta-badge {
       display: inline-flex;
+      min-width: 0;
       align-items: center;
       gap: 5px;
       min-height: 24px;
@@ -320,6 +332,7 @@
       color: var(--muted);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     .badge {
@@ -390,6 +403,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
+      min-width: 0;
       max-width: none;
     }
 
@@ -420,6 +434,7 @@
     }
 
     .claim {
+      min-width: 0;
       padding: 10px;
       border: 1px solid var(--line);
       border-radius: 7px;
@@ -483,8 +498,11 @@
     .claim-values-evidence .claim-label { color: var(--green); }
 
     .claim-values .chip {
+      max-width: 100%;
       border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
       background: color-mix(in srgb, var(--panel) 76%, transparent);
+      overflow-wrap: anywhere;
+      white-space: normal;
     }
 
     .claim-values-conditions .chip {
@@ -539,11 +557,11 @@
     .note-browser-parity { color: var(--green); border-left-color: var(--green); background: var(--green-bg); }
     .note-behavior-quirk { color: var(--blue); border-left-color: var(--blue); background: var(--blue-bg); }
     .note-implementation-quirk { color: var(--amber); border-left-color: var(--amber); background: var(--amber-bg); }
-    .note-taffy-compat { color: var(--violet); border-left-color: var(--violet); background: var(--violet-bg); }
+    .note-taffy-compat { color: var(--teal); border-left-color: var(--teal); background: var(--teal-bg); }
     .note-limitation { color: var(--red); border-left-color: var(--red); background: var(--red-bg); }
     .note-todo { color: var(--muted); border-left-color: var(--muted); background: var(--gray-bg); }
 
-    .note-text { color: var(--text); }
+    .note-text { min-width: 0; color: var(--text); overflow-wrap: anywhere; }
 
     .note-text code {
       padding: 1px 4px;
@@ -591,9 +609,12 @@
 
     .fixture-dialog {
       width: min(980px, calc(100vw - 32px));
+      min-width: 0;
       max-width: none;
       max-height: min(820px, calc(100vh - 32px));
+      margin: auto;
       padding: 0;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 10px;
       background: var(--panel);
@@ -622,6 +643,7 @@
     .fixture-dialog-head h2 {
       margin: 0;
       font-size: 18px;
+      overflow-wrap: anywhere;
     }
 
     .fixture-dialog-head p {
@@ -721,6 +743,28 @@
 
       tbody td:nth-child(4) {
         grid-column: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .fixture-dialog {
+        width: calc(100vw - 16px);
+        max-height: calc(100dvh - 16px);
+      }
+
+      .fixture-dialog-head,
+      .fixture-dialog-actions {
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .fixture-dialog-status {
+        padding: 8px 10px;
+      }
+
+      .fixture-dialog pre {
+        max-height: calc(100dvh - 190px);
+        padding: 10px;
       }
     }
   </style>

@@ -29,6 +29,10 @@ describe('generated documentation experience', () => {
     expect(page).toContain('id="fixtureDialog" aria-labelledby="fixtureDialogTitle"')
     expect(page).toContain('class="chip fixture-preview"')
     expect(page).toContain('class="fixture-source-link"')
+    expect(page).toContain('.note-taffy-compat { color: var(--teal);')
+    expect(page).toContain('overflow-wrap: anywhere;')
+    expect(page).toContain('width: calc(100vw - 16px);')
+    expect(page).not.toContain('box-shadow: var(--shadow-panel);\n      overflow: hidden;')
 
     const generator = await readDocumentationSource('scripts/generate-docs-pages.mjs')
     expect(generator).toContain("const paritySourceOutput = resolve(siteRoot, 'data/parity-sources')")
