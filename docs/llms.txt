@@ -53,6 +53,13 @@ Cross-origin and otherwise unavailable sheets are routed through the existing
 unsupported CSS policy as `stylesheet` / `unsupported-rule`; warning is the
 default and strict policy throws.
 
+Custom properties resolve before supported layout declarations are parsed.
+Resolution includes inheritance, local cascade overrides, forward references,
+nested fallbacks, and cycle invalidation. A missing or cyclic reference uses
+the consuming `var()` fallback when available. If the value remains unresolved,
+the declaration routes through the unsupported CSS policy as
+`unsupported-value` with its authored value.
+
 ## Sticky positioning
 
 `position: sticky` supports physical `top`, `right`, `bottom`, and `left`

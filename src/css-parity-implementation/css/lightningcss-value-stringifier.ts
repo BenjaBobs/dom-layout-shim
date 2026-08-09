@@ -45,6 +45,10 @@ function stringifyCssValue(property: string, value: unknown): string {
     return String(value)
   }
 
+  if (value.type === 'var') {
+    return stringifyVariable(value)
+  }
+
   switch (property) {
     case 'display':
       return stringifyDisplay(value)
@@ -555,6 +559,10 @@ function stringifyGridAutoFlow(value: Record<string, unknown>): string {
 }
 
 function stringifyLengthLike(value: Record<string, unknown>): string {
+  if (value.type === 'var') {
+    return stringifyVariable(value)
+  }
+
   if (value.type === 'auto') {
     return 'auto'
   }
@@ -1234,7 +1242,26 @@ function stringifyToken(token: unknown): string {
     }
   }
 
+  if (token.type === 'var') {
+    return stringifyVariable(token)
+  }
+
   return JSON.stringify(token)
+}
+
+function stringifyVariable(variable: Record<string, unknown>): string {
+  if (!isRecord(variable.value)) {
+    return JSON.stringify(variable)
+  }
+
+  const name = isRecord(variable.value.name) && typeof variable.value.name.ident === 'string'
+    ? variable.value.name.ident
+    : String(variable.value.name)
+  const fallback = variable.value.fallback
+
+  return Array.isArray(fallback)
+    ? `var(${name}, ${stringifyTokens(fallback)})`
+    : `var(${name})`
 }
 
 function isDeclaration(value: unknown): value is { property: string; value: unknown } {

@@ -1,0 +1,76 @@
+{
+  "$schema": "../css-support.schema.json",
+  "schemaVersion": 1,
+  "id": "custom-properties",
+  "title": "Custom properties",
+  "subjects": {
+    "properties": [
+      "--*"
+    ],
+    "elements": []
+  },
+  "effect": "layout",
+  "owner": "css-parser",
+  "claims": [
+    {
+      "id": "inheritance-and-cascade",
+      "description": "Custom properties inherit, cascade, and resolve before supported layout declarations are parsed.",
+      "properties": [
+        "--*"
+      ],
+      "syntax": [
+        "var(--name)",
+        "var(--name, <fallback>)"
+      ],
+      "conditions": [
+        "Custom properties inherit from ancestors and local declarations override inherited values.",
+        "Forward references resolve independently of declaration order."
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "custom-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Parity covers inherited and locally overridden variables used by dimensions, margin, padding, gap, flex, grid, and physical positioning declarations."
+        }
+      ]
+    },
+    {
+      "id": "fallback-and-invalid-resolution",
+      "description": "Nested fallbacks recover missing, invalid, and cyclic custom property references.",
+      "properties": [
+        "--*"
+      ],
+      "syntax": [
+        "var(--name, <fallback>)"
+      ],
+      "conditions": [
+        "Fallback values may contain nested `var()` references.",
+        "Every custom property participating in a reference cycle is invalid.",
+        "A consuming declaration can recover an invalid custom property with its own fallback."
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "custom-properties"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Parity covers nested missing-value fallbacks and a consuming fallback for cyclic custom properties."
+        },
+        {
+          "kind": "behavior-quirk",
+          "text": "A supported declaration whose `var()` reference remains unresolved routes through the configured unsupported CSS policy instead of contributing an incorrect layout value."
+        }
+      ]
+    }
+  ]
+}

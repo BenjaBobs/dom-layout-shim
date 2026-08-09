@@ -20,6 +20,7 @@ import type {
   SupportedTransform,
   TransformOrigin,
 } from './supported-style.ts'
+import { resolveCustomPropertyValue, type CustomProperties } from './custom-properties.ts'
 export { createDefaultStyle } from './supported-style.ts'
 export type {
   AlignContentValue,
@@ -45,6 +46,7 @@ export type DeclarationContext = {
   selector?: string
   element?: Element
   rootFontSize?: number
+  customProperties?: CustomProperties
 }
 
 export function applyDeclaration(
@@ -54,11 +56,26 @@ export function applyDeclaration(
   context: DeclarationContext,
 ): void {
   const normalizedProperty = property.trim().toLowerCase()
-  const normalizedValue = value.trim().toLowerCase()
 
   if (normalizedProperty.startsWith('--') || isTransitionProperty(normalizedProperty)) {
     return
   }
+
+  const resolvedValue = resolveCustomPropertyValue(value, context.customProperties)
+
+  if (resolvedValue === undefined) {
+    handleUnsupportedCss(context.policy, {
+      property: normalizedProperty,
+      value,
+      reason: 'unsupported-value',
+      source: context.source,
+      selector: context.selector,
+      element: context.element,
+    })
+    return
+  }
+
+  const normalizedValue = resolvedValue.trim().toLowerCase()
 
   switch (normalizedProperty) {
     case 'display':

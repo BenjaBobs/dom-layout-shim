@@ -1,11 +1,10 @@
 {
   "$schema": "../css-support.schema.json",
   "schemaVersion": 1,
-  "id": "custom-properties-and-transitions",
-  "title": "Custom properties and transitions",
+  "id": "transitions",
+  "title": "Transitions",
   "subjects": {
     "properties": [
-      "--*",
       "transition",
       "transition-property",
       "transition-duration",
@@ -19,10 +18,10 @@
   "owner": "css-parser",
   "claims": [
     {
-      "id": "custom-properties",
-      "description": "Custom property declarations are accepted so application stylesheets can be parsed.",
+      "id": "transitions",
+      "description": "The transition shorthand is accepted without affecting deterministic layout or hit testing.",
       "properties": [
-        "--*"
+        "transition"
       ],
       "support": "partial",
       "parity": {
@@ -32,19 +31,14 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Custom property declarations are accepted as inert declarations before value parsing."
-        },
-        {
-          "kind": "limitation",
-          "text": "CSS variable resolution is not implemented, so `var()` references in supported layout declarations remain unsupported."
+          "text": "The `transition` shorthand is accepted as inert; animation timing and interpolated values are not modeled."
         }
       ]
     },
     {
-      "id": "transitions",
-      "description": "Transition declarations are accepted without affecting deterministic layout or hit testing.",
+      "id": "transition-longhands",
+      "description": "Transition longhands are accepted without affecting deterministic layout or hit testing.",
       "properties": [
-        "transition",
         "transition-property",
         "transition-duration",
         "transition-timing-function",
@@ -59,7 +53,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Transition declarations are accepted as inert declarations; animation timing and interpolated values are not modeled."
+          "text": "Transition longhands are accepted as inert declarations; animation timing and interpolated values are not modeled."
         }
       ]
     }
