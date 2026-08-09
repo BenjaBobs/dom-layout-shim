@@ -97,6 +97,8 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'grid-template-columns':
     case 'grid-template-rows':
       return stringifyGridTemplate(value)
+    case 'grid-template-areas':
+      return stringifyGridTemplateAreas(value)
     case 'grid-auto-columns':
     case 'grid-auto-rows':
       return stringifyGridAutoTracks(value)
@@ -414,6 +416,27 @@ function stringifyGridTemplate(value: Record<string, unknown>): string {
   return value.items.map(stringifyGridTemplateItem).join(' ')
 }
 
+function stringifyGridTemplateAreas(value: Record<string, unknown>): string {
+  if (value.type === 'none') {
+    return 'none'
+  }
+
+  if (value.type !== 'areas' || typeof value.columns !== 'number' || !Array.isArray(value.areas)) {
+    return JSON.stringify(value)
+  }
+
+  const rows = []
+
+  for (let index = 0; index < value.areas.length; index += value.columns) {
+    rows.push(`"${value.areas
+      .slice(index, index + value.columns)
+      .map((area) => area ?? '.')
+      .join(' ')}"`)
+  }
+
+  return rows.join(' ')
+}
+
 function stringifyGridTemplateItem(item: unknown): string {
   if (!isRecord(item)) {
     return JSON.stringify(item)
@@ -537,6 +560,10 @@ function stringifyGridPlacement(value: unknown): string {
 
   if (value.type === 'span' && typeof value.index === 'number' && value.name === null) {
     return `span ${value.index}`
+  }
+
+  if (value.type === 'area' && typeof value.name === 'string') {
+    return value.name
   }
 
   return JSON.stringify(value)

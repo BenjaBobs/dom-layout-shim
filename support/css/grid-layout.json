@@ -7,6 +7,7 @@
     "properties": [
       "grid-template-columns",
       "grid-template-rows",
+      "grid-template-areas",
       "grid-auto-flow",
       "grid-auto-columns",
       "grid-auto-rows",
@@ -52,7 +53,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "`auto-fill` and `auto-fit` repeat counts, named lines, `fit-content()`, named grid areas, and `grid-template-areas` are not implemented."
+          "text": "`auto-fill` and `auto-fit` repeat counts, named lines, and `fit-content()` are not implemented."
         },
         {
           "kind": "limitation",
@@ -133,6 +134,41 @@
       ]
     },
     {
+      "id": "named-area-placement",
+      "description": "Grid templates define rectangular named areas that place items through the `grid-area` shorthand.",
+      "properties": [
+        "grid-template-areas",
+        "grid-area"
+      ],
+      "syntax": [
+        "grid-template-areas: none",
+        "grid-template-areas: \"<custom-ident> ...\"",
+        "grid-area: <custom-ident>"
+      ],
+      "conditions": [
+        "Every template row has the same number of cells.",
+        "Repeated names form one filled rectangle.",
+        "A period represents an unnamed cell."
+      ],
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "grid-template-areas"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Parity covers named areas spanning rows and columns, empty cells, gaps, and source-order-independent placement."
+        },
+        {
+          "kind": "limitation",
+          "text": "Named grid lines and escaped custom identifiers remain unsupported."
+        }
+      ]
+    },
+    {
       "id": "area-shorthand-placement",
       "description": "The `grid-area` shorthand maps supported numeric row and column placements.",
       "properties": [
@@ -153,7 +189,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Named grid areas and `grid-template-areas` are not implemented."
+          "text": "Numeric area placement does not add support for named grid lines."
         }
       ]
     },

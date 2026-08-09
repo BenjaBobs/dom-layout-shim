@@ -1087,9 +1087,48 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
   const rootFontSize = resolveRootFontSize(element, state)
   applyStyleRules(style, element, state.rules, state.policy, rootFontSize, customProperties)
   applyInlineStyle(style, element, state.policy, rootFontSize, customProperties)
+  resolveNamedGridPlacements(style, element, state)
   applyPostAuthorUserAgentDefaults(style, element)
   state.styles.set(element, style)
   return style
+}
+
+function resolveNamedGridPlacements(
+  style: SupportedStyle,
+  element: Element,
+  state: TaffyLayoutState,
+): void {
+  const parent = element.parentElement
+
+  if (!parent) {
+    return
+  }
+
+  const areas = resolveSupportedStyle(parent, state).gridTemplateAreas
+
+  if (!areas) {
+    return
+  }
+
+  // Taffy accepts numeric grid lines but does not model CSS named areas.
+  // Translate the browser-facing names to the template's one-based line bounds
+  // after the parent cascade resolves, preserving Taffy's placement algorithm.
+  style.gridRowStart = resolveNamedGridPlacement(style.gridRowStart, areas, 'rowStart')
+  style.gridRowEnd = resolveNamedGridPlacement(style.gridRowEnd, areas, 'rowEnd')
+  style.gridColumnStart = resolveNamedGridPlacement(style.gridColumnStart, areas, 'columnStart')
+  style.gridColumnEnd = resolveNamedGridPlacement(style.gridColumnEnd, areas, 'columnEnd')
+}
+
+function resolveNamedGridPlacement(
+  placement: SupportedStyle['gridColumnStart'],
+  areas: NonNullable<SupportedStyle['gridTemplateAreas']>,
+  edge: 'rowStart' | 'rowEnd' | 'columnStart' | 'columnEnd',
+): SupportedStyle['gridColumnStart'] {
+  if (typeof placement !== 'object' || !('area' in placement)) {
+    return placement
+  }
+
+  return areas.get(placement.area)?.[edge] ?? 'auto'
 }
 
 function resolveElementCustomProperties(

@@ -99,7 +99,9 @@ The current implementation uses Lightning CSS for `<style>` parsing and supports
 a small CSS subset for proof-of-concept block, flex, absolute, fixed, and sticky
 positioned fixtures. Sticky boxes honor physical insets against the nearest
 supported scrolling ancestor or the viewport, including sticky table headers,
-and stop at their containing block. Unsupported declarations are ignored with deduplicated
+and stop at their containing block. Grid layouts support rectangular named
+templates through `grid-template-areas` and `grid-area`, including areas that
+span rows or columns and templates with unnamed `.` cells. Unsupported declarations are ignored with deduplicated
 warnings so applications can continue using the supported subset. Each warning
 identifies the declaration and links to its compatibility entry.
 
