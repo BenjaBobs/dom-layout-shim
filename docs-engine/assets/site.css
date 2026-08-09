@@ -80,7 +80,7 @@ pre code { padding: 0; background: transparent; }
 @media (max-width: 700px) {
   .site-nav { flex-wrap: wrap; padding: 12px 16px; }
   .site-context { margin-right: 8px; }
-  .site-version { display: none; }
+  .site-upcoming { display: none; }
   .site-menu-button { display: block; }
   .site-nav-links { display: none; flex: 1 0 100%; align-items: stretch; gap: 0; padding-top: 10px; }
   .site-nav[data-menu-open] .site-nav-links { display: grid; }
