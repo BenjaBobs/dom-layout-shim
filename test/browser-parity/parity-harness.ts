@@ -1,5 +1,6 @@
 import { chromium, type Browser } from '@playwright/test'
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { appendFileSync, readFileSync, readdirSync } from 'node:fs'
 import { Window as HappyDomWindow } from 'happy-dom'
 import { expect, inject } from 'vitest'
 import { attachLayoutEngine } from '../../src/index.ts'
@@ -104,6 +105,8 @@ type QueryWindow = {
 
 let browserPromise: Promise<Browser> | undefined
 let chromiumVersion: string | undefined
+let memorySamplingMs = 0
+let chromiumProcessMemoryOpportunities = 0
 const deterministicFontFamily = 'DOM Layout Shim Deterministic'
 const deterministicFontData = readFileSync(
   new URL('./assets/fonts/deterministic-layout.otf', import.meta.url),
@@ -124,8 +127,8 @@ export async function measureBrowserParityFixture(fixture: BrowserParityFixture)
   engine: QueryResult[]
 }> {
   const queries = fixture.queries
-  const chromiumResult = await runInChromium(fixture)
-  const engineResult = await runInHappyDom(fixture)
+  const chromiumResult = await measureParityPhase('chromium', () => runInChromium(fixture))
+  const engineResult = await measureParityPhase('engine', () => runInHappyDom(fixture))
 
   expect(engineResult.length, 'Parity result count should match query count').toBe(queries.length)
   expect(chromiumResult.length, 'Chromium result count should match query count').toBe(queries.length)
@@ -135,6 +138,32 @@ export async function measureBrowserParityFixture(fixture: BrowserParityFixture)
     queries,
     chromium: chromiumResult,
     engine: engineResult,
+  }
+}
+
+async function measureParityPhase<T>(
+  phase: 'chromium' | 'engine',
+  run: () => Promise<T>,
+): Promise<T> {
+  const start = performance.now()
+  const memorySamplingBefore = memorySamplingMs
+
+  try {
+    return await run()
+  } finally {
+    recordParitySample({
+      kind: 'timing',
+      phase,
+      durationMs: performance.now() - start - (memorySamplingMs - memorySamplingBefore),
+    })
+  }
+}
+
+function recordParitySample(sample: Record<string, number | string>): void {
+  const timingPath = process.env.BROWSER_PARITY_TIMING_PATH
+
+  if (timingPath) {
+    appendFileSync(timingPath, `${JSON.stringify(sample)}\n`)
   }
 }
 
@@ -155,6 +184,8 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
   const browser = await getChromiumBrowser()
   chromiumVersion ??= browser.version()
   const page = await browser.newPage({ viewport: fixture.viewport })
+  const devtools = await page.context().newCDPSession(page)
+  const heapBefore = await devtools.send('Runtime.getHeapUsage')
 
   try {
     await page.setContent(fixtureHtml(fixture, true))
@@ -204,7 +235,7 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
       }, fixture.scrollIntoView)
     }
 
-    return await page.evaluate(
+    const results = await page.evaluate(
       ({ queries, runQueriesSource }) => {
         const runQueries = new Function(`return (${runQueriesSource})`)() as (
           windowLike: QueryWindow,
@@ -215,9 +246,136 @@ async function runInChromium(fixture: BrowserParityFixture): Promise<QueryResult
       },
       { queries: fixture.queries, runQueriesSource: runQueries.toString() },
     )
+    const heapAfter = await devtools.send('Runtime.getHeapUsage')
+    recordParitySample({
+      kind: 'memory',
+      phase: 'chromium',
+      heapGrowthBytes: heapAfter.usedSize - heapBefore.usedSize,
+    })
+    const processRssBytes = readProcessTreeRss(inject('browserParityChromiumPid'))
+
+    if (processRssBytes !== undefined) {
+      recordParitySample({ kind: 'process-memory', phase: 'chromium', rssBytes: processRssBytes })
+    }
+
+    return results
   } finally {
+    await devtools.detach().catch(() => {})
     await page.close().catch(() => {})
   }
+}
+
+function readProcessTreeRss(rootPid: number | undefined): number | undefined {
+  const shouldSample = chromiumProcessMemoryOpportunities % 10 === 0
+  chromiumProcessMemoryOpportunities += 1
+
+  if (rootPid === undefined || !shouldSample) {
+    return undefined
+  }
+
+  const start = performance.now()
+
+  try {
+    const processes = readProcessTable()
+    const included = new Set([rootPid])
+    let changed = true
+
+    while (changed) {
+      changed = false
+
+      for (const [pid, processInfo] of processes) {
+        if (!included.has(pid) && included.has(processInfo.parentPid)) {
+          included.add(pid)
+          changed = true
+        }
+      }
+    }
+
+    return [...included].reduce((total, pid) => total + (processes.get(pid)?.rssBytes ?? 0), 0)
+  } finally {
+    memorySamplingMs += performance.now() - start
+  }
+}
+
+function readProcessTable(): Map<number, { parentPid: number; rssBytes: number }> {
+  if (process.platform === 'linux') {
+    return readLinuxProcessTable()
+  }
+
+  if (process.platform === 'darwin') {
+    return parseProcessTable(
+      execFileSync('ps', ['-axo', 'pid=,ppid=,rss='], { encoding: 'utf8' }),
+      1024,
+    )
+  }
+
+  if (process.platform === 'win32') {
+    const command = [
+      '$rss = @{}',
+      'Get-Process | ForEach-Object { $rss[[int]$_.Id] = [int64]$_.WorkingSet64 }',
+      'Get-CimInstance Win32_Process | ForEach-Object {',
+      '  $workingSet = $rss[[int]$_.ProcessId]',
+      '  if ($null -ne $workingSet) {',
+      '    Write-Output "$($_.ProcessId) $($_.ParentProcessId) $workingSet"',
+      '  }',
+      '}',
+    ].join('\n')
+
+    return parseProcessTable(
+      execFileSync(
+        'powershell.exe',
+        ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command],
+        { encoding: 'utf8' },
+      ),
+      1,
+    )
+  }
+
+  throw new Error(`Chromium process memory measurement is not supported on ${process.platform}.`)
+}
+
+function readLinuxProcessTable(): Map<number, { parentPid: number; rssBytes: number }> {
+  const processes = new Map<number, { parentPid: number; rssBytes: number }>()
+
+  for (const entry of readdirSync('/proc', { withFileTypes: true })) {
+    if (!entry.isDirectory() || !/^\d+$/.test(entry.name)) {
+      continue
+    }
+
+    try {
+      const status = readFileSync(`/proc/${entry.name}/status`, 'utf8')
+      const parentPid = Number(/^PPid:\s+(\d+)/m.exec(status)?.[1])
+      const rssKiB = Number(/^VmRSS:\s+(\d+)\s+kB/m.exec(status)?.[1])
+
+      if (Number.isFinite(parentPid) && Number.isFinite(rssKiB)) {
+        processes.set(Number(entry.name), { parentPid, rssBytes: rssKiB * 1024 })
+      }
+    } catch {
+      // Processes can exit while /proc is being read.
+    }
+  }
+
+  return processes
+}
+
+function parseProcessTable(
+  output: string,
+  rssMultiplier: number,
+): Map<number, { parentPid: number; rssBytes: number }> {
+  const processes = new Map<number, { parentPid: number; rssBytes: number }>()
+
+  for (const line of output.split(/\r?\n/)) {
+    const [pidText, parentPidText, rssText] = line.trim().split(/\s+/)
+    const pid = Number(pidText)
+    const parentPid = Number(parentPidText)
+    const rss = Number(rssText)
+
+    if (Number.isFinite(pid) && Number.isFinite(parentPid) && Number.isFinite(rss)) {
+      processes.set(pid, { parentPid, rssBytes: rss * rssMultiplier })
+    }
+  }
+
+  return processes
 }
 
 async function getChromiumBrowser(): Promise<Browser> {
@@ -227,6 +385,7 @@ async function getChromiumBrowser(): Promise<Browser> {
 }
 
 async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult[]> {
+  const heapBefore = process.memoryUsage().heapUsed
   const window = new HappyDomWindow({
     url: 'http://localhost/',
     width: fixture.viewport.width,
@@ -272,6 +431,11 @@ async function runInHappyDom(fixture: BrowserParityFixture): Promise<QueryResult
   }
 
   const results = runQueries(window as unknown as QueryWindow, fixture.queries)
+  recordParitySample({
+    kind: 'memory',
+    phase: 'engine',
+    heapGrowthBytes: process.memoryUsage().heapUsed - heapBefore,
+  })
   window.close()
 
   return results
