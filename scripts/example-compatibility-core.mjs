@@ -65,7 +65,9 @@ export function compareCompatibilityRuns(example, scenario, chromium, engine, me
 
       for (const property of Object.keys(browserElement.layoutStyles ?? {})) {
         styleTotal += 1
-        if (browserElement.layoutStyles[property] === engineElement.layoutStyles?.[property]) styleMatches += 1
+        const browserValue = canonicalLayoutStyleValue(property, browserElement.layoutStyles[property], browserElement.layoutStyles)
+        const engineValue = canonicalLayoutStyleValue(property, engineElement.layoutStyles?.[property] ?? '', engineElement.layoutStyles ?? {})
+        if (browserValue === engineValue) styleMatches += 1
         else styleInputDifferences.push({
           selector,
           category: 'style-input',
@@ -142,6 +144,25 @@ export function compareCompatibilityRuns(example, scenario, chromium, engine, me
     discrepancyGroups,
     unsupportedCss,
   }
+}
+
+function canonicalLayoutStyleValue(property, value, styles) {
+  if (property === 'font-weight') {
+    if (value === 'normal') return '400'
+    if (value === 'bold') return '700'
+  }
+
+  if (property === 'white-space' && value === '') return 'normal'
+
+  if (property === 'line-height') {
+    const fontSize = /^(-?\d+(?:\.\d+)?)px$/.exec(styles['font-size'] ?? '')
+    const unitless = /^(-?\d+(?:\.\d+)?)$/.exec(value)
+    const pixels = /^(-?\d+(?:\.\d+)?)px$/.exec(value)
+    if (unitless && fontSize) return `${round(Number(unitless[1]) * Number(fontSize[1]))}px`
+    if (pixels) return `${round(Number(pixels[1]))}px`
+  }
+
+  return value
 }
 
 export function createDomDriver(document) {
