@@ -7,10 +7,10 @@ import {
 import { applyInlineCustomProperties, applyInlineStyle } from '../css/inline-style-source.ts'
 import { resolveCalculatedDimension } from '../css/length-value.ts'
 import { createDefaultStyle, zeroEdges, type Edges, type SupportedStyle } from '../css/supported-style.ts'
-import { applyStylesheetCustomProperties, applyStyleRules, readGeneratedContent, readStyleRules } from '../css/stylesheet-source.ts'
+import { applyStylesheetCustomProperties, applyStyleRules, readCssTextRules, readGeneratedContent, readStyleRules } from '../css/stylesheet-source.ts'
 import type { CustomProperties } from '../css/custom-properties.ts'
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
-import type { Viewport } from '../../api/layout-engine-config.ts'
+import type { UserAgentStyleOptions, Viewport } from '../../api/layout-engine-config.ts'
 import type { Box } from '../../api/box.ts'
 import type { HitBox } from '../../api/hit-box.ts'
 import {
@@ -42,6 +42,8 @@ type TaffyLayoutState = {
   customProperties: WeakMap<Element, CustomProperties>
   tree: TaffyTree
   rules: ReturnType<typeof readStyleRules>
+  userAgentRules: ReturnType<typeof readCssTextRules>
+  userAgentStyleProfile: Required<UserAgentStyleOptions>['profile']
   policy: UnsupportedCssPolicy | undefined
   textMeasurer: TextMeasurer
   nativeControlMetrics: NativeControlMetrics
@@ -188,9 +190,10 @@ export function computeTaffyDocumentLayout(
   policy: UnsupportedCssPolicy | undefined,
   textMeasurer: TextMeasurer,
   stylesheets: readonly string[],
+  userAgentStyles: Required<UserAgentStyleOptions>,
   nativeControlMetrics: NativeControlMetrics,
 ): LayoutSnapshot {
-  const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, nativeControlMetrics)
+  const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, userAgentStyles, nativeControlMetrics)
   computeTaffyLayout(layoutTree, viewport)
   if (resolveDeferredCalculatedDimensions(layoutTree)) {
     computeTaffyLayout(layoutTree, viewport)
@@ -204,6 +207,7 @@ function buildTaffyLayoutTree(
   policy: UnsupportedCssPolicy | undefined,
   textMeasurer: TextMeasurer,
   stylesheets: readonly string[],
+  userAgentStyles: Required<UserAgentStyleOptions>,
   nativeControlMetrics: NativeControlMetrics,
 ): TaffyLayoutTree {
   const tree = new TaffyTree()
@@ -226,6 +230,10 @@ function buildTaffyLayoutTree(
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
     rules: readStyleRules(document, policy, stylesheets, viewport),
+    userAgentRules: userAgentStyles.overrides
+      ? readCssTextRules(userAgentStyles.overrides, 'user-agent-overrides.css', policy, viewport)
+      : [],
+    userAgentStyleProfile: userAgentStyles.profile,
     policy,
     textMeasurer,
     nativeControlMetrics,
@@ -1450,12 +1458,16 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
   const style = createDefaultStyle()
   const customProperties = resolveElementCustomProperties(element, state)
   applyInheritedTextDefaults(style, element, state)
-  applyUserAgentDefaults(style, element)
+  applyStructuralHtmlDefaults(style, element)
+  if (state.userAgentStyleProfile === 'portable') {
+    applyPortableUserAgentDefaults(style, element)
+  }
   const rootFontSize = resolveRootFontSize(element, state)
+  applyStyleRules(style, element, state.userAgentRules, state.policy, rootFontSize, customProperties, state.viewport)
   applyStyleRules(style, element, state.rules, state.policy, rootFontSize, customProperties, state.viewport)
   applyInlineStyle(style, element, state.policy, rootFontSize, customProperties, state.viewport)
   resolveNamedGridPlacements(style, element, state)
-  applyPostAuthorUserAgentDefaults(style, element)
+  applyPostAuthorStructuralDefaults(style, element)
   state.styles.set(element, style)
   return style
 }
@@ -1512,6 +1524,7 @@ function resolveElementCustomProperties(
     ? resolveElementCustomProperties(element.parentElement, state)
     : new Map<string, string>()
   const properties = new Map(inherited)
+  applyStylesheetCustomProperties(properties, inherited, element, state.userAgentRules, state.policy)
   applyStylesheetCustomProperties(properties, inherited, element, state.rules, state.policy)
   applyInlineCustomProperties(properties, inherited, element)
   state.customProperties.set(element, properties)
@@ -2217,12 +2230,28 @@ function createReplacedMeasureContext(
   }
 }
 
-function applyUserAgentDefaults(style: SupportedStyle, element: Element): void {
+function applyStructuralHtmlDefaults(style: SupportedStyle, element: Element): void {
   const tagName = element.tagName.toLowerCase()
 
   if (inlinePhrasingHtmlElements.has(tagName)) {
     style.display = 'inline'
   }
+
+  // HTML presentational attributes are author-origin hints, not browser-theme
+  // styling. Keep them active when the portable presentation profile is off.
+  if (tagName === 'table' || tagName === 'col' || tagName === 'td' || tagName === 'th') {
+    applyTableDimensionAttributes(style, element)
+  }
+  if (tagName === 'td' || tagName === 'th') {
+    applyTableCellPaddingDefault(style, element)
+  }
+  if (tagName === 'object') {
+    applyObjectFallbackAttributes(style, element)
+  }
+}
+
+function applyPortableUserAgentDefaults(style: SupportedStyle, element: Element): void {
+  const tagName = element.tagName.toLowerCase()
 
   switch (tagName) {
     case 'ul':
@@ -2287,22 +2316,17 @@ function applyUserAgentDefaults(style: SupportedStyle, element: Element): void {
       }
       return
     case 'table':
-      applyTableDimensionAttributes(style, element)
       style.tableBorderSpacing = tableBorderSpacingDefault(element)
       return
     case 'col':
-      applyTableDimensionAttributes(style, element)
       return
     case 'td':
     case 'th':
-      applyTableDimensionAttributes(style, element)
-      applyTableCellPaddingDefault(style, element)
       return
     case 'iframe':
       applyBorderDefaults(style, 'inset', 2)
       return
     case 'object':
-      applyObjectFallbackAttributes(style, element)
       return
     case 'h1':
       applyHeadingDefaults(style, 32, 40, 21.44)
@@ -2345,7 +2369,7 @@ function applyUserAgentDefaults(style: SupportedStyle, element: Element): void {
   }
 }
 
-function applyPostAuthorUserAgentDefaults(style: SupportedStyle, element: Element): void {
+function applyPostAuthorStructuralDefaults(style: SupportedStyle, element: Element): void {
   if (element.tagName.toLowerCase() === 'input' && (element.getAttribute('type') ?? 'text').toLowerCase() === 'hidden') {
     // Chromium keeps hidden inputs non-rendered even when author CSS sets
     // display:block, so this UA constraint has to run after author styles.

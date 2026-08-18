@@ -88,6 +88,33 @@ The engine reads external rules only when the DOM implementation exposes their
 through `unsupportedCss`: the default policy warns and continues, while strict
 mode throws rather than silently omitting the sheet.
 
+## Configure user-agent styles
+
+The `portable` profile is the default deterministic presentation baseline for
+unstyled headings, paragraphs, lists, dialogs, and controls. It does not inspect
+the host browser or operating system. Configure the user-agent origin in one
+place when an application uses a reset or needs a different baseline:
+
+```ts
+await attachLayoutEngine({
+  window,
+  userAgentStyles: {
+    profile: 'portable',
+    // These rules remain below application styles in the cascade.
+    overrides: 'p { margin: 0 } button { font: inherit }',
+  },
+})
+```
+
+Set `profile: 'none'` to remove portable presentation defaults while retaining
+the override CSS. Structural behavior is independent: hidden inputs still do
+not generate boxes. Native-control intrinsic geometry also remains independent
+under `nativeControls`.
+
+`html` and `body` currently form the engine's synthetic viewport containing
+block rather than independent boxes. Their own margins, padding, and geometry
+are therefore not yet modeled by profile overrides.
+
 Custom properties inherit and cascade before supported layout declarations are
 parsed. Local values override inherited values, and fallbacks can contain other
 `var()` references:

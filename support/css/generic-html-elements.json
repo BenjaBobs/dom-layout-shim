@@ -53,6 +53,10 @@
         {
           "kind": "implementation-quirk",
           "text": "The layout tree gives ordinary elements the same default block style unless author CSS overrides them."
+        },
+        {
+          "kind": "limitation",
+          "text": "The document root and body currently form the synthetic viewport containing block rather than independent layout boxes, so their own spacing and box geometry are not modeled."
         }
       ]
     },
@@ -72,7 +76,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "`address`, `p`, headings, `blockquote`, `figure`, and `pre` receive a narrow set of user-agent text metrics and spacing defaults."
+          "text": "The default `portable` profile gives `address`, `p`, headings, `blockquote`, `figure`, and `pre` a narrow set of user-agent text metrics and spacing defaults; `userAgentStyles.profile` can disable that presentation layer."
         }
       ]
     },

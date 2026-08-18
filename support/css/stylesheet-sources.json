@@ -26,6 +26,21 @@
       ]
     },
     {
+      "id": "user-agent-style-origin",
+      "description": "A configurable deterministic user-agent presentation layer cascades below author styles.",
+      "support": "supported",
+      "parity": {
+        "status": "not-applicable",
+        "fixtures": []
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "The `portable` profile is enabled by default, `none` disables its presentation defaults, and `userAgentStyles.overrides` adds CSS below document and inline styles. Structural HTML behavior and native-control metrics are separate concerns."
+        }
+      ]
+    },
+    {
       "id": "linked-stylesheets",
       "description": "Accessible linked stylesheets contribute readable CSS rules.",
       "support": "partial",

@@ -57,6 +57,29 @@ await attachLayoutEngine({
 })
 ```
 
+The deterministic `portable` user-agent style profile supplies the package's
+narrow baseline for headings, paragraphs, lists, and controls. Disable that
+presentation layer or specialize it with CSS at the user-agent cascade origin:
+
+```ts
+await attachLayoutEngine({
+  window,
+  userAgentStyles: {
+    profile: 'portable', // Or 'none' for no presentation defaults.
+    overrides: 'p { margin: 0 } button { font: inherit }',
+  },
+})
+```
+
+Overrides are lower priority than document and inline styles. Structural HTML
+behavior, such as hidden inputs not generating boxes, is not disabled by
+`profile: 'none'`. Native-control intrinsic sizes are configured separately
+with `nativeControls`.
+
+The engine currently uses `html` and `body` as its synthetic viewport
+containing block rather than independent boxes, so profile overrides do not yet
+model their own margins, padding, or geometry.
+
 `attachLayoutEngine()` returns the active attachment. Change its viewport
 without rebuilding the DOM when a test exercises responsive behavior:
 
