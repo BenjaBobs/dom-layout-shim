@@ -44,6 +44,7 @@ describe('Material UI task workspace consumer', () => {
   beforeEach(async () => {
     // docs:start mount-react
     Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+    // Mount the real Material UI tree exactly as the consumer test uses it.
     document.body.innerHTML = '<div id="app"></div>'
     reactRoot = createRoot(requiredElement('#app'))
     await act(async () => reactRoot.render(<TaskWorkspace />))
@@ -85,9 +86,12 @@ describe('Material UI task workspace consumer', () => {
 
   it('proves a dialog backdrop blocks an underlying control by coordinates', async () => {
     // docs:start attach-layout-engine
+    // Attach after rendering so the shim observes the complete component tree.
     await attachLayoutEngine({
       window,
+      // Fix the viewport so geometry remains deterministic across machines.
       viewport: { width: 1024, height: 768 },
+      // Ignore MUI's visual-only declarations outside the supported layout subset.
       unsupportedCss: { default: 'ignore' },
     })
     // docs:end attach-layout-engine
@@ -95,6 +99,7 @@ describe('Material UI task workspace consumer', () => {
     // docs:start geometry-assertion
     const underlyingControl = requiredElement<HTMLElement>('[data-layout-key="underlying-control"]')
     const rect = underlyingControl.getBoundingClientRect()
+    // Query the visual center instead of bypassing layout with `.click()`.
     const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
 
     expect(rect.width).toBeGreaterThan(0)

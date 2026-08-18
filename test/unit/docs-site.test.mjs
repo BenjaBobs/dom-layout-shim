@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { enhanceExternalLinks, enhanceNavigation, enhanceScrollspy, highlight, navigate } from '../../docs-engine/assets/site.js'
+import { enhanceCode, enhanceExternalLinks, enhanceNavigation, enhanceScrollspy, highlight, navigate } from '../../docs-engine/assets/site.js'
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -30,6 +30,34 @@ describe('documentation site behavior', () => {
     expect(output).toContain('<span class="tok-bracket-1">(</span>')
     expect(output).toContain('<span class="tok-bracket-2">[</span>')
     expect(output).toContain('<span class="tok-string">&#039;[&#039;</span>')
+  })
+
+  it('adds line-numbered highlighted rows and copy behavior to code boxes', async () => {
+    const writeText = vi.fn(async () => {})
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    document.body.innerHTML = '<figure class="code-box"><figcaption><button class="code-copy"><span>Copy</span></button></figcaption><pre><code data-language="ts" data-start-line="8">const one = 1\nconst two = 2\n</code></pre></figure>'
+
+    enhanceCode(document)
+
+    expect(document.querySelector('code').classList).toContain('code-lines')
+    expect(document.querySelectorAll('.code-line')).toHaveLength(2)
+    expect(document.querySelector('.code-line').innerHTML).toContain('tok-keyword')
+    expect(document.querySelectorAll('.line-source')).toHaveLength(2)
+    expect([...document.querySelectorAll('.code-line')].map((line) => line.dataset.lineNumber)).toEqual(['8', '9'])
+
+    document.querySelector('.code-copy').click()
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith('const one = 1\nconst two = 2'))
+    await vi.waitFor(() => expect(document.querySelector('.code-copy span').textContent).toBe('Copied'))
+  })
+
+  it('preserves disjoint source ranges in one code box', () => {
+    document.body.innerHTML = '<figure class="code-box"><pre><code data-language="ts" data-start-line="2" data-line-ranges="2-2,89-90">import value\n__DOCS_CODE_SKIP__\ncall({\n})</code></pre></figure>'
+
+    enhanceCode(document)
+
+    expect([...document.querySelectorAll('.code-line')].map((line) => line.dataset.lineNumber)).toEqual(['2', '89', '90'])
+    expect(document.querySelectorAll('.code-skip')).toHaveLength(1)
+    expect(document.querySelector('.code-skip').getAttribute('aria-label')).toBe('Source lines omitted')
   })
 
   it('tracks the current guide section in the table of contents', () => {

@@ -14,9 +14,7 @@ adapter.
 
 #### 3. Attach the layout engine
 
-{{source:test/task-workspace.test.tsx#layout-shim-import:ts}}
-
-{{source:test/task-workspace.test.tsx#attach-layout-engine:ts}}
+{{source:test/task-workspace.test.tsx#layout-shim-import+attach-layout-engine:ts}}
 
 The example ignores unsupported declarations because Ant Design emits many
 visual-only rules. Use the default warning policy, or narrow overrides, when

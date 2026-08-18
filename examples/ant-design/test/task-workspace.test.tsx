@@ -10,6 +10,7 @@ let root: ReturnType<typeof mountTaskWorkspace> | undefined
 describe('Ant Design task workspace consumer', () => {
   beforeEach(async () => {
     // docs:start mount-react
+    // Mount the real Ant Design tree, including its normal portal behavior.
     document.body.innerHTML = '<main id="app"></main>'
     const container = document.querySelector('#app')
     if (!container) throw new Error('Missing example application root')
@@ -33,9 +34,12 @@ describe('Ant Design task workspace consumer', () => {
     }
 
     // docs:start attach-layout-engine
+    // Attach after rendering so the shim observes the complete component tree.
     await attachLayoutEngine({
       window,
+      // Fix the viewport so geometry remains deterministic across machines.
       viewport: { width: 1024, height: 720 },
+      // Ignore Ant Design's visual-only declarations outside the layout subset.
       unsupportedCss: { default: 'ignore' },
     })
     // docs:end attach-layout-engine
@@ -43,6 +47,7 @@ describe('Ant Design task workspace consumer', () => {
     const addTask = requiredElement<HTMLElement>('[data-layout-key="add-task"]')
     const firstMenu = requiredElement<HTMLElement>('[data-layout-key="task-1-menu-trigger"]')
     // docs:start pointer-receives
+    // This helper clicks the geometry-derived center rather than bypassing layout.
     expectReceivesPointer(addTask)
     // docs:end pointer-receives
 
@@ -61,6 +66,7 @@ describe('Ant Design task workspace consumer', () => {
     expect(dialog).toHaveProperty('offsetWidth', 520)
     expect(mask).toHaveProperty('offsetHeight', 720)
     // docs:start pointer-blocked
+    // Verify that the real modal mask wins the same point while the modal is open.
     expectBlockedBy(addTask, mask)
     // docs:end pointer-blocked
 
