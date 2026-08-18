@@ -129,6 +129,8 @@ are evaluated when they reduce to one supported length, percentage, or number.
 Two-dimensional rotation, skew, and matrix transforms affect client geometry
 and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
+Text measurement receives inherited numeric `font-weight` and resolved
+`letter-spacing` in addition to family, size, line height, and white-space.
 
 Use a callback to display or collect warnings in the test runner:
 

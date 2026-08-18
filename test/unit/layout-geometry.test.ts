@@ -129,21 +129,21 @@ describe('layout DOM API and package contracts', () => {
   })
 
   it('passes constrained text inputs to the configured text measurer', async () => {
-    const inputs: Array<{ maxWidth: number | undefined }> = []
-    document.body.innerHTML = '<div id="text" style="max-width:50px">Hello world</div>'
+    const inputs: Array<{ maxWidth: number | undefined; fontWeight?: number; letterSpacing?: number }> = []
+    document.body.innerHTML = '<div id="text" style="max-width:50px;font-weight:700;letter-spacing:2px">Hello world</div>'
 
     await attach({
       viewport: { width: 300, height: 200 },
       textMeasurer: {
         measure(input) {
-          inputs.push({ maxWidth: input.maxWidth })
+          inputs.push({ maxWidth: input.maxWidth, fontWeight: input.fontWeight, letterSpacing: input.letterSpacing })
           return input.maxWidth === 50 ? { width: 50, height: 40 } : { width: 100, height: 20 }
         },
       },
     })
 
     requiredElement('#text').getBoundingClientRect()
-    expect(inputs).toContainEqual({ maxWidth: 50 })
+    expect(inputs).toContainEqual({ maxWidth: 50, fontWeight: 700, letterSpacing: 2 })
   })
 
   it('uses data layout metadata as intrinsic dimensions', async () => {

@@ -841,6 +841,12 @@ export function applyDeclaration(
     case 'font-size':
       applyFontSize(style, normalizedValue, normalizedProperty, value, context)
       return
+    case 'font-weight':
+      applyFontWeight(style, normalizedValue, normalizedProperty, value, context)
+      return
+    case 'letter-spacing':
+      applyLetterSpacing(style, normalizedValue, normalizedProperty, value, context)
+      return
     case 'line-height':
       applyLineHeight(style, normalizedValue, normalizedProperty, value, context)
       return
@@ -1090,6 +1096,50 @@ function applyFontSizeLength(style: SupportedStyle, length: number): void {
   const ratio = style.lineHeight / style.fontSize
   style.fontSize = length
   style.lineHeight = ratio * length
+}
+
+function applyFontWeight(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'inherit' || value === 'unset') return
+  if (value === 'initial' || value === 'normal') {
+    style.fontWeight = 400
+    return
+  }
+  if (value === 'bold') {
+    style.fontWeight = 700
+    return
+  }
+  const weight = Number(value)
+  if (Number.isInteger(weight) && weight >= 1 && weight <= 1000) {
+    style.fontWeight = weight
+    return
+  }
+  handleUnsupportedCss(context.policy, { property, value: originalValue, reason: 'unsupported-value', source: context.source, selector: context.selector, element: context.element })
+}
+
+function applyLetterSpacing(
+  style: SupportedStyle,
+  value: string,
+  property: string,
+  originalValue: string,
+  context: DeclarationContext,
+): void {
+  if (value === 'inherit' || value === 'unset') return
+  if (value === 'initial' || value === 'normal') {
+    style.letterSpacing = 0
+    return
+  }
+  const length = parseDimension(value, context)
+  if (typeof length === 'number') {
+    style.letterSpacing = length
+    return
+  }
+  handleUnsupportedCss(context.policy, { property, value: originalValue, reason: 'unsupported-value', source: context.source, selector: context.selector, element: context.element })
 }
 
 function applyLineHeight(

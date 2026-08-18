@@ -74,6 +74,10 @@ Two-dimensional translate, scale, rotate, skew, and matrix transforms project
 client geometry after Taffy layout. Hit boxes retain the transformed polygon so
 point queries exclude empty corners of an axis-aligned bounding rectangle.
 
+`TextMeasureInput` includes resolved `fontWeight` and `letterSpacing` values.
+Both inherit through the supported text cascade and feed default intrinsic text
+measurement.
+
 Stylesheet `@media` rules evaluate against the configured layout viewport.
 Supported queries include screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media
