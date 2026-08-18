@@ -86,6 +86,27 @@ it('matches supported attribute and functional pseudo-class selectors', async ()
   })
 })
 
+it('does not overmatch scoped compound functional selectors', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body { margin: 0; }
+        .workspace, .scope.ant-input { position: absolute; top: 0; width: 20px; height: 20px; }
+        .workspace { left: 10px; }
+        :where(.scope).ant-input:not(.success) { left: 100px; }
+        :is(.scope, .alternate).ant-input { top: 30px; }
+      </style>
+      <div id="workspace" class="workspace"></div>
+      <input id="input" class="scope ant-input">
+    `,
+    queries: [
+      { type: 'rect', selector: '#workspace' },
+      { type: 'rect', selector: '#input' },
+    ],
+  })
+})
+
 it('matches structural and control-state pseudo-class selectors', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },

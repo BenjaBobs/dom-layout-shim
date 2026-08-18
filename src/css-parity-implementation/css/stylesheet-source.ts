@@ -181,10 +181,12 @@ function matchesSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): boolean {
   try {
-    if (selector.includes(' i]')) {
-      return matchesAsciiInsensitiveAttributes(element, selector)
-    }
-    return element.matches(selector)
+    return expandTopLevelSelectorFunctions(selector).some((candidate) => {
+      if (candidate.includes(' i]')) {
+        return matchesAsciiInsensitiveAttributes(element, candidate)
+      }
+      return element.matches(candidate)
+    })
   } catch {
     handleUnsupportedCss(policy, {
       property: 'selector',
@@ -196,6 +198,139 @@ function matchesSelector(
     })
     return false
   }
+}
+
+// happy-dom can ignore the compound suffix after a false top-level :where()
+// or :is(), causing scoped CSS-in-JS rules to match unrelated elements. Expand
+// only top-level alternatives and let the host match the resulting ordinary
+// selectors; nested functions retain their original boolean semantics.
+function expandTopLevelSelectorFunctions(selector: string): string[] {
+  const cached = expandedSelectorCache.get(selector)
+  if (cached) return cached
+
+  const functional = findTopLevelSelectorFunction(selector)
+
+  if (!functional) {
+    const result = [selector]
+    expandedSelectorCache.set(selector, result)
+    return result
+  }
+
+  const result = splitSelectorArguments(selector.slice(functional.contentStart, functional.contentEnd))
+    .flatMap((argument) => expandTopLevelSelectorFunctions(
+      selector.slice(0, functional.start) + argument.trim() + selector.slice(functional.contentEnd + 1),
+    ))
+  expandedSelectorCache.set(selector, result)
+  return result
+}
+
+const expandedSelectorCache = new Map<string, string[]>()
+
+function findTopLevelSelectorFunction(
+  selector: string,
+): { start: number; contentStart: number; contentEnd: number } | undefined {
+  let quote: string | undefined
+  let bracketDepth = 0
+  let parenthesisDepth = 0
+
+  for (let index = 0; index < selector.length; index += 1) {
+    const character = selector[index]
+
+    if (character === '\\') {
+      index += 1
+      continue
+    }
+    if (quote) {
+      if (character === quote) quote = undefined
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '[') bracketDepth += 1
+    if (character === ']') bracketDepth -= 1
+
+    if (bracketDepth === 0 && parenthesisDepth === 0) {
+      const match = selector.slice(index).match(/^:(?:where|is)\(/)
+      if (match) {
+        const contentStart = index + match[0].length
+        const contentEnd = findClosingParenthesis(selector, contentStart)
+        if (contentEnd !== undefined) return { start: index, contentStart, contentEnd }
+      }
+    }
+
+    if (bracketDepth === 0 && character === '(') parenthesisDepth += 1
+    if (bracketDepth === 0 && character === ')') parenthesisDepth -= 1
+  }
+
+  return undefined
+}
+
+function findClosingParenthesis(selector: string, contentStart: number): number | undefined {
+  let quote: string | undefined
+  let bracketDepth = 0
+  let depth = 1
+
+  for (let index = contentStart; index < selector.length; index += 1) {
+    const character = selector[index]
+    if (character === '\\') {
+      index += 1
+      continue
+    }
+    if (quote) {
+      if (character === quote) quote = undefined
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '[') bracketDepth += 1
+    if (character === ']') bracketDepth -= 1
+    if (bracketDepth !== 0) continue
+    if (character === '(') depth += 1
+    if (character === ')') depth -= 1
+    if (depth === 0) return index
+  }
+
+  return undefined
+}
+
+function splitSelectorArguments(value: string): string[] {
+  const argumentsList: string[] = []
+  let start = 0
+  let quote: string | undefined
+  let bracketDepth = 0
+  let parenthesisDepth = 0
+
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]
+    if (character === '\\') {
+      index += 1
+      continue
+    }
+    if (quote) {
+      if (character === quote) quote = undefined
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '[') bracketDepth += 1
+    if (character === ']') bracketDepth -= 1
+    if (bracketDepth !== 0) continue
+    if (character === '(') parenthesisDepth += 1
+    if (character === ')') parenthesisDepth -= 1
+    if (character === ',' && parenthesisDepth === 0) {
+      argumentsList.push(value.slice(start, index))
+      start = index + 1
+    }
+  }
+
+  argumentsList.push(value.slice(start))
+  return argumentsList
 }
 
 function matchesAsciiInsensitiveAttributes(element: Element, selector: string): boolean {

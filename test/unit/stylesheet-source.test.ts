@@ -7,6 +7,24 @@ afterEach(() => {
 })
 
 describe('stylesheet source handling', () => {
+  it('does not overmatch scoped functional selectors in the host DOM', async () => {
+    document.body.innerHTML = `
+      <style>
+        .workspace, .scope.ant-input { position: absolute; top: 0; width: 20px; height: 20px; }
+        .workspace { left: 10px; }
+        :where(.scope).ant-input:not(.success) { left: 100px; }
+        :is(.scope, .alternate).ant-input { top: 30px; }
+      </style>
+      <div id="workspace" class="workspace"></div>
+      <input id="input" class="scope ant-input">
+    `
+
+    await attach()
+
+    expectRect(requiredElement('#workspace').getBoundingClientRect(), { left: 10, top: 0, width: 20, height: 20 })
+    expectRect(requiredElement('#input').getBoundingClientRect(), { left: 100, top: 30, width: 20, height: 20 })
+  })
+
   it('matches case-insensitive HTML attribute selectors', async () => {
     document.body.innerHTML = `
       <style>
