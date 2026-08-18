@@ -36,6 +36,7 @@ type TaffyLayoutState = {
   clientRects: Map<Element, Box>
   elementScrolls: Map<Element, ScrollOffset>
   elementNodes: Map<Element, bigint>
+  anonymousInlineRuns: Map<Element, { node: bigint; parent: Element; beforeText: string }>
   contentsElements: Set<Element>
   tableLayouts: Map<Element, SimpleTableLayout>
   styles: WeakMap<Element, SupportedStyle>
@@ -224,6 +225,7 @@ function buildTaffyLayoutTree(
     clientRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
+    anonymousInlineRuns: new Map(),
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     styles: new WeakMap<Element, SupportedStyle>(),
@@ -369,6 +371,26 @@ function recordInlineFragments(
     const style = state.styles.get(element)
 
     if (style?.display !== 'inline' || isHidden(element)) {
+      continue
+    }
+
+    const anonymousRun = state.anonymousInlineRuns.get(element)
+    if (anonymousRun) {
+      const parentBox = state.clientRects.get(anonymousRun.parent)
+      if (!parentBox) continue
+      const parentStyle = resolveSupportedStyle(anonymousRun.parent, state)
+      const layout = state.tree.getLayout(anonymousRun.node)
+      const beforeText = normalizeInlineText(anonymousRun.beforeText, parentStyle.whiteSpace)
+      const targetText = normalizeInlineText(element.textContent ?? '', parentStyle.whiteSpace)
+      const width = measureInlineWidth(targetText, parentStyle, state)
+      const fragment = {
+        x: parentBox.x + layout.x + measureInlineWidth(beforeText, parentStyle, state),
+        y: parentBox.y + layout.y + (parentStyle.lineHeight - parentStyle.fontSize) / 2,
+        width,
+        height: parentStyle.fontSize,
+      }
+      state.fragmentRects.set(element, [fragment])
+      state.rects.set(element, fragment)
       continue
     }
 
@@ -687,8 +709,87 @@ function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigin
     return []
   }
 
-  return renderedElementChildren(parent, state)
-    .flatMap((element) => buildNodesForElement(element, state))
+  const children = renderedElementChildren(parent, state)
+  const renderedChildren = new Set(children)
+  const parentStyle = resolveSupportedStyle(parent, state)
+  if (parentStyle.display === 'flex' || parentStyle.display === 'grid') {
+    return children.flatMap((element) => buildNodesForElement(element, state))
+  }
+  const hasBlockChild = children.some((element) => resolveSupportedStyle(element, state).display !== 'inline')
+
+  if (!hasBlockChild) {
+    return children.flatMap((element) => buildNodesForElement(element, state))
+  }
+
+  // CSS wraps inline content that shares a block container with block-level
+  // siblings in anonymous block boxes. Without these runs, text such as a
+  // secondary inline label after a heading contributes no height at all.
+  const nodes: bigint[] = []
+  let inlineText = ''
+  let inlineElements: { element: Element; beforeText: string }[] = []
+  const flushInlineText = () => {
+    const text = parentStyle.whiteSpace === 'normal' || parentStyle.whiteSpace === 'nowrap'
+      ? inlineText.trim()
+      : inlineText
+    inlineText = ''
+    if (!text || inlineElements.length === 0) {
+      inlineElements = []
+      return
+    }
+
+    const anonymousStyle = createDefaultStyle()
+    anonymousStyle.display = 'block'
+    anonymousStyle.fontFamily = parentStyle.fontFamily
+    anonymousStyle.fontSize = parentStyle.fontSize
+    anonymousStyle.fontWeight = parentStyle.fontWeight
+    anonymousStyle.letterSpacing = parentStyle.letterSpacing
+    anonymousStyle.lineHeight = parentStyle.lineHeight
+    anonymousStyle.whiteSpace = parentStyle.whiteSpace
+    const context: MeasureContext = {
+      text,
+      fontFamily: parentStyle.fontFamily,
+      fontSize: parentStyle.fontSize,
+      fontWeight: parentStyle.fontWeight,
+      letterSpacing: parentStyle.letterSpacing,
+      lineHeight: parentStyle.lineHeight,
+      whiteSpace: parentStyle.whiteSpace,
+      textMeasurer: state.textMeasurer,
+    }
+    const node = state.tree.newLeafWithContext(toTaffyStyle(anonymousStyle, context), context)
+    nodes.push(node)
+    for (const entry of inlineElements) {
+      state.anonymousInlineRuns.set(entry.element, { node, parent, beforeText: entry.beforeText })
+    }
+    inlineElements = []
+  }
+
+  for (const node of Array.from(parent.childNodes)) {
+    if (node.nodeType === 3) {
+      inlineText += node.textContent ?? ''
+      continue
+    }
+    if (node.nodeType !== 1) continue
+
+    const element = node as Element
+    if (!renderedChildren.has(element)) continue
+    if (isNonRenderedHtmlElement(element) || isHidden(element)) continue
+    const style = resolveSupportedStyle(element, state)
+    if (style.display === 'none') {
+      markSubtreeDisplayNone(element, state)
+      continue
+    }
+    if (style.display === 'inline') {
+      inlineElements.push({ element, beforeText: inlineText })
+      inlineText += element.tagName.toLowerCase() === 'br' ? '\n' : element.textContent ?? ''
+      markSubtreeNoBox(element, state)
+      continue
+    }
+
+    flushInlineText()
+    nodes.push(...buildNodesForElement(element, state))
+  }
+  flushInlineText()
+  return nodes
 }
 
 function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint[] {

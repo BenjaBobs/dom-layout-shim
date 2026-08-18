@@ -161,6 +161,8 @@ and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
 Text measurement receives inherited numeric `font-weight` and resolved
 `letter-spacing` in addition to family, size, line height, and white-space.
+Inline phrasing runs alongside block children contribute anonymous line boxes
+to their shared container instead of disappearing from its intrinsic height.
 Generated strings and `attr()` values from `::before` and `::after` contribute
 to intrinsic text measurement. Supported state, functional, and
 case-insensitive attribute selectors participate in stylesheet matching.
