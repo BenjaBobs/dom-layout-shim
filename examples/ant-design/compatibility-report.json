@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "example": "ant-design",
   "scenario": "task-workspace-full-interaction",
-  "generatedAt": "2026-08-18T13:13:41.515Z",
+  "generatedAt": "2026-08-18T13:47:22.215Z",
   "metadata": {
     "chromiumVersion": "147.0.7727.15",
     "viewport": {
@@ -13,13 +13,13 @@
   },
   "summary": {
     "steps": 7,
-    "overallAgreement": 68.29,
+    "overallAgreement": 70.24,
     "coverage": 100,
-    "discrepancies": 85,
-    "uniqueDiscrepancies": 47,
+    "discrepancies": 101,
+    "uniqueDiscrepancies": 46,
     "unstableCheckpoints": 0,
-    "styleInputDifferences": 1249,
-    "hitStackDifferences": 31
+    "styleInputDifferences": 1211,
+    "hitStackDifferences": 30
   },
   "steps": [
     {
@@ -2380,12 +2380,12 @@
       "label": "Add dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 58.33,
+        "geometry": 41.67,
         "visibility": 83.33,
-        "hitTesting": 16.67,
+        "hitTesting": 66.67,
         "hitStack": 0,
         "styleInputs": 28.62,
-        "overall": 52.78
+        "overall": 63.89
       },
       "observations": 6,
       "stability": {
@@ -2401,9 +2401,29 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 162,
+          "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-title-input\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
+          "actual": "[data-layout-key=\"add-dialog\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -2424,10 +2444,14 @@
           "difference": -2
         },
         {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"add-dialog\"]",
-          "actual": "[data-layout-key=\"sidebar\"]"
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 529,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -2441,18 +2465,20 @@
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"add-dialog\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 726,
+          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 1184,
+          "difference": 204,
+          "relativeDifference": 43,
           "scope": "local-layout"
         },
         {
@@ -2472,12 +2498,6 @@
           "expected": 112,
           "actual": 72,
           "difference": -40
-        },
-        {
-          "selector": "[data-layout-key=\"add-task\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"add-dialog\"]",
-          "actual": "[data-layout-key=\"add-task\"]"
         },
         {
           "selector": "[data-layout-key=\"add-dialog\"]",
@@ -2525,7 +2545,7 @@
           "selector": "[data-layout-key=\"task-title-input\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-title-input\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
+          "actual": "[data-layout-key=\"add-dialog\"]"
         }
       ],
       "diagnostics": {
@@ -3924,14 +3944,14 @@
               "[data-layout-key=\"task-2\"]"
             ],
             "actual": [
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"task-description-input\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
+              "div"
             ]
           },
           {
@@ -3947,11 +3967,14 @@
               "html"
             ],
             "actual": [
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"task-description-input\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"sidebar\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"sidebar\"]",
-              "div#app"
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]"
             ]
           },
           {
@@ -3967,14 +3990,14 @@
               "[data-layout-key=\"task-list\"]"
             ],
             "actual": [
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
+              "[data-layout-key=\"add-dialog\"]"
             ]
           },
           {
@@ -3990,6 +4013,7 @@
               "div#app"
             ],
             "actual": [
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
@@ -4007,6 +4031,7 @@
             ],
             "actual": [
               "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "div"
             ]
           },
@@ -4023,14 +4048,14 @@
               "[data-layout-key=\"task-2\"]"
             ],
             "actual": [
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"task-title-input\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
+              "div"
             ]
           }
         ]
@@ -4041,12 +4066,12 @@
       "label": "Task added",
       "scores": {
         "coverage": 100,
-        "geometry": 65,
+        "geometry": 35,
         "visibility": 100,
         "hitTesting": 40,
         "hitStack": 0,
         "styleInputs": 30,
-        "overall": 68.33
+        "overall": 58.33
       },
       "observations": 5,
       "stability": {
@@ -4062,9 +4087,29 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 162,
+          "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-2\"]",
           "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -4087,12 +4132,30 @@
         {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 529,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 148,
           "actual": 131,
           "difference": -17,
           "relativeDifference": -19,
           "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 726,
+          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -4105,9 +4168,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 1184,
+          "difference": 204,
+          "relativeDifference": 43,
           "scope": "local-layout"
         },
         {
@@ -4131,12 +4194,30 @@
         {
           "selector": "[data-layout-key=\"task-4\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 530,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 461,
           "actual": 446,
           "difference": -15,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 726,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"task-4\"]",
@@ -5393,12 +5474,12 @@
       "label": "Action menu open",
       "scores": {
         "coverage": 100,
-        "geometry": 41.67,
+        "geometry": 25,
         "visibility": 100,
         "hitTesting": 33.33,
         "hitStack": 0,
         "styleInputs": 31.52,
-        "overall": 58.33
+        "overall": 52.78
       },
       "observations": 6,
       "stability": {
@@ -5414,9 +5495,29 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 162,
+          "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-2\"]",
           "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -5439,12 +5540,30 @@
         {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 529,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 148,
           "actual": 131,
           "difference": -17,
           "relativeDifference": -19,
           "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 726,
+          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -5457,9 +5576,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 1184,
+          "difference": 204,
+          "relativeDifference": 43,
           "scope": "local-layout"
         },
         {
@@ -5485,9 +5604,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 935,
-          "actual": -9999,
-          "difference": -10934,
-          "relativeDifference": -10934,
+          "actual": -12800,
+          "difference": -13735,
+          "relativeDifference": -13735,
           "scope": "local-layout"
         },
         {
@@ -5495,9 +5614,9 @@
           "category": "geometry",
           "field": "y",
           "expected": 220,
-          "actual": -9373,
-          "difference": -9593,
-          "relativeDifference": -9595,
+          "actual": -6574,
+          "difference": -6794,
+          "relativeDifference": -6796,
           "scope": "local-layout"
         },
         {
@@ -5505,8 +5624,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 128,
-          "actual": 340,
-          "difference": 212
+          "actual": 339,
+          "difference": 211
         },
         {
           "selector": ".ant-dropdown",
@@ -5527,8 +5646,8 @@
           "category": "geometry",
           "field": "x",
           "expected": 939,
-          "actual": -9995,
-          "difference": -10934,
+          "actual": -12796,
+          "difference": -13735,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
         },
@@ -5537,8 +5656,8 @@
           "category": "geometry",
           "field": "y",
           "expected": 224,
-          "actual": -9367,
-          "difference": -9591,
+          "actual": -6568,
+          "difference": -6792,
           "relativeDifference": 1,
           "scope": "ancestor-offset"
         },
@@ -6601,14 +6720,14 @@
             "category": "style-input",
             "field": "top",
             "expected": "220px",
-            "actual": "-9999px"
+            "actual": "-7200px"
           },
           {
             "selector": ".ant-dropdown",
             "category": "style-input",
             "field": "right",
             "expected": "217px",
-            "actual": "10939px"
+            "actual": "13742px"
           },
           {
             "selector": ".ant-dropdown",
@@ -7026,12 +7145,12 @@
       "label": "Delete dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 62.5,
-        "visibility": 66.67,
-        "hitTesting": 16.67,
+        "geometry": 50,
+        "visibility": 83.33,
+        "hitTesting": 100,
         "hitStack": 0,
         "styleInputs": 26.45,
-        "overall": 48.61
+        "overall": 77.78
       },
       "observations": 6,
       "stability": {
@@ -7047,9 +7166,23 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"delete-dialog\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 162,
+          "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -7070,10 +7203,14 @@
           "difference": -2
         },
         {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"delete-dialog\"]",
-          "actual": "[data-layout-key=\"sidebar\"]"
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 529,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -7087,18 +7224,20 @@
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"delete-dialog\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 726,
+          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 1184,
+          "difference": 204,
+          "relativeDifference": 43,
           "scope": "local-layout"
         },
         {
@@ -7118,12 +7257,6 @@
           "expected": 112,
           "actual": 72,
           "difference": -40
-        },
-        {
-          "selector": "[data-layout-key=\"add-task\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"delete-dialog\"]",
-          "actual": "[data-layout-key=\"add-task\"]"
         },
         {
           "selector": "[data-layout-key=\"delete-dialog\"]",
@@ -7148,26 +7281,6 @@
           "expected": 0,
           "actual": 2,
           "difference": 2
-        },
-        {
-          "selector": ".ant-modal-mask",
-          "category": "visibility",
-          "expected": true,
-          "actual": false
-        },
-        {
-          "selector": ".ant-modal-mask",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 0,
-          "difference": -720
-        },
-        {
-          "selector": ".ant-modal-mask",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"delete-dialog\"]",
-          "actual": "div"
         }
       ],
       "diagnostics": {
@@ -8326,272 +8439,6 @@
             "field": "white-space",
             "expected": "normal",
             "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "width",
-            "expected": "1280px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "height",
-            "expected": "720px",
-            "actual": "768px"
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "border-right-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "border-left-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "flex-grow",
-            "expected": "0",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "flex-shrink",
-            "expected": "1",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "flex-basis",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
           }
         ],
         "hitStackDifferences": [
@@ -8608,14 +8455,14 @@
               "[data-layout-key=\"task-2\"]"
             ],
             "actual": [
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
+              "div"
             ]
           },
           {
@@ -8631,11 +8478,14 @@
               "body"
             ],
             "actual": [
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"sidebar\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"sidebar\"]",
-              "div#app"
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]"
             ]
           },
           {
@@ -8651,14 +8501,14 @@
               "[data-layout-key=\"task-list\"]"
             ],
             "actual": [
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
+              "div"
             ]
           },
           {
@@ -8674,6 +8524,8 @@
               "div"
             ],
             "actual": [
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
@@ -8692,24 +8544,9 @@
             ],
             "actual": [
               "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "div"
-            ]
-          },
-          {
-            "selector": ".ant-modal-mask",
-            "expected": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "div",
-              "div#app"
             ]
           }
         ]
@@ -8720,12 +8557,12 @@
       "label": "Dialog dismissed",
       "scores": {
         "coverage": 100,
-        "geometry": 66.67,
+        "geometry": 33.33,
         "visibility": 100,
         "hitTesting": 33.33,
         "hitStack": 0,
         "styleInputs": 28.99,
-        "overall": 66.67
+        "overall": 55.55
       },
       "observations": 6,
       "stability": {
@@ -8741,9 +8578,29 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 162,
+          "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-2\"]",
           "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 322,
+          "difference": 162,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -8766,12 +8623,30 @@
         {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 529,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 148,
           "actual": 131,
           "difference": -17,
           "relativeDifference": -19,
           "scope": "local-layout"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 726,
+          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -8784,9 +8659,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 1184,
+          "difference": 204,
+          "relativeDifference": 43,
           "scope": "local-layout"
         },
         {
@@ -8810,12 +8685,30 @@
         {
           "selector": "[data-layout-key=\"task-1\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 530,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 149,
           "actual": 134,
           "difference": -15,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 726,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"task-1\"]",
@@ -8826,12 +8719,30 @@
         {
           "selector": "[data-layout-key=\"task-4\"]",
           "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 530,
+          "difference": 161,
+          "relativeDifference": 0,
+          "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
           "field": "y",
           "expected": 461,
           "actual": 446,
           "difference": -15,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 726,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"task-4\"]",
@@ -10356,26 +10267,6 @@
     {
       "selector": "[data-layout-key=\"add-task\"]",
       "category": "geometry",
-      "field": "x",
-      "expected": 980,
-      "actual": 1020,
-      "difference": 40,
-      "relativeDifference": 40,
-      "scope": "local-layout",
-      "occurrences": 7,
-      "steps": [
-        "initial",
-        "active-filter",
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "geometry",
       "field": "width",
       "expected": 112,
       "actual": 72,
@@ -10394,12 +10285,48 @@
     {
       "selector": "[data-layout-key=\"add-task\"]",
       "category": "geometry",
+      "field": "x",
+      "expected": 980,
+      "actual": 1184,
+      "difference": 204,
+      "relativeDifference": 43,
+      "scope": "local-layout",
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"add-task\"]",
+      "category": "geometry",
       "field": "y",
       "expected": 76,
       "actual": 69,
       "difference": -7,
       "relativeDifference": -10,
       "scope": "local-layout",
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"sidebar\"]",
+      "category": "geometry",
+      "field": "x",
+      "expected": 160,
+      "actual": 322,
+      "difference": 162,
+      "relativeDifference": 0,
+      "scope": "ancestor-offset",
       "occurrences": 5,
       "steps": [
         "add-dialog",
@@ -10446,11 +10373,63 @@
     {
       "selector": "[data-layout-key=\"task-list\"]",
       "category": "geometry",
+      "field": "x",
+      "expected": 368,
+      "actual": 529,
+      "difference": 161,
+      "relativeDifference": 0,
+      "scope": "ancestor-offset",
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-list\"]",
+      "category": "geometry",
       "field": "y",
       "expected": 148,
       "actual": 131,
       "difference": -17,
       "relativeDifference": -19,
+      "scope": "local-layout",
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-list\"]",
+      "category": "geometry",
+      "field": "width",
+      "expected": 724,
+      "actual": 726,
+      "difference": 2,
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-workspace\"]",
+      "category": "geometry",
+      "field": "x",
+      "expected": 160,
+      "actual": 322,
+      "difference": 162,
+      "relativeDifference": 162,
       "scope": "local-layout",
       "occurrences": 5,
       "steps": [
@@ -10483,6 +10462,21 @@
         "task-added",
         "action-menu",
         "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"add-task\"]",
+      "category": "geometry",
+      "field": "x",
+      "expected": 980,
+      "actual": 1020,
+      "difference": 40,
+      "relativeDifference": 40,
+      "scope": "local-layout",
+      "occurrences": 2,
+      "steps": [
+        "initial",
+        "active-filter"
       ]
     },
     {
@@ -10533,12 +10527,40 @@
     {
       "selector": "[data-layout-key=\"task-4\"]",
       "category": "geometry",
+      "field": "x",
+      "expected": 369,
+      "actual": 530,
+      "difference": 161,
+      "relativeDifference": 0,
+      "scope": "ancestor-offset",
+      "occurrences": 2,
+      "steps": [
+        "task-added",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-4\"]",
+      "category": "geometry",
       "field": "y",
       "expected": 461,
       "actual": 446,
       "difference": -15,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
+      "occurrences": 2,
+      "steps": [
+        "task-added",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-4\"]",
+      "category": "geometry",
+      "field": "width",
+      "expected": 722,
+      "actual": 726,
+      "difference": 4,
       "occurrences": 2,
       "steps": [
         "task-added",
@@ -10576,9 +10598,9 @@
       "category": "geometry",
       "field": "x",
       "expected": 935,
-      "actual": -9999,
-      "difference": -10934,
-      "relativeDifference": -10934,
+      "actual": -12800,
+      "difference": -13735,
+      "relativeDifference": -13735,
       "scope": "local-layout",
       "occurrences": 1,
       "steps": [
@@ -10590,9 +10612,9 @@
       "category": "geometry",
       "field": "y",
       "expected": 220,
-      "actual": -9373,
-      "difference": -9593,
-      "relativeDifference": -9595,
+      "actual": -6574,
+      "difference": -6794,
+      "relativeDifference": -6796,
       "scope": "local-layout",
       "occurrences": 1,
       "steps": [
@@ -10604,8 +10626,8 @@
       "category": "geometry",
       "field": "width",
       "expected": 128,
-      "actual": 340,
-      "difference": 212,
+      "actual": 339,
+      "difference": 211,
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -10638,8 +10660,8 @@
       "category": "geometry",
       "field": "x",
       "expected": 939,
-      "actual": -9995,
-      "difference": -10934,
+      "actual": -12796,
+      "difference": -13735,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
       "occurrences": 1,
@@ -10652,8 +10674,8 @@
       "category": "geometry",
       "field": "y",
       "expected": 224,
-      "actual": -9367,
-      "difference": -9591,
+      "actual": -6568,
+      "difference": -6792,
       "relativeDifference": 1,
       "scope": "ancestor-offset",
       "occurrences": 1,
@@ -10696,38 +10718,6 @@
       ]
     },
     {
-      "selector": ".ant-modal-mask",
-      "category": "visibility",
-      "expected": true,
-      "actual": false,
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
-    },
-    {
-      "selector": ".ant-modal-mask",
-      "category": "geometry",
-      "field": "height",
-      "expected": 720,
-      "actual": 0,
-      "difference": -720,
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
-    },
-    {
-      "selector": ".ant-modal-mask",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"delete-dialog\"]",
-      "actual": "div",
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
-    },
-    {
       "selector": "[data-layout-key=\"add-dialog\"]",
       "category": "visibility",
       "expected": false,
@@ -10761,26 +10751,6 @@
       "occurrences": 1,
       "steps": [
         "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"add-dialog\"]",
-      "actual": "[data-layout-key=\"add-task\"]",
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"delete-dialog\"]",
-      "actual": "[data-layout-key=\"add-task\"]",
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
       ]
     },
     {
@@ -10820,23 +10790,17 @@
       ]
     },
     {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"add-dialog\"]",
-      "actual": "[data-layout-key=\"sidebar\"]",
+      "selector": "[data-layout-key=\"task-1\"]",
+      "category": "geometry",
+      "field": "x",
+      "expected": 369,
+      "actual": 530,
+      "difference": 161,
+      "relativeDifference": 0,
+      "scope": "ancestor-offset",
       "occurrences": 1,
       "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"delete-dialog\"]",
-      "actual": "[data-layout-key=\"sidebar\"]",
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
+        "restored"
       ]
     },
     {
@@ -10848,6 +10812,18 @@
       "difference": -15,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
+      "occurrences": 1,
+      "steps": [
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"task-1\"]",
+      "category": "geometry",
+      "field": "width",
+      "expected": 722,
+      "actual": 726,
+      "difference": 4,
       "occurrences": 1,
       "steps": [
         "restored"
@@ -10875,26 +10851,6 @@
       "occurrences": 1,
       "steps": [
         "initial"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"add-dialog\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"delete-dialog\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
       ]
     },
     {
@@ -10927,7 +10883,7 @@
       "selector": "[data-layout-key=\"task-title-input\"]",
       "category": "hit-testing",
       "expected": "[data-layout-key=\"task-title-input\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
+      "actual": "[data-layout-key=\"add-dialog\"]",
       "occurrences": 1,
       "steps": [
         "add-dialog"
@@ -10937,25 +10893,15 @@
       "selector": "[data-layout-key=\"task-workspace\"]",
       "category": "hit-testing",
       "expected": "[data-layout-key=\"task-title-input\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
+      "actual": "[data-layout-key=\"add-dialog\"]",
       "occurrences": 1,
       "steps": [
         "add-dialog"
       ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-workspace\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"delete-dialog\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
     }
   ],
   "unsupportedCss": {
-    "unsupportedDeclarationCount": 134,
+    "unsupportedDeclarationCount": 109,
     "properties": [
       {
         "property": "width",
@@ -10991,13 +10937,12 @@
       },
       {
         "property": "padding-inline",
-        "declarations": 4,
-        "occurrences": 4,
+        "declarations": 3,
+        "occurrences": 3,
         "values": [
           "var(--ant-button-padding-inline)",
           "var(--ant-button-padding-inline-lg)",
-          "var(--ant-button-padding-inline-sm)",
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"length\",\"value\":{\"unit\":\"px\",\"value\":8}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"-\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-line-width\",\"from\":null},\"fallback\":null}}]}}"
+          "var(--ant-button-padding-inline-sm)"
         ],
         "reasons": [
           "unsupported-value"
@@ -11005,16 +10950,12 @@
         "selectors": [
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn-lg:not(.ant-btn-icon-only)",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn-sm:not(.ant-btn-icon-only)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn:not(.ant-btn-icon-only)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag"
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn:not(.ant-btn-icon-only)"
         ],
         "elements": [
-          "[data-layout-key=\"task-1\"]",
           "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_"
         ],
-        "computedValues": [
-          "calc(8px - 1px)"
-        ],
+        "computedValues": [],
         "support": [
           {
             "id": "box-model-spacing",
@@ -11029,8 +10970,8 @@
         "declarations": 2,
         "occurrences": 2,
         "values": [
-          "var(--ant-btn-border-width)   var(--ant-btn-border-style)   var(--ant-btn-border-color)",
-          "var(--ant-line-width)   var(--ant-line-type)   var(--ant-color-border)"
+          "var(--ant-btn-border-width) var(--ant-btn-border-style) var(--ant-btn-border-color)",
+          "var(--ant-line-width) var(--ant-line-type) var(--ant-color-border)"
         ],
         "reasons": [
           "unsupported-value"
@@ -11050,95 +10991,6 @@
         "support": [
           {
             "id": "box-model-spacing",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "height",
-        "declarations": 1,
-        "occurrences": 2,
-        "values": [
-          "100vh"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ".ant-modal-root .ant-modal-mask",
-          ".ant-modal-root .ant-modal-wrap"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]"
-        ],
-        "computedValues": [
-          "768px"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "margin-bottom",
-        "declarations": 1,
-        "occurrences": 2,
-        "values": [
-          "var(--ant-typography-title-margin-bottom)"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          "h2:where(.css-dev-only-do-not-override-viwxw0).ant-typography",
-          "h4:where(.css-dev-only-do-not-override-viwxw0).ant-typography"
-        ],
-        "elements": [
-          "[data-layout-key=\"sidebar\"]",
-          "[data-layout-key=\"task-workspace\"]"
-        ],
-        "computedValues": [
-          "4px"
-        ],
-        "support": [
-          {
-            "id": "box-model-spacing",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "top",
-        "declarations": 2,
-        "occurrences": 2,
-        "values": [
-          "-1000vh",
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"token\",\"value\":{\"type\":\"parenthesis-block\"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-line-height-heading-5\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-font-size-heading-5\",\"from\":null},\"fallback\":null}}]}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"+\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-padding\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2}}]}}]}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"-\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-control-height\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"close-parenthesis\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"/\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-close"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "div.ant-dropdown.ant-slide-up-appear.ant-slide-up-appear-prepare"
-        ],
-        "computedValues": [
-          "-7680px"
-        ],
-        "support": [
-          {
-            "id": "positioning",
             "effect": "layout",
             "status": "partial"
           }
@@ -11174,200 +11026,6 @@
         "priority": "observed-layout"
       },
       {
-        "property": "inset-inline-end",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"token\",\"value\":{\"type\":\"parenthesis-block\"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-line-height-heading-5\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-font-size-heading-5\",\"from\":null},\"fallback\":null}}]}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"+\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-padding\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2}}]}}]}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"-\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-control-height\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"close-parenthesis\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"/\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-close"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]"
-        ],
-        "computedValues": [
-          "calc((calc(calc(1.5 * 16px) + calc(16px * 2)) - 32px) / 2)"
-        ],
-        "support": [
-          {
-            "id": "positioning",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "left",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "-1000vw"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [],
-        "elements": [
-          "div.ant-dropdown.ant-slide-up-appear.ant-slide-up-appear-prepare"
-        ],
-        "computedValues": [
-          "-10240px"
-        ],
-        "support": [
-          {
-            "id": "positioning",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "line-height",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-line-height-sm\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-font-size-sm\",\"from\":null},\"fallback\":null}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag"
-        ],
-        "elements": [
-          "[data-layout-key=\"task-1\"]"
-        ],
-        "computedValues": [
-          "calc(1.6666666666666667 * 12px)"
-        ],
-        "support": [
-          {
-            "id": "text-measurement",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "margin-inline-end",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-line-width\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":-1}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-compact-item:not(.ant-input-compact-last-item)"
-        ],
-        "elements": [
-          "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_"
-        ],
-        "computedValues": [
-          "calc(1px * -1)"
-        ],
-        "support": [
-          {
-            "id": "box-model-spacing",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "max-height",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"length\",\"value\":{\"unit\":\"vh\",\"value\":100}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"-\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-control-height-lg\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2.5}}]}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown-menu-vertical"
-        ],
-        "elements": [
-          "ul.ant-dropdown-menu.ant-dropdown-menu-root.ant-dropdown-menu-vertical"
-        ],
-        "computedValues": [
-          "calc(768px - calc(40px * 2.5))"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "max-width",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"length\",\"value\":{\"unit\":\"vw\",\"value\":100}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"-\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-margin\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"*\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":2}}]}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]"
-        ],
-        "computedValues": [
-          "calc(1024px - calc(16px * 2))"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "min-height",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "100vh"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          "body"
-        ],
-        "elements": [
-          "body"
-        ],
-        "computedValues": [
-          "768px"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
         "property": "vertical-align",
         "declarations": 1,
         "occurrences": 1,
@@ -11394,69 +11052,6 @@
           }
         ],
         "priority": "observed-layout"
-      },
-      {
-        "property": "z-index",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "{\"type\":\"function\",\"value\":{\"name\":\"calc\",\"arguments\":[{\"type\":\"var\",\"value\":{\"name\":{\"ident\":\"--ant-z-index-popup-base\",\"from\":null},\"fallback\":null}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"delim\",\"value\":\"+\"}},{\"type\":\"token\",\"value\":{\"type\":\"white-space\",\"value\":\" \"}},{\"type\":\"token\",\"value\":{\"type\":\"number\",\"value\":10}}]}}"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-close"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]"
-        ],
-        "computedValues": [
-          "calc(1000 + 10)"
-        ],
-        "support": [
-          {
-            "id": "positioning",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "font-weight",
-        "declarations": 3,
-        "occurrences": 6,
-        "values": [
-          "var(--ant-button-font-weight)",
-          "var(--ant-font-weight-strong)",
-          "{\"type\":\"absolute\",\"value\":{\"type\":\"normal\"}}"
-        ],
-        "reasons": [
-          "unknown-property"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-close",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-title",
-          "h2:where(.css-dev-only-do-not-override-viwxw0).ant-typography",
-          "h4:where(.css-dev-only-do-not-override-viwxw0).ant-typography"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "[data-layout-key=\"filter-all\"]",
-          "[data-layout-key=\"sidebar\"]",
-          "[data-layout-key=\"task-workspace\"]",
-          "li.ant-dropdown-menu-item.ant-dropdown-menu-item-danger"
-        ],
-        "computedValues": [
-          "400",
-          "600",
-          "normal"
-        ],
-        "support": [],
-        "priority": "observed-unclassified"
       },
       {
         "property": "text-align",
@@ -11599,7 +11194,7 @@
         "declarations": 2,
         "occurrences": 2,
         "values": [
-          "var(--ant-line-width)   var(--ant-line-type)   var(--ant-color-split)",
+          "var(--ant-line-width) var(--ant-line-type) var(--ant-color-split)",
           "{\"width\":{\"type\":\"medium\"},\"style\":\"none\",\"color\":{\"type\":\"currentcolor\"}}"
         ],
         "reasons": [
@@ -11807,21 +11402,11 @@
       },
       {
         "property": "selector",
-        "declarations": 19,
-        "occurrences": 19,
+        "declarations": 9,
+        "occurrences": 9,
         "values": [
-          "{\"type\":\"attribute\",\"namespace\":null,\"name\":\"type\",\"operation\":{\"operator\":\"equal\",\"value\":\"color\",\"caseSensitivity\":\"ascii-case-insensitive-if-in-html-element-in-html-document\"}}",
-          "{\"type\":\"attribute\",\"namespace\":null,\"name\":\"type\",\"operation\":{\"operator\":\"equal\",\"value\":\"search\",\"caseSensitivity\":\"ascii-case-insensitive-if-in-html-element-in-html-document\"}}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"active\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"empty\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"focus-within\"}",
           "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"pseudo-class\",\"kind\":\"scope\"},{\"type\":\"combinator\",\"value\":\"later-sibling\"},{\"type\":\"class\",\"name\":\"ant-tooltip-unique-container\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"type\",\"name\":\"input\"},{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"type\",\"name\":\"textarea\"},{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"placeholder-shown\",\"vendorPrefix\":[]}",
-          "{\"type\":\"pseudo-element\",\"kind\":\"after\"}",
-          "{\"type\":\"pseudo-element\",\"kind\":\"before\"}",
+          "{\"type\":\"pseudo-class\",\"kind\":\"scope\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-ms-reveal\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-webkit-search-cancel-button\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-webkit-search-decoration\"}",
@@ -11834,18 +11419,8 @@
           "unsupported-rule"
         ],
         "selectors": [
-          "{\"type\":\"attribute\",\"namespace\":null,\"name\":\"type\",\"operation\":{\"operator\":\"equal\",\"value\":\"color\",\"caseSensitivity\":\"ascii-case-insensitive-if-in-html-element-in-html-document\"}}",
-          "{\"type\":\"attribute\",\"namespace\":null,\"name\":\"type\",\"operation\":{\"operator\":\"equal\",\"value\":\"search\",\"caseSensitivity\":\"ascii-case-insensitive-if-in-html-element-in-html-document\"}}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"active\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"empty\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"focus-within\"}",
           "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"pseudo-class\",\"kind\":\"scope\"},{\"type\":\"combinator\",\"value\":\"later-sibling\"},{\"type\":\"class\",\"name\":\"ant-tooltip-unique-container\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"type\",\"name\":\"input\"},{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"has\",\"selectors\":[[{\"type\":\"type\",\"name\":\"textarea\"},{\"type\":\"pseudo-class\",\"kind\":\"focus-visible\"}]]}",
-          "{\"type\":\"pseudo-class\",\"kind\":\"placeholder-shown\",\"vendorPrefix\":[]}",
-          "{\"type\":\"pseudo-element\",\"kind\":\"after\"}",
-          "{\"type\":\"pseudo-element\",\"kind\":\"before\"}",
+          "{\"type\":\"pseudo-class\",\"kind\":\"scope\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-ms-reveal\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-webkit-search-cancel-button\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-webkit-search-decoration\"}",
@@ -12095,8 +11670,8 @@
         "declarations": 7,
         "occurrences": 16,
         "values": [
-          "transparent   transparent   var(--ant-color-error)   transparent",
-          "transparent   transparent   var(--ant-color-warning)   transparent",
+          "transparent transparent var(--ant-color-error) transparent",
+          "transparent transparent var(--ant-color-warning) transparent",
           "var(--ant-button-border-color-disabled)",
           "var(--ant-color-border)",
           "var(--ant-color-border-disabled)",
@@ -12224,6 +11799,35 @@
           "0 2px 0 rgba(0,0,0,0.02)",
           "0 2px 0 rgba(5,145,255,0.1)",
           "0 6px 16px 0 rgba(0,0,0,0.08),\n      0 3px 6px -4px rgba(0,0,0,0.12),\n      0 9px 28px 8px rgba(0,0,0,0.05)"
+        ],
+        "support": [
+          {
+            "id": "visual-only",
+            "effect": "visual-ignored",
+            "status": "partial"
+          }
+        ],
+        "priority": "visual-or-inert"
+      },
+      {
+        "property": "outline",
+        "declarations": 1,
+        "occurrences": 2,
+        "values": [
+          "var(--ant-line-width-focus) solid var(--ant-color-primary-border)"
+        ],
+        "reasons": [
+          "unsupported-value"
+        ],
+        "selectors": [
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn:not(:disabled):focus-visible",
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-modal:focus-visible"
+        ],
+        "elements": [
+          "[data-layout-key=\"add-dialog\"]"
+        ],
+        "computedValues": [
+          "0px"
         ],
         "support": [
           {
