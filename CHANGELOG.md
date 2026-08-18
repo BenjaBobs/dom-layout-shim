@@ -1,5 +1,13 @@
 # dom-layout-shim
 
+## 0.6.0
+
+### Minor Changes
+
+- b3b7b77: Automatically discover initial `@font-face` rules and measure matching text from static TTF, OTF, or WOFF font data. For example, a data-URL font with custom glyph advances now determines an auto-sized button's width identically across happy-dom and Chromium, while unavailable families continue through deterministic fallback measurement. The obsolete `createPretextTextMeasurer()` export and Canvas-only Pretext dependency are removed.
+- 90ceb56: Include inline phrasing runs in containers that also have block children. For example, `<div><h2>Title</h2><span>Details</span></div>` now includes the `Details` line in the container's intrinsic height and exposes the span's client geometry instead of dropping that inline run from layout.
+- c340b87: Apply inherited `text-transform` values during intrinsic text measurement. For example, a button styled with `text-transform: uppercase` now sizes from `ADD TASK` while its authored `textContent` remains `Add task`; custom text measurers receive the transformed string too.
+
 ## 0.5.0
 
 ### Minor Changes
