@@ -167,3 +167,38 @@ it('logical end insets position explicitly sized boxes', async () => {
     queries: [{ type: 'rect', selector: '#child' }],
   })
 })
+
+it('logical spacing and insets accept calculated relative lengths', async () => {
+  await expectChromiumParity({
+    viewport: { width: 800, height: 600 },
+    html: `
+      <style>
+        body { margin: 0; }
+        html { --space: 1em; }
+        #container { position: relative; width: 400px; height: 100px; font-size: 10px; }
+        #padded {
+          box-sizing: border-box;
+          width: 100px;
+          height: 40px;
+          padding-inline: calc(var(--space) + 2px) 2rem;
+          margin-block-start: 2vh;
+        }
+        #positioned {
+          position: absolute;
+          inset-inline-end: calc(10vw - 5px);
+          inset-block-start: 1em;
+          width: 20px;
+          height: 20px;
+        }
+      </style>
+      <div id="container">
+        <div id="padded"></div>
+        <div id="positioned"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#padded' },
+      { type: 'rect', selector: '#positioned' },
+    ],
+  })
+})
