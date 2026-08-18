@@ -20,7 +20,7 @@
     "@types/react-dom": "^19.2.3",
     "dom-layout-shim": "workspace:*",
     "happy-dom": "^20.11.2",
-    "typescript": "~6.0.2",
+    "typescript": "~7.0.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
   }
