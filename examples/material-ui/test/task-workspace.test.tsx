@@ -102,10 +102,10 @@ describe('Material UI task workspace consumer', () => {
     const backdrop = requiredElement('[data-layout-key="delete-backdrop"]')
     const overlayHit = document.elementFromPoint(point.x, point.y)
 
-    // MUI's full-viewport Modal root owns the hit in the shim. Its first child
-    // is the visible Backdrop; either way, the covered application control is
-    // no longer reachable at this coordinate.
-    expect(overlayHit).toBe(backdrop.parentElement)
+    // The exact MUI overlay descendant depends on how its portal wrappers cover
+    // this point. Require the hit to stay inside the modal and, critically, to
+    // block the covered application control.
+    expect(backdrop.parentElement?.contains(overlayHit)).toBe(true)
     expect(overlayHit).not.toBe(underlyingControl)
 
     await click(requiredElement('[data-layout-key="delete-dialog"] button:first-of-type'))
