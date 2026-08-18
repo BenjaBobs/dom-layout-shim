@@ -35,6 +35,10 @@ const initialTasks: Task[] = [
   },
 ]
 
+function layoutKey(value: string): Record<string, string> {
+  return { 'data-layout-key': value }
+}
+
 export function TaskWorkspace(): React.JSX.Element {
   const [tasks, setTasks] = useState(initialTasks)
   const [pendingDelete, setPendingDelete] = useState<Task | null>(null)
@@ -91,12 +95,13 @@ export function TaskWorkspace(): React.JSX.Element {
     <ConfigProvider theme={{ token: { motion: false } }}>
       <AntApp>
       <Layout className="workspace" data-layout-key="task-workspace">
-        <Layout.Sider className="workspace-sidebar" width={180}>
+        <Layout.Sider className="workspace-sidebar" width={180} data-layout-key="sidebar">
           <Typography.Title level={4}>Projects</Typography.Title>
           <nav aria-label="Task filters">
             {(['All', 'Active', 'Completed'] as const).map((value) => (
               <Button
                 key={value}
+                data-layout-key={`filter-${value.toLowerCase()}`}
                 type="text"
                 block
                 aria-pressed={filter === value}
@@ -176,6 +181,7 @@ export function TaskWorkspace(): React.JSX.Element {
           },
         }}
         data-layout-key="delete-dialog"
+        cancelButtonProps={{ ...layoutKey('delete-cancel') }}
       >
         <p>{pendingDelete ? `“${pendingDelete.title}” will be permanently removed.` : ''}</p>
       </Modal>
@@ -184,11 +190,12 @@ export function TaskWorkspace(): React.JSX.Element {
         title="Add task"
         open={addOpen}
         okText="Add task"
-        okButtonProps={{ disabled: !draftTitle.trim() }}
         destroyOnHidden
         onOk={addTask}
         onCancel={() => setAddOpen(false)}
         mask={{ closable: true }}
+        data-layout-key="add-dialog"
+        okButtonProps={{ disabled: !draftTitle.trim(), ...layoutKey('add-submit') }}
       >
         <div className="task-form">
           <label htmlFor="ant-task-title">Title</label>
@@ -196,6 +203,7 @@ export function TaskWorkspace(): React.JSX.Element {
             id="ant-task-title"
             autoFocus
             value={draftTitle}
+            data-layout-key="task-title-input"
             onChange={(event) => setDraftTitle(event.target.value)}
           />
           <label htmlFor="ant-task-description">Description</label>
@@ -203,6 +211,7 @@ export function TaskWorkspace(): React.JSX.Element {
             id="ant-task-description"
             rows={3}
             value={draftDescription}
+            data-layout-key="task-description-input"
             onChange={(event) => setDraftDescription(event.target.value)}
           />
         </div>

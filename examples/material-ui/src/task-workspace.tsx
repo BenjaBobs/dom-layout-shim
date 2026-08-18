@@ -114,19 +114,20 @@ export function TaskWorkspace() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f4f6f8', color: '#17212b' }}>
+    <Box data-layout-key="workspace" sx={{ minHeight: '100vh', bgcolor: '#f4f6f8', color: '#17212b' }}>
       <AppBar position="static" elevation={0} sx={{ bgcolor: '#263238' }}>
         <Toolbar>
           <Typography variant="h6" component="h1">Task workspace</Typography>
         </Toolbar>
       </AppBar>
       <Box sx={{ display: 'flex', width: '100%', maxWidth: 960, margin: '0 auto', padding: 3, gap: 3, boxSizing: 'border-box' }}>
-        <Box component="nav" aria-label="Task filters" sx={{ width: 176, flexShrink: 0, bgcolor: '#fff', padding: 2, borderRadius: 2 }}>
+        <Box data-layout-key="sidebar" component="nav" aria-label="Task filters" sx={{ width: 176, flexShrink: 0, bgcolor: '#fff', padding: 2, borderRadius: 2 }}>
           <Typography variant="overline">Projects</Typography>
           <Stack spacing={1} sx={{ marginTop: 1 }}>
             {(['All', 'Active', 'Completed'] as const).map((value) => (
               <Button
                 key={value}
+                data-layout-key={`filter-${value.toLowerCase()}`}
                 variant={filter === value ? 'contained' : 'text'}
                 aria-pressed={filter === value}
                 onClick={() => setFilter(value)}
@@ -146,7 +147,7 @@ export function TaskWorkspace() {
             </Box>
             <Button data-layout-key="underlying-control" variant="contained" onClick={() => setAddDialogOpen(true)}>Add task</Button>
           </Stack>
-          <List aria-label="Project tasks" sx={{ height: 360, overflow: 'auto', bgcolor: '#fff', padding: 1, borderRadius: 2 }}>
+          <List data-layout-key="task-list" aria-label="Project tasks" sx={{ height: 360, overflow: 'auto', bgcolor: '#fff', padding: 1, borderRadius: 2 }}>
             {visibleTasks.map((task) => (
               <ListItem
                 data-layout-key={`task-${task.id}`}
@@ -180,7 +181,7 @@ export function TaskWorkspace() {
         slotProps={{ root: { ...layoutKey('task-menu') } }}
         transitionDuration={0}
       >
-        <MenuItem onClick={requestDelete}>Delete task</MenuItem>
+        <MenuItem data-layout-key="delete-action" onClick={requestDelete}>Delete task</MenuItem>
       </Menu>
 
       <Dialog
@@ -199,12 +200,17 @@ export function TaskWorkspace() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button data-layout-key="delete-cancel" onClick={() => setDialogOpen(false)}>Cancel</Button>
           <Button color="error" variant="contained" onClick={deleteTask}>Delete</Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} transitionDuration={0}>
+      <Dialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        transitionDuration={0}
+        slotProps={{ paper: { ...layoutKey('add-dialog') } }}
+      >
         <DialogTitle>Add task</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2, minWidth: 360 }}>
           <TextField
@@ -213,6 +219,7 @@ export function TaskWorkspace() {
             label="Title"
             value={draftTitle}
             onChange={(event) => setDraftTitle(event.target.value)}
+            slotProps={{ htmlInput: { ...layoutKey('task-title-input') } }}
             sx={{ marginTop: 1 }}
           />
           <TextField
@@ -221,11 +228,12 @@ export function TaskWorkspace() {
             minRows={2}
             value={draftDescription}
             onChange={(event) => setDraftDescription(event.target.value)}
+            slotProps={{ htmlInput: { ...layoutKey('task-description-input') } }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" disabled={!draftTitle.trim()} onClick={addTask}>Add task</Button>
+          <Button data-layout-key="add-submit" variant="contained" disabled={!draftTitle.trim()} onClick={addTask}>Add task</Button>
         </DialogActions>
       </Dialog>
 

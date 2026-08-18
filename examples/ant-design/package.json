@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "compatibility": "pnpm --dir ../.. run build && pnpm run build && node ../../scripts/report-example-compatibility.mjs ant-design",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

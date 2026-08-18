@@ -208,6 +208,9 @@ locally. Pass a port when needed, for example
 `pnpm run docs:serve -- 4174`.
 
 Run `pnpm run examples:check` to build, typecheck, and test every example app.
+Run `pnpm run examples:compatibility` to produce non-gating Chromium-versus-shim
+interaction reports for the UI-library examples. Layout differences are
+recorded for inspection; only an execution or capture error fails the command.
 
 Run `pnpm run test:package` to build and pack the exact npm artifact, install it
 into an isolated consumer project, typecheck its public API, and exercise layout

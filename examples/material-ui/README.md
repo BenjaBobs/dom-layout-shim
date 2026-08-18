@@ -16,6 +16,7 @@ Run it from the repository root:
 ```sh
 pnpm --filter @dom-layout-shim/example-material-ui test
 pnpm --filter @dom-layout-shim/example-material-ui build
+pnpm --filter @dom-layout-shim/example-material-ui compatibility
 ```
 
 The browser-hosted page demonstrates the same application, while the Vitest
@@ -29,3 +30,8 @@ shim currently returns that root, rather than the backdrop child, as the winning
 hit target. The test records this distinction while still proving that the
 covered application control cannot receive the pointer. This is an observable
 compatibility limitation, not a replacement modal implementation.
+
+The compatibility command runs the full scripted interaction in Chromium and
+happy-dom with the shim, then updates `compatibility-report.json`. Agreement
+differences are reported without failing the command. See
+`test/compatibility-scenario.test.tsx` for the happy-dom scenario entry point.

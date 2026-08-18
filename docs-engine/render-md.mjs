@@ -128,5 +128,4 @@ const articleStyles = `
   .article table { width:100%; margin:20px 0; border-collapse:collapse; background:var(--panel); }
   .article th,.article td { padding:11px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
   .article th { color:var(--muted); font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
-  .article a[href^="./examples/"] { display:inline-flex; margin:8px 8px 8px 0; padding:9px 14px; border-radius:8px; background:var(--brand); color:var(--bg); font-weight:700; text-decoration:none; }
 `

@@ -53,6 +53,7 @@
     "examples:typecheck": "pnpm --recursive --filter './examples/*' --if-present run typecheck",
     "examples:test": "pnpm --recursive --filter './examples/*' --if-present run test",
     "examples:check": "pnpm run build && pnpm run examples:typecheck && pnpm run examples:test && pnpm run examples:build",
+    "examples:compatibility": "pnpm run build && pnpm run examples:build && node scripts/report-example-compatibility.mjs",
     "test:package": "pnpm run build && node scripts/test-package-consumer.mjs",
     "test:browser-parity": "pnpm run css:generate && pnpm run font:check && node scripts/run-browser-parity.mjs",
     "bench": "pnpm run css:generate && node --expose-gc test/bench/hit-testing.bench.ts",
