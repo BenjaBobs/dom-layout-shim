@@ -20,6 +20,7 @@ From the repository root:
 pnpm --filter @dom-layout-shim/example-ant-design test
 pnpm --filter @dom-layout-shim/example-ant-design build
 pnpm --filter @dom-layout-shim/example-ant-design exec vite
+pnpm --filter @dom-layout-shim/example-ant-design compatibility
 ```
 
 The browser-hosted page demonstrates the Ant Design application itself. The
@@ -37,3 +38,8 @@ stacking model also places the mask above the dialog buttons, so the test invoke
 the real confirmation handler directly after proving that the mask blocks the
 application. These are observable compatibility limitations, not replacement
 dropdown or modal implementations.
+
+The compatibility command runs the full scripted interaction in Chromium and
+happy-dom with the shim, then updates `compatibility-report.json`. Agreement
+differences are reported without failing the command. See
+`test/compatibility-scenario.test.tsx` for the happy-dom scenario entry point.

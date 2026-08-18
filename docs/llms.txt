@@ -99,6 +99,13 @@ These are integration examples, not substitutes for exact Chromium parity
 fixtures. Each app includes a machine-readable `compatibility.json` report that
 records its supported workflow and known library-specific limitations.
 
+`pnpm run examples:compatibility` runs named interaction checkpoints in
+Chromium and happy-dom with DOM Layout Shim, writing a structured
+`compatibility-report.json` for each UI-library example. Reports include
+observation coverage, agreement percentages for geometry, visibility, and hit
+testing, and raw discrepancies. Differences are non-gating; inability to run or
+capture the scenario is an infrastructure error.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim

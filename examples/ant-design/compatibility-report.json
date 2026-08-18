@@ -1,0 +1,1442 @@
+{
+  "schemaVersion": 1,
+  "example": "ant-design",
+  "scenario": "task-workspace-full-interaction",
+  "generatedAt": "2026-08-18T10:59:54.097Z",
+  "metadata": {
+    "chromiumVersion": "147.0.7727.15",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "geometryMatchThresholdPx": 1
+  },
+  "summary": {
+    "steps": 7,
+    "overallAgreement": 49.46,
+    "coverage": 100,
+    "discrepancies": 172
+  },
+  "steps": [
+    {
+      "id": "initial",
+      "label": "Initial task list",
+      "scores": {
+        "coverage": 100,
+        "geometry": 7.14,
+        "visibility": 100,
+        "hitTesting": 85.71,
+        "overall": 64.28
+      },
+      "observations": 7,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 0,
+          "difference": -32
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 373.84,
+          "difference": -186.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-1\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 0,
+          "difference": -32
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 373.84,
+          "difference": -186.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 109.84,
+          "difference": -38.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 264,
+          "difference": -136
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 77.84,
+          "difference": 1.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 149,
+          "actual": 109.84,
+          "difference": -39.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 253,
+          "actual": 197.84,
+          "difference": -55.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-3\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-3\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 357,
+          "actual": 285.84,
+          "difference": -71.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-3\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-3\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        }
+      ]
+    },
+    {
+      "id": "active-filter",
+      "label": "Active filter",
+      "scores": {
+        "coverage": 100,
+        "geometry": 8.33,
+        "visibility": 100,
+        "hitTesting": 66.67,
+        "overall": 58.33
+      },
+      "observations": 6,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 0,
+          "difference": -32
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 285.84,
+          "difference": -274.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-1\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 0,
+          "difference": -32
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 285.84,
+          "difference": -274.16
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"sidebar\"]",
+          "actual": "[data-layout-key=\"filter-completed\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 109.84,
+          "difference": -38.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 176,
+          "difference": -224
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 77.84,
+          "difference": 1.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 149,
+          "actual": 109.84,
+          "difference": -39.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 253,
+          "actual": 197.84,
+          "difference": -55.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-2\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        }
+      ]
+    },
+    {
+      "id": "add-dialog",
+      "label": "Add dialog open",
+      "scores": {
+        "coverage": 100,
+        "geometry": 25,
+        "visibility": 83.33,
+        "hitTesting": 16.67,
+        "overall": 41.67
+      },
+      "observations": 6,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 1,
+          "difference": -31
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 295.84,
+          "difference": -264.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-title-input\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 2,
+          "difference": -30
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 293.84,
+          "difference": -266.16
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"add-dialog\"]",
+          "actual": "[data-layout-key=\"filter-completed\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 114.84,
+          "difference": -33.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 180,
+          "difference": -220
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"add-dialog\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 82.84,
+          "difference": 6.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"add-dialog\"]",
+          "actual": "[data-layout-key=\"add-task\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-dialog\"]",
+          "category": "visibility",
+          "expected": false,
+          "actual": true
+        },
+        {
+          "selector": "[data-layout-key=\"add-dialog\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 624,
+          "actual": 297.84,
+          "difference": -326.16
+        },
+        {
+          "selector": "[data-layout-key=\"add-dialog\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 0,
+          "actual": 2,
+          "difference": 2
+        },
+        {
+          "selector": "[data-layout-key=\"task-title-input\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 302,
+          "actual": 154,
+          "difference": -148
+        },
+        {
+          "selector": "[data-layout-key=\"task-title-input\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 32,
+          "actual": 23,
+          "difference": -9
+        },
+        {
+          "selector": "[data-layout-key=\"task-title-input\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-title-input\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        }
+      ]
+    },
+    {
+      "id": "task-added",
+      "label": "Task added",
+      "scores": {
+        "coverage": 100,
+        "geometry": 10,
+        "visibility": 100,
+        "hitTesting": 40,
+        "overall": 50
+      },
+      "observations": 5,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 1,
+          "difference": -31
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 471.84,
+          "difference": -88.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 2,
+          "difference": -30
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 469.84,
+          "difference": -90.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 114.84,
+          "difference": -33.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 356,
+          "difference": -44
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 82.84,
+          "difference": 6.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 461,
+          "actual": 380.84,
+          "difference": -80.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-4\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        }
+      ]
+    },
+    {
+      "id": "action-menu",
+      "label": "Action menu open",
+      "scores": {
+        "coverage": 100,
+        "geometry": 8.33,
+        "visibility": 100,
+        "hitTesting": 33.33,
+        "overall": 47.22
+      },
+      "observations": 6,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 1,
+          "difference": -31
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 471.84,
+          "difference": -88.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 2,
+          "difference": -30
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 469.84,
+          "difference": -90.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 114.84,
+          "difference": -33.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 356,
+          "difference": -44
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 82.84,
+          "difference": 6.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": ".ant-dropdown",
+          "category": "geometry",
+          "field": "x",
+          "expected": 935,
+          "actual": -9999,
+          "difference": -10934
+        },
+        {
+          "selector": ".ant-dropdown",
+          "category": "geometry",
+          "field": "y",
+          "expected": 220,
+          "actual": -9525.16,
+          "difference": -9745.16
+        },
+        {
+          "selector": ".ant-dropdown",
+          "category": "geometry",
+          "field": "width",
+          "expected": 128,
+          "actual": 340,
+          "difference": 212
+        },
+        {
+          "selector": ".ant-dropdown",
+          "category": "geometry",
+          "field": "height",
+          "expected": 40,
+          "actual": 172,
+          "difference": 132
+        },
+        {
+          "selector": ".ant-dropdown",
+          "category": "hit-testing",
+          "expected": "span",
+          "actual": "ul"
+        },
+        {
+          "selector": ".ant-dropdown-menu-item-danger",
+          "category": "geometry",
+          "field": "x",
+          "expected": 939,
+          "actual": -9995,
+          "difference": -10934
+        },
+        {
+          "selector": ".ant-dropdown-menu-item-danger",
+          "category": "geometry",
+          "field": "y",
+          "expected": 224,
+          "actual": -9519.16,
+          "difference": -9743.16
+        },
+        {
+          "selector": ".ant-dropdown-menu-item-danger",
+          "category": "geometry",
+          "field": "width",
+          "expected": 120,
+          "actual": 332,
+          "difference": 212
+        },
+        {
+          "selector": ".ant-dropdown-menu-item-danger",
+          "category": "geometry",
+          "field": "height",
+          "expected": 32,
+          "actual": 160,
+          "difference": 128
+        },
+        {
+          "selector": ".ant-dropdown-menu-item-danger",
+          "category": "hit-testing",
+          "expected": "span",
+          "actual": "ul"
+        }
+      ]
+    },
+    {
+      "id": "delete-dialog",
+      "label": "Delete dialog open",
+      "scores": {
+        "coverage": 100,
+        "geometry": 29.17,
+        "visibility": 66.67,
+        "hitTesting": 16.67,
+        "overall": 37.5
+      },
+      "observations": 6,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 1,
+          "difference": -31
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 471.84,
+          "difference": -88.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"delete-dialog\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 2,
+          "difference": -30
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 469.84,
+          "difference": -90.16
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"delete-dialog\"]",
+          "actual": "[data-layout-key=\"sidebar\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 114.84,
+          "difference": -33.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 356,
+          "difference": -44
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"delete-dialog\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 82.84,
+          "difference": 6.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"delete-dialog\"]",
+          "actual": "[data-layout-key=\"add-task\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"delete-dialog\"]",
+          "category": "visibility",
+          "expected": false,
+          "actual": true
+        },
+        {
+          "selector": "[data-layout-key=\"delete-dialog\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 624,
+          "actual": 493.04,
+          "difference": -130.96
+        },
+        {
+          "selector": "[data-layout-key=\"delete-dialog\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 0,
+          "actual": 2,
+          "difference": 2
+        },
+        {
+          "selector": ".ant-modal-mask",
+          "category": "visibility",
+          "expected": true,
+          "actual": false
+        },
+        {
+          "selector": ".ant-modal-mask",
+          "category": "geometry",
+          "field": "height",
+          "expected": 720,
+          "actual": 0,
+          "difference": -720
+        },
+        {
+          "selector": ".ant-modal-mask",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"delete-dialog\"]",
+          "actual": "[data-layout-key=\"task-workspace\"]"
+        }
+      ]
+    },
+    {
+      "id": "restored",
+      "label": "Dialog dismissed",
+      "scores": {
+        "coverage": 100,
+        "geometry": 8.33,
+        "visibility": 100,
+        "hitTesting": 33.33,
+        "overall": 47.22
+      },
+      "observations": 6,
+      "discrepancies": [
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 1,
+          "difference": -31
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 960,
+          "actual": 1280,
+          "difference": 320
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 471.84,
+          "difference": -88.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-workspace\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 160,
+          "actual": 0,
+          "difference": -160
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 32,
+          "actual": 2,
+          "difference": -30
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 560,
+          "actual": 469.84,
+          "difference": -90.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 368,
+          "actual": 180,
+          "difference": -188
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 148,
+          "actual": 114.84,
+          "difference": -33.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 724,
+          "actual": 1100,
+          "difference": 376
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 400,
+          "actual": 356,
+          "difference": -44
+        },
+        {
+          "selector": "[data-layout-key=\"task-list\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-2\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 980,
+          "actual": 180,
+          "difference": -800
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 76,
+          "actual": 82.84,
+          "difference": 6.84
+        },
+        {
+          "selector": "[data-layout-key=\"add-task\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 112,
+          "actual": 72,
+          "difference": -40
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 149,
+          "actual": 116.84,
+          "difference": -32.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-1\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-1\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "x",
+          "expected": 369,
+          "actual": 180,
+          "difference": -189
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "y",
+          "expected": 461,
+          "actual": 380.84,
+          "difference": -80.16
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "width",
+          "expected": 722,
+          "actual": 1100,
+          "difference": 378
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "geometry",
+          "field": "height",
+          "expected": 104,
+          "actual": 88,
+          "difference": -16
+        },
+        {
+          "selector": "[data-layout-key=\"task-4\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-4\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
+        }
+      ]
+    }
+  ]
+}

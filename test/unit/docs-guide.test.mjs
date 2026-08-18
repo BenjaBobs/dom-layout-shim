@@ -46,6 +46,7 @@ describe('Markdown guide rendering', () => {
     expect(rendered.description).toBe('Test description')
     expect(rendered.body).toContain('<article class="article">')
     expect(rendered.body).toContain('<h1>Test title</h1>')
+    expect(rendered.pageStyles).not.toContain('.article a[href^="./examples/"]')
   })
 
   it('renders metadata, the hero, navigation, and numbered sections', () => {

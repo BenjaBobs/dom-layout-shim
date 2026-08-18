@@ -261,6 +261,12 @@ The hosted pages run in a browser for visual inspection. They complement rather
 than replace Chromium parity fixtures: each example publishes its known
 compatibility limitations alongside the working scenario.
 
+Run `pnpm run examples:compatibility` to execute every named checkpoint in both
+Chromium and happy-dom with the shim. The command reports observation coverage,
+agreement by geometry, visibility, and hit testing, and the raw differences. An
+ordinary difference does not fail the command; only failure to execute or
+capture the report does.
+
 ## Use it in a test lifecycle
 
 Attach after creating the window, reset content between tests, and close the
