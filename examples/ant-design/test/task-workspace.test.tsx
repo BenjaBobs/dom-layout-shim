@@ -52,14 +52,16 @@ describe('Ant Design task workspace consumer', () => {
 
     const dialog = requiredElement<HTMLElement>('[data-layout-key="delete-dialog"] .ant-modal')
     const mask = requiredElement<HTMLElement>('.ant-modal-mask')
+    const modalWrap = requiredElement<HTMLElement>('.ant-modal-wrap')
     // The hosted app uses `100vh`; substitute the configured pixel viewport
     // because viewport units are outside the shim's supported length subset.
     mask.style.height = '720px'
     expect(dialog).toHaveProperty('offsetWidth', 520)
     expect(mask).toHaveProperty('offsetHeight', 720)
     // docs:start pointer-blocked
-    // Verify that the real modal mask wins the same point while the modal is open.
-    expectBlockedBy(addTask, mask)
+    // Ant Design places its full-screen interaction wrapper above the visual mask.
+    // Verify that this real modal layer wins the same point while the modal is open.
+    expectBlockedBy(addTask, modalWrap)
     // docs:end pointer-blocked
 
     const confirmDelete = requiredButton('Delete')
