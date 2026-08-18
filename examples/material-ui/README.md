@@ -35,6 +35,6 @@ covered application control cannot receive the pointer. This is an observable
 compatibility limitation, not a replacement modal implementation.
 
 The compatibility command runs the full scripted interaction in Chromium and
-happy-dom with the shim, then updates `compatibility-report.json`. Agreement
-differences are reported without failing the command. See
+happy-dom with the shim, then generates the ignored `compatibility-report.json`
+build artifact. Agreement differences are reported without failing the command. See
 `test/compatibility-scenario.test.tsx` for the happy-dom scenario entry point.

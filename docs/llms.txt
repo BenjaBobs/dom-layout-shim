@@ -159,6 +159,10 @@ comparisons, and unsupported CSS grouped by likely layout impact. Differences
 are non-gating; inability to run or capture the scenario is an infrastructure
 error.
 
+Compatibility reports are ignored build artifacts. Documentation CI installs
+Chromium and regenerates them before building the deployment artifact; local
+documentation generation uses reports produced by the same command.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim

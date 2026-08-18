@@ -331,6 +331,11 @@ stability, computed layout inputs, hit-test stacks, and unsupported CSS observed
 on the example elements. An ordinary difference does not fail the command; only
 failure to execute or capture the report does.
 
+The generated `examples/*/compatibility-report.json` files are ignored build
+artifacts. Run the command before local documentation generation when fresh
+reports are needed. Documentation CI always regenerates them with its installed
+Chromium before assembling the deployment artifact.
+
 ## Use it in a test lifecycle
 
 Attach after creating the window, reset content between tests, and close the
