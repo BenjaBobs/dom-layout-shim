@@ -22,6 +22,11 @@ export type RectQuery = {
   selector: string
 }
 
+export type ClientRectsQuery = {
+  type: 'client-rects'
+  selector: string
+}
+
 export type DimensionsQuery = {
   type: 'dimensions'
   selector: string
@@ -36,6 +41,7 @@ export type BrowserParityQuery =
   | PointQuery
   | CenterClickabilityQuery
   | RectQuery
+  | ClientRectsQuery
   | DimensionsQuery
   | ScrollQuery
 
@@ -68,6 +74,7 @@ export type QueryResult = {
   elementFromPoint?: string | null
   elementsFromPoint?: string[]
   rect?: SerializedRect
+  clientRects?: SerializedRect[]
   dimensions?: SerializedDimensions
   offsetParent?: string | null
   scroll?: {
@@ -518,6 +525,13 @@ function runQueries(windowLike: QueryWindow, queries: BrowserParityQuery[]): Que
     if (query.type === 'rect') {
       return {
         rect: serializeRect(rect),
+      }
+    }
+
+
+    if (query.type === 'client-rects') {
+      return {
+        clientRects: Array.from(element.getClientRects(), serializeRect),
       }
     }
 

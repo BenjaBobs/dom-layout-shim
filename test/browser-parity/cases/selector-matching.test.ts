@@ -85,3 +85,33 @@ it('matches supported attribute and functional pseudo-class selectors', async ()
     queries: [{ type: 'rect', selector: '#button' }],
   })
 })
+
+it('matches structural and control-state pseudo-class selectors', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body, ul { margin: 0; }
+        ul { padding: 0; list-style: none; }
+        li { width: 10px; height: 10px; }
+        li:first-child { width: 20px; }
+        li:nth-child(2) { width: 30px; }
+        li:last-child { width: 40px; }
+        button { width: 10px; height: 10px; }
+        button:disabled { width: 50px; }
+      </style>
+      <ul>
+        <li id="first"></li>
+        <li id="middle"></li>
+        <li id="last"></li>
+      </ul>
+      <button id="disabled" disabled></button>
+    `,
+    queries: [
+      { type: 'rect', selector: '#first' },
+      { type: 'rect', selector: '#middle' },
+      { type: 'rect', selector: '#last' },
+      { type: 'rect', selector: '#disabled' },
+    ],
+  })
+})

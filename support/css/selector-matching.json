@@ -30,8 +30,8 @@
     },
     {
       "id": "attribute-and-functional-selectors",
-      "description": "Supported attribute and functional pseudo-class selectors participate in matching.",
-      "support": "partial",
+      "description": "Supported attribute, structural, state, and functional pseudo-class selectors participate in matching.",
+      "support": "supported",
       "parity": {
         "status": "verified",
         "fixtures": [
@@ -41,7 +41,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Pseudo-elements and most pseudo-classes are not implemented."
+          "text": "Pseudo-elements and pseudo-classes outside `:where()`, `:is()`, `:not()`, `:first-child`, `:nth-child()`, `:last-child`, `:hover`, `:focus`, and `:disabled` are not implemented."
         }
       ]
     },

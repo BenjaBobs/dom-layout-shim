@@ -69,7 +69,7 @@ function readSelector(
         break
       }
       case 'pseudo-class': {
-        const pseudoSelector = readFunctionalPseudoSelector(component, policy)
+        const pseudoSelector = readPseudoSelector(component, policy)
 
         if (!pseudoSelector) {
           unsupported = true
@@ -115,6 +115,56 @@ function readSelector(
   }
 
   return { selector: result, specificity }
+}
+
+function readPseudoSelector(
+  component: SelectorComponent,
+  policy: UnsupportedCssPolicy | undefined,
+): ParsedSelector | undefined {
+  if (simplePseudoClasses.has(component.kind ?? '')) {
+    return { selector: `:${component.kind}`, specificity: 100 }
+  }
+
+  if (component.kind === 'nth-child') {
+    if (component.of !== null && component.of !== undefined) {
+      handleUnsupportedSelector(JSON.stringify(component), policy)
+      return undefined
+    }
+
+    if (typeof component.a !== 'number' || typeof component.b !== 'number') {
+      handleUnsupportedSelector(JSON.stringify(component), policy)
+      return undefined
+    }
+
+    return {
+      selector: `:nth-child(${stringifyAnPlusB(component.a, component.b)})`,
+      specificity: 100,
+    }
+  }
+
+  return readFunctionalPseudoSelector(component, policy)
+}
+
+const simplePseudoClasses = new Set([
+  'first-child',
+  'last-child',
+  'hover',
+  'focus',
+  'disabled',
+])
+
+function stringifyAnPlusB(a: number, b: number): string {
+  if (a === 0) {
+    return String(b)
+  }
+
+  const aText = a === 1 ? 'n' : a === -1 ? '-n' : `${a}n`
+
+  if (b === 0) {
+    return aText
+  }
+
+  return `${aText}${b > 0 ? '+' : ''}${b}`
 }
 
 function readFunctionalPseudoSelector(
@@ -220,6 +270,9 @@ type SelectorComponent = {
   name?: string
   value?: string
   kind?: string
+  a?: number
+  b?: number
+  of?: unknown
   selectors?: unknown
   namespace?: unknown
   operation?: {

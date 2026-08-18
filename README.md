@@ -32,10 +32,15 @@ const target = document.elementFromPoint(
 )
 ```
 
-The attachment patches `getBoundingClientRect()`, `offsetWidth`,
+The attachment patches `getBoundingClientRect()`, `getClientRects()`, `offsetWidth`,
 `offsetHeight`, `offsetTop`, `offsetLeft`, `offsetParent`, `clientWidth`, and
 `clientHeight` from the same layout snapshot, so geometry APIs agree with hit
 testing.
+
+Wrapped inline phrasing elements expose one `DOMRect` per line through
+`getClientRects()`, while `getBoundingClientRect()` returns their union. Stylesheet
+matching supports `:first-child`, `:nth-child()`, `:last-child`, `:hover`,
+`:focus`, and `:disabled` in addition to the existing selector forms.
 
 The default viewport is 1280×720. Inline styles and document `<style>` elements
 are discovered automatically. Accessible `<link rel="stylesheet">` sheets and

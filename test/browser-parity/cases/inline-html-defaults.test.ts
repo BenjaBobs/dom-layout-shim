@@ -93,3 +93,21 @@ it('native inline phrasing elements preserve br line breaks in ancestor text mea
     ],
   })
 })
+
+it('reports one client rect per wrapped inline fragment', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
+    html: `
+      <style>
+        body { margin: 0; }
+        #host { width: 100px; font-size: 20px; line-height: 30px; }
+      </style>
+      <div id="host"><span id="inline">one two three four five</span></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#inline' },
+      { type: 'client-rects', selector: '#inline' },
+    ],
+  })
+})

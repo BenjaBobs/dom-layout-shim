@@ -38,6 +38,8 @@ export class DocumentAttachment {
   private detached = false
   private snapshot: LayoutSnapshot | undefined
   private snapshotScroll: ScrollOffset | undefined
+  private snapshotActiveElement: Element | null | undefined
+  private snapshotHoveredElements: Element[] = []
   private stylesheetFingerprint: string | undefined
   private mutationObserver: MutationObserver | undefined
 
@@ -84,6 +86,8 @@ export class DocumentAttachment {
       this.nativeControlMetrics,
     )
     this.snapshotScroll = scroll
+    this.snapshotActiveElement = this.document.activeElement
+    this.snapshotHoveredElements = matchingElements(this.document, ':hover')
     this.stylesheetFingerprint = documentStylesheetFingerprint(this.document)
     this.dirty = false
   }
@@ -91,6 +95,19 @@ export class DocumentAttachment {
   getBoundingClientRect(element: Element): DOMRect {
     const snapshot = this.getSnapshot()
     return createDomRect(this.document, snapshot.rects.get(element) ?? zeroBox())
+  }
+
+  getClientRects(element: Element): DOMRectList {
+    const snapshot = this.getSnapshot()
+    const rects = (snapshot.fragmentRects.get(element) ?? []).map((box) =>
+      createDomRect(this.document, box),
+    )
+    Object.defineProperty(rects, 'item', {
+      value(index: number) {
+        return rects[index] ?? null
+      },
+    })
+    return rects as unknown as DOMRectList
   }
 
   offsetWidth(element: Element): number {
@@ -251,6 +268,8 @@ export class DocumentAttachment {
       !this.snapshot ||
       this.stylesheetFingerprint !== documentStylesheetFingerprint(this.document) ||
       !sameScrollOffset(this.snapshotScroll, readScrollOffset(this.document)) ||
+      this.snapshotActiveElement !== this.document.activeElement ||
+      !sameElements(this.snapshotHoveredElements, matchingElements(this.document, ':hover')) ||
       hasElementScrollChanged(this.snapshot.elementScrolls)
     ) {
       this.recompute()
@@ -302,6 +321,18 @@ export class DocumentAttachment {
       throw new Error('Cannot use a detached layout engine attachment')
     }
   }
+}
+
+function matchingElements(document: Document, selector: string): Element[] {
+  try {
+    return Array.from(document.querySelectorAll(selector))
+  } catch {
+    return []
+  }
+}
+
+function sameElements(left: readonly Element[], right: readonly Element[]): boolean {
+  return left.length === right.length && left.every((element, index) => element === right[index])
 }
 
 type ScrollAlignment = {
