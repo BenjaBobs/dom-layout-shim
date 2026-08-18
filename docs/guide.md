@@ -130,6 +130,19 @@ Media types, width and height ranges, orientation, aspect ratio, query lists,
 conjunctions, and nested media rules share the `matchMedia()` evaluator.
 Unsupported media features are reported through `unsupportedCss`.
 
+Keep shared defaults in test setup and override only responsive scenarios:
+
+```ts
+const layout = await attachLayoutEngine({ window })
+
+// Recompute against a phone-sized viewport without remounting the application.
+layout.setViewport({ width: 390, height: 844 })
+```
+
+`setViewport()` updates shim-backed `window.innerWidth` and `window.innerHeight`,
+invalidates cached geometry, updates subsequent `matchMedia()` answers, and
+dispatches `window.resize`.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

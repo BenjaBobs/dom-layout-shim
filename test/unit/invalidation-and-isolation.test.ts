@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
 import { attachLayoutEngine } from '../../src/index.ts'
 import { attach, expectRect, receivesPointerAtCenter, requiredElement, waitForMutationDelivery } from './layout-engine-helpers.ts'
@@ -311,5 +311,27 @@ describe('layout invalidation and isolation', () => {
       narrowWindow.close()
       wideWindow.close()
     }
+  })
+
+  it('updates viewport-backed layout and window dimensions without reattaching', async () => {
+    document.body.innerHTML = '<div id="box" style="position:fixed; inset:0"></div>'
+    const resize = vi.fn()
+    window.addEventListener('resize', resize)
+    const attachment = await attachLayoutEngine({
+      window,
+      viewport: { width: 320, height: 640 },
+    })
+
+    expect(window.innerWidth).toBe(320)
+    expect(requiredElement('#box').getBoundingClientRect().width).toBe(320)
+    expect(window.matchMedia('(orientation: portrait)').matches).toBe(true)
+
+    attachment.setViewport({ width: 800, height: 600 })
+
+    expect(window.innerWidth).toBe(800)
+    expect(window.innerHeight).toBe(600)
+    expect(requiredElement('#box').getBoundingClientRect().width).toBe(800)
+    expect(window.matchMedia('(orientation: landscape)').matches).toBe(true)
+    expect(resize).toHaveBeenCalledOnce()
   })
 })

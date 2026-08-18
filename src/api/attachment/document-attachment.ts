@@ -29,7 +29,7 @@ export type DocumentAttachmentOptions = {
 export class DocumentAttachment {
   readonly document: Document
 
-  private readonly viewport: Viewport
+  private viewport: Viewport
   private readonly unsupportedCss: UnsupportedCssPolicy | undefined
   private readonly textMeasurer: TextMeasurer
   private readonly stylesheets: readonly string[]
@@ -70,6 +70,18 @@ export class DocumentAttachment {
   markDirty(): void {
     this.assertAttached()
     this.dirty = true
+  }
+
+  setViewport(viewport: Viewport): void {
+    this.assertAttached()
+    this.viewport = { ...viewport }
+    this.dirty = true
+    this.document.defaultView?.dispatchEvent(new this.document.defaultView.Event('resize'))
+  }
+
+  getViewport(): Viewport {
+    this.assertAttached()
+    return { ...this.viewport }
   }
 
   recompute(): void {

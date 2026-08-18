@@ -71,6 +71,13 @@ orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media
 rules. Non-matching rules do not enter the cascade. Unsupported media features
 route through the unsupported CSS policy as `@media` / `unsupported-rule`.
 
+`attachLayoutEngine()` returns a `LayoutEngineAttachment`. Calling
+`attachment.setViewport({ width, height })` changes the active viewport without
+reattaching or rebuilding the DOM. It invalidates cached layout, updates the
+shim-backed `window.innerWidth` and `window.innerHeight` values and subsequent
+`matchMedia()` results, and dispatches a window `resize` event. This allows a
+suite to attach once with shared defaults and override only responsive tests.
+
 ## Named grid areas
 
 `grid-template-areas` accepts equal-width quoted rows containing custom
