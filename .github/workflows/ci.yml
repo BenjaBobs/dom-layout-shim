@@ -112,7 +112,7 @@ jobs:
       (needs.affected.result != 'success' || needs.affected.outputs.parity == 'true')
     runs-on: ubuntu-24.04
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
       - name: Require successful classification
         if: needs.affected.result != 'success'
