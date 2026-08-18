@@ -1,5 +1,4 @@
 import { writeFile } from 'node:fs/promises'
-import { attachLayoutEngine } from 'dom-layout-shim'
 import { act } from 'react'
 import { it } from 'vitest'
 import { createDomDriver, runCompatibilityScenario } from '../../../scripts/example-compatibility-core.mjs'
@@ -18,12 +17,6 @@ it.skipIf(!output)('captures the full Ant Design compatibility scenario', async 
   await act(async () => {
     root = mountTaskWorkspace(container)
   })
-  await attachLayoutEngine({
-    window,
-    viewport: { width: 1280, height: 720 },
-    unsupportedCss: { default: 'ignore' },
-  })
-
   const dom = createDomDriver(document)
   const driver = {
     ...dom,

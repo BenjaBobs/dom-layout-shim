@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "example": "material-ui",
   "scenario": "task-workspace-full-interaction",
-  "generatedAt": "2026-08-18T10:59:48.531Z",
+  "generatedAt": "2026-08-18T12:12:34.540Z",
   "metadata": {
     "chromiumVersion": "147.0.7727.15",
     "viewport": {
@@ -685,8 +685,8 @@
           "category": "geometry",
           "field": "x",
           "expected": 1014,
-          "actual": 888,
-          "difference": -126
+          "actual": 1020,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"delete-action\"]",
