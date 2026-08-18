@@ -7,7 +7,7 @@ afterEach(() => {
 })
 
 describe('stylesheet source handling', () => {
-  it('routes case-insensitive attribute selectors through the unsupported CSS policy', async () => {
+  it('matches case-insensitive HTML attribute selectors', async () => {
     document.body.innerHTML = `
       <style>
         [data-state="open" i] {
@@ -21,9 +21,9 @@ describe('stylesheet source handling', () => {
       <button id="button" data-state="OPEN"></button>
     `
 
-    await attachStrict()
+    await attach()
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
+    expectRect(requiredElement('#button').getBoundingClientRect(), { left: 10, top: 0, width: 50, height: 50 })
   })
 
   it('applies configured stylesheet CSS before document styles', async () => {
@@ -326,7 +326,7 @@ describe('stylesheet source handling', () => {
   it('routes unsupported selectors through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
       <style>
-        .box:focus-visible {
+        .box::first-letter {
           left: 10px;
         }
       </style>

@@ -1319,6 +1319,10 @@ function stringifyToken(token: unknown): string {
       return ' '
     }
 
+    if (value.type === 'string') {
+      return JSON.stringify(value.value)
+    }
+
     if (value.type === 'parenthesis-block') {
       return '('
     }

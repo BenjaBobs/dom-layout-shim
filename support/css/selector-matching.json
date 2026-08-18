@@ -35,13 +35,14 @@
       "parity": {
         "status": "verified",
         "fixtures": [
-          "selector-matching"
+          "selector-matching",
+          "generated-pseudo-elements"
         ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Pseudo-elements and pseudo-classes outside `:where()`, `:is()`, `:not()`, `:first-child`, `:nth-child()`, `:last-child`, `:hover`, `:focus`, and `:disabled` are not implemented."
+          "text": "Matching includes case-insensitive terminal HTML attribute selectors, `:where()`, `:is()`, `:not()`, `:has()`, structural selectors, and supported state pseudo-classes. `::before` and `::after` are routed to generated-content measurement rather than matched as ordinary elements."
         }
       ]
     },

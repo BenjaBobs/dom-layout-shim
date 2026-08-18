@@ -14,7 +14,7 @@ describe('unsupported CSS policy', () => {
   it('warns once and continues layout by default', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     document.body.innerHTML = `
-      <div id="box" style="width:100px; height:40px; transform:rotate(10deg)"></div>
+      <div id="box" style="width:100px; height:40px; transform:perspective(100px)"></div>
     `
 
     await attach()
@@ -30,7 +30,7 @@ describe('unsupported CSS policy', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     const warnings: UnsupportedCssContext[] = []
     document.body.innerHTML = `
-      <div id="box" style="width:100px; height:40px; transform:rotate(10deg)"></div>
+      <div id="box" style="width:100px; height:40px; transform:perspective(100px)"></div>
     `
 
     await attach({
@@ -46,7 +46,7 @@ describe('unsupported CSS policy', () => {
     expect(warnings).toHaveLength(1)
     expect(warnings[0]).toMatchObject({
       property: 'transform',
-      value: 'rotate(10deg)',
+      value: 'perspective(100px)',
       reason: 'unsupported-value',
       source: 'inline-style',
       defaultDecision: 'warn',
@@ -56,9 +56,9 @@ describe('unsupported CSS policy', () => {
   it('summarizes unique unsupported declarations across a test suite', async () => {
     const reporter = createUnsupportedCssReporter()
     document.body.innerHTML = `
-      <div style="transform:rotate(10deg)"></div>
-      <div style="transform:rotate(10deg)"></div>
-      <div style="transform:skewX(10deg)"></div>
+      <div style="transform:perspective(100px)"></div>
+      <div style="transform:perspective(100px)"></div>
+      <div style="transform:rotateX(10deg)"></div>
     `
 
     await attach({
@@ -69,7 +69,7 @@ describe('unsupported CSS policy', () => {
     document.body.getBoundingClientRect()
     reporter.onWarning({
       property: 'transform',
-      value: 'rotate(10deg)',
+      value: 'perspective(100px)',
       reason: 'unsupported-value',
       source: 'stylesheet',
       defaultDecision: 'warn',
@@ -80,28 +80,28 @@ describe('unsupported CSS policy', () => {
       declarations: [
         {
           property: 'transform',
-          value: 'rotate(10deg)',
+          value: 'perspective(100px)',
           reason: 'unsupported-value',
           sources: ['inline-style', 'stylesheet'],
           selectors: [],
           elements: ['div'],
-          computedValues: ['rotate(10deg)'],
+          computedValues: ['perspective(100px)'],
           occurrences: 2,
         },
         {
           property: 'transform',
-          value: 'skewX(10deg)',
+          value: 'rotateX(10deg)',
           reason: 'unsupported-value',
           sources: ['inline-style'],
           selectors: [],
           elements: ['div'],
-          computedValues: ['skewX(10deg)'],
+          computedValues: ['rotateX(10deg)'],
           occurrences: 1,
         },
       ],
     })
 
-    document.body.innerHTML = '<div style="transform:rotate(10deg)"></div>'
+    document.body.innerHTML = '<div style="transform:perspective(100px)"></div>'
     await attach({
       unsupportedCss: {
         onWarning: reporter.onWarning,
@@ -132,7 +132,7 @@ describe('unsupported CSS policy', () => {
 
   it('throws on unsupported transform values in strict mode', async () => {
     document.body.innerHTML = `
-      <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transform:rotate(10deg)"></div>
+      <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; transform:perspective(100px)"></div>
     `
 
     await attachStrict()
