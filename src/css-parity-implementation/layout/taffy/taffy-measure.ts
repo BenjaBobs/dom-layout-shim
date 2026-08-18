@@ -196,7 +196,7 @@ function formControlIntrinsicSize(
 
   if (tagName === 'button') {
     if (style.display === 'flex') {
-      return styledFlexButtonIntrinsicSize(element, style, textMeasurer, metrics)
+      return styledFlexButtonIntrinsicSize(element, style, textMeasurer)
     }
     return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer, metrics)
   }
@@ -256,7 +256,6 @@ function styledFlexButtonIntrinsicSize(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
-  metrics: NativeControlMetrics,
 ): Size<number> {
   const measured = textMeasurer.measure({
     text: element.textContent?.trim() ?? '',
@@ -272,11 +271,10 @@ function styledFlexButtonIntrinsicSize(
     style.borderStyle[side] === 'none' || style.borderStyle[side] === 'hidden' ? 0 : style.borderWidth[side]
 
   return {
-    // Chromium retains an anonymous inner button content inset after authors
-    // switch the outer control to flex layout. Reuse half of the selected
-    // deterministic native-button padding so styled controls remain tied to
-    // the configured profile instead of the runtime platform.
-    width: measured.width + metrics.button.horizontalPadding / 2 + flexButtonInlineAdvance(element, style) +
+    // Author padding replaces Chromium's native button inline padding once
+    // the control is switched to flex layout; retaining a native inset here
+    // makes explicitly styled component-library buttons too wide.
+    width: measured.width + flexButtonInlineAdvance(element, style) +
       fixedLength(style.padding.left) + fixedLength(style.padding.right) + borderWidth('left') + borderWidth('right'),
     height: measured.height + fixedLength(style.padding.top) + fixedLength(style.padding.bottom) + borderWidth('top') + borderWidth('bottom'),
   }
