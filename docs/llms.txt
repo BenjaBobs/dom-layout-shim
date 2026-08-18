@@ -107,6 +107,12 @@ Inherited `text-transform` values `none`, `uppercase`, `lowercase`, and
 `capitalize` are applied to the string passed into default or custom text
 measurement. They do not mutate authored `textContent`.
 
+The default attachment path discovers initial `@font-face` rules. Static TTF,
+OTF, and WOFF data or resolvable URL sources supply deterministic glyph advances
+and kerning; family lists choose the first discovered family and the closest
+numeric weight. `local()`, WOFF2, unavailable, and unmatched sources use the
+deterministic fallback. Pass `textMeasurer` to replace this behavior.
+
 Selector matching includes supported structural/state pseudo-classes,
 `:is()`, `:where()`, `:not()`, `:has()`, and case-insensitive terminal HTML
 attribute selectors. `::before` and `::after` string or `attr()` content feeds

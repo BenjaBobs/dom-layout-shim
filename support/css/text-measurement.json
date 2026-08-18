@@ -139,6 +139,36 @@
       ]
     },
     {
+      "id": "font-face-sources",
+      "description": "Initial supported `@font-face` sources provide deterministic glyph advances and kerning.",
+      "properties": [
+        "font-family",
+        "font-weight"
+      ],
+      "syntax": [
+        "@font-face",
+        "url(<ttf-or-otf-or-woff>)",
+        "data:<font>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "font-face-measurement"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Attachment discovers initial document, adopted, and configured stylesheet font faces, selects the first registered family and closest numeric weight, and uses glyph advances plus kerning for intrinsic measurement."
+        },
+        {
+          "kind": "limitation",
+          "text": "Dynamic font-face insertion, `local()` lookup, WOFF2, variable axes, and complex-script shaping are not modeled. Unavailable or unmatched fonts retain deterministic fallback measurement."
+        }
+      ]
+    },
+    {
       "id": "white-space-and-line-breaks",
       "description": "Supported `white-space` modes control text preservation and wrapping.",
       "properties": [
@@ -160,7 +190,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Text-only leaf elements and direct text-plus-`br` leaves are measured through the configured `TextMeasurer`; the default uses Pretext with deterministic fallback."
+          "text": "Text-only leaf elements and direct text-plus-`br` leaves are measured through the configured `TextMeasurer`; the default attachment path uses discovered font data with deterministic fallback."
         }
       ]
     },

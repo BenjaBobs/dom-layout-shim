@@ -27,9 +27,9 @@ The core rule is:
 
 - Taffy owns block, flex, grid, sizing constraints, margin, padding, border,
   box sizing, and supported positioning geometry.
-- Text measurement is supplied to Taffy through measure callbacks. The default
-  text measurer uses Pretext when the runtime supports canvas text measurement
-  and falls back to a deterministic approximation otherwise.
+- Text measurement is supplied to Taffy through measure callbacks. Initial
+  supported `@font-face` sources provide parsed glyph metrics; unmatched fonts
+  use a deterministic approximation.
 - Replaced element intrinsic dimensions are supplied through measure callbacks.
 - `display: none`, the `hidden` attribute, ignored DOM tags, CSS parsing,
   cascade, unsupported CSS policy, and layout metadata are handled before tree
