@@ -68,6 +68,7 @@ const font = new opentype.Font({
   unitsPerEm: 1000,
   ascender: 800,
   descender: -200,
+  weightClass: 400,
   createdTimestamp: 1,
   glyphs,
 })
@@ -79,6 +80,12 @@ const font = new opentype.Font({
 font.tables.os2.usWinAscent = 800
 font.tables.os2.usWinDescent = 200
 font.tables.os2.fsSelection |= 1 << 7
+font.tables.os2.usWeightClass = 400
+font.tables.post = {
+  isFixedPitch: 1,
+  underlinePosition: -100,
+  underlineThickness: 50,
+}
 const bytes = Buffer.from(font.toArrayBuffer())
 const checksum = createHash('sha256').update(bytes).digest('hex')
 const metadata = `${JSON.stringify({
@@ -89,11 +96,15 @@ const metadata = `${JSON.stringify({
   generatorDependency: 'opentype.js@2.0.0',
   unitsPerEm: 1000,
   advanceWidth: 500,
+  weightClass: 400,
+  fixedPitch: true,
   ascender: 800,
   descender: -200,
   windowsAscent: 800,
   windowsDescent: 200,
   useTypographicMetrics: true,
+  underlinePosition: -100,
+  underlineThickness: 50,
   coverage: 'U+0020-U+007E',
   sha256: checksum,
 }, null, 2)}\n`
