@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "example": "material-ui",
   "scenario": "task-workspace-full-interaction",
-  "generatedAt": "2026-08-18T13:03:39.422Z",
+  "generatedAt": "2026-08-18T13:47:08.201Z",
   "metadata": {
     "chromiumVersion": "147.0.7727.15",
     "viewport": {
@@ -13,10 +13,10 @@
   },
   "summary": {
     "steps": 7,
-    "overallAgreement": 70.17,
+    "overallAgreement": 69.14,
     "coverage": 100,
-    "discrepancies": 111,
-    "uniqueDiscrepancies": 43,
+    "discrepancies": 107,
+    "uniqueDiscrepancies": 44,
     "unstableCheckpoints": 0,
     "styleInputDifferences": 1365,
     "hitStackDifferences": 33
@@ -27,12 +27,12 @@
       "label": "Initial task list",
       "scores": {
         "coverage": 100,
-        "geometry": 42.86,
+        "geometry": 46.43,
         "visibility": 100,
-        "hitTesting": 85.71,
+        "hitTesting": 71.43,
         "hitStack": 42.86,
         "styleInputs": 27.33,
-        "overall": 76.19
+        "overall": 72.62
       },
       "observations": 7,
       "stability": {
@@ -76,11 +76,9 @@
         },
         {
           "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-3\"]",
+          "actual": "[data-layout-key=\"task-list\"]"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -113,9 +111,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -133,8 +131,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -1854,9 +1852,6 @@
               "html"
             ],
             "actual": [
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"workspace\"]",
               "[data-layout-key=\"workspace\"]",
@@ -1930,12 +1925,12 @@
       "label": "Active filter",
       "scores": {
         "coverage": 100,
-        "geometry": 41.67,
+        "geometry": 45.83,
         "visibility": 100,
         "hitTesting": 83.33,
         "hitStack": 33.33,
         "styleInputs": 27.17,
-        "overall": 75
+        "overall": 76.39
       },
       "observations": 6,
       "stability": {
@@ -1978,14 +1973,6 @@
           "difference": 16
         },
         {
-          "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
-        },
-        {
           "selector": "[data-layout-key=\"sidebar\"]",
           "category": "geometry",
           "field": "y",
@@ -2016,9 +2003,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -2036,8 +2023,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -3580,12 +3567,12 @@
       "label": "Add dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 29.17,
+        "geometry": 33.33,
         "visibility": 100,
         "hitTesting": 33.33,
         "hitStack": 0,
         "styleInputs": 27.9,
-        "overall": 54.17
+        "overall": 55.55
       },
       "observations": 6,
       "stability": {
@@ -3629,14 +3616,6 @@
         },
         {
           "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
-        },
-        {
-          "selector": "[data-layout-key=\"workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"add-dialog\"]",
           "actual": "div"
@@ -3672,9 +3651,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -3692,8 +3671,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -5191,13 +5170,13 @@
             ],
             "actual": [
               "div",
+              "[data-layout-key=\"task-title-input\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-dialog\"]",
               "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"workspace\"]",
-              "[data-layout-key=\"workspace\"]",
-              "[data-layout-key=\"workspace\"]"
+              "[data-layout-key=\"task-list\"]"
             ]
           },
           {
@@ -5322,12 +5301,12 @@
       "label": "Task added",
       "scores": {
         "coverage": 100,
-        "geometry": 40,
+        "geometry": 45,
         "visibility": 100,
-        "hitTesting": 80,
+        "hitTesting": 60,
         "hitStack": 20,
         "styleInputs": 26.96,
-        "overall": 73.33
+        "overall": 68.33
       },
       "observations": 5,
       "stability": {
@@ -5371,11 +5350,9 @@
         },
         {
           "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-3\"]",
+          "actual": "[data-layout-key=\"task-4\"]"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -5408,9 +5385,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -5428,8 +5405,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -6651,9 +6628,7 @@
               "html"
             ],
             "actual": [
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
+              "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"workspace\"]",
               "[data-layout-key=\"workspace\"]",
@@ -6730,12 +6705,12 @@
       "label": "Action menu open",
       "scores": {
         "coverage": 100,
-        "geometry": 45.83,
+        "geometry": 50,
         "visibility": 100,
         "hitTesting": 83.33,
         "hitStack": 0,
         "styleInputs": 28.99,
-        "overall": 76.39
+        "overall": 77.78
       },
       "observations": 6,
       "stability": {
@@ -6778,14 +6753,6 @@
           "difference": 16
         },
         {
-          "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
-        },
-        {
           "selector": "[data-layout-key=\"sidebar\"]",
           "category": "geometry",
           "field": "y",
@@ -6810,9 +6777,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -6830,8 +6797,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -6866,8 +6833,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 143.66,
-          "actual": 120,
-          "difference": -23.66
+          "actual": 121.65,
+          "difference": -22.01
         },
         {
           "selector": "[data-layout-key=\"delete-action\"]",
@@ -8014,13 +7981,13 @@
             ],
             "actual": [
               "[data-layout-key=\"task-menu\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
+              "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"workspace\"]",
               "[data-layout-key=\"workspace\"]",
-              "[data-layout-key=\"workspace\"]"
+              "[data-layout-key=\"workspace\"]",
+              "div#app",
+              "[data-layout-key=\"task-menu\"]"
             ]
           },
           {
@@ -8121,12 +8088,12 @@
       "label": "Delete dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 50,
+        "geometry": 54.17,
         "visibility": 100,
         "hitTesting": 33.33,
         "hitStack": 0,
         "styleInputs": 26.81,
-        "overall": 61.11
+        "overall": 62.5
       },
       "observations": 6,
       "stability": {
@@ -8170,14 +8137,6 @@
         },
         {
           "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
-        },
-        {
-          "selector": "[data-layout-key=\"workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"delete-dialog\"]",
           "actual": "div"
@@ -8213,9 +8172,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -8233,8 +8192,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -9707,12 +9666,12 @@
             ],
             "actual": [
               "div",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "div",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
+              "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"workspace\"]",
               "[data-layout-key=\"workspace\"]"
             ]
           },
@@ -9838,12 +9797,12 @@
       "label": "Dialog dismissed",
       "scores": {
         "coverage": 100,
-        "geometry": 41.67,
+        "geometry": 45.83,
         "visibility": 100,
-        "hitTesting": 83.33,
+        "hitTesting": 66.67,
         "hitStack": 33.33,
         "styleInputs": 27.17,
-        "overall": 75
+        "overall": 70.83
       },
       "observations": 6,
       "stability": {
@@ -9887,11 +9846,9 @@
         },
         {
           "selector": "[data-layout-key=\"workspace\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 720,
-          "actual": 556.04,
-          "difference": -163.96
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"task-3\"]",
+          "actual": "[data-layout-key=\"task-4\"]"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -9924,9 +9881,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 994.8,
-          "actual": 1024,
-          "difference": 29.2,
-          "relativeDifference": 29.2,
+          "actual": 1020.8,
+          "difference": 26,
+          "relativeDifference": 26,
           "scope": "local-layout"
         },
         {
@@ -9944,8 +9901,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 101.2,
-          "actual": 72,
-          "difference": -29.2
+          "actual": 75.2,
+          "difference": -26
         },
         {
           "selector": "[data-layout-key=\"underlying-control\"]",
@@ -11416,9 +11373,7 @@
               "html"
             ],
             "actual": [
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
-              "[data-layout-key=\"task-3\"]",
+              "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"workspace\"]",
               "[data-layout-key=\"workspace\"]",
@@ -11537,9 +11492,9 @@
       "category": "geometry",
       "field": "x",
       "expected": 994.8,
-      "actual": 1024,
-      "difference": 29.2,
-      "relativeDifference": 29.2,
+      "actual": 1020.8,
+      "difference": 26,
+      "relativeDifference": 26,
       "scope": "local-layout",
       "occurrences": 7,
       "steps": [
@@ -11577,8 +11532,8 @@
       "category": "geometry",
       "field": "width",
       "expected": 101.2,
-      "actual": 72,
-      "difference": -29.2,
+      "actual": 75.2,
+      "difference": -26,
       "occurrences": 7,
       "steps": [
         "initial",
@@ -11667,24 +11622,6 @@
       ]
     },
     {
-      "selector": "[data-layout-key=\"workspace\"]",
-      "category": "geometry",
-      "field": "height",
-      "expected": 720,
-      "actual": 556.04,
-      "difference": -163.96,
-      "occurrences": 7,
-      "steps": [
-        "initial",
-        "active-filter",
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
       "selector": "[data-layout-key=\"task-1\"]",
       "category": "geometry",
       "field": "y",
@@ -11759,6 +11696,17 @@
       "selector": "[data-layout-key=\"task-list\"]",
       "category": "hit-testing",
       "expected": "[data-layout-key=\"task-2\"]",
+      "actual": "[data-layout-key=\"task-4\"]",
+      "occurrences": 2,
+      "steps": [
+        "task-added",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"workspace\"]",
+      "category": "hit-testing",
+      "expected": "[data-layout-key=\"task-3\"]",
       "actual": "[data-layout-key=\"task-4\"]",
       "occurrences": 2,
       "steps": [
@@ -11861,8 +11809,8 @@
       "category": "geometry",
       "field": "width",
       "expected": 143.66,
-      "actual": 120,
-      "difference": -23.66,
+      "actual": 121.65,
+      "difference": -22.01,
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -12071,6 +12019,16 @@
     {
       "selector": "[data-layout-key=\"workspace\"]",
       "category": "hit-testing",
+      "expected": "[data-layout-key=\"task-3\"]",
+      "actual": "[data-layout-key=\"task-list\"]",
+      "occurrences": 1,
+      "steps": [
+        "initial"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"workspace\"]",
+      "category": "hit-testing",
       "expected": "[data-layout-key=\"add-dialog\"]",
       "actual": "div",
       "occurrences": 1,
@@ -12090,7 +12048,7 @@
     }
   ],
   "unsupportedCss": {
-    "unsupportedDeclarationCount": 59,
+    "unsupportedDeclarationCount": 44,
     "properties": [
       {
         "property": "display",
@@ -12162,9 +12120,9 @@
         "declarations": 3,
         "occurrences": 4,
         "values": [
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1.3300000429153442}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-32}}}]}}}}",
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-24}}}]}}}}",
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-32}}}]}}}}"
+          "calc(100% + -24px)",
+          "calc(100% + -32px)",
+          "calc(133.00000429153442% + -32px)"
         ],
         "reasons": [
           "unsupported-value"
@@ -12193,48 +12151,13 @@
         "priority": "observed-layout"
       },
       {
-        "property": "height",
-        "declarations": 2,
-        "occurrences": 3,
-        "values": [
-          "1.4375em",
-          "1em"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ".css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input",
-          ".css-1ckov0h-MuiSvgIcon-root",
-          ".css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "[data-layout-key=\"task-title-input\"]",
-          "[data-layout-key=\"workspace\"]"
-        ],
-        "computedValues": [
-          "0px",
-          "22px",
-          "23px"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
         "property": "max-height",
         "declarations": 3,
         "occurrences": 3,
         "values": [
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-32}}}]}}}}",
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-64}}}]}}}}",
-          "{\"type\":\"calc\",\"value\":{\"type\":\"function\",\"value\":{\"type\":\"calc\",\"value\":{\"type\":\"sum\",\"value\":[{\"type\":\"value\",\"value\":{\"type\":\"percentage\",\"value\":1}},{\"type\":\"value\",\"value\":{\"type\":\"dimension\",\"value\":{\"unit\":\"px\",\"value\":-96}}}]}}}}"
+          "calc(100% + -32px)",
+          "calc(100% + -64px)",
+          "calc(100% + -96px)"
         ],
         "reasons": [
           "unsupported-value"
@@ -12250,34 +12173,6 @@
         "computedValues": [
           "calc(100% - 64px)",
           "calc(100% - 96px)"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "min-height",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "100vh"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ".css-kgk4kp"
-        ],
-        "elements": [
-          "[data-layout-key=\"workspace\"]"
-        ],
-        "computedValues": [
-          "768px"
         ],
         "support": [
           {
@@ -12315,120 +12210,6 @@
           }
         ],
         "priority": "observed-layout"
-      },
-      {
-        "property": "transform",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "translateZ(0)"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]"
-        ],
-        "computedValues": [
-          "translateZ(0)"
-        ],
-        "support": [
-          {
-            "id": "transforms",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "width",
-        "declarations": 1,
-        "occurrences": 1,
-        "values": [
-          "1em"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ".css-1ckov0h-MuiSvgIcon-root"
-        ],
-        "elements": [
-          "[data-layout-key=\"workspace\"]"
-        ],
-        "computedValues": [
-          "22px"
-        ],
-        "support": [
-          {
-            "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "letter-spacing",
-        "declarations": 7,
-        "occurrences": 19,
-        "values": [
-          "inherit",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0.007499999832361937}}}",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0.009379999712109566}}}",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0.010710000060498714}}}",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0.02857000008225441}}}",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0.08332999795675278}}}",
-          "{\"type\":\"length\",\"value\":{\"type\":\"value\",\"value\":{\"unit\":\"em\",\"value\":0}}}"
-        ],
-        "reasons": [
-          "unknown-property"
-        ],
-        "selectors": [
-          ".css-113d811-MuiFormLabel-root-MuiInputLabel-root",
-          ".css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input",
-          ".css-16xl4zq-MuiTypography-root",
-          ".css-19qnlrw-MuiFormLabel-root-MuiInputLabel-root",
-          ".css-1a1whku-MuiTypography-root",
-          ".css-1c7xfgu-MuiTypography-root",
-          ".css-1f7qp0x-MuiButtonBase-root-MuiButton-root",
-          ".css-1miy0lu-MuiTypography-root",
-          ".css-1rju2q6-MuiButtonBase-root-MuiMenuItem-root",
-          ".css-1uent87-MuiButtonBase-root-MuiButton-root",
-          ".css-1wle3ir-MuiTypography-root",
-          ".css-74d805-MuiButtonBase-root-MuiButton-root",
-          ".css-7y9k7a-MuiPaper-root-MuiAlert-root",
-          ".css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root",
-          ".css-rizt0-MuiTypography-root",
-          ".css-rvoa5x-MuiTypography-root-MuiDialogTitle-root",
-          ".css-ujudvl-MuiTypography-root-MuiDialogContentText-root",
-          ".css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input",
-          ".css-xrmkj5-MuiInputBase-root-MuiOutlinedInput-root"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "[data-layout-key=\"delete-action\"]",
-          "[data-layout-key=\"delete-dialog\"]",
-          "[data-layout-key=\"filter-active\"]",
-          "[data-layout-key=\"filter-all\"]",
-          "[data-layout-key=\"sidebar\"]",
-          "[data-layout-key=\"task-1\"]",
-          "[data-layout-key=\"task-title-input\"]",
-          "[data-layout-key=\"workspace\"]"
-        ],
-        "computedValues": [
-          "0.12px",
-          "0.1501px",
-          "0.1714px",
-          "0.4571px",
-          "0px",
-          "1.3333px",
-          "inherit"
-        ],
-        "support": [],
-        "priority": "observed-unclassified"
       },
       {
         "property": "box-align",
@@ -12521,53 +12302,6 @@
           "div.MuiDialog-container.MuiDialog-scrollPaper.css-19do60a-MuiDialog-container"
         ],
         "computedValues": [],
-        "support": [],
-        "priority": "observed-unclassified"
-      },
-      {
-        "property": "font-weight",
-        "declarations": 2,
-        "occurrences": 17,
-        "values": [
-          "{\"type\":\"absolute\",\"value\":{\"type\":\"weight\",\"value\":400}}",
-          "{\"type\":\"absolute\",\"value\":{\"type\":\"weight\",\"value\":500}}"
-        ],
-        "reasons": [
-          "unknown-property"
-        ],
-        "selectors": [
-          ".css-113d811-MuiFormLabel-root-MuiInputLabel-root",
-          ".css-16xl4zq-MuiTypography-root",
-          ".css-19qnlrw-MuiFormLabel-root-MuiInputLabel-root",
-          ".css-1a1whku-MuiTypography-root",
-          ".css-1c7xfgu-MuiTypography-root",
-          ".css-1f7qp0x-MuiButtonBase-root-MuiButton-root",
-          ".css-1miy0lu-MuiTypography-root",
-          ".css-1rju2q6-MuiButtonBase-root-MuiMenuItem-root",
-          ".css-1uent87-MuiButtonBase-root-MuiButton-root",
-          ".css-1wle3ir-MuiTypography-root",
-          ".css-74d805-MuiButtonBase-root-MuiButton-root",
-          ".css-7y9k7a-MuiPaper-root-MuiAlert-root",
-          ".css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root",
-          ".css-rizt0-MuiTypography-root",
-          ".css-rvoa5x-MuiTypography-root-MuiDialogTitle-root",
-          ".css-ujudvl-MuiTypography-root-MuiDialogContentText-root",
-          ".css-xrmkj5-MuiInputBase-root-MuiOutlinedInput-root"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "[data-layout-key=\"delete-action\"]",
-          "[data-layout-key=\"delete-dialog\"]",
-          "[data-layout-key=\"filter-active\"]",
-          "[data-layout-key=\"filter-all\"]",
-          "[data-layout-key=\"sidebar\"]",
-          "[data-layout-key=\"task-1\"]",
-          "[data-layout-key=\"workspace\"]"
-        ],
-        "computedValues": [
-          "400",
-          "500"
-        ],
         "support": [],
         "priority": "observed-unclassified"
       },
@@ -12927,10 +12661,9 @@
       },
       {
         "property": "selector",
-        "declarations": 7,
-        "occurrences": 7,
+        "declarations": 6,
+        "occurrences": 6,
         "values": [
-          "{\"type\":\"pseudo-class\",\"kind\":\"active\"}",
           "{\"type\":\"pseudo-class\",\"kind\":\"autofill\",\"vendorPrefix\":[\"webkit\"]}",
           "{\"type\":\"pseudo-class\",\"kind\":\"invalid\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-moz-focus-inner\"}",
@@ -12942,7 +12675,6 @@
           "unsupported-rule"
         ],
         "selectors": [
-          "{\"type\":\"pseudo-class\",\"kind\":\"active\"}",
           "{\"type\":\"pseudo-class\",\"kind\":\"autofill\",\"vendorPrefix\":[\"webkit\"]}",
           "{\"type\":\"pseudo-class\",\"kind\":\"invalid\"}",
           "{\"type\":\"pseudo-element\",\"kind\":\"custom\",\"name\":\"-moz-focus-inner\"}",
