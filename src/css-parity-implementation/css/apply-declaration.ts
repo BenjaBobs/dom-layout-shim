@@ -868,6 +868,24 @@ export function applyDeclaration(
         context,
       )
       return
+    case 'text-transform':
+      if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
+        return
+      }
+      if (normalizedValue === 'initial') {
+        style.textTransform = 'none'
+        return
+      }
+      applyKeyword(
+        style,
+        'textTransform',
+        normalizedValue,
+        ['none', 'uppercase', 'lowercase', 'capitalize'],
+        normalizedProperty,
+        value,
+        context,
+      )
+      return
     default:
       handleUnsupportedCss(context.policy, {
         property: normalizedProperty,

@@ -1,5 +1,7 @@
 import type { WhiteSpace } from '../../api/text-measurer.ts'
 
+export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize'
+
 export type Edges<Value = number> = {
   top: Value
   right: Value
@@ -149,6 +151,7 @@ export type SupportedStyle = {
   letterSpacing: number
   lineHeight: number
   whiteSpace: WhiteSpace
+  textTransform: TextTransform
   transform: SupportedTransform[]
   translate?: Extract<SupportedTransform, { type: 'translate' }>
   scale?: Extract<SupportedTransform, { type: 'scale' }>
@@ -204,6 +207,7 @@ export function createDefaultStyle(): SupportedStyle {
     letterSpacing: 0,
     lineHeight: 19.2,
     whiteSpace: 'normal',
+    textTransform: 'none',
     transform: [],
     transformOrigin: { x: '50%', y: '50%' },
   }

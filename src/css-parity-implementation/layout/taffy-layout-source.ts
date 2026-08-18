@@ -24,7 +24,7 @@ import {
 import type { TextMeasurer } from '../../api/text-measurer.ts'
 import type { NativeControlMetrics } from '../../api/native-control-profile.ts'
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts'
-import { canMeasureTextLeaf, createMeasureContext, measureTaffyNode, type MeasureContext } from './taffy/taffy-measure.ts'
+import { canMeasureTextLeaf, createMeasureContext, measureTaffyNode, transformMeasuredText, type MeasureContext } from './taffy/taffy-measure.ts'
 import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts'
 
 type TaffyLayoutState = {
@@ -527,7 +527,7 @@ function measureInlineWidth(
   state: TaffyLayoutState,
 ): number {
   return state.textMeasurer.measure({
-    text,
+    text: transformMeasuredText(text, style.textTransform),
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
@@ -745,6 +745,7 @@ function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigin
     anonymousStyle.letterSpacing = parentStyle.letterSpacing
     anonymousStyle.lineHeight = parentStyle.lineHeight
     anonymousStyle.whiteSpace = parentStyle.whiteSpace
+    anonymousStyle.textTransform = parentStyle.textTransform
     const context: MeasureContext = {
       text,
       fontFamily: parentStyle.fontFamily,
@@ -753,6 +754,7 @@ function buildChildNodes(parent: Element | null, state: TaffyLayoutState): bigin
       letterSpacing: parentStyle.letterSpacing,
       lineHeight: parentStyle.lineHeight,
       whiteSpace: parentStyle.whiteSpace,
+      textTransform: parentStyle.textTransform,
       textMeasurer: state.textMeasurer,
     }
     const node = state.tree.newLeafWithContext(toTaffyStyle(anonymousStyle, context), context)
@@ -1656,6 +1658,7 @@ function applyInheritedTextDefaults(style: SupportedStyle, element: Element, sta
   style.letterSpacing = parentStyle.letterSpacing
   style.lineHeight = parentStyle.lineHeight
   style.whiteSpace = parentStyle.whiteSpace
+  style.textTransform = parentStyle.textTransform
   style.pointerEvents = parentStyle.pointerEvents
   style.visibility = parentStyle.visibility
 }
@@ -2326,6 +2329,7 @@ function createReplacedMeasureContext(
     letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
+    textTransform: style.textTransform,
     textMeasurer,
     replacedSize: { width, height },
   }

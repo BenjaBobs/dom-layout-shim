@@ -57,8 +57,10 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
   return {
     measure(input) {
       const lines = breakTextIntoLines(input)
-      const charWidth = input.fontSize * 0.5
-      const width = lines.reduce((max, line) => Math.max(max, measuredLineWidth(line, charWidth, input.letterSpacing ?? 0)), 0)
+      const width = lines.reduce((max, line) => Math.max(
+        max,
+        measuredLineWidth(line, input.fontFamily, input.fontSize, input.letterSpacing ?? 0),
+      ), 0)
 
       return {
         width,
@@ -123,11 +125,16 @@ function breakTextIntoLines(input: TextMeasureInput): string[] {
     return [normalizedText]
   }
 
-  return wrapNormalText(normalizedText, input.maxWidth, input.fontSize * 0.5 + (input.letterSpacing ?? 0))
+  return wrapNormalText(normalizedText, input.maxWidth, input.fontFamily, input.fontSize, input.letterSpacing ?? 0)
 }
 
-function measuredLineWidth(text: string, characterWidth: number, letterSpacing: number): number {
-  return text.length * characterWidth + letterSpacingWidth(text, letterSpacing)
+function measuredLineWidth(text: string, fontFamily: string, fontSize: number, letterSpacing: number): number {
+  // Approximate the wider capitals in the common proportional sans-serif stack
+  // while preserving the long-standing fixed-width fallback for unknown fonts.
+  const hasWiderCapitals = /(?:Roboto|Helvetica|Arial)/i.test(fontFamily)
+  const glyphWidth = Array.from(text).reduce((width, character) =>
+    width + fontSize * (hasWiderCapitals && /[A-Z]/.test(character) ? 0.6 : 0.5), 0)
+  return glyphWidth + letterSpacingWidth(text, letterSpacing)
 }
 
 function letterSpacingWidth(text: string, letterSpacing: number): number {
@@ -156,8 +163,13 @@ function preservesHardBreaks(whiteSpace: WhiteSpace): boolean {
   return whiteSpace === 'pre' || whiteSpace === 'pre-line' || whiteSpace === 'pre-wrap'
 }
 
-function wrapNormalText(text: string, maxWidth: number, charWidth: number): string[] {
-  const maxCharsPerLine = Math.max(1, Math.floor(maxWidth / charWidth))
+function wrapNormalText(
+  text: string,
+  maxWidth: number,
+  fontFamily: string,
+  fontSize: number,
+  letterSpacing: number,
+): string[] {
   const words = text.split(' ')
   const lines: string[] = []
   let current = ''
@@ -165,7 +177,7 @@ function wrapNormalText(text: string, maxWidth: number, charWidth: number): stri
   for (const word of words) {
     const next = current ? `${current} ${word}` : word
 
-    if (next.length <= maxCharsPerLine) {
+    if (measuredLineWidth(next, fontFamily, fontSize, letterSpacing) <= maxWidth) {
       current = next
       continue
     }

@@ -103,6 +103,9 @@ point queries exclude empty corners of an axis-aligned bounding rectangle.
 `TextMeasureInput` includes resolved `fontWeight` and `letterSpacing` values.
 Both inherit through the supported text cascade and feed default intrinsic text
 measurement.
+Inherited `text-transform` values `none`, `uppercase`, `lowercase`, and
+`capitalize` are applied to the string passed into default or custom text
+measurement. They do not mutate authored `textContent`.
 
 Selector matching includes supported structural/state pseudo-classes,
 `:is()`, `:where()`, `:not()`, `:has()`, and case-insensitive terminal HTML

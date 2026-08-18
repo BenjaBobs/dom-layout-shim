@@ -10,6 +10,7 @@
       "font-weight",
       "letter-spacing",
       "line-height",
+      "text-transform",
       "white-space"
     ],
     "elements": []
@@ -74,6 +75,36 @@
         {
           "kind": "limitation",
           "text": "Relative `bolder` and `lighter` weights and the full browser font-selection algorithm are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "text-transform",
+      "description": "Inherited case transforms are applied before intrinsic text measurement without changing DOM text content.",
+      "properties": [
+        "text-transform"
+      ],
+      "syntax": [
+        "none",
+        "uppercase",
+        "lowercase",
+        "capitalize"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "text-transform"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "The transformed string feeds default and custom text measurement while `textContent` retains the authored string."
+        },
+        {
+          "kind": "limitation",
+          "text": "Full-width and full-size-kana transforms and locale-specific case mapping are not modeled."
         }
       ]
     },
