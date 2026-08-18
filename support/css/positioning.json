@@ -62,6 +62,7 @@
       "syntax": [
         "relative",
         "<px>",
+        "<percentage>",
         "<em>",
         "<rem>",
         "<viewport-length>",
@@ -99,6 +100,7 @@
       "syntax": [
         "absolute",
         "<px>",
+        "<percentage>",
         "<em>",
         "<rem>",
         "<viewport-length>",
@@ -111,6 +113,7 @@
         "fixtures": [
           "absolute-overlap",
           "absolute-positioned-containing-block",
+          "inset-two-value-shorthand",
           "right-bottom-positioning"
         ]
       },
@@ -136,6 +139,7 @@
       "syntax": [
         "fixed",
         "<px>",
+        "<percentage>",
         "<em>",
         "<rem>",
         "<viewport-length>",
@@ -188,7 +192,7 @@
     },
     {
       "id": "stacking-order",
-      "description": "Integer `z-index` values and DOM order determine supported point-query stacking.",
+      "description": "Nested positioned stacking contexts, integer `z-index` values, and DOM order determine supported point-query stacking.",
       "properties": [
         "z-index"
       ],
@@ -200,17 +204,18 @@
       "parity": {
         "status": "verified",
         "fixtures": [
+          "elements-from-point-order",
           "z-index-dom-order"
         ]
       },
       "notes": [
         {
-          "kind": "limitation",
-          "text": "The engine implements supported stacking order but not the complete browser stacking-context model."
+          "kind": "browser-parity",
+          "text": "Parity covers nested positioned contexts, containment of high-z-index descendants, integer `z-index` values, and DOM-order fallback."
         },
         {
-          "kind": "browser-parity",
-          "text": "Integer `z-index` values and DOM-order fallback have parity coverage."
+          "kind": "limitation",
+          "text": "Stacking contexts created by opacity, filters, blending, isolation, containment, and other visual-only triggers remain outside the modeled subset."
         }
       ]
     }

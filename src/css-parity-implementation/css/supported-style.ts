@@ -40,7 +40,8 @@ export type JustifyContentValue =
 export type AlignContentValue = JustifyContentValue | 'stretch'
 export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
 export type OverflowValue = 'visible' | 'hidden' | 'clip' | 'auto' | 'scroll'
-export type SupportedDimension = number | `${number}%`
+export type CalculatedDimension = { percentage: number; length: number }
+export type SupportedDimension = number | `${number}%` | CalculatedDimension
 export type MarginValue = SupportedDimension | 'auto'
 export type GridMinTrackBreadth = number | `${number}%` | 'auto' | 'min-content' | 'max-content'
 export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`
@@ -126,11 +127,12 @@ export type SupportedStyle = {
   minHeight?: SupportedDimension
   maxWidth?: SupportedDimension
   maxHeight?: SupportedDimension
-  top?: number
-  right?: number
-  bottom?: number
-  left?: number
+  top?: SupportedDimension
+  right?: SupportedDimension
+  bottom?: SupportedDimension
+  left?: SupportedDimension
   zIndex: number
+  zIndexAuto: boolean
   pointerEvents: 'auto' | 'none'
   visibility: 'visible' | 'hidden' | 'collapse'
   overflowX: OverflowValue
@@ -180,6 +182,7 @@ export function createDefaultStyle(): SupportedStyle {
       vertical: 2,
     },
     zIndex: 0,
+    zIndexAuto: true,
     pointerEvents: 'auto',
     visibility: 'visible',
     overflowX: 'visible',

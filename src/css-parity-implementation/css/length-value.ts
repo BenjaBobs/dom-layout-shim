@@ -1,5 +1,5 @@
 import type { Viewport } from '../../api/layout-engine-config.ts'
-import type { SupportedDimension } from './supported-style.ts'
+import type { CalculatedDimension, SupportedDimension } from './supported-style.ts'
 
 export type LengthContext = {
   fontSize?: number
@@ -8,8 +8,9 @@ export type LengthContext = {
 }
 
 type Quantity = {
-  value: number
-  unit: 'number' | 'px' | 'percent'
+  number: number
+  px: number
+  percent: number
 }
 
 export function parseLengthPercentage(
@@ -19,14 +20,17 @@ export function parseLengthPercentage(
   const parser = new CalculationParser(value, context)
   const quantity = parser.parse()
 
-  if (!quantity || (quantity.unit === 'number' && quantity.value !== 0)) return undefined
-  if (quantity.unit === 'percent') return `${quantity.value}%`
-  return quantity.value
+  if (!quantity || quantity.number !== 0) return undefined
+  if (quantity.percent !== 0 && quantity.px !== 0) {
+    return { percentage: quantity.percent, length: quantity.px }
+  }
+  if (quantity.percent !== 0) return `${quantity.percent}%`
+  return quantity.px
 }
 
 export function parseNumberCalculation(value: string): number | undefined {
   const quantity = new CalculationParser(value, {}).parse()
-  return quantity?.unit === 'number' ? quantity.value : undefined
+  return quantity && quantity.px === 0 && quantity.percent === 0 ? quantity.number : undefined
 }
 
 class CalculationParser {
@@ -119,33 +123,67 @@ function quantity(token: string, context: LengthContext): Quantity | undefined {
   const unit = (match[2] ?? '').toLowerCase()
 
   switch (unit) {
-    case '': return { value, unit: 'number' }
-    case 'px': return { value, unit: 'px' }
-    case '%': return { value, unit: 'percent' }
-    case 'em': return context.fontSize === undefined ? undefined : { value: value * context.fontSize, unit: 'px' }
-    case 'rem': return context.rootFontSize === undefined ? undefined : { value: value * context.rootFontSize, unit: 'px' }
-    case 'vw': return context.viewport === undefined ? undefined : { value: value * context.viewport.width / 100, unit: 'px' }
-    case 'vh': return context.viewport === undefined ? undefined : { value: value * context.viewport.height / 100, unit: 'px' }
-    case 'vmin': return context.viewport === undefined ? undefined : { value: value * Math.min(context.viewport.width, context.viewport.height) / 100, unit: 'px' }
-    case 'vmax': return context.viewport === undefined ? undefined : { value: value * Math.max(context.viewport.width, context.viewport.height) / 100, unit: 'px' }
+    case '': return scalar(value)
+    case 'px': return pixels(value)
+    case '%': return percentage(value)
+    case 'em': return context.fontSize === undefined ? undefined : pixels(value * context.fontSize)
+    case 'rem': return context.rootFontSize === undefined ? undefined : pixels(value * context.rootFontSize)
+    case 'vw': return context.viewport === undefined ? undefined : pixels(value * context.viewport.width / 100)
+    case 'vh': return context.viewport === undefined ? undefined : pixels(value * context.viewport.height / 100)
+    case 'vmin': return context.viewport === undefined ? undefined : pixels(value * Math.min(context.viewport.width, context.viewport.height) / 100)
+    case 'vmax': return context.viewport === undefined ? undefined : pixels(value * Math.max(context.viewport.width, context.viewport.height) / 100)
     default: return undefined
   }
 }
 
 function add(left: Quantity, right: Quantity, sign: 1 | -1): Quantity | undefined {
-  if (left.unit === 'number' && left.value === 0) return { value: sign * right.value, unit: right.unit }
-  if (right.unit === 'number' && right.value === 0) return left
-  if (left.unit !== right.unit) return undefined
-  return { value: left.value + sign * right.value, unit: left.unit }
+  const number = left.number + sign * right.number
+  const px = left.px + sign * right.px
+  const percent = left.percent + sign * right.percent
+  if (number !== 0 && (px !== 0 || percent !== 0)) return undefined
+  return { number, px, percent }
 }
 
 function multiply(left: Quantity, right: Quantity, operator: '*' | '/'): Quantity | undefined {
   if (operator === '/') {
-    if (right.unit !== 'number' || right.value === 0) return undefined
-    return { value: left.value / right.value, unit: left.unit }
+    if (!isScalar(right) || right.number === 0) return undefined
+    return scale(left, 1 / right.number)
   }
 
-  if (left.unit === 'number') return { value: left.value * right.value, unit: right.unit }
-  if (right.unit === 'number') return { value: left.value * right.value, unit: left.unit }
+  if (isScalar(left)) return scale(right, left.number)
+  if (isScalar(right)) return scale(left, right.number)
   return undefined
+}
+
+function scalar(number: number): Quantity {
+  return { number, px: 0, percent: 0 }
+}
+
+function pixels(px: number): Quantity {
+  return { number: 0, px, percent: 0 }
+}
+
+function percentage(percent: number): Quantity {
+  return { number: 0, px: 0, percent }
+}
+
+function isScalar(value: Quantity): boolean {
+  return value.px === 0 && value.percent === 0
+}
+
+function scale(value: Quantity, multiplier: number): Quantity {
+  return {
+    number: value.number * multiplier,
+    px: value.px * multiplier,
+    percent: value.percent * multiplier,
+  }
+}
+
+export function resolveCalculatedDimension(value: SupportedDimension, basis: number | undefined): number | `${number}%` | undefined {
+  if (!isCalculatedDimension(value)) return value
+  return basis === undefined ? undefined : basis * value.percentage / 100 + value.length
+}
+
+export function isCalculatedDimension(value: SupportedDimension): value is CalculatedDimension {
+  return typeof value === 'object'
 }

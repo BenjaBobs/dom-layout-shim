@@ -5,6 +5,7 @@ import {
   loadTaffy,
 } from 'taffy-layout'
 import { applyInlineCustomProperties, applyInlineStyle } from '../css/inline-style-source.ts'
+import { resolveCalculatedDimension } from '../css/length-value.ts'
 import { createDefaultStyle, zeroEdges, type Edges, type SupportedStyle } from '../css/supported-style.ts'
 import { applyStylesheetCustomProperties, applyStyleRules, readGeneratedContent, readStyleRules } from '../css/stylesheet-source.ts'
 import type { CustomProperties } from '../css/custom-properties.ts'
@@ -46,6 +47,7 @@ type TaffyLayoutState = {
   nativeControlMetrics: NativeControlMetrics
   viewport: Viewport
   domOrder: number
+  paintOrders: WeakMap<Element, number>
 }
 
 type TaffyLayoutTree = {
@@ -190,6 +192,9 @@ export function computeTaffyDocumentLayout(
 ): LayoutSnapshot {
   const layoutTree = buildTaffyLayoutTree(document, viewport, policy, textMeasurer, stylesheets, nativeControlMetrics)
   computeTaffyLayout(layoutTree, viewport)
+  if (resolveDeferredCalculatedDimensions(layoutTree)) {
+    computeTaffyLayout(layoutTree, viewport)
+  }
   return collectTaffyLayoutSnapshot(document, viewport, scroll, layoutTree.state)
 }
 
@@ -226,6 +231,7 @@ function buildTaffyLayoutTree(
     nativeControlMetrics,
     viewport,
     domOrder: 0,
+    paintOrders: new WeakMap<Element, number>(),
   }
 
   const rootStyle = new Style()
@@ -243,6 +249,75 @@ function computeTaffyLayout(layoutTree: TaffyLayoutTree, viewport: Viewport): vo
     { width: viewport.width, height: viewport.height },
     measureTaffyNode,
   )
+}
+
+function resolveDeferredCalculatedDimensions(layoutTree: TaffyLayoutTree): boolean {
+  let changed = false
+
+  for (const [element, node] of layoutTree.state.elementNodes) {
+    const style = resolveSupportedStyle(element, layoutTree.state)
+    if (!hasCalculatedDimension(style)) continue
+    const basis = computedPercentageBasis(element, style, layoutTree.state)
+    if (basis.width === undefined && basis.height === undefined) continue
+
+    // Taffy 0.9, exposed by the current JS binding, cannot retain CSS calc
+    // expressions. A first layout establishes definite auto inline sizes and
+    // positioned padding boxes; update only calc-bearing nodes and recompute.
+    layoutTree.state.tree.setStyle(node, toTaffyStyle(style, { percentageBasis: basis }))
+    changed = true
+  }
+
+  return changed
+}
+
+function hasCalculatedDimension(style: SupportedStyle): boolean {
+  const values: unknown[] = [
+    style.width, style.height, style.minWidth, style.minHeight, style.maxWidth, style.maxHeight,
+    style.flexBasis, style.top, style.right, style.bottom, style.left, style.rowGap, style.columnGap,
+    ...Object.values(style.margin), ...Object.values(style.padding),
+  ]
+  return values.some((value) => typeof value === 'object' && value !== null)
+}
+
+function computedPercentageBasis(
+  element: Element,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+): { width?: number; height?: number } {
+  if (style.position === 'fixed') return state.viewport
+  const containingBlock = containingBlockFor(element, style, state)
+  if (!containingBlock || containingBlock === element.ownerDocument.body || containingBlock === element.ownerDocument.documentElement) {
+    return state.viewport
+  }
+
+  const node = state.elementNodes.get(containingBlock)
+  if (!node) return {}
+  const layout = state.tree.getLayout(node)
+  const containingStyle = resolveSupportedStyle(containingBlock, state)
+  const border = effectiveBorderWidth(containingStyle)
+  const positioned = style.position === 'absolute'
+  const horizontalInset = positioned ? horizontal(border) : horizontal(border) + fixedEdges(containingStyle.padding, 'x')
+  const verticalInset = positioned ? vertical(border) : vertical(border) + fixedEdges(containingStyle.padding, 'y')
+  const heightIsDefinite = containingStyle.height !== undefined ||
+    (containingStyle.position !== 'static' && containingStyle.top !== undefined && containingStyle.bottom !== undefined)
+
+  return {
+    width: Math.max(0, layout.width - horizontalInset),
+    height: heightIsDefinite ? Math.max(0, layout.height - verticalInset) : undefined,
+  }
+}
+
+function fixedEdges(edges: Edges<SupportedStyle['padding']['top']>, axis: 'x' | 'y'): number {
+  const values = axis === 'x' ? [edges.left, edges.right] : [edges.top, edges.bottom]
+  return values.reduce<number>((total, value) => total + (typeof value === 'number' ? value : 0), 0)
+}
+
+function containingBlockFor(element: Element, style: SupportedStyle, state: TaffyLayoutState): Element | null {
+  if (style.position !== 'absolute') return element.parentElement
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (resolveSupportedStyle(ancestor, state).position !== 'static') return ancestor
+  }
+  return element.ownerDocument.documentElement
 }
 
 function collectTaffyLayoutSnapshot(
@@ -483,6 +558,7 @@ function applyVisualTransforms(document: Document, state: TaffyLayoutState): voi
     element: box.element,
     zIndex: box.zIndex,
     domOrder: box.domOrder,
+    stackingOrder: box.stackingOrder,
     pointerEvents: box.pointerEvents,
     visibility: box.visibility,
   }))
@@ -640,7 +716,10 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
   if (tableLayout) {
     state.tableLayouts.set(element, tableLayout)
     const context = createReplacedMeasureContext(style, tableLayout.width, tableLayout.height, state.textMeasurer)
-    const node = state.tree.newLeafWithContext(toTaffyStyle(style, context), context)
+    const node = state.tree.newLeafWithContext(toTaffyStyle(style, {
+      ...context,
+      percentageBasis: percentageBasisFor(element, style, state),
+    }), context)
     state.elementNodes.set(element, node)
     return [node]
   }
@@ -653,7 +732,10 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
     readGeneratedContent(element, state.rules, state.policy),
   )
   const children = context?.replacedSize || canMeasureTextLeaf(element) ? [] : buildChildNodes(element, state)
-  const taffyStyle = toTaffyStyle(style, context)
+  const taffyStyle = toTaffyStyle(style, {
+    ...context,
+    percentageBasis: percentageBasisFor(element, style, state),
+  })
   const node =
     children.length === 0 && context
       ? state.tree.newLeafWithContext(taffyStyle, context)
@@ -661,6 +743,34 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
 
   state.elementNodes.set(element, node)
   return [node]
+}
+
+function percentageBasisFor(element: Element, style: SupportedStyle, state: TaffyLayoutState): { width?: number; height?: number } {
+  // The current Taffy binding cannot carry CSS calc trees. Resolve affine
+  // percentage-plus-length values before conversion only when CSS gives us a
+  // definite containing-block axis; leave an indefinite axis unresolved rather
+  // than substituting an observed first-pass size and making layout circular.
+  if (style.position === 'fixed') return state.viewport
+
+  const containingBlock = containingBlockFor(element, style, state)
+
+  if (!containingBlock || containingBlock === element.ownerDocument.body || containingBlock === element.ownerDocument.documentElement) {
+    return state.viewport
+  }
+
+  const containingStyle = resolveSupportedStyle(containingBlock, state)
+  return {
+    width: definiteDimension(containingStyle.width, state.viewport.width),
+    height: definiteDimension(containingStyle.height, state.viewport.height),
+  }
+}
+
+function definiteDimension(value: SupportedStyle['width'], viewportBasis: number): number | undefined {
+  if (value === undefined) return undefined
+  const resolved = resolveCalculatedDimension(value, viewportBasis)
+  if (resolved === undefined) return undefined
+  if (typeof resolved === 'number') return resolved
+  return Number(resolved.slice(0, -1)) * viewportBasis / 100
 }
 
 function recordChildLayouts(
@@ -730,6 +840,7 @@ function recordChildLayouts(
       : { ...box, x: box.x + scroll.x, y: box.y + scroll.y }
     const domOrder = state.domOrder
     state.domOrder += 1
+    state.paintOrders.set(element, domOrder)
 
     const elementScroll = readElementScrollOffset(element)
     const hitClipBounds = style.position === 'fixed' ? infiniteClipBounds() : clipBounds
@@ -806,11 +917,33 @@ function applyStickyPosition(
   const verticalBounds = stickyScrollport(element, 'y', viewport, state)
   const adjusted = {
     ...box,
-    x: clampStickyAxis(box.x, box.width, style.left, style.right, horizontalBounds),
-    y: clampStickyAxis(box.y, box.height, style.top, style.bottom, verticalBounds),
+    x: clampStickyAxis(
+      box.x,
+      box.width,
+      resolvedInset(style.left, horizontalBounds),
+      resolvedInset(style.right, horizontalBounds),
+      horizontalBounds,
+    ),
+    y: clampStickyAxis(
+      box.y,
+      box.height,
+      resolvedInset(style.top, verticalBounds),
+      resolvedInset(style.bottom, verticalBounds),
+      verticalBounds,
+    ),
   }
 
   return constrainStickyToContainingBlock(element, style, adjusted, state)
+}
+
+function resolvedInset(
+  value: SupportedStyle['top'],
+  bounds: { start: number; end: number },
+): number | undefined {
+  if (value === undefined) return undefined
+  const resolved = resolveCalculatedDimension(value, bounds.end - bounds.start)
+  if (typeof resolved === 'number') return resolved
+  return resolved === undefined ? undefined : Number(resolved.slice(0, -1)) * (bounds.end - bounds.start) / 100
 }
 
 function constrainStickyToContainingBlock(
@@ -1198,9 +1331,55 @@ function recordBox(
     // above ordinary in-flow content while preserving explicit z-index values.
     zIndex: style.zIndex === 0 && hasStickyAncestor(element, state) ? 0.5 : style.zIndex,
     domOrder,
+    stackingOrder: stackingOrderFor(element, style, domOrder, state),
     pointerEvents: style.pointerEvents,
     visibility: style.visibility,
   })
+}
+
+function stackingOrderFor(
+  element: Element,
+  style: SupportedStyle,
+  domOrder: number,
+  state: TaffyLayoutState,
+): number[] | undefined {
+  const contexts: Array<{ style: SupportedStyle; domOrder: number }> = []
+
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    const ancestorStyle = resolveSupportedStyle(ancestor, state)
+    if (createsStackingContext(ancestorStyle)) {
+      contexts.unshift({
+        style: ancestorStyle,
+        domOrder: state.paintOrders.get(ancestor) ?? -1,
+      })
+    }
+  }
+
+  if (contexts.length === 0 && !createsStackingContext(style)) return undefined
+
+  // Encode each supported ancestor context separately. A descendant's large
+  // local z-index therefore cannot outrank a sibling above its ancestor context,
+  // unlike the previous flat numeric z-index sort.
+  return [
+    ...contexts.flatMap((context) => paintOrderSegment(context.style, context.domOrder)),
+    ...paintOrderSegment(style, domOrder),
+  ]
+}
+
+function createsStackingContext(style: SupportedStyle): boolean {
+  return style.position === 'fixed' ||
+    style.position === 'sticky' ||
+    (!style.zIndexAuto && style.position !== 'static') ||
+    style.transform.length > 0 ||
+    style.translate !== undefined ||
+    style.scale !== undefined
+}
+
+function paintOrderSegment(style: SupportedStyle, domOrder: number): number[] {
+  if (!style.zIndexAuto && style.zIndex < 0) return [0, style.zIndex, domOrder]
+  if (!style.zIndexAuto && style.zIndex > 0) return [3, style.zIndex, domOrder]
+  if (style.position !== 'static') return [2, 0, domOrder]
+  return [1, 0, domOrder]
 }
 
 function hasStickyAncestor(element: Element, state: TaffyLayoutState): boolean {
@@ -2093,6 +2272,7 @@ function applyUserAgentDefaults(style: SupportedStyle, element: Element): void {
     case 'dialog':
       style.position = 'absolute'
       style.zIndex = 1
+      style.zIndexAuto = false
       style.margin.top = 'auto'
       style.margin.right = 'auto'
       style.margin.bottom = 'auto'

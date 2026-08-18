@@ -18,7 +18,7 @@ describe('CSS length calculations', () => {
   it('evaluates nested calculations when they reduce to one supported dimension', () => {
     expect(parseLengthPercentage('calc(100vw - calc(16px * 2))', context)).toBe(968)
     expect(parseLengthPercentage('calc((1.5 * 16px + 16px * 2) - 32px)', context)).toBe(24)
-    expect(parseLengthPercentage('calc(50% - 2px)', context)).toBeUndefined()
+    expect(parseLengthPercentage('calc(50% - 2px)', context)).toEqual({ percentage: 50, length: -2 })
   })
 
   it('evaluates unitless calculations independently from lengths', () => {

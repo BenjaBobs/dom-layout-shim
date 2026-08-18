@@ -189,3 +189,39 @@ it('author width and height override form control intrinsic sizes', async () => 
     ],
   })
 })
+
+it('styled flex buttons include text, inline icons, gaps, padding, and borders', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    html: `
+      <style>
+        body { margin: 0; }
+        button {
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: inline-flex;
+          box-sizing: border-box;
+          align-items: center;
+          width: auto;
+          height: 32px;
+          padding: 0 15px;
+          border: 1px solid;
+          gap: 8px;
+          font-family: 'DOM Layout Shim Deterministic';
+          font-size: 14px;
+          font-weight: 400;
+          line-height: 22px;
+        }
+        svg { width: 14px; height: 14px; }
+        #with-icon { top: 40px; }
+      </style>
+      <button id="text-only">Add task</button>
+      <button id="with-icon"><span><svg width="14" height="14"></svg></span><span>Add task</span></button>
+    `,
+    queries: [
+      { type: 'rect', selector: '#text-only' },
+      { type: 'rect', selector: '#with-icon' },
+    ],
+  })
+})

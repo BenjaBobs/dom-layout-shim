@@ -22,11 +22,15 @@ import type {
   GridMinTrackBreadth,
   GridTemplateTrack,
   GridTrack,
+  MarginValue,
+  SupportedDimension,
   SupportedStyle,
 } from '../../css/supported-style.ts'
+import { resolveCalculatedDimension } from '../../css/length-value.ts'
 
 export type TaffyStyleContext = {
   replacedSize?: Size<number>
+  percentageBasis?: { width?: number; height?: number }
 }
 
 export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext | undefined): Style {
@@ -45,7 +49,7 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
   taffyStyle.justifySelf = toTaffyAlignSelf(style.justifySelf ?? 'auto')
   taffyStyle.flexGrow = style.flexGrow
   taffyStyle.flexShrink = style.flexShrink
-  taffyStyle.flexBasis = style.flexBasis ?? 'auto'
+  taffyStyle.flexBasis = resolvedDimension(style.flexBasis, context?.percentageBasis?.width) ?? 'auto'
   taffyStyle.aspectRatio = style.aspectRatio
   taffyStyle.gridAutoFlow = toTaffyGridAutoFlow(style.gridAutoFlow)
   taffyStyle.gridTemplateColumns = toTaffyGridTracks(style.gridTemplateColumns)
@@ -61,34 +65,53 @@ export function toTaffyStyle(style: SupportedStyle, context: TaffyStyleContext |
     end: toTaffyGridPlacement(style.gridRowEnd),
   }
   taffyStyle.size = {
-    width: style.width ?? context?.replacedSize?.width ?? 'auto',
-    height: style.height ?? context?.replacedSize?.height ?? 'auto',
+    width: resolvedDimension(style.width, context?.percentageBasis?.width) ?? context?.replacedSize?.width ?? 'auto',
+    height: resolvedDimension(style.height, context?.percentageBasis?.height) ?? context?.replacedSize?.height ?? 'auto',
   }
   taffyStyle.minSize = {
-    width: style.minWidth ?? 'auto',
-    height: style.minHeight ?? 'auto',
+    width: resolvedDimension(style.minWidth, context?.percentageBasis?.width) ?? 'auto',
+    height: resolvedDimension(style.minHeight, context?.percentageBasis?.height) ?? 'auto',
   }
   taffyStyle.maxSize = {
-    width: style.maxWidth ?? 'auto',
-    height: style.maxHeight ?? 'auto',
+    width: resolvedDimension(style.maxWidth, context?.percentageBasis?.width) ?? 'auto',
+    height: resolvedDimension(style.maxHeight, context?.percentageBasis?.height) ?? 'auto',
   }
-  taffyStyle.margin = toTaffyRect(style.margin)
-  taffyStyle.padding = toTaffyRect(style.padding)
+  taffyStyle.margin = resolveMarginRect(style.margin, context?.percentageBasis?.width)
+  taffyStyle.padding = resolveDimensionRect(style.padding, context?.percentageBasis?.width)
   taffyStyle.border = toTaffyRect(effectiveBorderWidth(style))
   taffyStyle.gap = {
-    width: style.columnGap,
-    height: style.rowGap,
+    width: resolvedDimension(style.columnGap, context?.percentageBasis?.width) ?? 0,
+    height: resolvedDimension(style.rowGap, context?.percentageBasis?.height) ?? 0,
   }
   taffyStyle.inset = {
     // Taffy has no sticky positioning. Keep sticky nodes in their normal-flow
     // location here; collection applies their scrollport constraints later.
-    left: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.left ?? 'auto',
-    right: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.right ?? 'auto',
-    top: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.top ?? 'auto',
-    bottom: style.position === 'static' || style.position === 'sticky' ? 'auto' : style.bottom ?? 'auto',
+    left: style.position === 'static' || style.position === 'sticky' ? 'auto' : resolvedDimension(style.left, context?.percentageBasis?.width) ?? 'auto',
+    right: style.position === 'static' || style.position === 'sticky' ? 'auto' : resolvedDimension(style.right, context?.percentageBasis?.width) ?? 'auto',
+    top: style.position === 'static' || style.position === 'sticky' ? 'auto' : resolvedDimension(style.top, context?.percentageBasis?.height) ?? 'auto',
+    bottom: style.position === 'static' || style.position === 'sticky' ? 'auto' : resolvedDimension(style.bottom, context?.percentageBasis?.height) ?? 'auto',
   }
 
   return taffyStyle
+}
+
+function resolvedDimension(value: SupportedDimension | undefined, basis: number | undefined): number | `${number}%` | undefined {
+  return value === undefined ? undefined : resolveCalculatedDimension(value, basis)
+}
+
+function resolveDimensionRect(value: Edges<SupportedDimension>, basis: number | undefined): Edges<number | `${number}%`> {
+  return {
+    top: resolvedDimension(value.top, basis) ?? 0,
+    right: resolvedDimension(value.right, basis) ?? 0,
+    bottom: resolvedDimension(value.bottom, basis) ?? 0,
+    left: resolvedDimension(value.left, basis) ?? 0,
+  }
+}
+
+function resolveMarginRect(value: Edges<MarginValue>, basis: number | undefined): Edges<number | `${number}%` | 'auto'> {
+  const resolve = (side: MarginValue): number | `${number}%` | 'auto' =>
+    side === 'auto' ? side : resolvedDimension(side, basis) ?? 0
+  return { top: resolve(value.top), right: resolve(value.right), bottom: resolve(value.bottom), left: resolve(value.left) }
 }
 
 function toTaffyGridPlacement(value: SupportedStyle['gridColumnStart']): 'auto' | number | { span: number } {

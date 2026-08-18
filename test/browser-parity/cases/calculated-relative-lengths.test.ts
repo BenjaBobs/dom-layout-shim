@@ -27,3 +27,34 @@ it('resolves calculated viewport and font-relative lengths in layout properties'
     ],
   })
 })
+
+it('resolves mixed percentage and pixel calculations against a definite containing block', async () => {
+  await expectChromiumParity({
+    viewport: { width: 500, height: 300 },
+    html: `
+      <style>
+        body { margin: 0; }
+        #parent { position: relative; width: 200px; height: 120px; }
+        #size {
+          position: absolute;
+          width: calc(100% - 32px);
+          height: calc(50% + 10px);
+        }
+        #constraint {
+          width: 300px;
+          height: 200px;
+          max-width: calc(100% - 24px);
+          max-height: calc(100% - 20px);
+        }
+      </style>
+      <div id="parent">
+        <div id="size"></div>
+        <div id="constraint"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#size' },
+      { type: 'rect', selector: '#constraint' },
+    ],
+  })
+})

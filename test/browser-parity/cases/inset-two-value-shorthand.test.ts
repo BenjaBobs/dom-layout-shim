@@ -20,3 +20,25 @@ it('two-value inset shorthand applies vertical and horizontal offsets', async ()
     ],
   })
 })
+
+it('percentage insets resolve against the containing block', async () => {
+  await expectChromiumParity({
+    viewport: { width: 400, height: 300 },
+    html: `
+      <style>
+        body { margin: 0; }
+        #containing-block { position: relative; width: 200px; height: 120px; }
+        #physical { position: absolute; top: 50%; left: 25%; width: 20px; height: 10px; }
+        #logical { position: absolute; inset-block-start: 25%; inset-inline-end: 10%; width: 20px; height: 10px; }
+      </style>
+      <div id="containing-block">
+        <div id="physical"></div>
+        <div id="logical"></div>
+      </div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#physical' },
+      { type: 'rect', selector: '#logical' },
+    ],
+  })
+})

@@ -53,6 +53,23 @@
       ]
     },
     {
+      "id": "styled-flex-buttons",
+      "description": "Flex-styled buttons include text, inline icon advances, gaps, authored padding, and borders in intrinsic sizing.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "form-control-intrinsic-defaults"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Styled flex buttons retain deterministic profile-backed anonymous inner spacing while authored inline icons and gaps contribute to the outer intrinsic width."
+        }
+      ]
+    },
+    {
       "id": "native-control-overrides",
       "description": "Per-control metric overrides customize deterministic native-control geometry.",
       "support": "supported",

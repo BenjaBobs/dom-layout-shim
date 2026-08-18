@@ -73,8 +73,8 @@
       },
       "notes": [
         {
-          "kind": "limitation",
-          "text": "Calculations must reduce to either a pixel length or a percentage. Mixed percentage-and-length calculations remain unsupported by the Taffy dimension model."
+          "kind": "taffy-compat",
+          "text": "Mixed percentage-and-length calculations are resolved to pixels before entering Taffy when the containing-block axis is definite."
         }
       ]
     },
@@ -112,8 +112,8 @@
       },
       "notes": [
         {
-          "kind": "limitation",
-          "text": "Calculations must reduce to either a pixel length or a percentage. Mixed percentage-and-length calculations remain unsupported by the Taffy dimension model."
+          "kind": "taffy-compat",
+          "text": "Mixed percentage-and-length constraints are resolved to pixels before entering Taffy when the containing-block axis is definite."
         }
       ]
     },

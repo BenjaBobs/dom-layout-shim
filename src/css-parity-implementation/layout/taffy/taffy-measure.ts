@@ -17,6 +17,7 @@ export type MeasureContext = {
   whiteSpace: SupportedStyle['whiteSpace']
   textMeasurer: TextMeasurer
   replacedSize?: Size<number>
+  inlineAdvance?: number
 }
 
 export function createMeasureContext(
@@ -66,6 +67,7 @@ export function createMeasureContext(
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textMeasurer,
+    inlineAdvance: flexButtonInlineAdvance(element, style),
   }
 }
 
@@ -114,7 +116,7 @@ export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpac
   })
 
   return {
-    width: knownDimensions.width ?? measured.width,
+    width: knownDimensions.width ?? measured.width + (measureContext.inlineAdvance ?? 0),
     height: knownDimensions.height ?? measured.height,
   }
 }
@@ -193,6 +195,9 @@ function formControlIntrinsicSize(
   }
 
   if (tagName === 'button') {
+    if (style.display === 'flex') {
+      return styledFlexButtonIntrinsicSize(element, style, textMeasurer, metrics)
+    }
     return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer, metrics)
   }
 
@@ -245,6 +250,68 @@ function formControlIntrinsicSize(
     default:
       return { width: inputTextLikeIntrinsicWidth(element, type, metrics), height: metrics.textInput.height }
   }
+}
+
+function styledFlexButtonIntrinsicSize(
+  element: Element,
+  style: SupportedStyle,
+  textMeasurer: TextMeasurer,
+  metrics: NativeControlMetrics,
+): Size<number> {
+  const measured = textMeasurer.measure({
+    text: element.textContent?.trim() ?? '',
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
+    lineHeight: style.lineHeight,
+    maxWidth: Number.MAX_SAFE_INTEGER,
+    whiteSpace: 'nowrap',
+  })
+  const borderWidth = (side: 'left' | 'right' | 'top' | 'bottom') =>
+    style.borderStyle[side] === 'none' || style.borderStyle[side] === 'hidden' ? 0 : style.borderWidth[side]
+
+  return {
+    // Chromium retains an anonymous inner button content inset after authors
+    // switch the outer control to flex layout. Reuse half of the selected
+    // deterministic native-button padding so styled controls remain tied to
+    // the configured profile instead of the runtime platform.
+    width: measured.width + metrics.button.horizontalPadding / 2 + flexButtonInlineAdvance(element, style) +
+      fixedLength(style.padding.left) + fixedLength(style.padding.right) + borderWidth('left') + borderWidth('right'),
+    height: measured.height + fixedLength(style.padding.top) + fixedLength(style.padding.bottom) + borderWidth('top') + borderWidth('bottom'),
+  }
+}
+
+function fixedLength(value: SupportedStyle['padding']['top']): number {
+  return typeof value === 'number' ? value : 0
+}
+
+function flexButtonInlineAdvance(element: Element, style: SupportedStyle): number {
+  if (element.tagName.toLowerCase() !== 'button' || style.display !== 'flex') return 0
+
+  const children = Array.from(element.children)
+  const iconWidth = children.reduce((width, child) => {
+    if ((child.textContent ?? '').trim()) return width
+    if (child.matches('svg, img') || child.querySelector('svg, img')) {
+      return width + replacedInlineWidth(child, style.fontSize)
+    }
+    return width
+  }, 0)
+  const contentRuns = children.length > 0
+    ? children.filter((child) => (child.textContent ?? '').trim() || child.matches('svg, img') || child.querySelector('svg, img')).length
+    : 1
+
+  return iconWidth + Math.max(0, contentRuns - 1) * numericGap(style.columnGap)
+}
+
+function replacedInlineWidth(element: Element, fallback: number): number {
+  const replaced = element.matches('svg, img') ? element : element.querySelector('svg, img')
+  if (!replaced) return 0
+  return readNumberAttribute(replaced, 'width') ?? fallback
+}
+
+function numericGap(value: SupportedStyle['columnGap']): number {
+  return typeof value === 'number' ? value : 0
 }
 
 function inputTextLikeIntrinsicWidth(element: Element, type: string, metrics: NativeControlMetrics): number {
