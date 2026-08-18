@@ -1,5 +1,66 @@
 # dom-layout-shim
 
+## 0.5.0
+
+### Minor Changes
+
+- 04f23ec: Apply `rotate()`, `skew()`, and `matrix()` transforms to client geometry and precise polygonal hit testing. For example, `elementFromPoint()` no longer selects a rotated element through an empty corner of its bounding rectangle.
+- 3b40fe5: Expand `createUnsupportedCssReporter()` summaries with occurrence counts, selectors, affected elements, and observed computed values. Consumers can now tell whether an unsupported declaration is repeatedly affecting a tracked element or is likely a superseded fallback:
+
+  ```ts
+  const declaration = reporter.getSummary().declarations[0];
+  console.log(
+    declaration.occurrences,
+    declaration.elements,
+    declaration.computedValues
+  );
+  ```
+
+- 830552c: Match structural and state pseudo-class styles and expose wrapped inline fragments through `getClientRects()`. After upgrading, `span.getClientRects()` returns one rectangle per wrapped line instead of an empty list, and rules such as `li:nth-child(2) { width: 40px }` affect deterministic layout.
+- eae94fb: Add configurable user-agent presentation styles below author CSS. Tests can now keep the deterministic portable baseline, disable it, or override selected defaults without duplicating reset CSS in every document.
+
+  ```ts
+  // Before: the portable presentation defaults were always active.
+  await attachLayoutEngine({ window });
+
+  // After: disable them and define only the baseline this suite needs.
+  await attachLayoutEngine({
+    window,
+    userAgentStyles: {
+      profile: "none",
+      overrides: "p { margin: 0 }",
+    },
+  });
+  ```
+
+  User-agent overrides remain lower priority than document and inline styles. Structural HTML behavior and native-control intrinsic metrics remain independent.
+
+- c64ab06: Expand selector matching and include `::before`/`::after` string and `attr()` content in intrinsic text layout. Generated labels now change their originating element's measured size and following block placement instead of being ignored.
+- a87bab3: Improve component-library geometry and hit testing by measuring flex-styled button icons and gaps, resolving percentage insets, and containing descendant `z-index` values within nested positioned stacking contexts. For example, an icon button now includes the icon and `gap` in its intrinsic width, while a `z-index: 999` child no longer escapes a parent below a `z-index: 2` sibling.
+- a5c7885: Resolve `em`, `rem`, viewport units, custom properties, reducible `calc()` expressions, and mixed percentage-and-pixel dimensions with a definite containing block across supported layout declarations. For example, `width: calc(100% - 32px)` now contributes its computed pixel width instead of being ignored as unsupported CSS.
+- 5444417: Include inherited `font-weight` and `letter-spacing` in intrinsic and custom text measurement. A custom `textMeasurer` can now read `input.fontWeight` and `input.letterSpacing`, while the default measurer includes letter spacing in rendered widths.
+- e7d74ff: Return a layout attachment from `attachLayoutEngine()` with runtime viewport control. Tests can now attach once in shared setup and resize deterministic layout without rebuilding the DOM:
+
+  ```ts
+  const layout = await attachLayoutEngine({ window });
+  layout.setViewport({ width: 390, height: 844 });
+  ```
+
+  The new viewport updates layout, `innerWidth`, `innerHeight`, and subsequent `matchMedia()` results, and dispatches a window `resize` event.
+
+### Patch Changes
+
+- 501d313: Prevent scoped compound `:where()` and `:is()` selectors from matching unrelated elements when the host DOM implements functional selector matching incorrectly. CSS-in-JS rules now remain scoped to their intended components instead of corrupting surrounding layout.
+
+  ```css
+  /* Before: some DOM harnesses incorrectly applied this rule to unrelated elements. */
+  :where(.library-scope).input:not(.success) {
+    border-width: 1px;
+  }
+
+  /* After: only elements matching both .library-scope and .input receive it. */
+  ```
+
 ## 0.4.0
 
 ### Minor Changes
