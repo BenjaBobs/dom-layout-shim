@@ -1,5 +1,7 @@
 import { act } from 'react'
+// docs:start layout-shim-import
 import { attachLayoutEngine, expectBlockedBy, expectReceivesPointer, guardedClick } from 'dom-layout-shim'
+// docs:end layout-shim-import
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mountTaskWorkspace } from '../src/app.tsx'
 
@@ -7,12 +9,14 @@ let root: ReturnType<typeof mountTaskWorkspace> | undefined
 
 describe('Ant Design task workspace consumer', () => {
   beforeEach(async () => {
+    // docs:start mount-react
     document.body.innerHTML = '<main id="app"></main>'
     const container = document.querySelector('#app')
     if (!container) throw new Error('Missing example application root')
     await act(async () => {
       root = mountTaskWorkspace(container)
     })
+    // docs:end mount-react
   })
 
   afterEach(async () => {
@@ -28,15 +32,19 @@ describe('Ant Design task workspace consumer', () => {
       throw new Error('Missing example application root')
     }
 
+    // docs:start attach-layout-engine
     await attachLayoutEngine({
       window,
       viewport: { width: 1024, height: 720 },
       unsupportedCss: { default: 'ignore' },
     })
+    // docs:end attach-layout-engine
 
     const addTask = requiredElement<HTMLElement>('[data-layout-key="add-task"]')
     const firstMenu = requiredElement<HTMLElement>('[data-layout-key="task-1-menu-trigger"]')
+    // docs:start pointer-receives
     expectReceivesPointer(addTask)
+    // docs:end pointer-receives
 
     await act(async () => guardedClick(firstMenu))
     const deleteAction = requiredElement<HTMLElement>('.ant-dropdown-menu-item-danger')
@@ -52,7 +60,9 @@ describe('Ant Design task workspace consumer', () => {
     mask.style.height = '720px'
     expect(dialog).toHaveProperty('offsetWidth', 520)
     expect(mask).toHaveProperty('offsetHeight', 720)
+    // docs:start pointer-blocked
     expectBlockedBy(addTask, mask)
+    // docs:end pointer-blocked
 
     const confirmDelete = requiredButton('Delete')
     // The shim's flat stacking model currently places Ant Design's mask above

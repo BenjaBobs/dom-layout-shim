@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { articleLayout, guideLayout, renderMarkdownPage } from '../../docs-engine/render-md.mjs'
+import { articleLayout, guideLayout, renderMarkdownFragment, renderMarkdownPage } from '../../docs-engine/render-md.mjs'
 
 const renderGuide = (source) => renderMarkdownPage(source, guideLayout)
 
@@ -29,6 +29,10 @@ Continue here.
 `
 
 describe('Markdown guide rendering', () => {
+  it('renders authored Markdown fragments for embedded documentation', () => {
+    expect(renderMarkdownFragment('Use `attachLayoutEngine`.')).toContain('<code>attachLayoutEngine</code>')
+  })
+
   it('lets another page layout reuse parsed Markdown and frontmatter', () => {
     const rendered = renderMarkdownPage(guide, ({ attributes, markdown, tokens }) => ({
       title: attributes.title,

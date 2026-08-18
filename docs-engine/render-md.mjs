@@ -13,6 +13,10 @@ export function renderMarkdownPage(source, layout) {
   return layout({ attributes, markdown, tokens })
 }
 
+export function renderMarkdownFragment(source) {
+  return markdown.render(source)
+}
+
 export function guideLayout({ attributes, markdown, tokens }) {
   const firstSection = tokens.findIndex((token) => token.type === 'heading_open' && token.tag === 'h2')
   if (firstSection < 0) throw new Error('Guide requires at least one level-two heading')

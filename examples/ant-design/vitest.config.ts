@@ -1,3 +1,4 @@
+// docs:start vitest-config
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -7,3 +8,4 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
   },
 })
+// docs:end vitest-config
