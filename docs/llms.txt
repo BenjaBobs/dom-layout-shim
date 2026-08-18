@@ -62,7 +62,8 @@ by user-agent overrides.
 Supported selector matching includes `:first-child`, `:nth-child()`,
 `:last-child`, `:hover`, `:focus`, and `:disabled`. Wrapped inline phrasing
 elements return one line-fragment rectangle from `getClientRects()` per line;
-`getBoundingClientRect()` returns the union.
+`getBoundingClientRect()` returns the union. Inline phrasing runs alongside
+block children contribute anonymous line boxes to their shared container.
 
 The engine reads configured stylesheet strings first, followed by document
 `<style>` and accessible `<link rel="stylesheet">` sheets in DOM order, then

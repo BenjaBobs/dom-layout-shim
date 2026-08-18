@@ -135,16 +135,22 @@
     },
     {
       "id": "inline-formatting",
-      "description": "Full inline formatting remains outside deterministic text measurement.",
-      "support": "unsupported",
+      "description": "Inline text runs contribute line boxes alongside block children in a shared container.",
+      "support": "partial",
       "parity": {
-        "status": "unverified",
-        "fixtures": []
+        "status": "partially-verified",
+        "fixtures": [
+          "mixed-inline-block-flow"
+        ]
       },
       "notes": [
         {
+          "kind": "browser-parity",
+          "text": "Parity covers an inline phrasing run after a block child, including the run's contribution to parent flow height and its element rectangle."
+        },
+        {
           "kind": "limitation",
-          "text": "The engine does not implement full inline formatting."
+          "text": "The engine does not implement the full inline formatting model."
         }
       ]
     }
