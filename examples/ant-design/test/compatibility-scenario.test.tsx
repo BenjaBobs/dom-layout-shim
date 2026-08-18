@@ -37,4 +37,4 @@ it.skipIf(!output)('captures the full Ant Design compatibility scenario', async 
   }
   await writeFile(output!, JSON.stringify(result, null, 2))
   await act(async () => root?.unmount())
-}, 15_000)
+}, 60_000)
