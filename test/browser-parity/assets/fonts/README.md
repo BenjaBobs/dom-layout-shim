@@ -13,6 +13,11 @@ deterministic fallback text measurer. The font has an 800-unit ascender, a
 OS/2 Windows and typographic vertical metrics use the same 800/200 extent so
 Chromium exposes identical inline boxes on every supported runner.
 
+The binary identifies itself as a regular 400-weight fixed-pitch font. It also
+contains explicit underline metrics and covers exactly printable ASCII. A unit
+test parses the committed binary and checks this contract independently of the
+generator.
+
 Regenerate and verify the committed asset with:
 
 ```sh

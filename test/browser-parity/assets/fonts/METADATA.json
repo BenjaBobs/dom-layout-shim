@@ -6,11 +6,15 @@
   "generatorDependency": "opentype.js@2.0.0",
   "unitsPerEm": 1000,
   "advanceWidth": 500,
+  "weightClass": 400,
+  "fixedPitch": true,
   "ascender": 800,
   "descender": -200,
   "windowsAscent": 800,
   "windowsDescent": 200,
   "useTypographicMetrics": true,
+  "underlinePosition": -100,
+  "underlineThickness": 50,
   "coverage": "U+0020-U+007E",
-  "sha256": "690df33e91546352b4dd706e1470b80b6b2cc99e406d89587b8ae060d5d8c2e6"
+  "sha256": "1a11aa790a6c03b3ab9708fa4268e581f22ce214f873709f750ea7e44ff993c3"
 }
