@@ -17,7 +17,7 @@ const result = spawnSync(
       ...process.env,
       TMPDIR: resolve(root, '.tmp'),
       XDG_CACHE_HOME: resolve(root, '.cache'),
-      PLAYWRIGHT_BROWSERS_PATH: resolve(root, '.playwright-browsers'),
+      PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH ?? resolve(root, '.playwright-browsers'),
       BROWSER_PARITY_TIMING_PATH: timingPath,
     },
     shell: process.platform === 'win32',
