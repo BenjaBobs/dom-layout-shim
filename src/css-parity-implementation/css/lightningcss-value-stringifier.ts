@@ -618,6 +618,33 @@ function stringifyLengthLike(value: Record<string, unknown>): string {
     return String(value.value)
   }
 
+  if (value.type === 'calc') {
+    return stringifyCalculation(value.value)
+  }
+
+  return JSON.stringify(value)
+}
+
+function stringifyCalculation(value: unknown): string {
+  if (!isRecord(value)) return JSON.stringify(value)
+
+  if (value.type === 'function' && isRecord(value.value)) {
+    return `${String(value.value.type)}(${stringifyCalculation(value.value.value)})`
+  }
+
+  if (value.type === 'sum' && Array.isArray(value.value)) {
+    return value.value.map(stringifyCalculation).join(' + ')
+  }
+
+  if (value.type === 'product' && Array.isArray(value.value)) {
+    return value.value.map(stringifyCalculation).join(' * ')
+  }
+
+  if (value.type === 'value') return stringifyCalculation(value.value)
+  if (value.type === 'dimension') return stringifyDimensionPercentage(value)
+  if (value.type === 'percentage' && typeof value.value === 'number') return `${value.value * 100}%`
+  if (value.type === 'number' && typeof value.value === 'number') return String(value.value)
+
   return JSON.stringify(value)
 }
 
@@ -638,6 +665,10 @@ function stringifyDimensionPercentage(value: unknown): string {
     }
 
     return `${String(length.value)}${String(length.unit)}`
+  }
+
+  if (value.type === 'calc') {
+    return stringifyCalculation(value.value)
   }
 
   return JSON.stringify(value)
@@ -670,6 +701,10 @@ function stringifyLength(value: unknown): string {
     }
 
     return `${String(length.value)}${String(length.unit)}`
+  }
+
+  if (value.type === 'calc') {
+    return stringifyCalculation(value.value)
   }
 
   return JSON.stringify(value)
@@ -1233,7 +1268,7 @@ function stringifyZIndex(value: Record<string, unknown>): string {
 }
 
 function stringifyTokens(tokens: unknown[]): string {
-  return tokens.map(stringifyToken).join(' ')
+  return tokens.map(stringifyToken).join('')
 }
 
 function stringifyToken(token: unknown): string {
@@ -1250,6 +1285,14 @@ function stringifyToken(token: unknown): string {
 
     if (value.type === 'white-space') {
       return ' '
+    }
+
+    if (value.type === 'parenthesis-block') {
+      return '('
+    }
+
+    if (value.type === 'close-parenthesis') {
+      return ')'
     }
 
     if ('value' in value) {
@@ -1271,6 +1314,15 @@ function stringifyToken(token: unknown): string {
 
   if (token.type === 'var') {
     return stringifyVariable(token)
+  }
+
+  if (token.type === 'function' && isRecord(token.value)) {
+    const name = typeof token.value.name === 'string' ? token.value.name : ''
+    const arguments_ = Array.isArray(token.value.arguments)
+      ? stringifyTokens(token.value.arguments)
+      : ''
+
+    return name ? `${name}(${arguments_})` : JSON.stringify(token)
   }
 
   return JSON.stringify(token)

@@ -56,6 +56,10 @@
       "syntax": [
         "<px>",
         "<percentage>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto"
       ],
       "support": "partial",
@@ -63,13 +67,14 @@
         "status": "verified",
         "fixtures": [
           "offset-geometry",
-          "percentage-sizing"
+          "percentage-sizing",
+          "calculated-relative-lengths"
         ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Length support is intentionally narrow: pixels, percentages where listed, reset keywords, and literal zero."
+          "text": "Calculations must reduce to either a pixel length or a percentage. Mixed percentage-and-length calculations remain unsupported by the Taffy dimension model."
         }
       ]
     },
@@ -89,6 +94,10 @@
       "syntax": [
         "<px>",
         "<percentage>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto",
         "none"
       ],
@@ -97,13 +106,14 @@
         "status": "verified",
         "fixtures": [
           "box-sizing-min-max-size-constraints",
-          "min-max-size-constraints"
+          "min-max-size-constraints",
+          "calculated-relative-lengths"
         ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Length support is intentionally narrow: pixels, percentages where listed, reset keywords, and literal zero."
+          "text": "Calculations must reduce to either a pixel length or a percentage. Mixed percentage-and-length calculations remain unsupported by the Taffy dimension model."
         }
       ]
     },

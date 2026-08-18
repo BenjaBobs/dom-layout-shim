@@ -1,6 +1,7 @@
 import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 import { applyCustomPropertyDeclaration, type CustomProperties } from './custom-properties.ts'
+import type { Viewport } from '../../api/layout-engine-config.ts'
 
 export function applyInlineStyle(
   style: SupportedStyle,
@@ -8,6 +9,7 @@ export function applyInlineStyle(
   policy: UnsupportedCssPolicy | undefined,
   rootFontSize?: number,
   customProperties?: CustomProperties,
+  viewport?: Viewport,
 ): void {
   const inlineStyle = element.getAttribute('style')
 
@@ -21,6 +23,7 @@ export function applyInlineStyle(
       source: 'inline-style',
       element,
       rootFontSize,
+      viewport,
       customProperties,
     })
   }

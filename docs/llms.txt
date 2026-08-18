@@ -65,6 +65,11 @@ the consuming `var()` fallback when available. If the value remains unresolved,
 the declaration routes through the unsupported CSS policy as
 `unsupported-value` with its authored value.
 
+Supported layout lengths include pixels, percentages where documented, `em`,
+`rem`, `vw`, `vh`, `vmin`, and `vmax`. Custom-property and `calc()` expressions
+are accepted when they reduce to one supported length, percentage, or number;
+mixed percentage-and-pixel calculations remain unsupported.
+
 Stylesheet `@media` rules evaluate against the configured layout viewport.
 Supported queries include screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media

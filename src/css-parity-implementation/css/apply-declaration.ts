@@ -22,6 +22,8 @@ import type {
   TransformOrigin,
 } from './supported-style.ts'
 import { resolveCustomPropertyValue, type CustomProperties } from './custom-properties.ts'
+import type { Viewport } from '../../api/layout-engine-config.ts'
+import { parseLengthPercentage, parseNumberCalculation } from './length-value.ts'
 export { createDefaultStyle } from './supported-style.ts'
 export type {
   AlignContentValue,
@@ -47,6 +49,8 @@ export type DeclarationContext = {
   selector?: string
   element?: Element
   rootFontSize?: number
+  fontSize?: number
+  viewport?: Viewport
   customProperties?: CustomProperties
 }
 
@@ -56,6 +60,7 @@ export function applyDeclaration(
   value: string,
   context: DeclarationContext,
 ): void {
+  context = { ...context, fontSize: style.fontSize }
   const normalizedProperty = property.trim().toLowerCase()
 
   if (normalizedProperty.startsWith('--') || isTransitionProperty(normalizedProperty)) {
@@ -887,7 +892,7 @@ function applyFlexFlow(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -1033,6 +1038,13 @@ function applyFontSize(
     return
   }
 
+  const calculatedLength = parseLengthPercentage(value, context)
+
+  if (typeof calculatedLength === 'number' && calculatedLength >= 0) {
+    applyFontSizeLength(style, calculatedLength)
+    return
+  }
+
   const length = parsePxLength(value)
 
   if (length !== undefined && length >= 0) {
@@ -1096,6 +1108,13 @@ function applyLineHeight(
     return
   }
 
+  const calculatedLength = parseLengthPercentage(value, context)
+
+  if (typeof calculatedLength === 'number' && calculatedLength >= 0) {
+    style.lineHeight = calculatedLength
+    return
+  }
+
   const pxLength = parsePxLength(value)
 
   if (pxLength !== undefined && pxLength >= 0) {
@@ -1148,7 +1167,7 @@ function applyOverflow(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2454,7 +2473,7 @@ function applyPaddingEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context, parsePxPaddingLength)
+  const lengths = parseEdgeLengths(value, property, originalValue, context, (part) => parsePaddingLength(part, context))
 
   if (!lengths) {
     return
@@ -2475,8 +2494,8 @@ function applyPaddingEdge(
   context: DeclarationContext,
 ): void {
   const length = edge === 'left' || edge === 'right'
-    ? parseInlinePaddingLength(value)
-    : parsePxPaddingLength(value)
+    ? parsePaddingLength(value, context)
+    : parsePaddingLength(value, context)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2500,7 +2519,7 @@ function applyMarginEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context, parseMarginLength)
+  const lengths = parseEdgeLengths(value, property, originalValue, context, (part) => parseMarginLength(part, context))
 
   if (!lengths) {
     return
@@ -2520,7 +2539,7 @@ function applyMarginEdge(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parseMarginLength(value)
+  const length = parseMarginLength(value, context)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2565,7 +2584,7 @@ function applyLogicalEdges<Value>(
   context: DeclarationContext,
   parseLength: (value: string) => Value | undefined,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2612,7 +2631,7 @@ function applyLogicalMarginEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  applyLogicalEdges(edges, axis, value, property, originalValue, context, parseMarginLength)
+  applyLogicalEdges(edges, axis, value, property, originalValue, context, (part) => parseMarginLength(part, context))
 }
 
 function applyLogicalPaddingEdges(
@@ -2630,7 +2649,7 @@ function applyLogicalPaddingEdges(
     property,
     originalValue,
     context,
-    axis === 'inline' ? parseInlinePaddingLength : parsePxPaddingLength,
+    (part) => parsePaddingLength(part, context),
   )
 }
 
@@ -2755,7 +2774,7 @@ function applyPlaceContent(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2908,9 +2927,21 @@ function applyLength(
       return
     }
 
-    const length = parsePxLength(value)
+    const length = parseDimension(value, context)
 
     if (length === undefined) {
+      handleUnsupportedCss(context.policy, {
+        property,
+        value: originalValue,
+        reason: 'unsupported-value',
+        source: context.source,
+        selector: context.selector,
+        element: context.element,
+      })
+      return
+    }
+
+    if (typeof length !== 'number') {
       handleUnsupportedCss(context.policy, {
         property,
         value: originalValue,
@@ -2936,7 +2967,7 @@ function applyLength(
     return
   }
 
-  const length = parseDimension(value)
+  const length = parseDimension(value, context)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3673,7 +3704,7 @@ function applyInset(
     return
   }
 
-  const lengths = parts.map(parseInsetLength)
+  const lengths = parts.map((part) => parseInsetLength(part, context))
 
   if (lengths.some((length) => length === undefined)) {
     handleUnsupportedCss(context.policy, {
@@ -3703,7 +3734,7 @@ function applyLogicalInset(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3717,8 +3748,8 @@ function applyLogicalInset(
     return
   }
 
-  const start = parseInsetLength(parts[0] ?? '')
-  const end = parseInsetLength(parts[1] ?? parts[0] ?? '')
+  const start = parseInsetLength(parts[0] ?? '', context)
+  const end = parseInsetLength(parts[1] ?? parts[0] ?? '', context)
 
   if (start === undefined || end === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3749,7 +3780,7 @@ function applyGap(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3763,7 +3794,7 @@ function applyGap(
     return
   }
 
-  const lengths = parts.map(parseGapLength)
+  const lengths = parts.map((part) => parseGapLength(part, context))
 
   if (lengths.some((length) => length === undefined)) {
     handleUnsupportedCss(context.policy, {
@@ -3790,7 +3821,7 @@ function applyGapLength(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parseGapLength(value)
+  const length = parseGapLength(value, context)
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3807,8 +3838,10 @@ function applyGapLength(
   style[key] = length
 }
 
-function parseInsetLength(value: string): number | 'auto' | undefined {
-  return value === 'auto' ? 'auto' : parsePxLength(value)
+function parseInsetLength(value: string, context: DeclarationContext): number | 'auto' | undefined {
+  if (value === 'auto') return 'auto'
+  const length = parseDimension(value, context)
+  return typeof length === 'number' ? length : undefined
 }
 
 function setInsetSide(
@@ -3819,20 +3852,19 @@ function setInsetSide(
   style[key] = value === 'auto' ? undefined : value
 }
 
-function parseGapLength(value: string): SupportedDimension | undefined {
-  return value === 'normal' ? 0 : parseNonNegativeDimension(value)
+function parseGapLength(value: string, context: DeclarationContext): SupportedDimension | undefined {
+  if (value === 'normal') return 0
+  const length = parseDimension(value, context)
+  return isNonNegativeDimension(length) ? length : undefined
 }
 
-function parseInlinePaddingLength(value: string): SupportedDimension | undefined {
-  return parsePxPaddingLength(value)
+function parsePaddingLength(value: string, context: DeclarationContext): SupportedDimension | undefined {
+  const length = parseDimension(value, context)
+  return isNonNegativeDimension(length) ? length : undefined
 }
 
-function parsePxPaddingLength(value: string): number | undefined {
-  return parseNonNegativePxLength(value)
-}
-
-function parseMarginLength(value: string): MarginValue | undefined {
-  return value === 'auto' ? 'auto' : parseDimension(value)
+function parseMarginLength(value: string, context?: DeclarationContext): MarginValue | undefined {
+  return value === 'auto' ? 'auto' : parseDimension(value, context)
 }
 
 function applyBorderStyles(
@@ -4062,9 +4094,9 @@ function applyZIndex(
     return
   }
 
-  const zIndex = Number(value)
+  const zIndex = parseNumberCalculation(value)
 
-  if (!Number.isInteger(zIndex)) {
+  if (zIndex === undefined || !Number.isInteger(zIndex)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -4098,15 +4130,8 @@ function parseRemLength(value: string): number | undefined {
   return match ? Number(match[1]) : undefined
 }
 
-function parseDimension(value: string): SupportedDimension | undefined {
-  const length = parsePxLength(value)
-
-  if (length !== undefined) {
-    return length
-  }
-
-  const percentage = parsePercentage(value)
-  return percentage === undefined ? undefined : `${percentage}%`
+function parseDimension(value: string, context?: DeclarationContext): SupportedDimension | undefined {
+  return parseLengthPercentage(value, context)
 }
 
 function parsePercentage(value: string): number | undefined {
@@ -4114,24 +4139,24 @@ function parsePercentage(value: string): number | undefined {
   return match ? Number(match[1]) : undefined
 }
 
-function parseNonNegativePxLength(value: string): number | undefined {
-  const length = parsePxLength(value)
-  return length !== undefined && length >= 0 ? length : undefined
-}
-
 function parseNonNegativeDimension(value: string): SupportedDimension | undefined {
   const length = parseDimension(value)
 
+  return isNonNegativeDimension(length) ? length : undefined
+}
+
+function isNonNegativeDimension(length: SupportedDimension | undefined): length is SupportedDimension {
+
   if (typeof length === 'number') {
-    return length >= 0 ? length : undefined
+    return length >= 0
   }
 
   if (typeof length === 'string') {
     const percentage = parsePercentage(length)
-    return percentage !== undefined && percentage >= 0 ? length : undefined
+    return percentage !== undefined && percentage >= 0
   }
 
-  return undefined
+  return false
 }
 
 function parseNonNegativeNumber(value: string): number | undefined {
@@ -4151,7 +4176,7 @@ function parseEdgeLengths<Value = number>(
   context: DeclarationContext,
   parseLength: (value: string) => Value | undefined = parsePxLength as (value: string) => Value | undefined,
 ): Edges<Value> | undefined {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = splitCssComponents(value)
 
   if (parts.length < 1 || parts.length > 4) {
     handleUnsupportedCss(context.policy, {
@@ -4181,6 +4206,26 @@ function parseEdgeLengths<Value = number>(
 
   const [top, right = top, bottom = top, left = right] = lengths as Value[]
   return { top, right, bottom, left }
+}
+
+function splitCssComponents(value: string): string[] {
+  const parts: string[] = []
+  let start = 0
+  let depth = 0
+
+  for (let index = 0; index <= value.length; index += 1) {
+    const character = value[index]
+    if (character === '(') depth += 1
+    if (character === ')') depth -= 1
+
+    if ((character === undefined || /\s/.test(character)) && depth === 0) {
+      const part = value.slice(start, index).trim()
+      if (part) parts.push(part)
+      start = index + 1
+    }
+  }
+
+  return parts
 }
 
 function edgeNameFromProperty(property: string): keyof Edges {

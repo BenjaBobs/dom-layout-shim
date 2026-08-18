@@ -89,6 +89,7 @@ export function applyStyleRules(
   policy: UnsupportedCssPolicy | undefined,
   rootFontSize?: number,
   customProperties?: CustomProperties,
+  viewport?: Viewport,
 ): void {
   rules
     .filter((rule) => matchesSelector(element, rule.selector, policy))
@@ -101,6 +102,7 @@ export function applyStyleRules(
           selector: rule.selector,
           element,
           rootFontSize,
+          viewport,
           customProperties,
         })
       }

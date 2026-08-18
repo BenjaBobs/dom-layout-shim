@@ -20,7 +20,8 @@
       ],
       "syntax": [
         "var(--name)",
-        "var(--name, <fallback>)"
+        "var(--name, <fallback>)",
+        "calc(var(--name) <operator> <value>)"
       ],
       "conditions": [
         "Custom properties inherit from ancestors and local declarations override inherited values.",
@@ -30,13 +31,14 @@
       "parity": {
         "status": "verified",
         "fixtures": [
-          "custom-properties"
+          "custom-properties",
+          "calculated-relative-lengths"
         ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Parity covers inherited and locally overridden variables used by dimensions, margin, padding, gap, flex, grid, and physical positioning declarations."
+          "text": "Parity covers inherited and locally overridden variables used directly and in reducible calculations across dimensions, margin, padding, gap, flex, grid, and positioning declarations."
         }
       ]
     },

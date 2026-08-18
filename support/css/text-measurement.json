@@ -27,13 +27,16 @@
         "<px>",
         "<percentage>",
         "<em>",
-        "<rem>"
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)"
       ],
       "support": "partial",
       "parity": {
         "status": "partially-verified",
         "fixtures": [
-          "static-text-line-height"
+          "static-text-line-height",
+          "calculated-relative-lengths"
         ]
       },
       "notes": [
@@ -55,7 +58,9 @@
         "<px>",
         "<percentage>",
         "<em>",
-        "<rem>"
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)"
       ],
       "support": "partial",
       "parity": {
