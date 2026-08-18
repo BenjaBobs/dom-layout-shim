@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "example": "ant-design",
   "scenario": "task-workspace-full-interaction",
-  "generatedAt": "2026-08-18T13:47:22.215Z",
+  "generatedAt": "2026-08-18T16:08:53.109Z",
   "metadata": {
     "chromiumVersion": "147.0.7727.15",
     "viewport": {
@@ -16,7 +16,7 @@
     "overallAgreement": 70.24,
     "coverage": 100,
     "discrepancies": 101,
-    "uniqueDiscrepancies": 46,
+    "uniqueDiscrepancies": 47,
     "unstableCheckpoints": 0,
     "styleInputDifferences": 1211,
     "hitStackDifferences": 30
@@ -61,9 +61,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
           "scope": "local-layout"
         },
         {
@@ -81,8 +81,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"task-1\"]",
@@ -1365,9 +1365,9 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1020,
-          "difference": 40,
-          "relativeDifference": 40,
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
           "scope": "local-layout"
         },
         {
@@ -1385,8 +1385,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"task-1\"]",
@@ -2413,7 +2413,7 @@
           "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-title-input\"]",
-          "actual": "[data-layout-key=\"add-dialog\"]"
+          "actual": "[data-layout-key=\"task-description-input\"]"
         },
         {
           "selector": "[data-layout-key=\"sidebar\"]",
@@ -2442,6 +2442,12 @@
           "expected": 560,
           "actual": 558,
           "difference": -2
+        },
+        {
+          "selector": "[data-layout-key=\"sidebar\"]",
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"add-dialog\"]",
+          "actual": "[data-layout-key=\"task-description-input\"]"
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
@@ -2476,10 +2482,10 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1184,
-          "difference": 204,
-          "relativeDifference": 43,
-          "scope": "local-layout"
+          "actual": 1140,
+          "difference": 160,
+          "relativeDifference": -1,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
@@ -2496,8 +2502,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 116,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"add-dialog\"]",
@@ -2540,12 +2546,6 @@
           "expected": 32,
           "actual": 23,
           "difference": -9
-        },
-        {
-          "selector": "[data-layout-key=\"task-title-input\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-title-input\"]",
-          "actual": "[data-layout-key=\"add-dialog\"]"
         }
       ],
       "diagnostics": {
@@ -3944,14 +3944,14 @@
               "[data-layout-key=\"task-2\"]"
             ],
             "actual": [
-              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-description-input\"]",
               "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div"
+              "[data-layout-key=\"task-workspace\"]"
             ]
           },
           {
@@ -3967,14 +3967,14 @@
               "html"
             ],
             "actual": [
-              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-description-input\"]",
               "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]"
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"sidebar\"]",
+              "[data-layout-key=\"sidebar\"]"
             ]
           },
           {
@@ -4048,14 +4048,14 @@
               "[data-layout-key=\"task-2\"]"
             ],
             "actual": [
-              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-title-input\"]",
               "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div"
+              "[data-layout-key=\"task-workspace\"]"
             ]
           }
         ]
@@ -4168,10 +4168,10 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1184,
-          "difference": 204,
-          "relativeDifference": 43,
-          "scope": "local-layout"
+          "actual": 1140,
+          "difference": 160,
+          "relativeDifference": -1,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
@@ -4188,8 +4188,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 116,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"task-4\"]",
@@ -5375,7 +5375,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-2\"]"
             ]
@@ -5393,9 +5393,9 @@
             ],
             "actual": [
               "[data-layout-key=\"sidebar\"]",
+              "[data-layout-key=\"sidebar\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"sidebar\"]",
               "div#app"
             ]
           },
@@ -5417,8 +5417,8 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]",
+              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]"
             ]
           },
@@ -5461,7 +5461,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-4\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-4\"]"
             ]
@@ -5576,10 +5576,10 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1184,
-          "difference": 204,
-          "relativeDifference": 43,
-          "scope": "local-layout"
+          "actual": 1140,
+          "difference": 160,
+          "relativeDifference": -1,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
@@ -5596,8 +5596,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 116,
+          "difference": 4
         },
         {
           "selector": ".ant-dropdown",
@@ -5639,7 +5639,7 @@
           "selector": ".ant-dropdown",
           "category": "hit-testing",
           "expected": "span",
-          "actual": "ul"
+          "actual": "li"
         },
         {
           "selector": ".ant-dropdown-menu-item-danger",
@@ -5681,7 +5681,7 @@
           "selector": ".ant-dropdown-menu-item-danger",
           "category": "hit-testing",
           "expected": "span",
-          "actual": "ul"
+          "actual": "li"
         }
       ],
       "diagnostics": {
@@ -7029,7 +7029,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-2\"]"
             ]
@@ -7047,9 +7047,9 @@
             ],
             "actual": [
               "[data-layout-key=\"sidebar\"]",
+              "[data-layout-key=\"sidebar\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"sidebar\"]",
               "div#app"
             ]
           },
@@ -7071,8 +7071,8 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]",
+              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]"
             ]
           },
@@ -7110,11 +7110,11 @@
               "[data-layout-key=\"task-list\"]"
             ],
             "actual": [
-              "ul",
-              "div",
+              "li",
               "svg",
               "span",
-              "li"
+              "ul",
+              "div"
             ]
           },
           {
@@ -7130,11 +7130,11 @@
               "[data-layout-key=\"task-list\"]"
             ],
             "actual": [
-              "ul",
-              "div",
+              "li",
               "svg",
               "span",
-              "li"
+              "ul",
+              "div"
             ]
           }
         ]
@@ -7235,10 +7235,10 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1184,
-          "difference": 204,
-          "relativeDifference": 43,
-          "scope": "local-layout"
+          "actual": 1140,
+          "difference": 160,
+          "relativeDifference": -1,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
@@ -7255,8 +7255,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 116,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"delete-dialog\"]",
@@ -8458,11 +8458,11 @@
               "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div"
+              "[data-layout-key=\"task-workspace\"]"
             ]
           },
           {
@@ -8481,11 +8481,11 @@
               "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"delete-dialog\"]",
               "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]"
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"delete-dialog\"]",
+              "[data-layout-key=\"sidebar\"]",
+              "[data-layout-key=\"sidebar\"]"
             ]
           },
           {
@@ -8659,10 +8659,10 @@
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1184,
-          "difference": 204,
-          "relativeDifference": 43,
-          "scope": "local-layout"
+          "actual": 1140,
+          "difference": 160,
+          "relativeDifference": -1,
+          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
@@ -8679,8 +8679,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 72,
-          "difference": -40
+          "actual": 116,
+          "difference": 4
         },
         {
           "selector": "[data-layout-key=\"task-1\"]",
@@ -10145,7 +10145,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-2\"]"
             ]
@@ -10163,9 +10163,9 @@
             ],
             "actual": [
               "[data-layout-key=\"sidebar\"]",
+              "[data-layout-key=\"sidebar\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"sidebar\"]",
               "div#app"
             ]
           },
@@ -10187,8 +10187,8 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]",
+              "[data-layout-key=\"task-2\"]",
               "[data-layout-key=\"task-list\"]"
             ]
           },
@@ -10231,7 +10231,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-1\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-1\"]",
               "[data-layout-key=\"task-1\"]"
             ]
@@ -10254,7 +10254,7 @@
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
               "div",
-              "[data-layout-key=\"task-4\"]",
+              "[data-layout-key=\"task-list\"]",
               "[data-layout-key=\"task-4\"]",
               "[data-layout-key=\"task-4\"]"
             ]
@@ -10267,30 +10267,12 @@
     {
       "selector": "[data-layout-key=\"add-task\"]",
       "category": "geometry",
-      "field": "width",
-      "expected": 112,
-      "actual": 72,
-      "difference": -40,
-      "occurrences": 7,
-      "steps": [
-        "initial",
-        "active-filter",
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "geometry",
       "field": "x",
       "expected": 980,
-      "actual": 1184,
-      "difference": 204,
-      "relativeDifference": 43,
-      "scope": "local-layout",
+      "actual": 1140,
+      "difference": 160,
+      "relativeDifference": -1,
+      "scope": "ancestor-offset",
       "occurrences": 5,
       "steps": [
         "add-dialog",
@@ -10309,6 +10291,22 @@
       "difference": -7,
       "relativeDifference": -10,
       "scope": "local-layout",
+      "occurrences": 5,
+      "steps": [
+        "add-dialog",
+        "task-added",
+        "action-menu",
+        "delete-dialog",
+        "restored"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"add-task\"]",
+      "category": "geometry",
+      "field": "width",
+      "expected": 112,
+      "actual": 116,
+      "difference": 4,
       "occurrences": 5,
       "steps": [
         "add-dialog",
@@ -10469,9 +10467,9 @@
       "category": "geometry",
       "field": "x",
       "expected": 980,
-      "actual": 1020,
-      "difference": 40,
-      "relativeDifference": 40,
+      "actual": 974,
+      "difference": -6,
+      "relativeDifference": -6,
       "scope": "local-layout",
       "occurrences": 2,
       "steps": [
@@ -10488,6 +10486,19 @@
       "difference": -11,
       "relativeDifference": -11,
       "scope": "local-layout",
+      "occurrences": 2,
+      "steps": [
+        "initial",
+        "active-filter"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"add-task\"]",
+      "category": "geometry",
+      "field": "width",
+      "expected": 112,
+      "actual": 118,
+      "difference": 6,
       "occurrences": 2,
       "steps": [
         "initial",
@@ -10649,7 +10660,7 @@
       "selector": ".ant-dropdown",
       "category": "hit-testing",
       "expected": "span",
-      "actual": "ul",
+      "actual": "li",
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -10711,7 +10722,7 @@
       "selector": ".ant-dropdown-menu-item-danger",
       "category": "hit-testing",
       "expected": "span",
-      "actual": "ul",
+      "actual": "li",
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -10787,6 +10798,16 @@
       "occurrences": 1,
       "steps": [
         "delete-dialog"
+      ]
+    },
+    {
+      "selector": "[data-layout-key=\"sidebar\"]",
+      "category": "hit-testing",
+      "expected": "[data-layout-key=\"add-dialog\"]",
+      "actual": "[data-layout-key=\"task-description-input\"]",
+      "occurrences": 1,
+      "steps": [
+        "add-dialog"
       ]
     },
     {
@@ -10880,20 +10901,10 @@
       ]
     },
     {
-      "selector": "[data-layout-key=\"task-title-input\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"task-title-input\"]",
-      "actual": "[data-layout-key=\"add-dialog\"]",
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
       "selector": "[data-layout-key=\"task-workspace\"]",
       "category": "hit-testing",
       "expected": "[data-layout-key=\"task-title-input\"]",
-      "actual": "[data-layout-key=\"add-dialog\"]",
+      "actual": "[data-layout-key=\"task-description-input\"]",
       "occurrences": 1,
       "steps": [
         "add-dialog"
