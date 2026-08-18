@@ -15,6 +15,7 @@ export type MeasureContext = {
   letterSpacing: number
   lineHeight: number
   whiteSpace: SupportedStyle['whiteSpace']
+  textTransform: SupportedStyle['textTransform']
   textMeasurer: TextMeasurer
   replacedSize?: Size<number>
   inlineAdvance?: number
@@ -42,6 +43,7 @@ export function createMeasureContext(
       letterSpacing: style.letterSpacing,
       lineHeight: style.lineHeight,
       whiteSpace: style.whiteSpace,
+      textTransform: style.textTransform,
       textMeasurer,
       replacedSize,
     }
@@ -66,6 +68,7 @@ export function createMeasureContext(
     letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
+    textTransform: style.textTransform,
     textMeasurer,
     inlineAdvance: flexButtonInlineAdvance(element, style),
   }
@@ -79,6 +82,20 @@ export function canMeasureTextLeaf(element: Element): boolean {
 
     return node.nodeType === elementNodeType && (node as Element).tagName.toLowerCase() === 'br'
   })
+}
+
+export function transformMeasuredText(text: string, transform: SupportedStyle['textTransform']): string {
+  switch (transform) {
+    case 'uppercase':
+      return text.toUpperCase()
+    case 'lowercase':
+      return text.toLowerCase()
+    case 'capitalize':
+      return text.replace(/(^|[^\p{L}\p{N}])(\p{L})/gu, (_, boundary: string, letter: string) =>
+        `${boundary}${letter.toUpperCase()}`)
+    default:
+      return text
+  }
 }
 
 export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpace, _node, context): Size<number> => {
@@ -105,7 +122,7 @@ export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpac
         ? knownDimensions.width
         : Number.MAX_SAFE_INTEGER
   const measured = measureContext.textMeasurer.measure({
-    text: measureContext.text ?? '',
+    text: transformMeasuredText(measureContext.text ?? '', measureContext.textTransform),
     fontFamily: measureContext.fontFamily,
     fontSize: measureContext.fontSize,
     fontWeight: measureContext.fontWeight,
@@ -258,7 +275,7 @@ function styledFlexButtonIntrinsicSize(
   textMeasurer: TextMeasurer,
 ): Size<number> {
   const measured = textMeasurer.measure({
-    text: element.textContent?.trim() ?? '',
+    text: transformMeasuredText(element.textContent?.trim() ?? '', style.textTransform),
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
@@ -356,7 +373,7 @@ function widestOptionTextWidth(element: Element, style: SupportedStyle, textMeas
 
   return texts.reduce((width, text) => {
     const measured = textMeasurer.measure({
-      text,
+      text: transformMeasuredText(text, style.textTransform),
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
       fontWeight: style.fontWeight,
@@ -383,7 +400,7 @@ function buttonLikeIntrinsicSize(
   }
 
   const measured = textMeasurer.measure({
-    text: label,
+    text: transformMeasuredText(label, style.textTransform),
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,

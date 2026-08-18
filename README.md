@@ -161,6 +161,9 @@ and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
 Text measurement receives inherited numeric `font-weight` and resolved
 `letter-spacing` in addition to family, size, line height, and white-space.
+Supported `text-transform` values (`none`, `uppercase`, `lowercase`, and
+`capitalize`) transform the string passed to intrinsic measurement without
+changing the element's authored `textContent`.
 Inline phrasing runs alongside block children contribute anonymous line boxes
 to their shared container instead of disappearing from its intrinsic height.
 Generated strings and `attr()` values from `::before` and `::after` contribute

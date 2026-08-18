@@ -290,6 +290,8 @@ their transformed quadrilateral for point queries.
 
 Custom text measurers receive the resolved numeric font weight and letter
 spacing so component typography can influence intrinsic geometry.
+They also receive text after inherited `none`, `uppercase`, `lowercase`, or
+`capitalize` transformation. The DOM's authored `textContent` is unchanged.
 
 Supported selectors include structural and state pseudo-classes, `:is()`,
 `:where()`, `:not()`, `:has()`, and case-insensitive terminal HTML attribute

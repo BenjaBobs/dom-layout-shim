@@ -284,9 +284,24 @@ function stringifyCssValue(property: string, value: unknown): string {
       return Array.isArray(value) ? value.join(', ') : JSON.stringify(value)
     case 'white-space':
       return typeof value === 'string' ? value : JSON.stringify(value)
+    case 'text-transform':
+      return stringifyTextTransform(value)
     default:
       return JSON.stringify(value)
   }
+}
+
+function stringifyTextTransform(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (
+    isRecord(value) &&
+    typeof value.case === 'string' &&
+    value.fullWidth !== true &&
+    value.fullSizeKana !== true
+  ) {
+    return value.case
+  }
+  return JSON.stringify(value)
 }
 
 function stringifyTransform(value: unknown): string {

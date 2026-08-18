@@ -186,6 +186,33 @@ describe('layout DOM API and package contracts', () => {
     expect(inputs).toContainEqual({ maxWidth: 50, fontWeight: 700, letterSpacing: 2 })
   })
 
+  it('passes inherited and overridden text transforms to the configured measurer', async () => {
+    const texts: string[] = []
+    document.body.innerHTML = `
+      <style>#transform-container { text-transform: uppercase }</style>
+      <div id="transform-container">
+        <span id="inherited">Mixed case</span>
+        <span id="overridden" style="display:block;text-transform:lowercase">Other TEXT</span>
+      </div>
+    `
+
+    await attach({
+      textMeasurer: {
+        measure(input) {
+          texts.push(input.text)
+          return { width: input.text.length * 10, height: 20 }
+        },
+      },
+    })
+
+    requiredElement('#inherited').parentElement?.getBoundingClientRect()
+    requiredElement('#overridden').getBoundingClientRect()
+
+    expect(texts).toContain('MIXED CASE')
+    expect(texts).toContain('other text')
+    expect(requiredElement('#inherited').textContent).toBe('Mixed case')
+  })
+
   it('uses data layout metadata as intrinsic dimensions', async () => {
     document.body.innerHTML = '<div id="icon" data-layout-width="32" data-layout-height="18"></div>'
 
