@@ -71,6 +71,14 @@ const font = new opentype.Font({
   createdTimestamp: 1,
   glyphs,
 })
+// Chromium consults OS/2 Windows metrics on Windows but typographic metrics on
+// Linux and macOS when sizing inline boxes. opentype.js derives the former from
+// glyph bounds, which made this 20px font expose an 18px inline box only on
+// Windows. Keep both metric families aligned so the repository-owned font is a
+// deterministic geometry oracle on every parity runner.
+font.tables.os2.usWinAscent = 800
+font.tables.os2.usWinDescent = 200
+font.tables.os2.fsSelection |= 1 << 7
 const bytes = Buffer.from(font.toArrayBuffer())
 const checksum = createHash('sha256').update(bytes).digest('hex')
 const metadata = `${JSON.stringify({
@@ -83,6 +91,9 @@ const metadata = `${JSON.stringify({
   advanceWidth: 500,
   ascender: 800,
   descender: -200,
+  windowsAscent: 800,
+  windowsDescent: 200,
+  useTypographicMetrics: true,
   coverage: 'U+0020-U+007E',
   sha256: checksum,
 }, null, 2)}\n`

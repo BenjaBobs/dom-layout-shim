@@ -8,6 +8,9 @@
   "advanceWidth": 500,
   "ascender": 800,
   "descender": -200,
+  "windowsAscent": 800,
+  "windowsDescent": 200,
+  "useTypographicMetrics": true,
   "coverage": "U+0020-U+007E",
-  "sha256": "b07ec2d5a73eecacd434c618dc458002ccf318b58908b5f5f665c8354319a7a1"
+  "sha256": "690df33e91546352b4dd706e1470b80b6b2cc99e406d89587b8ae060d5d8c2e6"
 }
