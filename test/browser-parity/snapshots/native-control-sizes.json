@@ -1,50 +1,50 @@
 {
   "schemaVersion": 1,
-  "sourceRun": "https://github.com/BenjaBobs/dom-layout-shim/actions/runs/31264608231",
+  "sourceRun": "https://github.com/BenjaBobs/dom-layout-shim/actions/runs/32171367261",
   "chromium": {
     "linux-x64": {
-      "chromiumVersion": "147.0.7727.15",
-      "runnerImage": "ubuntu24@20260720.247.2",
+      "chromiumVersion": "151.0.7922.34",
+      "runnerImage": "ubuntu24@20260816.277.1",
       "sizes": {
         "button": [
-          46.3906,
-          21
+          48,
+          23
         ],
         "text": [
-          185,
-          21
+          192,
+          23
         ],
         "text-sized": [
-          105,
-          21
+          112,
+          23
         ],
         "password-sized": [
-          105,
-          21
+          112,
+          23
         ],
         "search-sized": [
-          105,
-          21
+          112,
+          23
         ],
         "email-sized": [
-          105,
-          21
+          112,
+          23
         ],
         "number-sized": [
-          185,
-          21
+          192,
+          23
         ],
         "input-button": [
           16,
-          21
+          23
         ],
         "input-submit": [
-          57.4844,
-          21
+          64,
+          23
         ],
         "input-reset": [
-          50.8281,
-          21
+          56,
+          23
         ],
         "checkbox": [
           13,
@@ -71,24 +71,24 @@
           30
         ],
         "file": [
-          253,
-          21
+          272,
+          23
         ],
         "select": [
-          48,
-          19
+          46,
+          21
         ],
         "select-long": [
-          92,
-          19
+          110,
+          21
         ],
         "select-sized": [
-          40.8281,
-          70
+          46,
+          74
         ],
         "select-multiple": [
-          31.2031,
-          70
+          30,
+          74
         ],
         "progress": [
           160,
@@ -99,21 +99,21 @@
           16
         ],
         "time": [
-          104,
+          103,
           24
         ],
         "textarea": [
-          182,
-          36
+          181,
+          40
         ],
         "textarea-sized": [
-          102,
-          66
+          101,
+          74
         ]
       }
     },
     "darwin-arm64": {
-      "chromiumVersion": "147.0.7727.15",
+      "chromiumVersion": "151.0.7922.34",
       "runnerImage": "macos15@20260727.0256.1",
       "sizes": {
         "button": [
@@ -223,8 +223,8 @@
       }
     },
     "win32-x64": {
-      "chromiumVersion": "147.0.7727.15",
-      "runnerImage": "win25-vs2026@20260803.193.1",
+      "chromiumVersion": "151.0.7922.34",
+      "runnerImage": "win25-vs2026@20260810.198.2",
       "sizes": {
         "button": [
           46.3906,
