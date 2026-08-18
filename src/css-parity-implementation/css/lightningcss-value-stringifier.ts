@@ -316,6 +316,22 @@ function stringifyTransformArgument(value: unknown): string {
     return String(value.value)
   }
 
+  if (['deg', 'grad', 'rad', 'turn'].includes(String(value.type)) && typeof value.value === 'number') {
+    return `${value.value}${value.type}`
+  }
+
+  if (value.type === 'value' && typeof value.value === 'number') {
+    return String(value.value)
+  }
+
+  if (value.type === 'value' && isRecord(value.value)) {
+    return stringifyLength(value)
+  }
+
+  if (['a', 'b', 'c', 'd', 'e', 'f'].every((key) => typeof value[key] === 'number')) {
+    return ['a', 'b', 'c', 'd', 'e', 'f'].map((key) => String(value[key])).join(', ')
+  }
+
   return stringifyLength(value)
 }
 

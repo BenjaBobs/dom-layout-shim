@@ -18,6 +18,7 @@ import {
   multiplyTransforms,
   transformBox,
   type AffineTransform,
+  transformBoxPoints,
 } from '../geometry/transform.ts'
 import type { TextMeasurer } from '../../api/text-measurer.ts'
 import type { NativeControlMetrics } from '../../api/native-control-profile.ts'
@@ -476,6 +477,7 @@ function applyVisualTransforms(document: Document, state: TaffyLayoutState): voi
 
   state.boxes = state.boxes.map((box) => ({
     ...transformBox(box, transforms.get(box.element) ?? identityTransform),
+    polygon: transformBoxPoints(box, transforms.get(box.element) ?? identityTransform),
     element: box.element,
     zIndex: box.zIndex,
     domOrder: box.domOrder,

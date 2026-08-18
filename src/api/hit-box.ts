@@ -6,4 +6,5 @@ export type HitBox = Box & {
   domOrder: number
   pointerEvents: 'auto' | 'none'
   visibility: 'visible' | 'hidden' | 'collapse'
+  polygon?: readonly { x: number; y: number }[]
 }

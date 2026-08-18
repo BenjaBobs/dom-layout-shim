@@ -249,6 +249,10 @@ Layout declarations can use `em`, `rem`, viewport units, custom properties, and
 percentage, or number. Mixed percentage-and-pixel calculations remain outside
 the current Taffy dimension model.
 
+Two-dimensional translation, scaling, rotation, skew, and matrix transforms
+project client rectangles and hit-test regions. Rotated and skewed elements use
+their transformed quadrilateral for point queries.
+
 The default policy warns and continues. Use strict mode when a silent difference
 would make a test misleading.
 

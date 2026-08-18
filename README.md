@@ -126,6 +126,9 @@ identifies the declaration and links to its compatibility entry.
 Supported layout lengths include pixels, percentages where documented, `em`,
 `rem`, and viewport units. `calc()` expressions and custom-property references
 are evaluated when they reduce to one supported length, percentage, or number.
+Two-dimensional rotation, skew, and matrix transforms affect client geometry
+and use polygonal hit regions rather than treating the empty corners of a
+transformed bounding rectangle as clickable.
 
 Use a callback to display or collect warnings in the test runner:
 

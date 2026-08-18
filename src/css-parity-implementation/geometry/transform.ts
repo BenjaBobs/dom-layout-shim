@@ -55,12 +55,7 @@ export function elementTransform(
 }
 
 export function transformBox(box: Box, transform: AffineTransform): Box {
-  const points = [
-    transformPoint(box.x, box.y, transform),
-    transformPoint(box.x + box.width, box.y, transform),
-    transformPoint(box.x, box.y + box.height, transform),
-    transformPoint(box.x + box.width, box.y + box.height, transform),
-  ]
+  const points = transformBoxPoints(box, transform)
   const xs = points.map((point) => point.x)
   const ys = points.map((point) => point.y)
   const x = Math.min(...xs)
@@ -74,12 +69,35 @@ export function transformBox(box: Box, transform: AffineTransform): Box {
   }
 }
 
+export function transformBoxPoints(box: Box, transform: AffineTransform): readonly { x: number; y: number }[] {
+  return [
+    transformPoint(box.x, box.y, transform),
+    transformPoint(box.x + box.width, box.y, transform),
+    transformPoint(box.x + box.width, box.y + box.height, transform),
+    transformPoint(box.x, box.y + box.height, transform),
+  ]
+}
+
 function transformMatrix(transform: SupportedTransform, box: Box): AffineTransform {
   if (transform.type === 'translate') {
     return translation(
       resolveDimension(transform.x, box.width),
       resolveDimension(transform.y, box.height),
     )
+  }
+
+  if (transform.type === 'rotate') {
+    const cosine = Math.cos(transform.radians)
+    const sine = Math.sin(transform.radians)
+    return { a: cosine, b: sine, c: -sine, d: cosine, e: 0, f: 0 }
+  }
+
+  if (transform.type === 'skew') {
+    return { a: 1, b: Math.tan(transform.yRadians), c: Math.tan(transform.xRadians), d: 1, e: 0, f: 0 }
+  }
+
+  if (transform.type === 'matrix') {
+    return transform
   }
 
   return {
