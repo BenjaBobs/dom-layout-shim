@@ -253,6 +253,9 @@ Two-dimensional translation, scaling, rotation, skew, and matrix transforms
 project client rectangles and hit-test regions. Rotated and skewed elements use
 their transformed quadrilateral for point queries.
 
+Custom text measurers receive the resolved numeric font weight and letter
+spacing so component typography can influence intrinsic geometry.
+
 The default policy warns and continues. Use strict mode when a silent difference
 would make a test misleading.
 

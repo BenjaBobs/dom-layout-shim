@@ -11,6 +11,8 @@ export type MeasureContext = {
   text?: string
   fontFamily: string
   fontSize: number
+  fontWeight: number
+  letterSpacing: number
   lineHeight: number
   whiteSpace: SupportedStyle['whiteSpace']
   textMeasurer: TextMeasurer
@@ -34,6 +36,8 @@ export function createMeasureContext(
     return {
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      letterSpacing: style.letterSpacing,
       lineHeight: style.lineHeight,
       whiteSpace: style.whiteSpace,
       textMeasurer,
@@ -56,6 +60,8 @@ export function createMeasureContext(
     text,
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textMeasurer,
@@ -99,6 +105,8 @@ export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpac
     text: measureContext.text ?? '',
     fontFamily: measureContext.fontFamily,
     fontSize: measureContext.fontSize,
+    fontWeight: measureContext.fontWeight,
+    letterSpacing: measureContext.letterSpacing,
     lineHeight: measureContext.lineHeight,
     maxWidth,
     whiteSpace: measureContext.whiteSpace,
@@ -285,6 +293,8 @@ function widestOptionTextWidth(element: Element, style: SupportedStyle, textMeas
       text,
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      letterSpacing: style.letterSpacing,
       lineHeight: style.lineHeight,
       maxWidth: Number.MAX_SAFE_INTEGER,
       whiteSpace: 'nowrap',
@@ -310,6 +320,8 @@ function buttonLikeIntrinsicSize(
     text: label,
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     maxWidth: Number.MAX_SAFE_INTEGER,
     whiteSpace: 'nowrap',

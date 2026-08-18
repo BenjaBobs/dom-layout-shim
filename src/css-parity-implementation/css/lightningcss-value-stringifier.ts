@@ -84,10 +84,13 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'max-block-size':
     case 'font-size':
     case 'line-height':
+    case 'letter-spacing':
     case 'flex-grow':
     case 'flex-shrink':
     case 'flex-basis':
       return stringifyLengthLike(value)
+    case 'font-weight':
+      return stringifyFontWeight(value)
     case 'flex':
       return stringifyFlex(value)
     case 'flex-flow':
@@ -1280,6 +1283,19 @@ function stringifyZIndex(value: Record<string, unknown>): string {
     return String(value.value)
   }
 
+  return JSON.stringify(value)
+}
+
+function stringifyFontWeight(value: Record<string, unknown>): string {
+  if (value.type === 'absolute' && isRecord(value.value)) {
+    if (value.value.type === 'weight' && typeof value.value.value === 'number') {
+      return String(value.value.value)
+    }
+    if (typeof value.value.type === 'string') return value.value.type
+  }
+  if (typeof value.type === 'string' && ['normal', 'bold', 'bolder', 'lighter'].includes(value.type)) {
+    return value.type
+  }
   return JSON.stringify(value)
 }
 

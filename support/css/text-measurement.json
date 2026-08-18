@@ -7,6 +7,8 @@
     "properties": [
       "font-family",
       "font-size",
+      "font-weight",
+      "letter-spacing",
       "line-height",
       "white-space"
     ],
@@ -43,6 +45,35 @@
         {
           "kind": "browser-parity",
           "text": "Nested text inherits parent font metrics; `inherit`, `unset`, and `initial` are accepted where supported. Percentage and `em` sizes resolve against the inherited parent size, while `rem` resolves against the computed root size."
+        }
+      ]
+    },
+    {
+      "id": "weight-and-letter-spacing",
+      "description": "Inherited font weight and letter spacing contribute to configured and default text measurement.",
+      "properties": [
+        "font-weight",
+        "letter-spacing"
+      ],
+      "syntax": [
+        "font-weight: normal | bold | <number>",
+        "letter-spacing: normal | <length>"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "static-text-line-height"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Parity covers inherited numeric font weight and positive pixel letter spacing with the deterministic parity font."
+        },
+        {
+          "kind": "limitation",
+          "text": "Relative `bolder` and `lighter` weights and the full browser font-selection algorithm are not modeled."
         }
       ]
     },

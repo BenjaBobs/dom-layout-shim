@@ -11,6 +11,8 @@ export type TextMeasureInput = {
   text: string
   fontFamily: string
   fontSize: number
+  fontWeight?: number
+  letterSpacing?: number
   maxWidth: number | undefined
   lineHeight: number
   whiteSpace: WhiteSpace
@@ -56,7 +58,7 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
     measure(input) {
       const lines = breakTextIntoLines(input)
       const charWidth = input.fontSize * 0.5
-      const width = lines.reduce((max, line) => Math.max(max, line.length * charWidth), 0)
+      const width = lines.reduce((max, line) => Math.max(max, measuredLineWidth(line, charWidth, input.letterSpacing ?? 0)), 0)
 
       return {
         width,
@@ -79,7 +81,7 @@ function measureWithPretext(input: TextMeasureInput): TextMeasureResult {
     const prepared = prepareWithSegments(text, fontShorthand(input), options)
 
     return {
-      width: measureNaturalWidth(prepared),
+      width: measureNaturalWidth(prepared) + letterSpacingWidth(text, input.letterSpacing ?? 0),
       height: input.lineHeight,
     }
   }
@@ -89,7 +91,7 @@ function measureWithPretext(input: TextMeasureInput): TextMeasureResult {
   const lineStats = measureLineStats(prepared, maxWidth)
 
   return {
-    width: lineStats.maxLineWidth,
+    width: lineStats.maxLineWidth + letterSpacingWidth(text, input.letterSpacing ?? 0),
     height: laidOut.height,
   }
 }
@@ -103,7 +105,7 @@ function measureWithFallback(input: TextMeasureInput, fallback: TextMeasurer | u
 }
 
 function fontShorthand(input: TextMeasureInput): string {
-  return `${input.fontSize}px ${input.fontFamily}`
+  return `${input.fontWeight ?? 400} ${input.fontSize}px ${input.fontFamily}`
 }
 
 function breakTextIntoLines(input: TextMeasureInput): string[] {
@@ -121,7 +123,17 @@ function breakTextIntoLines(input: TextMeasureInput): string[] {
     return [normalizedText]
   }
 
-  return wrapNormalText(normalizedText, input.maxWidth, input.fontSize * 0.5)
+  return wrapNormalText(normalizedText, input.maxWidth, input.fontSize * 0.5 + (input.letterSpacing ?? 0))
+}
+
+function measuredLineWidth(text: string, characterWidth: number, letterSpacing: number): number {
+  return text.length * characterWidth + letterSpacingWidth(text, letterSpacing)
+}
+
+function letterSpacingWidth(text: string, letterSpacing: number): number {
+  // Chromium includes one letter-spacing advance after every rendered glyph,
+  // including the final glyph in an inline text run.
+  return text.length * letterSpacing
 }
 
 function normalizeText(text: string, whiteSpace: WhiteSpace): string {

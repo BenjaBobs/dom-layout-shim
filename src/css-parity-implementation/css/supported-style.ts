@@ -143,6 +143,8 @@ export type SupportedStyle = {
   borderStyle: BorderStyles
   fontFamily: string
   fontSize: number
+  fontWeight: number
+  letterSpacing: number
   lineHeight: number
   whiteSpace: WhiteSpace
   transform: SupportedTransform[]
@@ -195,6 +197,8 @@ export function createDefaultStyle(): SupportedStyle {
     },
     fontFamily: 'sans-serif',
     fontSize: 16,
+    fontWeight: 400,
+    letterSpacing: 0,
     lineHeight: 19.2,
     whiteSpace: 'normal',
     transform: [],

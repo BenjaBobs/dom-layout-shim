@@ -120,6 +120,22 @@ it('nested text inherits parent font metrics', async () => {
   })
 })
 
+it('font weight and letter spacing inherit into intrinsic text measurement', async () => {
+  await expectChromiumParity({
+    viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
+    html: `
+      <style>
+        body { margin: 0; }
+        #host { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+        #text { position: absolute; line-height: 30px; }
+      </style>
+      <div id="host"><div id="text">Hello</div></div>
+    `,
+    queries: [{ type: 'rect', selector: '#text' }],
+  })
+})
+
 it('percentage font size resolves against inherited parent font size', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },

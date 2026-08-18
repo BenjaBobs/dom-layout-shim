@@ -425,6 +425,8 @@ function measureInlineWidth(
     text,
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     maxWidth: undefined,
     whiteSpace: 'nowrap',
@@ -1351,6 +1353,8 @@ function applyInheritedTextDefaults(style: SupportedStyle, element: Element, sta
   const parentStyle = resolveSupportedStyle(parent, state)
   style.fontFamily = parentStyle.fontFamily
   style.fontSize = parentStyle.fontSize
+  style.fontWeight = parentStyle.fontWeight
+  style.letterSpacing = parentStyle.letterSpacing
   style.lineHeight = parentStyle.lineHeight
   style.whiteSpace = parentStyle.whiteSpace
   style.pointerEvents = parentStyle.pointerEvents
@@ -2019,6 +2023,8 @@ function createReplacedMeasureContext(
   return {
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textMeasurer,
