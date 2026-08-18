@@ -100,8 +100,10 @@ change.
 6. After approval, the deployment repeats the complete validation suite,
    publishes through npm trusted publishing, creates the version tag, and
    creates a GitHub Release from the human-authored changelog section.
-7. The release workflow redeploys the documentation from the published tag so
-   the changelog replaces its `Upcoming` heading with the released version.
+7. After creating the tag, the release workflow redeploys documentation from
+   `main`. The full-history checkout observes the new tag, so the changelog
+   replaces its `Upcoming` heading with the released version while the Pages
+   deployment continues to satisfy the environment's `main` protection rule.
 
 The documentation changelog renders pending `.changeset/*.md` files under an
 `Upcoming` heading. After the Version Packages pull request consumes those
@@ -129,19 +131,20 @@ preparing a release.
 
 ## Affected pull request checks
 
-Pull request workflows always report their required check names, but
-`scripts/affected-scopes.mjs` skips expensive work that cannot be affected by
-the changed paths:
+Pull request workflows always report their stable aggregate check names.
+`scripts/affected-scopes.mjs` skips complete package and platform parity jobs
+before runner allocation when they cannot be affected by the changed paths:
 
 - `package` covers source, unit tests, build inputs, and packed package data.
 - `parity` covers source and Chromium parity fixtures or configuration.
 - `docs` covers the documentation site and CSS support inventory.
 - `release` covers Changesets and repository release automation.
 
-The three platform-specific Chromium jobs feed a stable aggregate check named
-`Chromium parity`. Branch protection requires that aggregate name so matrix
-labels can evolve without leaving pull requests waiting for a check that no
-workflow reports.
+The Linux container job and macOS/Windows Chromium matrix feed a stable
+aggregate check named `Chromium parity`. Branch protection requires that
+aggregate name so platform job labels can evolve, and so unaffected changes can
+report one inexpensive successful check without allocating three browser
+runners.
 
 Unknown paths and manual workflow runs select every scope. Changes to the
 classifier select every scope as well. Package and parity jobs fail rather than

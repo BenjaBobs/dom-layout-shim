@@ -38,50 +38,55 @@ jobs:
           "${{ github.event.pull_request.head.sha || github.sha }}"
           "${{ github.event_name }}"
 
+      - name: Report affected documentation
+        if: steps.scopes.outputs.docs == 'true'
+        run: echo "Documentation generation is required for this change."
+
+      - name: Report unaffected documentation
+        if: steps.scopes.outputs.docs != 'true'
+        run: echo "Documentation is not affected by this change."
+
+  generate:
+    needs: build
+    if: needs.build.outputs.docs == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
       - name: Configure Pages
-        if: steps.scopes.outputs.docs == 'true' && github.event.repository.visibility == 'public'
+        if: github.event.repository.visibility == 'public'
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Set up pnpm
-        if: steps.scopes.outputs.docs == 'true'
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
       - name: Set up Node.js
-        if: steps.scopes.outputs.docs == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.scopes.outputs.docs == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Install Chromium for compatibility reports
-        if: steps.scopes.outputs.docs == 'true'
-        run: pnpm exec playwright install --with-deps chromium
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
-
       - name: Generate UI-library compatibility reports
-        if: steps.scopes.outputs.docs == 'true'
         run: pnpm run examples:compatibility
         env:
-          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+          PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
 
       - name: Validate and generate support data
-        if: steps.scopes.outputs.docs == 'true'
         run: pnpm run docs:generate
 
       - name: Upload Pages artifact
-        if: steps.scopes.outputs.docs == 'true' && github.event.repository.visibility == 'public'
+        if: github.event.repository.visibility == 'public'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: .site
-
-      - name: Report unaffected documentation
-        if: steps.scopes.outputs.docs != 'true'
-        run: echo "Documentation is not affected by this change."
 
   deploy:
     if: >-
@@ -91,7 +96,9 @@ jobs:
         github.event_name == 'push' ||
         (github.event_name == 'workflow_dispatch' && inputs.deploy)
       )
-    needs: build
+    needs:
+      - build
+      - generate
     runs-on: ubuntu-latest
     permissions:
       pages: write

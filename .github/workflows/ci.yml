@@ -54,7 +54,9 @@ jobs:
   package:
     name: Package checks
     needs: affected
-    if: always()
+    if: >-
+      always() &&
+      (needs.affected.result != 'success' || needs.affected.outputs.package == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Require successful classification
@@ -102,19 +104,52 @@ jobs:
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run test:package
 
-      - name: Report unaffected package
-        if: needs.affected.result == 'success' && needs.affected.outputs.package != 'true'
-        run: echo "Package checks are not affected by this change."
+  browser-parity-linux:
+    name: Chromium parity (ubuntu-24.04)
+    needs: affected
+    if: >-
+      always() &&
+      (needs.affected.result != 'success' || needs.affected.outputs.parity == 'true')
+    runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+    steps:
+      - name: Require successful classification
+        if: needs.affected.result != 'success'
+        run: |
+          echo "::error title=Affected scope classification failed::Chromium parity cannot be skipped safely."
+          exit 1
 
-  browser-parity:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Chromium parity tests
+        run: pnpm run test:browser-parity
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+
+  browser-parity-hosts:
     name: Chromium parity (${{ matrix.os }})
     needs: affected
-    if: always()
+    if: >-
+      always() &&
+      (needs.affected.result != 'success' || needs.affected.outputs.parity == 'true')
     strategy:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-24.04
           - macos-15
           - windows-2025
     runs-on: ${{ matrix.os }}
@@ -145,13 +180,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
-        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true' && runner.os == 'Linux'
-        run: pnpm exec playwright install --with-deps chromium
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
-
-      - name: Install Chromium without Linux system dependencies
-        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true' && runner.os != 'Linux'
+        if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: pnpm exec playwright install chromium
         env:
           PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
@@ -160,22 +189,37 @@ jobs:
         if: needs.affected.result == 'success' && needs.affected.outputs.parity == 'true'
         run: pnpm run test:browser-parity
 
-      - name: Report unaffected parity
-        if: needs.affected.result == 'success' && needs.affected.outputs.parity != 'true'
-        run: echo "Chromium parity is not affected by this change."
-
   browser-parity-status:
     name: Chromium parity
-    needs: browser-parity
+    needs:
+      - affected
+      - browser-parity-linux
+      - browser-parity-hosts
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Require successful Chromium parity matrix
-        if: needs.browser-parity.result != 'success'
+        if: >-
+          needs.affected.result != 'success' ||
+          (
+            needs.affected.outputs.parity == 'true' &&
+            (
+              needs.browser-parity-linux.result != 'success' ||
+              needs.browser-parity-hosts.result != 'success'
+            )
+          )
         run: |
           echo "::error title=Chromium parity failed::One or more platform matrix jobs did not succeed."
           exit 1
 
       - name: Report successful Chromium parity matrix
-        if: needs.browser-parity.result == 'success'
+        if: >-
+          needs.browser-parity-linux.result == 'success' &&
+          needs.browser-parity-hosts.result == 'success'
         run: echo "All Chromium parity platform jobs succeeded."
+
+      - name: Report unaffected Chromium parity
+        if: >-
+          needs.affected.result == 'success' &&
+          needs.affected.outputs.parity != 'true'
+        run: echo "Chromium parity is not affected by this change."
