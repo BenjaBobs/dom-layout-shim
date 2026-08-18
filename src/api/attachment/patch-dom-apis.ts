@@ -51,6 +51,17 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patchScrollIntoView(htmlElementPrototype)
   patchMatchMedia(view)
 
+  Object.defineProperties(view, {
+    innerWidth: {
+      configurable: true,
+      get: () => attachmentForDocument(document).getViewport().width,
+    },
+    innerHeight: {
+      configurable: true,
+      get: () => attachmentForDocument(document).getViewport().height,
+    },
+  })
+
   Object.defineProperty(htmlElementPrototype, 'offsetWidth', {
     configurable: true,
     get(this: Element) {

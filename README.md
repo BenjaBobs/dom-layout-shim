@@ -57,6 +57,19 @@ await attachLayoutEngine({
 })
 ```
 
+`attachLayoutEngine()` returns the active attachment. Change its viewport
+without rebuilding the DOM when a test exercises responsive behavior:
+
+```ts
+const layout = await attachLayoutEngine({ window })
+
+layout.setViewport({ width: 390, height: 844 })
+// Layout, innerWidth/innerHeight, and matchMedia() now use the mobile viewport.
+```
+
+Changing the viewport invalidates cached geometry and dispatches a `resize`
+event on the attached window.
+
 External sheets whose `cssRules` cannot be read, including cross-origin sheets,
 are routed through the unsupported CSS policy. The default policy warns and
 continues; strict mode throws instead of silently computing layout without the
