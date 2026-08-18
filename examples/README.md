@@ -47,5 +47,5 @@ Chromium and in happy-dom with the shim attached. It writes a structured
 `compatibility-report.json` beside each app and prints coverage and agreement
 summaries. Differences are reporting data and do not fail the command; execution
 or capture failures do. Run one app with its local `pnpm run compatibility`
-script. The docs site renders the committed reports and links to the scenario
-files that produced them.
+script. Reports are ignored build artifacts; documentation CI regenerates them
+before rendering the site and linking to the scenario files that produced them.

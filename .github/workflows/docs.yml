@@ -57,6 +57,18 @@ jobs:
         if: steps.scopes.outputs.docs == 'true'
         run: pnpm install --frozen-lockfile
 
+      - name: Install Chromium for compatibility reports
+        if: steps.scopes.outputs.docs == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+
+      - name: Generate UI-library compatibility reports
+        if: steps.scopes.outputs.docs == 'true'
+        run: pnpm run examples:compatibility
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+
       - name: Validate and generate support data
         if: steps.scopes.outputs.docs == 'true'
         run: pnpm run docs:generate
