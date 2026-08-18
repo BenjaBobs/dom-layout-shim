@@ -62,6 +62,10 @@
       "syntax": [
         "relative",
         "<px>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto"
       ],
       "support": "partial",
@@ -95,6 +99,10 @@
       "syntax": [
         "absolute",
         "<px>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto"
       ],
       "support": "partial",
@@ -128,6 +136,10 @@
       "syntax": [
         "fixed",
         "<px>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto"
       ],
       "support": "partial",

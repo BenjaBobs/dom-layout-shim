@@ -43,6 +43,7 @@ type TaffyLayoutState = {
   policy: UnsupportedCssPolicy | undefined
   textMeasurer: TextMeasurer
   nativeControlMetrics: NativeControlMetrics
+  viewport: Viewport
   domOrder: number
 }
 
@@ -222,6 +223,7 @@ function buildTaffyLayoutTree(
     policy,
     textMeasurer,
     nativeControlMetrics,
+    viewport,
     domOrder: 0,
   }
 
@@ -1261,8 +1263,8 @@ function resolveSupportedStyle(element: Element, state: TaffyLayoutState): Suppo
   applyInheritedTextDefaults(style, element, state)
   applyUserAgentDefaults(style, element)
   const rootFontSize = resolveRootFontSize(element, state)
-  applyStyleRules(style, element, state.rules, state.policy, rootFontSize, customProperties)
-  applyInlineStyle(style, element, state.policy, rootFontSize, customProperties)
+  applyStyleRules(style, element, state.rules, state.policy, rootFontSize, customProperties, state.viewport)
+  applyInlineStyle(style, element, state.policy, rootFontSize, customProperties, state.viewport)
   resolveNamedGridPlacements(style, element, state)
   applyPostAuthorUserAgentDefaults(style, element)
   state.styles.set(element, style)

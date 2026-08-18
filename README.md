@@ -123,6 +123,10 @@ span rows or columns and templates with unnamed `.` cells. Unsupported declarati
 warnings so applications can continue using the supported subset. Each warning
 identifies the declaration and links to its compatibility entry.
 
+Supported layout lengths include pixels, percentages where documented, `em`,
+`rem`, and viewport units. `calc()` expressions and custom-property references
+are evaluated when they reduce to one supported length, percentage, or number.
+
 Use a callback to display or collect warnings in the test runner:
 
 ```ts

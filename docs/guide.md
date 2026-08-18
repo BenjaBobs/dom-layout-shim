@@ -244,6 +244,11 @@ expect(window.document.elementsFromPoint(centerX, centerY)).toContain(save)
 
 ## Handle unsupported CSS
 
+Layout declarations can use `em`, `rem`, viewport units, custom properties, and
+`calc()` expressions when the result reduces to one supported length,
+percentage, or number. Mixed percentage-and-pixel calculations remain outside
+the current Taffy dimension model.
+
 The default policy warns and continues. Use strict mode when a silent difference
 would make a test misleading.
 

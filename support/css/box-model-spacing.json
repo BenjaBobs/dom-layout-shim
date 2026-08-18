@@ -82,6 +82,10 @@
       "syntax": [
         "<px>",
         "<percentage>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)",
         "auto"
       ],
       "support": "partial",
@@ -99,7 +103,7 @@
         },
         {
           "kind": "limitation",
-          "text": "Length support is limited to pixels, percentages, `auto`, reset keywords, and literal zero."
+          "text": "Calculated values must reduce to one supported pixel or percentage dimension."
         },
         {
           "kind": "implementation-quirk",
@@ -124,7 +128,12 @@
         "padding-left"
       ],
       "syntax": [
-        "<px>"
+        "<px>",
+        "<percentage>",
+        "<em>",
+        "<rem>",
+        "<viewport-length>",
+        "calc(<length-expression>)"
       ],
       "support": "partial",
       "parity": {
@@ -139,7 +148,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Percentage padding and general CSS length units are not implemented."
+          "text": "Calculated values must reduce to one supported pixel or percentage dimension."
         },
         {
           "kind": "implementation-quirk",
