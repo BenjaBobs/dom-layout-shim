@@ -1,4 +1,6 @@
+// docs:start layout-shim-import
 import { attachLayoutEngine } from 'dom-layout-shim'
+// docs:end layout-shim-import
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -40,10 +42,12 @@ async function settleTransitions(): Promise<void> {
 
 describe('Material UI task workspace consumer', () => {
   beforeEach(async () => {
+    // docs:start mount-react
     Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
     document.body.innerHTML = '<div id="app"></div>'
     reactRoot = createRoot(requiredElement('#app'))
     await act(async () => reactRoot.render(<TaskWorkspace />))
+    // docs:end mount-react
   })
 
   afterEach(async () => {
@@ -80,18 +84,22 @@ describe('Material UI task workspace consumer', () => {
   })
 
   it('proves a dialog backdrop blocks an underlying control by coordinates', async () => {
+    // docs:start attach-layout-engine
     await attachLayoutEngine({
       window,
       viewport: { width: 1024, height: 768 },
       unsupportedCss: { default: 'ignore' },
     })
+    // docs:end attach-layout-engine
 
+    // docs:start geometry-assertion
     const underlyingControl = requiredElement<HTMLElement>('[data-layout-key="underlying-control"]')
     const rect = underlyingControl.getBoundingClientRect()
     const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
 
     expect(rect.width).toBeGreaterThan(0)
     expect(document.elementFromPoint(point.x, point.y)).toBe(underlyingControl)
+    // docs:end geometry-assertion
 
     await click(requiredElement('[data-layout-key="task-1-menu-trigger"]'))
     await click(requiredElement('[role="menuitem"]'))

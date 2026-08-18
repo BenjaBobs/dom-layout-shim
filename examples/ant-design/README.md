@@ -12,6 +12,9 @@ confirms that deleting a task invalidates layout and restores access to that
 control after the modal closes. Calling `.click()` directly would bypass that
 important overlap check.
 
+See [docs/layout-shim-setup.md](docs/layout-shim-setup.md) for the concise
+Vitest, React mounting, shim attachment, and first-assertion setup used here.
+
 ## Run locally
 
 From the repository root:

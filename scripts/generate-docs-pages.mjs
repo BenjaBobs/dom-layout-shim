@@ -1,7 +1,7 @@
 import { copyFile, cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { resolve, sep } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
-import { articleLayout, guideLayout, renderMarkdownPage } from '../docs-engine/render-md.mjs'
+import { articleLayout, guideLayout, renderMarkdownFragment, renderMarkdownPage } from '../docs-engine/render-md.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const context = await readDocumentationContext(root)
@@ -11,6 +11,7 @@ const exampleCompatibility = await Promise.all(exampleNames.map(async (example) 
   example,
   profile: JSON.parse(await readFile(resolve(root, 'examples', example, 'compatibility.json'), 'utf8')),
   report: JSON.parse(await readFile(resolve(root, 'examples', example, 'compatibility-report.json'), 'utf8')),
+  setup: renderMarkdownFragment(await hydrateSetupMarkdown(example)),
 })))
 await mkdir(siteRoot, { recursive: true })
 
@@ -94,7 +95,7 @@ for (const example of exampleNames) {
 
 function renderExamplesPage(source, reports) {
   const rendered = renderMarkdownPage(source, articleLayout)
-  const cards = reports.map(({ example, profile, report }) => `
+  const cards = reports.map(({ example, profile, report, setup }) => `
     <article class="compatibility-card">
       <div class="compatibility-heading">
         <div>
@@ -114,6 +115,10 @@ function renderExamplesPage(source, reports) {
         <a class="report-action" href="./examples/${encodeURIComponent(example)}/compatibility-report.json" target="_blank" rel="noopener">View JSON report</a>
       </div>
       <p class="report-meta">Measured with Chromium ${escapeHtml(report.metadata.chromiumVersion)} at ${report.metadata.viewport.width} × ${report.metadata.viewport.height}.</p>
+      <details class="setup-guide">
+        <summary><span>Use DOM Layout Shim with ${escapeHtml(profile.library)}</span><small>Test setup and first assertion</small></summary>
+        <div class="setup-content">${setup}</div>
+      </details>
       <h4>Interaction checkpoints</h4>
       <div class="checkpoint-list">
         ${report.steps.map((step) => `
@@ -154,6 +159,14 @@ function renderExamplesPage(source, reports) {
       .report-action { padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-size: .82rem; font-weight: 700; text-decoration: none; }
       .report-action:hover { border-color: var(--brand); color: var(--brand); }
       .report-action.primary { border-color: var(--brand); background: var(--brand); color: var(--bg); }
+      .setup-guide { margin-top: 1.25rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+      .setup-guide > summary { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .8rem 1rem; cursor: pointer; font-weight: 700; }
+      .setup-guide > summary small { color: var(--muted); font-weight: 400; }
+      .setup-guide > summary:hover { color: var(--brand); }
+      .setup-content { padding: .25rem 1rem 1rem; border-top: 1px solid var(--line); }
+      .setup-content h4 { margin-top: 1.25rem; color: var(--text); font-size: .9rem; letter-spacing: 0; text-transform: none; }
+      .setup-content p { color: var(--muted); font-size: .88rem; }
+      .setup-content pre { max-height: 22rem; overflow: auto; font-size: .78rem; }
       .compatibility-card h4 { margin: 1.25rem 0 .5rem; color: var(--muted); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
       .checkpoint-list { display: grid; gap: .5rem; }
       .checkpoint { border: 1px solid transparent; border-radius: 8px; background: var(--bg); transition: border-color .15s ease, background-color .15s ease; }
@@ -187,6 +200,42 @@ function renderExamplesPage(source, reports) {
       }
     `,
   }
+}
+
+async function hydrateSetupMarkdown(example) {
+  const source = await readFile(resolve(root, 'examples', example, 'docs/layout-shim-setup.md'), 'utf8')
+  let hydrated = source
+
+  for (const match of source.matchAll(/\{\{source:([^#}]+)#([^:}]+):([^}]+)\}\}/g)) {
+    const [, relativePath, region, language] = match
+    const exampleRoot = resolve(root, 'examples', example)
+    const sourcePath = resolve(exampleRoot, relativePath)
+    if (!sourcePath.startsWith(`${exampleRoot}${sep}`)) throw new Error(`Setup source escapes ${example}: ${relativePath}`)
+
+    const file = await readFile(sourcePath, 'utf8')
+    const code = extractDocumentationRegion(file, region, relativePath)
+    const githubUrl = `https://github.com/BenjaBobs/dom-layout-shim/blob/main/examples/${encodeURIComponent(example)}/${relativePath}`
+    hydrated = hydrated.replace(
+      match[0],
+      `\`\`\`${language}\n${code}\n\`\`\`\n\n[View source: \`${relativePath}\`](${githubUrl})`,
+    )
+  }
+
+  if (hydrated.includes('{{source:')) throw new Error(`Unresolved setup source in ${example}`)
+  return hydrated
+}
+
+function extractDocumentationRegion(source, region, relativePath) {
+  const start = `// docs:start ${region}`
+  const end = `// docs:end ${region}`
+  const startIndex = source.indexOf(start)
+  const endIndex = source.indexOf(end)
+  if (startIndex < 0 || endIndex < startIndex) throw new Error(`Missing region ${region} in ${relativePath}`)
+
+  const contentStart = source.indexOf('\n', startIndex) + 1
+  const lines = source.slice(contentStart, endIndex).trimEnd().split('\n')
+  const indentation = Math.min(...lines.filter((line) => line.trim()).map((line) => line.match(/^\s*/)[0].length))
+  return lines.map((line) => line.slice(indentation)).join('\n')
 }
 
 function renderDiscrepancy(discrepancy) {

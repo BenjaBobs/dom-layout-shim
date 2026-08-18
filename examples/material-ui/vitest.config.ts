@@ -1,3 +1,4 @@
+// docs:start vitest-config
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -6,3 +7,4 @@ export default defineConfig({
     include: ['test/**/*.test.tsx'],
   },
 })
+// docs:end vitest-config
