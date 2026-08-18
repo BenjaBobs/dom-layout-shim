@@ -1,9 +1,9 @@
 import { act } from 'react'
-// docs:start layout-shim-import
-import { attachLayoutEngine, expectBlockedBy, expectReceivesPointer, guardedClick } from 'dom-layout-shim'
-// docs:end layout-shim-import
+import { expectBlockedBy, expectReceivesPointer } from 'dom-layout-shim'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mountTaskWorkspace } from '../src/app.tsx'
+import { clickWhereElementIs } from './click-where-element-is.ts'
+import { layoutEngine } from './setup.ts'
 
 let root: ReturnType<typeof mountTaskWorkspace> | undefined
 
@@ -33,16 +33,8 @@ describe('Ant Design task workspace consumer', () => {
       throw new Error('Missing example application root')
     }
 
-    // docs:start attach-layout-engine
-    // Attach after rendering so the shim observes the complete component tree.
-    await attachLayoutEngine({
-      window,
-      // Fix the viewport so geometry remains deterministic across machines.
-      viewport: { width: 1024, height: 720 },
-      // Ignore Ant Design's visual-only declarations outside the layout subset.
-      unsupportedCss: { default: 'ignore' },
-    })
-    // docs:end attach-layout-engine
+    // Override the shared default only because this assertion exercises viewport geometry.
+    layoutEngine.setViewport({ width: 1024, height: 720 })
 
     const addTask = requiredElement<HTMLElement>('[data-layout-key="add-task"]')
     const firstMenu = requiredElement<HTMLElement>('[data-layout-key="task-1-menu-trigger"]')
@@ -51,7 +43,7 @@ describe('Ant Design task workspace consumer', () => {
     expectReceivesPointer(addTask)
     // docs:end pointer-receives
 
-    await act(async () => guardedClick(firstMenu))
+    await act(async () => clickWhereElementIs(firstMenu))
     const deleteAction = requiredElement<HTMLElement>('.ant-dropdown-menu-item-danger')
     // Ant Design's popup alignment currently places this portalled menu offscreen
     // in happy-dom. Invoke its handler directly so the modal portion of the shared

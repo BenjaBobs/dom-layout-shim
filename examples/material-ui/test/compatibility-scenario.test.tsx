@@ -1,5 +1,4 @@
 import { writeFile } from 'node:fs/promises'
-import { attachLayoutEngine } from 'dom-layout-shim'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { it } from 'vitest'
@@ -17,12 +16,6 @@ it.skipIf(!output)('captures the full Material UI compatibility scenario', async
 
   const root = createRoot(container)
   await act(async () => root.render(<TaskWorkspace />))
-  await attachLayoutEngine({
-    window,
-    viewport: { width: 1280, height: 720 },
-    unsupportedCss: { default: 'ignore' },
-  })
-
   const dom = createDomDriver(document)
   const driver = {
     ...dom,

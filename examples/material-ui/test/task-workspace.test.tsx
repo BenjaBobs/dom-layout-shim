@@ -1,10 +1,9 @@
-// docs:start layout-shim-import
-import { attachLayoutEngine } from 'dom-layout-shim'
-// docs:end layout-shim-import
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { TaskWorkspace } from '../src/task-workspace.tsx'
+import { clickWhereElementIs } from './click-where-element-is.ts'
+import { layoutEngine } from './setup.ts'
 
 let reactRoot: Root
 
@@ -43,7 +42,6 @@ async function settleTransitions(): Promise<void> {
 describe('Material UI task workspace consumer', () => {
   beforeEach(async () => {
     // docs:start mount-react
-    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
     // Mount the real Material UI tree exactly as the consumer test uses it.
     document.body.innerHTML = '<div id="app"></div>'
     reactRoot = createRoot(requiredElement('#app'))
@@ -56,7 +54,7 @@ describe('Material UI task workspace consumer', () => {
   })
 
   it('uses idiomatic portalled overlays and deletes a task', async () => {
-    await click(requiredElement('[data-layout-key="task-1-menu-trigger"]'))
+    await act(async () => clickWhereElementIs(requiredElement('[data-layout-key="task-1-menu-trigger"]')))
 
     expect(requiredElement('[data-layout-key="task-menu"]')).toBeTruthy()
     await click(requiredElement('[role="menuitem"]'))
@@ -85,16 +83,8 @@ describe('Material UI task workspace consumer', () => {
   })
 
   it('proves a dialog backdrop blocks an underlying control by coordinates', async () => {
-    // docs:start attach-layout-engine
-    // Attach after rendering so the shim observes the complete component tree.
-    await attachLayoutEngine({
-      window,
-      // Fix the viewport so geometry remains deterministic across machines.
-      viewport: { width: 1024, height: 768 },
-      // Ignore MUI's visual-only declarations outside the supported layout subset.
-      unsupportedCss: { default: 'ignore' },
-    })
-    // docs:end attach-layout-engine
+    // Override the shared default only because this assertion exercises viewport geometry.
+    layoutEngine.setViewport({ width: 1024, height: 768 })
 
     // docs:start geometry-assertion
     const underlyingControl = requiredElement<HTMLElement>('[data-layout-key="underlying-control"]')
