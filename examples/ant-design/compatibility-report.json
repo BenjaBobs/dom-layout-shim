@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "example": "ant-design",
   "scenario": "task-workspace-full-interaction",
-  "generatedAt": "2026-08-18T16:08:53.109Z",
+  "generatedAt": "2026-08-18T16:37:57.658Z",
   "metadata": {
     "chromiumVersion": "147.0.7727.15",
     "viewport": {
@@ -13,13 +13,13 @@
   },
   "summary": {
     "steps": 7,
-    "overallAgreement": 70.24,
+    "overallAgreement": 87.5,
     "coverage": 100,
-    "discrepancies": 101,
-    "uniqueDiscrepancies": 47,
+    "discrepancies": 51,
+    "uniqueDiscrepancies": 23,
     "unstableCheckpoints": 0,
-    "styleInputDifferences": 1211,
-    "hitStackDifferences": 30
+    "styleInputDifferences": 903,
+    "hitStackDifferences": 12
   },
   "steps": [
     {
@@ -2380,12 +2380,12 @@
       "label": "Add dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 41.67,
-        "visibility": 83.33,
+        "geometry": 75,
+        "visibility": 100,
         "hitTesting": 66.67,
-        "hitStack": 0,
+        "hitStack": 16.67,
         "styleInputs": 28.62,
-        "overall": 63.89
+        "overall": 80.56
       },
       "observations": 6,
       "stability": {
@@ -2401,100 +2401,44 @@
       "discrepancies": [
         {
           "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 162,
-          "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-workspace\"]",
           "category": "hit-testing",
           "expected": "[data-layout-key=\"task-title-input\"]",
           "actual": "[data-layout-key=\"task-description-input\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 32,
-          "actual": 34,
-          "difference": 2,
-          "relativeDifference": 1,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 560,
-          "actual": 558,
-          "difference": -2
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"add-dialog\"]",
-          "actual": "[data-layout-key=\"task-description-input\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 368,
-          "actual": 529,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
           "field": "y",
           "expected": 148,
-          "actual": 131,
-          "difference": -17,
-          "relativeDifference": -19,
+          "actual": 126,
+          "difference": -22,
+          "relativeDifference": -22,
           "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 724,
-          "actual": 726,
-          "difference": 2
+          "category": "hit-testing",
+          "expected": "[data-layout-key=\"add-dialog\"]",
+          "actual": "[data-layout-key=\"task-description-input\"]"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1140,
-          "difference": 160,
-          "relativeDifference": -1,
-          "scope": "ancestor-offset"
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
+          "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "y",
           "expected": 76,
-          "actual": 69,
-          "difference": -7,
-          "relativeDifference": -10,
+          "actual": 65,
+          "difference": -11,
+          "relativeDifference": -11,
           "scope": "local-layout"
         },
         {
@@ -2502,40 +2446,16 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 116,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"add-dialog\"]",
-          "category": "visibility",
-          "expected": false,
-          "actual": true
-        },
-        {
-          "selector": "[data-layout-key=\"add-dialog\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 624,
-          "actual": 626,
-          "difference": 2,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"add-dialog\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 0,
-          "actual": 2,
-          "difference": 2
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"task-title-input\"]",
           "category": "geometry",
           "field": "y",
           "expected": 302,
-          "actual": 274,
-          "difference": -28,
+          "actual": 272,
+          "difference": -30,
           "relativeDifference": -30,
           "scope": "local-layout"
         },
@@ -2762,209 +2682,6 @@
           },
           {
             "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "560px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
             "category": "style-input",
             "field": "white-space",
             "expected": "normal",
@@ -3433,279 +3150,6 @@
             "actual": "1.571429"
           },
           {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "position",
-            "expected": "static",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "width",
-            "expected": "1280px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "flex-grow",
-            "expected": "0",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "flex-shrink",
-            "expected": "1",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "flex-basis",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
             "selector": "[data-layout-key=\"task-title-input\"]",
             "category": "style-input",
             "field": "display",
@@ -3949,32 +3393,9 @@
               "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "expected": [
               "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app",
-              "body",
-              "html"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-description-input\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]"
+              "[data-layout-key=\"task-2\"]",
+              "[data-layout-key=\"task-list\"]"
             ]
           },
           {
@@ -3990,14 +3411,14 @@
               "[data-layout-key=\"task-list\"]"
             ],
             "actual": [
+              "[data-layout-key=\"task-description-input\"]",
               "[data-layout-key=\"add-dialog\"]",
               "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"add-dialog\"]"
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"add-dialog\"]",
+              "[data-layout-key=\"task-2\"]",
+              "[data-layout-key=\"task-list\"]"
             ]
           },
           {
@@ -4017,45 +3438,9 @@
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"task-workspace\"]",
+              "div",
               "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"add-dialog\"]",
-            "expected": [
-              "[data-layout-key=\"add-dialog\"]",
-              "body",
-              "html"
-            ],
-            "actual": [
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "div"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-title-input\"]",
-            "expected": [
-              "[data-layout-key=\"task-title-input\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-title-input\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"add-dialog\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]"
             ]
           }
         ]
@@ -4066,12 +3451,12 @@
       "label": "Task added",
       "scores": {
         "coverage": 100,
-        "geometry": 35,
+        "geometry": 75,
         "visibility": 100,
-        "hitTesting": 40,
-        "hitStack": 0,
+        "hitTesting": 100,
+        "hitStack": 40,
         "styleInputs": 30,
-        "overall": 58.33
+        "overall": 91.67
       },
       "observations": 5,
       "stability": {
@@ -4086,101 +3471,33 @@
       },
       "discrepancies": [
         {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 162,
-          "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 32,
-          "actual": 34,
-          "difference": 2,
-          "relativeDifference": 1,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 560,
-          "actual": 558,
-          "difference": -2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 368,
-          "actual": 529,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
           "field": "y",
           "expected": 148,
-          "actual": 131,
-          "difference": -17,
-          "relativeDifference": -19,
+          "actual": 126,
+          "difference": -22,
+          "relativeDifference": -22,
           "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 724,
-          "actual": 726,
-          "difference": 2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1140,
-          "difference": 160,
-          "relativeDifference": -1,
-          "scope": "ancestor-offset"
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
+          "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "y",
           "expected": 76,
-          "actual": 69,
-          "difference": -7,
-          "relativeDifference": -10,
+          "actual": 65,
+          "difference": -11,
+          "relativeDifference": -11,
           "scope": "local-layout"
         },
         {
@@ -4188,466 +3505,22 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 116,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 369,
-          "actual": 530,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"task-4\"]",
           "category": "geometry",
           "field": "y",
           "expected": 461,
-          "actual": 446,
-          "difference": -15,
+          "actual": 439,
+          "difference": -22,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 722,
-          "actual": 726,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-4\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
         }
       ],
       "diagnostics": {
         "styleInputDifferences": [
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "position",
-            "expected": "static",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": "0"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "160px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "160px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "560px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
           {
             "selector": "[data-layout-key=\"task-list\"]",
             "category": "style-input",
@@ -5358,71 +4231,6 @@
         ],
         "hitStackDifferences": [
           {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "expected": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app",
-              "body",
-              "html"
-            ],
-            "actual": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-list\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]"
-            ]
-          },
-          {
             "selector": "[data-layout-key=\"add-task\"]",
             "expected": [
               "[data-layout-key=\"add-task\"]",
@@ -5438,32 +4246,9 @@
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"task-workspace\"]",
+              "div",
               "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-4\"]",
-            "expected": [
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]"
             ]
           }
         ]
@@ -5474,12 +4259,12 @@
       "label": "Action menu open",
       "scores": {
         "coverage": 100,
-        "geometry": 25,
+        "geometry": 50,
         "visibility": 100,
-        "hitTesting": 33.33,
-        "hitStack": 0,
+        "hitTesting": 66.67,
+        "hitStack": 16.67,
         "styleInputs": 31.52,
-        "overall": 52.78
+        "overall": 72.22
       },
       "observations": 6,
       "stability": {
@@ -5494,101 +4279,33 @@
       },
       "discrepancies": [
         {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 162,
-          "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 32,
-          "actual": 34,
-          "difference": 2,
-          "relativeDifference": 1,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 560,
-          "actual": 558,
-          "difference": -2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 368,
-          "actual": 529,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
           "field": "y",
           "expected": 148,
-          "actual": 131,
-          "difference": -17,
-          "relativeDifference": -19,
+          "actual": 126,
+          "difference": -22,
+          "relativeDifference": -22,
           "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 724,
-          "actual": 726,
-          "difference": 2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1140,
-          "difference": 160,
-          "relativeDifference": -1,
-          "scope": "ancestor-offset"
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
+          "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "y",
           "expected": 76,
-          "actual": 69,
-          "difference": -7,
-          "relativeDifference": -10,
+          "actual": 65,
+          "difference": -11,
+          "relativeDifference": -11,
           "scope": "local-layout"
         },
         {
@@ -5596,8 +4313,8 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 116,
-          "difference": 4
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": ".ant-dropdown",
@@ -5614,8 +4331,8 @@
           "category": "geometry",
           "field": "y",
           "expected": 220,
-          "actual": -6574,
-          "difference": -6794,
+          "actual": -6576,
+          "difference": -6796,
           "relativeDifference": -6796,
           "scope": "local-layout"
         },
@@ -5624,16 +4341,16 @@
           "category": "geometry",
           "field": "width",
           "expected": 128,
-          "actual": 339,
-          "difference": 211
+          "actual": 340,
+          "difference": 212
         },
         {
           "selector": ".ant-dropdown",
           "category": "geometry",
           "field": "height",
           "expected": 40,
-          "actual": 172,
-          "difference": 132
+          "actual": 168,
+          "difference": 128
         },
         {
           "selector": ".ant-dropdown",
@@ -5656,9 +4373,9 @@
           "category": "geometry",
           "field": "y",
           "expected": 224,
-          "actual": -6568,
-          "difference": -6792,
-          "relativeDifference": 1,
+          "actual": -6572,
+          "difference": -6796,
+          "relativeDifference": 0,
           "scope": "ancestor-offset"
         },
         {
@@ -5686,426 +4403,6 @@
       ],
       "diagnostics": {
         "styleInputDifferences": [
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "position",
-            "expected": "static",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": "0"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "560px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
           {
             "selector": "[data-layout-key=\"task-list\"]",
             "category": "style-input",
@@ -6727,7 +5024,7 @@
             "category": "style-input",
             "field": "right",
             "expected": "217px",
-            "actual": "13742px"
+            "actual": "13740px"
           },
           {
             "selector": ".ant-dropdown",
@@ -7012,71 +5309,6 @@
         ],
         "hitStackDifferences": [
           {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "expected": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app",
-              "body",
-              "html"
-            ],
-            "actual": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-list\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]"
-            ]
-          },
-          {
             "selector": "[data-layout-key=\"add-task\"]",
             "expected": [
               "[data-layout-key=\"add-task\"]",
@@ -7092,8 +5324,8 @@
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"task-workspace\"]",
+              "div",
               "div#app"
             ]
           },
@@ -7111,9 +5343,9 @@
             ],
             "actual": [
               "li",
+              "ul",
               "svg",
               "span",
-              "ul",
               "div"
             ]
           },
@@ -7131,9 +5363,9 @@
             ],
             "actual": [
               "li",
+              "ul",
               "svg",
               "span",
-              "ul",
               "div"
             ]
           }
@@ -7145,12 +5377,12 @@
       "label": "Delete dialog open",
       "scores": {
         "coverage": 100,
-        "geometry": 50,
-        "visibility": 83.33,
+        "geometry": 79.17,
+        "visibility": 100,
         "hitTesting": 100,
-        "hitStack": 0,
+        "hitStack": 16.67,
         "styleInputs": 26.45,
-        "overall": 77.78
+        "overall": 93.06
       },
       "observations": 6,
       "stability": {
@@ -7165,89 +5397,33 @@
       },
       "discrepancies": [
         {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 162,
-          "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 32,
-          "actual": 34,
-          "difference": 2,
-          "relativeDifference": 1,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 560,
-          "actual": 558,
-          "difference": -2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 368,
-          "actual": 529,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
           "field": "y",
           "expected": 148,
-          "actual": 131,
-          "difference": -17,
-          "relativeDifference": -19,
+          "actual": 126,
+          "difference": -22,
+          "relativeDifference": -22,
           "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 724,
-          "actual": 726,
-          "difference": 2
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1140,
-          "difference": 160,
-          "relativeDifference": -1,
-          "scope": "ancestor-offset"
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
+          "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "y",
           "expected": 76,
-          "actual": 69,
-          "difference": -7,
-          "relativeDifference": -10,
+          "actual": 65,
+          "difference": -11,
+          "relativeDifference": -11,
           "scope": "local-layout"
         },
         {
@@ -7255,456 +5431,22 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 116,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"delete-dialog\"]",
-          "category": "visibility",
-          "expected": false,
-          "actual": true
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"delete-dialog\"]",
           "category": "geometry",
           "field": "y",
           "expected": 624,
-          "actual": 645.2,
-          "difference": 21.2,
+          "actual": 643.2,
+          "difference": 19.2,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"delete-dialog\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 0,
-          "actual": 2,
-          "difference": 2
         }
       ],
       "diagnostics": {
         "styleInputDifferences": [
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "position",
-            "expected": "static",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": "0"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "560px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
           {
             "selector": "[data-layout-key=\"task-list\"]",
             "category": "style-input",
@@ -8443,75 +6185,6 @@
         ],
         "hitStackDifferences": [
           {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "expected": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "expected": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app",
-              "body"
-            ],
-            "actual": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-list\"]",
-            "expected": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div"
-            ]
-          },
-          {
             "selector": "[data-layout-key=\"add-task\"]",
             "expected": [
               "[data-layout-key=\"delete-dialog\"]",
@@ -8529,8 +6202,8 @@
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"task-workspace\"]",
+              "div",
               "div#app"
             ]
           },
@@ -8544,9 +6217,7 @@
             ],
             "actual": [
               "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "[data-layout-key=\"delete-dialog\"]",
-              "div"
+              "[data-layout-key=\"delete-dialog\"]"
             ]
           }
         ]
@@ -8557,12 +6228,12 @@
       "label": "Dialog dismissed",
       "scores": {
         "coverage": 100,
-        "geometry": 33.33,
+        "geometry": 75,
         "visibility": 100,
-        "hitTesting": 33.33,
-        "hitStack": 0,
+        "hitTesting": 100,
+        "hitStack": 50,
         "styleInputs": 28.99,
-        "overall": 55.55
+        "overall": 91.67
       },
       "observations": 6,
       "stability": {
@@ -8577,101 +6248,33 @@
       },
       "discrepancies": [
         {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 162,
-          "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-workspace\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 160,
-          "actual": 322,
-          "difference": 162,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "y",
-          "expected": 32,
-          "actual": 34,
-          "difference": 2,
-          "relativeDifference": 1,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"sidebar\"]",
-          "category": "geometry",
-          "field": "height",
-          "expected": 560,
-          "actual": 558,
-          "difference": -2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 368,
-          "actual": 529,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
           "selector": "[data-layout-key=\"task-list\"]",
           "category": "geometry",
           "field": "y",
           "expected": 148,
-          "actual": 131,
-          "difference": -17,
-          "relativeDifference": -19,
+          "actual": 126,
+          "difference": -22,
+          "relativeDifference": -22,
           "scope": "local-layout"
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 724,
-          "actual": 726,
-          "difference": 2
-        },
-        {
-          "selector": "[data-layout-key=\"task-list\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-2\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "x",
           "expected": 980,
-          "actual": 1140,
-          "difference": 160,
-          "relativeDifference": -1,
-          "scope": "ancestor-offset"
+          "actual": 974,
+          "difference": -6,
+          "relativeDifference": -6,
+          "scope": "local-layout"
         },
         {
           "selector": "[data-layout-key=\"add-task\"]",
           "category": "geometry",
           "field": "y",
           "expected": 76,
-          "actual": 69,
-          "difference": -7,
-          "relativeDifference": -10,
+          "actual": 65,
+          "difference": -11,
+          "relativeDifference": -11,
           "scope": "local-layout"
         },
         {
@@ -8679,50 +6282,16 @@
           "category": "geometry",
           "field": "width",
           "expected": 112,
-          "actual": 116,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"task-1\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 369,
-          "actual": 530,
-          "difference": 161,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
+          "actual": 118,
+          "difference": 6
         },
         {
           "selector": "[data-layout-key=\"task-1\"]",
           "category": "geometry",
           "field": "y",
           "expected": 149,
-          "actual": 134,
-          "difference": -15,
-          "relativeDifference": 0,
-          "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"task-1\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 722,
-          "actual": 726,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"task-1\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-1\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "geometry",
-          "field": "x",
-          "expected": 369,
-          "actual": 530,
-          "difference": 161,
+          "actual": 127,
+          "difference": -22,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
         },
@@ -8731,448 +6300,14 @@
           "category": "geometry",
           "field": "y",
           "expected": 461,
-          "actual": 446,
-          "difference": -15,
+          "actual": 439,
+          "difference": -22,
           "relativeDifference": 0,
           "scope": "ancestor-offset"
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "geometry",
-          "field": "width",
-          "expected": 722,
-          "actual": 726,
-          "difference": 4
-        },
-        {
-          "selector": "[data-layout-key=\"task-4\"]",
-          "category": "hit-testing",
-          "expected": "[data-layout-key=\"task-4\"]",
-          "actual": "[data-layout-key=\"task-list\"]"
         }
       ],
       "diagnostics": {
         "styleInputDifferences": [
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "position",
-            "expected": "static",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-width",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "0px",
-            "actual": "0"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-width",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": "auto"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "padding-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "hidden",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "height",
-            "expected": "560px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "min-height",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "max-height",
-            "expected": "none",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "margin-left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-top-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "border-bottom-width",
-            "expected": "0px",
-            "actual": "1px"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-direction",
-            "expected": "row",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "flex-wrap",
-            "expected": "nowrap",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "justify-content",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-items",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "align-self",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "row-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "column-gap",
-            "expected": "normal",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-x",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "overflow-y",
-            "expected": "visible",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "top",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "right",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "bottom",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "left",
-            "expected": "0px",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "z-index",
-            "expected": "auto",
-            "actual": "2"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "pointer-events",
-            "expected": "auto",
-            "actual": ""
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "font-weight",
-            "expected": "400",
-            "actual": "normal"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "line-height",
-            "expected": "22px",
-            "actual": "1.571429"
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "category": "style-input",
-            "field": "white-space",
-            "expected": "normal",
-            "actual": ""
-          },
           {
             "selector": "[data-layout-key=\"task-list\"]",
             "category": "style-input",
@@ -10128,71 +7263,6 @@
         ],
         "hitStackDifferences": [
           {
-            "selector": "[data-layout-key=\"task-workspace\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-2\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"sidebar\"]",
-            "expected": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app",
-              "body",
-              "html"
-            ],
-            "actual": [
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"sidebar\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-list\"]",
-            "expected": [
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-2\"]",
-              "[data-layout-key=\"task-list\"]"
-            ]
-          },
-          {
             "selector": "[data-layout-key=\"add-task\"]",
             "expected": [
               "[data-layout-key=\"add-task\"]",
@@ -10208,55 +7278,9 @@
               "[data-layout-key=\"add-task\"]",
               "[data-layout-key=\"task-workspace\"]",
               "[data-layout-key=\"task-workspace\"]",
-              "div",
               "[data-layout-key=\"task-workspace\"]",
+              "div",
               "div#app"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-1\"]",
-            "expected": [
-              "[data-layout-key=\"task-1\"]",
-              "[data-layout-key=\"task-1\"]",
-              "[data-layout-key=\"task-1\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-1\"]",
-              "[data-layout-key=\"task-1\"]"
-            ]
-          },
-          {
-            "selector": "[data-layout-key=\"task-4\"]",
-            "expected": [
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]"
-            ],
-            "actual": [
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "[data-layout-key=\"task-workspace\"]",
-              "div",
-              "[data-layout-key=\"task-list\"]",
-              "[data-layout-key=\"task-4\"]",
-              "[data-layout-key=\"task-4\"]"
             ]
           }
         ]
@@ -10269,12 +7293,14 @@
       "category": "geometry",
       "field": "x",
       "expected": 980,
-      "actual": 1140,
-      "difference": 160,
-      "relativeDifference": -1,
-      "scope": "ancestor-offset",
-      "occurrences": 5,
+      "actual": 974,
+      "difference": -6,
+      "relativeDifference": -6,
+      "scope": "local-layout",
+      "occurrences": 7,
       "steps": [
+        "initial",
+        "active-filter",
         "add-dialog",
         "task-added",
         "action-menu",
@@ -10287,12 +7313,14 @@
       "category": "geometry",
       "field": "y",
       "expected": 76,
-      "actual": 69,
-      "difference": -7,
-      "relativeDifference": -10,
+      "actual": 65,
+      "difference": -11,
+      "relativeDifference": -11,
       "scope": "local-layout",
-      "occurrences": 5,
+      "occurrences": 7,
       "steps": [
+        "initial",
+        "active-filter",
         "add-dialog",
         "task-added",
         "action-menu",
@@ -10305,80 +7333,12 @@
       "category": "geometry",
       "field": "width",
       "expected": 112,
-      "actual": 116,
-      "difference": 4,
-      "occurrences": 5,
+      "actual": 118,
+      "difference": 6,
+      "occurrences": 7,
       "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "geometry",
-      "field": "x",
-      "expected": 160,
-      "actual": 322,
-      "difference": 162,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 5,
-      "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "geometry",
-      "field": "y",
-      "expected": 32,
-      "actual": 34,
-      "difference": 2,
-      "relativeDifference": 1,
-      "scope": "ancestor-offset",
-      "occurrences": 5,
-      "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "geometry",
-      "field": "height",
-      "expected": 560,
-      "actual": 558,
-      "difference": -2,
-      "occurrences": 5,
-      "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "geometry",
-      "field": "x",
-      "expected": 368,
-      "actual": 529,
-      "difference": 161,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 5,
-      "steps": [
+        "initial",
+        "active-filter",
         "add-dialog",
         "task-added",
         "action-menu",
@@ -10391,118 +7351,19 @@
       "category": "geometry",
       "field": "y",
       "expected": 148,
-      "actual": 131,
-      "difference": -17,
-      "relativeDifference": -19,
+      "actual": 126,
+      "difference": -22,
+      "relativeDifference": -22,
       "scope": "local-layout",
-      "occurrences": 5,
+      "occurrences": 7,
       "steps": [
+        "initial",
+        "active-filter",
         "add-dialog",
         "task-added",
         "action-menu",
         "delete-dialog",
         "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "geometry",
-      "field": "width",
-      "expected": 724,
-      "actual": 726,
-      "difference": 2,
-      "occurrences": 5,
-      "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-workspace\"]",
-      "category": "geometry",
-      "field": "x",
-      "expected": 160,
-      "actual": 322,
-      "difference": 162,
-      "relativeDifference": 162,
-      "scope": "local-layout",
-      "occurrences": 5,
-      "steps": [
-        "add-dialog",
-        "task-added",
-        "action-menu",
-        "delete-dialog",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"task-2\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 3,
-      "steps": [
-        "task-added",
-        "action-menu",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-workspace\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"task-2\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 3,
-      "steps": [
-        "task-added",
-        "action-menu",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "geometry",
-      "field": "x",
-      "expected": 980,
-      "actual": 974,
-      "difference": -6,
-      "relativeDifference": -6,
-      "scope": "local-layout",
-      "occurrences": 2,
-      "steps": [
-        "initial",
-        "active-filter"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "geometry",
-      "field": "y",
-      "expected": 76,
-      "actual": 65,
-      "difference": -11,
-      "relativeDifference": -11,
-      "scope": "local-layout",
-      "occurrences": 2,
-      "steps": [
-        "initial",
-        "active-filter"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-task\"]",
-      "category": "geometry",
-      "field": "width",
-      "expected": 112,
-      "actual": 118,
-      "difference": 6,
-      "occurrences": 2,
-      "steps": [
-        "initial",
-        "active-filter"
       ]
     },
     {
@@ -10514,10 +7375,11 @@
       "difference": -22,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
-      "occurrences": 2,
+      "occurrences": 3,
       "steps": [
         "initial",
-        "active-filter"
+        "active-filter",
+        "restored"
       ]
     },
     {
@@ -10538,70 +7400,16 @@
     {
       "selector": "[data-layout-key=\"task-4\"]",
       "category": "geometry",
-      "field": "x",
-      "expected": 369,
-      "actual": 530,
-      "difference": 161,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 2,
-      "steps": [
-        "task-added",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-4\"]",
-      "category": "geometry",
       "field": "y",
       "expected": 461,
-      "actual": 446,
-      "difference": -15,
+      "actual": 439,
+      "difference": -22,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
       "occurrences": 2,
       "steps": [
         "task-added",
         "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-4\"]",
-      "category": "geometry",
-      "field": "width",
-      "expected": 722,
-      "actual": 726,
-      "difference": 4,
-      "occurrences": 2,
-      "steps": [
-        "task-added",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-4\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"task-4\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 2,
-      "steps": [
-        "task-added",
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-list\"]",
-      "category": "geometry",
-      "field": "y",
-      "expected": 148,
-      "actual": 126,
-      "difference": -22,
-      "relativeDifference": -22,
-      "scope": "local-layout",
-      "occurrences": 2,
-      "steps": [
-        "initial",
-        "active-filter"
       ]
     },
     {
@@ -10623,8 +7431,8 @@
       "category": "geometry",
       "field": "y",
       "expected": 220,
-      "actual": -6574,
-      "difference": -6794,
+      "actual": -6576,
+      "difference": -6796,
       "relativeDifference": -6796,
       "scope": "local-layout",
       "occurrences": 1,
@@ -10637,8 +7445,8 @@
       "category": "geometry",
       "field": "width",
       "expected": 128,
-      "actual": 339,
-      "difference": 211,
+      "actual": 340,
+      "difference": 212,
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -10649,8 +7457,8 @@
       "category": "geometry",
       "field": "height",
       "expected": 40,
-      "actual": 172,
-      "difference": 132,
+      "actual": 168,
+      "difference": 128,
       "occurrences": 1,
       "steps": [
         "action-menu"
@@ -10685,9 +7493,9 @@
       "category": "geometry",
       "field": "y",
       "expected": 224,
-      "actual": -6568,
-      "difference": -6792,
-      "relativeDifference": 1,
+      "actual": -6572,
+      "difference": -6796,
+      "relativeDifference": 0,
       "scope": "ancestor-offset",
       "occurrences": 1,
       "steps": [
@@ -10729,135 +7537,17 @@
       ]
     },
     {
-      "selector": "[data-layout-key=\"add-dialog\"]",
-      "category": "visibility",
-      "expected": false,
-      "actual": true,
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-dialog\"]",
-      "category": "geometry",
-      "field": "y",
-      "expected": 624,
-      "actual": 626,
-      "difference": 2,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"add-dialog\"]",
-      "category": "geometry",
-      "field": "height",
-      "expected": 0,
-      "actual": 2,
-      "difference": 2,
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"delete-dialog\"]",
-      "category": "visibility",
-      "expected": false,
-      "actual": true,
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
-    },
-    {
       "selector": "[data-layout-key=\"delete-dialog\"]",
       "category": "geometry",
       "field": "y",
       "expected": 624,
-      "actual": 645.2,
-      "difference": 21.2,
+      "actual": 643.2,
+      "difference": 19.2,
       "relativeDifference": 0,
       "scope": "ancestor-offset",
       "occurrences": 1,
       "steps": [
         "delete-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"delete-dialog\"]",
-      "category": "geometry",
-      "field": "height",
-      "expected": 0,
-      "actual": 2,
-      "difference": 2,
-      "occurrences": 1,
-      "steps": [
-        "delete-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"sidebar\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"add-dialog\"]",
-      "actual": "[data-layout-key=\"task-description-input\"]",
-      "occurrences": 1,
-      "steps": [
-        "add-dialog"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-1\"]",
-      "category": "geometry",
-      "field": "x",
-      "expected": 369,
-      "actual": 530,
-      "difference": 161,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 1,
-      "steps": [
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-1\"]",
-      "category": "geometry",
-      "field": "y",
-      "expected": 149,
-      "actual": 134,
-      "difference": -15,
-      "relativeDifference": 0,
-      "scope": "ancestor-offset",
-      "occurrences": 1,
-      "steps": [
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-1\"]",
-      "category": "geometry",
-      "field": "width",
-      "expected": 722,
-      "actual": 726,
-      "difference": 4,
-      "occurrences": 1,
-      "steps": [
-        "restored"
-      ]
-    },
-    {
-      "selector": "[data-layout-key=\"task-1\"]",
-      "category": "hit-testing",
-      "expected": "[data-layout-key=\"task-1\"]",
-      "actual": "[data-layout-key=\"task-list\"]",
-      "occurrences": 1,
-      "steps": [
-        "restored"
       ]
     },
     {
@@ -10875,12 +7565,22 @@
       ]
     },
     {
+      "selector": "[data-layout-key=\"task-list\"]",
+      "category": "hit-testing",
+      "expected": "[data-layout-key=\"add-dialog\"]",
+      "actual": "[data-layout-key=\"task-description-input\"]",
+      "occurrences": 1,
+      "steps": [
+        "add-dialog"
+      ]
+    },
+    {
       "selector": "[data-layout-key=\"task-title-input\"]",
       "category": "geometry",
       "field": "y",
       "expected": 302,
-      "actual": 274,
-      "difference": -28,
+      "actual": 272,
+      "difference": -30,
       "relativeDifference": -30,
       "scope": "local-layout",
       "occurrences": 1,
@@ -10912,7 +7612,7 @@
     }
   ],
   "unsupportedCss": {
-    "unsupportedDeclarationCount": 109,
+    "unsupportedDeclarationCount": 71,
     "properties": [
       {
         "property": "width",
@@ -10940,36 +7640,6 @@
         "support": [
           {
             "id": "box-sizing-and-dimensions",
-            "effect": "layout",
-            "status": "partial"
-          }
-        ],
-        "priority": "observed-layout"
-      },
-      {
-        "property": "padding-inline",
-        "declarations": 3,
-        "occurrences": 3,
-        "values": [
-          "var(--ant-button-padding-inline)",
-          "var(--ant-button-padding-inline-lg)",
-          "var(--ant-button-padding-inline-sm)"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn-lg:not(.ant-btn-icon-only)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn-sm:not(.ant-btn-icon-only)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-round.ant-btn:not(.ant-btn-icon-only)"
-        ],
-        "elements": [
-          "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_"
-        ],
-        "computedValues": [],
-        "support": [
-          {
-            "id": "box-model-spacing",
             "effect": "layout",
             "status": "partial"
           }
@@ -11480,34 +8150,21 @@
       },
       {
         "property": "color",
-        "declarations": 25,
-        "occurrences": 48,
+        "declarations": 12,
+        "occurrences": 28,
         "values": [
           "var(--ant-blue-7)",
           "var(--ant-btn-text-color)",
           "var(--ant-color-error)",
-          "var(--ant-color-error-text)",
           "var(--ant-color-icon)",
           "var(--ant-color-text)",
           "var(--ant-color-text-description)",
           "var(--ant-color-text-disabled)",
           "var(--ant-color-text-heading)",
-          "var(--ant-color-warning-text)",
-          "var(--ant-cyan-7)",
-          "var(--ant-geekblue-7)",
-          "var(--ant-gold-7)",
           "var(--ant-green-7)",
-          "var(--ant-lime-7)",
-          "var(--ant-magenta-7)",
           "var(--ant-modal-title-color)",
-          "var(--ant-orange-7)",
-          "var(--ant-pink-7)",
-          "var(--ant-purple-7)",
-          "var(--ant-red-7)",
           "var(--ant-tag-default-color)",
-          "var(--ant-volcano-7)",
-          "var(--ant-wave-color, var(--ant-color-primary))",
-          "var(--ant-yellow-7)"
+          "var(--ant-wave-color, var(--ant-color-primary))"
         ],
         "reasons": [
           "unsupported-value"
@@ -11520,10 +8177,6 @@
           ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:not(.ant-dropdown-menu-item-disabled)",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-input",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled) input",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled) textarea",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled) input",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled) textarea",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-layout-content",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-list",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-list .ant-list-item",
@@ -11537,29 +8190,13 @@
           ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-title",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-spin",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag-checkable-disabled:not(.ant-tag-checkable-checked)",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-blue:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-cyan:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-geekblue:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-gold:not(.ant-tag-disabled).ant-tag-filled",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-green:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-lime:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-magenta:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-orange:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-pink:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-purple:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-red:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-volcano:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-yellow:not(.ant-tag-disabled).ant-tag-filled",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-typography",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-typography.ant-typography-secondary",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-wave",
           "h2:where(.css-dev-only-do-not-override-viwxw0).ant-typography",
-          "h4:where(.css-dev-only-do-not-override-viwxw0).ant-typography",
-          "input:where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled)",
-          "input:where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled)",
-          "textarea:where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled)",
-          "textarea:where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled)"
+          "h4:where(.css-dev-only-do-not-override-viwxw0).ant-typography"
         ],
         "elements": [
           "[data-layout-key=\"add-dialog\"]",
@@ -11568,7 +8205,7 @@
           "[data-layout-key=\"filter-all\"]",
           "[data-layout-key=\"sidebar\"]",
           "[data-layout-key=\"task-1\"]",
-          "[data-layout-key=\"task-description-input\"]",
+          "[data-layout-key=\"task-3\"]",
           "[data-layout-key=\"task-list\"]",
           "[data-layout-key=\"task-title-input\"]",
           "[data-layout-key=\"task-workspace\"]",
@@ -11596,29 +8233,16 @@
       },
       {
         "property": "background-color",
-        "declarations": 20,
-        "occurrences": 29,
+        "declarations": 7,
+        "occurrences": 8,
         "values": [
           "var(--ant-blue-1)",
           "var(--ant-btn-bg-color)",
-          "var(--ant-color-bg-container-disabled)",
           "var(--ant-color-bg-elevated)",
           "var(--ant-color-bg-mask)",
-          "var(--ant-cyan-1)",
-          "var(--ant-geekblue-1)",
-          "var(--ant-gold-1)",
           "var(--ant-green-1)",
-          "var(--ant-input-active-bg)",
-          "var(--ant-lime-1)",
-          "var(--ant-magenta-1)",
           "var(--ant-modal-content-bg)",
-          "var(--ant-orange-1)",
-          "var(--ant-pink-1)",
-          "var(--ant-purple-1)",
-          "var(--ant-red-1)",
-          "var(--ant-tag-default-bg)",
-          "var(--ant-volcano-1)",
-          "var(--ant-yellow-1)"
+          "var(--ant-tag-default-bg)"
         ],
         "reasons": [
           "unsupported-value"
@@ -11626,39 +8250,18 @@
         "selectors": [
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown .ant-dropdown-menu",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-disabled:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled[disabled]:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-disabled:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-warning:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined[disabled]:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-warning:not(.ant-input-disabled):focus",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-container",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-modal-root .ant-modal-mask",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag-filled",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-blue:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-cyan:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-geekblue:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-gold:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-green:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-lime:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-magenta:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-orange:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-pink:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-purple:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-red:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-volcano:not(.ant-tag-disabled).ant-tag-filled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-yellow:not(.ant-tag-disabled).ant-tag-filled"
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-tag.ant-tag-green:not(.ant-tag-disabled).ant-tag-filled"
         ],
         "elements": [
           "[data-layout-key=\"add-dialog\"]",
           "[data-layout-key=\"add-task\"]",
           "[data-layout-key=\"task-1\"]",
-          "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_",
+          "[data-layout-key=\"task-3\"]",
           "ul.ant-dropdown-menu.ant-dropdown-menu-root.ant-dropdown-menu-vertical"
         ],
         "computedValues": [
@@ -11677,67 +8280,12 @@
         "priority": "visual-or-inert"
       },
       {
-        "property": "border-color",
-        "declarations": 7,
-        "occurrences": 16,
-        "values": [
-          "transparent transparent var(--ant-color-error) transparent",
-          "transparent transparent var(--ant-color-warning) transparent",
-          "var(--ant-button-border-color-disabled)",
-          "var(--ant-color-border)",
-          "var(--ant-color-border-disabled)",
-          "var(--ant-color-error)",
-          "var(--ant-color-warning)"
-        ],
-        "reasons": [
-          "unsupported-value"
-        ],
-        "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn:disabled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-disabled:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled[disabled]:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-disabled:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-error:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-warning:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-warning:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined[disabled]:hover:not([disabled])",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-error:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-warning:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-warning:not(.ant-input-disabled):focus"
-        ],
-        "elements": [
-          "[data-layout-key=\"add-dialog\"]",
-          "[data-layout-key=\"add-submit\"]",
-          "[data-layout-key=\"task-title-input\"]",
-          "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_"
-        ],
-        "computedValues": [
-          "#d9d9d9",
-          "transparent transparent #faad14"
-        ],
-        "support": [
-          {
-            "id": "visual-only",
-            "effect": "visual-ignored",
-            "status": "partial"
-          }
-        ],
-        "priority": "visual-or-inert"
-      },
-      {
         "property": "background",
-        "declarations": 6,
-        "occurrences": 10,
+        "declarations": 4,
+        "occurrences": 4,
         "values": [
           "var(--ant-btn-bg-color-disabled)",
           "var(--ant-color-bg-container)",
-          "var(--ant-color-error-bg)",
-          "var(--ant-color-warning-bg)",
           "var(--ant-layout-body-bg)",
           "var(--ant-layout-sider-bg)"
         ],
@@ -11746,13 +8294,7 @@
         ],
         "selectors": [
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn:disabled",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-error:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-filled.ant-input-status-warning:not(.ant-input-disabled)",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-error:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-warning:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-error:not(.ant-input-disabled)",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-underlined.ant-input-status-warning:not(.ant-input-disabled)",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-layout",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-layout-sider"
         ],
@@ -11760,8 +8302,7 @@
           "[data-layout-key=\"add-submit\"]",
           "[data-layout-key=\"sidebar\"]",
           "[data-layout-key=\"task-title-input\"]",
-          "[data-layout-key=\"task-workspace\"]",
-          "div.css-dev-only-do-not-override-viwxw0.ant-app.css-var-_r_0_"
+          "[data-layout-key=\"task-workspace\"]"
         ],
         "computedValues": [
           "#f7f9fc",
@@ -11780,14 +8321,12 @@
       },
       {
         "property": "box-shadow",
-        "declarations": 5,
-        "occurrences": 6,
+        "declarations": 3,
+        "occurrences": 4,
         "values": [
           "var(--ant-box-shadow)",
           "var(--ant-box-shadow-secondary)",
-          "var(--ant-btn-shadow)",
-          "var(--ant-input-error-active-shadow)",
-          "var(--ant-input-warning-active-shadow)"
+          "var(--ant-btn-shadow)"
         ],
         "reasons": [
           "unsupported-value"
@@ -11796,8 +8335,6 @@
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-variant-outlined",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-btn.ant-btn-variant-solid",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-dropdown .ant-dropdown-menu",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-error:not(.ant-input-disabled):focus",
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined.ant-input-status-warning:not(.ant-input-disabled):focus",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-modal .ant-modal-container"
         ],
         "elements": [
@@ -11821,9 +8358,41 @@
         "priority": "visual-or-inert"
       },
       {
+        "property": "border-color",
+        "declarations": 2,
+        "occurrences": 2,
+        "values": [
+          "var(--ant-button-border-color-disabled)",
+          "var(--ant-color-border)"
+        ],
+        "reasons": [
+          "unsupported-value"
+        ],
+        "selectors": [
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn:disabled",
+          ":where(.css-dev-only-do-not-override-viwxw0).ant-input-outlined"
+        ],
+        "elements": [
+          "[data-layout-key=\"add-submit\"]",
+          "[data-layout-key=\"task-title-input\"]"
+        ],
+        "computedValues": [
+          "#d9d9d9",
+          "transparent transparent #faad14"
+        ],
+        "support": [
+          {
+            "id": "visual-only",
+            "effect": "visual-ignored",
+            "status": "partial"
+          }
+        ],
+        "priority": "visual-or-inert"
+      },
+      {
         "property": "outline",
         "declarations": 1,
-        "occurrences": 2,
+        "occurrences": 1,
         "values": [
           "var(--ant-line-width-focus) solid var(--ant-color-primary-border)"
         ],
@@ -11831,7 +8400,6 @@
           "unsupported-value"
         ],
         "selectors": [
-          ":where(.css-dev-only-do-not-override-viwxw0).ant-btn:not(:disabled):focus-visible",
           ":where(.css-dev-only-do-not-override-viwxw0).ant-modal:focus-visible"
         ],
         "elements": [

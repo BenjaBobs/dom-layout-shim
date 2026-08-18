@@ -42,7 +42,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Matching includes case-insensitive terminal HTML attribute selectors, `:where()`, `:is()`, `:not()`, `:has()`, structural selectors, and supported state pseudo-classes. `::before` and `::after` are routed to generated-content measurement rather than matched as ordinary elements."
+          "text": "Matching includes case-insensitive terminal HTML attribute selectors, scoped compound `:where()` and `:is()` selectors normalized independently of host matcher quirks, `:not()`, `:has()`, structural selectors, and supported state pseudo-classes. `::before` and `::after` are routed to generated-content measurement rather than matched as ordinary elements."
         }
       ]
     },
