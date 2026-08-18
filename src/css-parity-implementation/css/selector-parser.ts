@@ -3,6 +3,7 @@ import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsup
 export type ParsedSelector = {
   selector: string
   specificity: number
+  pseudoElement?: 'before' | 'after'
 }
 
 export function readSelectorList(
@@ -32,6 +33,7 @@ function readSelector(
   let result = ''
   let specificity = 0
   let unsupported = false
+  let pseudoElement: 'before' | 'after' | undefined
 
   for (const component of selector) {
     if (!isSelectorComponent(component)) {
@@ -80,6 +82,15 @@ function readSelector(
         specificity += pseudoSelector.specificity
         break
       }
+      case 'pseudo-element':
+        if ((component.kind === 'before' || component.kind === 'after') && !pseudoElement) {
+          pseudoElement = component.kind
+          specificity += 1
+          break
+        }
+        handleUnsupportedSelector(JSON.stringify(component), policy)
+        unsupported = true
+        break
       case 'combinator':
         if (component.value === 'descendant') {
           result = `${result.trimEnd()} `
@@ -114,7 +125,7 @@ function readSelector(
     return undefined
   }
 
-  return { selector: result, specificity }
+  return { selector: result, specificity, ...(pseudoElement ? { pseudoElement } : {}) }
 }
 
 function readPseudoSelector(
@@ -151,6 +162,11 @@ const simplePseudoClasses = new Set([
   'hover',
   'focus',
   'disabled',
+  'active',
+  'empty',
+  'focus-visible',
+  'focus-within',
+  'placeholder-shown',
 ])
 
 function stringifyAnPlusB(a: number, b: number): string {
@@ -174,7 +190,8 @@ function readFunctionalPseudoSelector(
   if (
     component.kind !== 'where' &&
     component.kind !== 'is' &&
-    component.kind !== 'not'
+    component.kind !== 'not' &&
+    component.kind !== 'has'
   ) {
     handleUnsupportedSelector(JSON.stringify(component), policy)
     return undefined
@@ -221,15 +238,14 @@ function readAttributeSelector(
     return undefined
   }
 
-  if (
-    component.operation.caseSensitivity !== undefined &&
-    component.operation.caseSensitivity !== 'case-sensitive'
-  ) {
+  const caseSensitivity = component.operation.caseSensitivity
+  if (caseSensitivity !== undefined && caseSensitivity !== 'case-sensitive' && caseSensitivity !== 'ascii-case-insensitive' && caseSensitivity !== 'ascii-case-insensitive-if-in-html-element-in-html-document') {
     handleUnsupportedSelector(JSON.stringify(component), policy)
     return undefined
   }
 
-  return `[${component.name}${operator}"${escapeAttributeValue(component.operation.value)}"]`
+  const flag = caseSensitivity === 'ascii-case-insensitive' || caseSensitivity === 'ascii-case-insensitive-if-in-html-element-in-html-document' ? ' i' : ''
+  return `[${component.name}${operator}"${escapeAttributeValue(component.operation.value)}"${flag}]`
 }
 
 function stringifyAttributeOperator(operator: string | undefined): string | undefined {

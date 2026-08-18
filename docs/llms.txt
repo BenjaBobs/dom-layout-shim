@@ -78,6 +78,12 @@ point queries exclude empty corners of an axis-aligned bounding rectangle.
 Both inherit through the supported text cascade and feed default intrinsic text
 measurement.
 
+Selector matching includes supported structural/state pseudo-classes,
+`:is()`, `:where()`, `:not()`, `:has()`, and case-insensitive terminal HTML
+attribute selectors. `::before` and `::after` string or `attr()` content feeds
+the originating element's intrinsic text measurement; independent pseudo boxes
+are not modeled.
+
 Stylesheet `@media` rules evaluate against the configured layout viewport.
 Supported queries include screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media

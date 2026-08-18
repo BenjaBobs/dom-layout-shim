@@ -12,6 +12,7 @@ export type StyleRule = {
   declarations: Array<{ property: string; value: string }>
   specificity: number
   order: number
+  pseudoElement?: 'before' | 'after'
 }
 
 type DocumentStylesheetSource = {
@@ -92,7 +93,7 @@ export function applyStyleRules(
   viewport?: Viewport,
 ): void {
   rules
-    .filter((rule) => matchesSelector(element, rule.selector, policy))
+    .filter((rule) => !rule.pseudoElement && matchesSelector(element, rule.selector, policy))
     .toSorted(compareStyleRuleCascadeOrder)
     .forEach((rule) => {
       for (const declaration of rule.declarations) {
@@ -117,12 +118,42 @@ export function applyStylesheetCustomProperties(
   policy: UnsupportedCssPolicy | undefined,
 ): void {
   for (const rule of rules
-    .filter((candidate) => matchesSelector(element, candidate.selector, policy))
+    .filter((candidate) => !candidate.pseudoElement && matchesSelector(element, candidate.selector, policy))
     .toSorted(compareStyleRuleCascadeOrder)) {
     for (const declaration of rule.declarations) {
       applyCustomPropertyDeclaration(properties, inherited, declaration.property, declaration.value)
     }
   }
+}
+
+export function readGeneratedContent(
+  element: Element,
+  rules: readonly StyleRule[],
+  policy: UnsupportedCssPolicy | undefined,
+): { before: string; after: string } {
+  const result = { before: '', after: '' }
+
+  for (const pseudoElement of ['before', 'after'] as const) {
+    const declarations = rules
+      .filter((rule) => rule.pseudoElement === pseudoElement && matchesSelector(element, rule.selector, policy))
+      .toSorted(compareStyleRuleCascadeOrder)
+      .flatMap((rule) => rule.declarations)
+    const content = declarations.filter((declaration) => declaration.property === 'content').at(-1)?.value
+    result[pseudoElement] = resolveGeneratedContent(content, element)
+  }
+
+  return result
+}
+
+function resolveGeneratedContent(value: string | undefined, element: Element): string {
+  if (!value || value === 'none' || value === 'normal') return ''
+  if (value.startsWith('attr(') && value.endsWith(')')) {
+    return element.getAttribute(value.slice(5, -1).trim()) ?? ''
+  }
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try { return JSON.parse(value) as string } catch { return '' }
+  }
+  return ''
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {
@@ -139,6 +170,9 @@ function matchesSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): boolean {
   try {
+    if (selector.includes(' i]')) {
+      return matchesAsciiInsensitiveAttributes(element, selector)
+    }
     return element.matches(selector)
   } catch {
     handleUnsupportedCss(policy, {
@@ -151,6 +185,32 @@ function matchesSelector(
     })
     return false
   }
+}
+
+function matchesAsciiInsensitiveAttributes(element: Element, selector: string): boolean {
+  const attributes: Array<{ name: string; operator: string; value: string }> = []
+  const structuralSelector = selector.replace(
+    /\[([\w-]+)(=|~=|\|=|\^=|\$=|\*=)"([^"]*)" i\]/g,
+    (_match, name: string, operator: string, value: string) => {
+      attributes.push({ name, operator, value: value.toLowerCase() })
+      return `[${name}]`
+    },
+  )
+  if (attributes.length === 0 || !element.matches(structuralSelector)) return false
+
+  return attributes.every(({ name, operator, value }) => {
+    const actual = element.getAttribute(name)?.toLowerCase()
+    if (actual === undefined) return false
+    switch (operator) {
+      case '=': return actual === value
+      case '~=': return actual.split(/\s+/).includes(value)
+      case '|=': return actual === value || actual.startsWith(`${value}-`)
+      case '^=': return actual.startsWith(value)
+      case '$=': return actual.endsWith(value)
+      case '*=': return actual.includes(value)
+      default: return false
+    }
+  })
 }
 
 function readCssRules(
@@ -578,6 +638,7 @@ function collectStyleRule(
       declarations,
       specificity: selector.specificity,
       order: rules.length,
+      ...(selector.pseudoElement ? { pseudoElement: selector.pseudoElement } : {}),
     })
   }
 }

@@ -6,7 +6,7 @@ import {
 } from 'taffy-layout'
 import { applyInlineCustomProperties, applyInlineStyle } from '../css/inline-style-source.ts'
 import { createDefaultStyle, zeroEdges, type Edges, type SupportedStyle } from '../css/supported-style.ts'
-import { applyStylesheetCustomProperties, applyStyleRules, readStyleRules } from '../css/stylesheet-source.ts'
+import { applyStylesheetCustomProperties, applyStyleRules, readGeneratedContent, readStyleRules } from '../css/stylesheet-source.ts'
 import type { CustomProperties } from '../css/custom-properties.ts'
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
 import type { Viewport } from '../../api/layout-engine-config.ts'
@@ -645,7 +645,13 @@ function buildNodesForElement(element: Element, state: TaffyLayoutState): bigint
     return [node]
   }
 
-  const context = createMeasureContext(element, style, state.textMeasurer, state.nativeControlMetrics)
+  const context = createMeasureContext(
+    element,
+    style,
+    state.textMeasurer,
+    state.nativeControlMetrics,
+    readGeneratedContent(element, state.rules, state.policy),
+  )
   const children = context?.replacedSize || canMeasureTextLeaf(element) ? [] : buildChildNodes(element, state)
   const taffyStyle = toTaffyStyle(style, context)
   const node =

@@ -131,6 +131,9 @@ and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
 Text measurement receives inherited numeric `font-weight` and resolved
 `letter-spacing` in addition to family, size, line height, and white-space.
+Generated strings and `attr()` values from `::before` and `::after` contribute
+to intrinsic text measurement. Supported state, functional, and
+case-insensitive attribute selectors participate in stylesheet matching.
 
 Use a callback to display or collect warnings in the test runner:
 

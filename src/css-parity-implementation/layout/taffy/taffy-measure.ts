@@ -24,6 +24,7 @@ export function createMeasureContext(
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
   nativeControlMetrics: NativeControlMetrics,
+  generatedContent: { before: string; after: string } = { before: '', after: '' },
 ): MeasureContext | undefined {
   const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(
     element,
@@ -45,7 +46,7 @@ export function createMeasureContext(
     }
   }
 
-  const text = textContentForMeasurement(element)
+  const text = `${generatedContent.before}${textContentForMeasurement(element)}${generatedContent.after}`
 
   if (
     !text.trim() &&
