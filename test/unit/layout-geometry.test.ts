@@ -7,6 +7,46 @@ afterEach(() => {
 })
 
 describe('layout DOM API and package contracts', () => {
+  it('uses the portable user-agent presentation profile by default', async () => {
+    document.body.innerHTML = '<p id="paragraph">Text</p>'
+
+    await attach()
+
+    expect(requiredElement('#paragraph').getBoundingClientRect().y).toBe(16)
+  })
+
+  it('disables only presentation defaults with the none profile', async () => {
+    document.body.innerHTML = '<p id="paragraph">Text</p><input id="hidden" type="hidden" style="display:block">'
+
+    await attach({ userAgentStyles: { profile: 'none' } })
+
+    const paragraph = requiredElement('#paragraph').getBoundingClientRect()
+    expect(paragraph.y).toBe(0)
+    expect(paragraph.height).toBeCloseTo(19.2)
+    // Non-rendered HTML semantics remain structural rather than profile styling.
+    expect(requiredElement('#hidden').getBoundingClientRect().height).toBe(0)
+  })
+
+  it('cascades user-agent overrides below document and inline styles', async () => {
+    document.body.innerHTML = `
+      <style>#document-rule { margin-top: 7px }</style>
+      <p id="ua-rule">UA override</p>
+      <p id="document-rule">Document rule</p>
+      <p id="inline-rule" style="margin-top:9px">Inline rule</p>
+    `
+
+    await attach({
+      userAgentStyles: {
+        profile: 'none',
+        overrides: 'p { margin-top: 5px; margin-bottom: 0 }',
+      },
+    })
+
+    expect(requiredElement('#ua-rule').getBoundingClientRect().y).toBe(5)
+    expect(requiredElement('#document-rule').getBoundingClientRect().y).toBeCloseTo(31.2)
+    expect(requiredElement('#inline-rule').getBoundingClientRect().y).toBeCloseTo(59.4)
+  })
+
   it('accepts the explicit portable native-control profile', async () => {
     document.body.innerHTML = '<input id="text">'
 

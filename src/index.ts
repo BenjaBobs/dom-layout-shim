@@ -2,7 +2,12 @@ export { attachLayoutEngine } from './api/attach-layout-engine.ts'
 export type { AttachLayoutEngineOptions, LayoutEngineAttachment } from './api/attach-layout-engine.ts'
 export { expectBlockedBy, expectReceivesPointer, guardedClick } from './api/pointer-assertions.ts'
 export type { PointerAssertionOptions } from './api/pointer-assertions.ts'
-export type { LayoutEngineConfig, Viewport } from './api/layout-engine-config.ts'
+export type {
+  LayoutEngineConfig,
+  UserAgentStyleOptions,
+  UserAgentStyleProfile,
+  Viewport,
+} from './api/layout-engine-config.ts'
 export type {
   NativeControlMetrics,
   NativeControlOptions,

@@ -40,6 +40,23 @@ groups and fields.
 Profiles model deterministic outer geometry. They do not emulate operating-
 system painting, internal widget behavior, or native picker UI.
 
+## User-agent styles
+
+The deterministic `portable` user-agent style profile is enabled by default.
+Configure `userAgentStyles: { profile: 'none' }` to omit its presentation
+defaults. `userAgentStyles.overrides` accepts CSS at the user-agent origin, so
+document and inline declarations still win. For example,
+`{ profile: 'portable', overrides: 'p { margin: 0 }' }` specializes the
+baseline without copying it into every test.
+
+Structural HTML behavior is not profile styling: hidden inputs remain
+non-rendered with the `none` profile. Native-control intrinsic
+metrics remain independently configurable through `nativeControls`.
+
+The engine currently treats `html` and `body` as its synthetic viewport
+containing block, so their own margins, padding, and geometry are not modeled
+by user-agent overrides.
+
 ## Stylesheet sources
 
 Supported selector matching includes `:first-child`, `:nth-child()`,

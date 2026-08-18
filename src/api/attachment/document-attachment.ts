@@ -1,5 +1,5 @@
 import type { UnsupportedCssPolicy } from '../unsupported-css-policy.ts'
-import type { Viewport } from '../layout-engine-config.ts'
+import type { UserAgentStyleOptions, Viewport } from '../layout-engine-config.ts'
 import { createDomRect } from '../../css-parity-implementation/geometry/dom-rect.ts'
 import { zeroBox } from '../box.ts'
 import {
@@ -23,6 +23,7 @@ export type DocumentAttachmentOptions = {
   unsupportedCss?: UnsupportedCssPolicy
   textMeasurer: TextMeasurer
   stylesheets: readonly string[]
+  userAgentStyles: Required<UserAgentStyleOptions>
   nativeControlMetrics: NativeControlMetrics
 }
 
@@ -33,6 +34,7 @@ export class DocumentAttachment {
   private readonly unsupportedCss: UnsupportedCssPolicy | undefined
   private readonly textMeasurer: TextMeasurer
   private readonly stylesheets: readonly string[]
+  private readonly userAgentStyles: Required<UserAgentStyleOptions>
   private readonly nativeControlMetrics: NativeControlMetrics
   private dirty = true
   private detached = false
@@ -49,6 +51,7 @@ export class DocumentAttachment {
     this.unsupportedCss = options.unsupportedCss
     this.textMeasurer = options.textMeasurer
     this.stylesheets = options.stylesheets
+    this.userAgentStyles = options.userAgentStyles
     this.nativeControlMetrics = options.nativeControlMetrics
     patchDomApis(this)
     this.mutationObserver = observeMutations(this.document, () => {
@@ -95,6 +98,7 @@ export class DocumentAttachment {
       this.unsupportedCss,
       this.textMeasurer,
       this.stylesheets,
+      this.userAgentStyles,
       this.nativeControlMetrics,
     )
     this.snapshotScroll = scroll

@@ -64,6 +64,17 @@ export function readStyleRules(
   return rules
 }
 
+export function readCssTextRules(
+  cssText: string,
+  filename: string,
+  policy: UnsupportedCssPolicy | undefined,
+  viewport?: Viewport,
+): StyleRule[] {
+  const rules: StyleRule[] = []
+  readCssRules(cssText, filename, policy, rules, viewport)
+  return rules
+}
+
 export function documentStylesheetFingerprint(document: Document): string {
   // MutationObserver cannot see CSSOM edits or adoptedStyleSheets assignment.
   // Include sheet identity as well as serialized rules so replacement and
