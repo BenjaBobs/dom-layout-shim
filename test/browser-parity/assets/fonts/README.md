@@ -9,7 +9,9 @@ counterparts.
 Every glyph, including space, advances 500 units in a 1000-unit em square. At a
 20px font size this produces the same 10px-per-character width as the package's
 deterministic fallback text measurer. The font has an 800-unit ascender, a
-200-unit descender, and no kerning, ligatures, variable axes, or hinting.
+200-unit descender, and no kerning, ligatures, variable axes, or hinting. Its
+OS/2 Windows and typographic vertical metrics use the same 800/200 extent so
+Chromium exposes identical inline boxes on every supported runner.
 
 Regenerate and verify the committed asset with:
 
