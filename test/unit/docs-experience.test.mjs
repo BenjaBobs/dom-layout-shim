@@ -42,6 +42,8 @@ describe('generated documentation experience', () => {
     const generator = await readDocumentationSource('scripts/generate-docs-pages.mjs')
     expect(generator).toContain("const paritySourceOutput = resolve(siteRoot, 'data/parity-sources')")
     expect(generator).toContain(".filter((file) => file.endsWith('.test.ts'))")
+    expect(generator).toContain("for (const example of ['material-ui', 'ant-design'])")
+    expect(generator).toContain("await cp(source, output, { recursive: true, force: true })")
   })
 
   it('renders support dimensions, semantic notes, inline code, and summary filters', async () => {

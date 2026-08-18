@@ -250,6 +250,17 @@ behavior-specific support claims, Chromium fixtures, and limitations. Select a
 fixture to preview its test source without leaving the explorer, or follow its
 GitHub link to inspect the repository version.
 
+## Explore UI-library examples
+
+The [UI library examples](./examples.html) implement the same task workspace in
+Material UI and Ant Design. Their tests attach DOM Layout Shim to happy-dom and
+exercise geometry-derived pointer targets, scrollable content, portalled menus,
+modal blocking, and layout invalidation through real library components.
+
+The hosted pages run in a browser for visual inspection. They complement rather
+than replace Chromium parity fixtures: each example publishes its known
+compatibility limitations alongside the working scenario.
+
 ## Use it in a test lifecycle
 
 Attach after creating the window, reset content between tests, and close the

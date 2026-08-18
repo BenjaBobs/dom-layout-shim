@@ -186,6 +186,9 @@ The package requires Node.js 22 or newer and uses standard ES modules.
 
 See the [documentation site](https://benjabobs.github.io/dom-layout-shim/) and
 its [filterable CSS support overview](https://benjabobs.github.io/dom-layout-shim/css-support-status.html).
+The site also hosts matching [Material UI and Ant Design task-workspace examples](https://benjabobs.github.io/dom-layout-shim/examples.html),
+whose happy-dom tests exercise geometry, portals, overlays, scrolling, and hit
+testing through the public API.
 The underlying source of truth is
 the machine-readable records in [support/css](support/css). Each record follows
 [support/css-support.schema.json](support/css-support.schema.json). Topics are
@@ -203,6 +206,8 @@ or `pnpm run docs:check` to validate and regenerate it. Run
 `pnpm run docs:serve` to generate and serve the complete documentation site
 locally. Pass a port when needed, for example
 `pnpm run docs:serve -- 4174`.
+
+Run `pnpm run examples:check` to build, typecheck, and test every example app.
 
 Run `pnpm run test:package` to build and pack the exact npm artifact, install it
 into an isolated consumer project, typecheck its public API, and exercise layout

@@ -1,0 +1,21 @@
+{
+  "library": "Material UI",
+  "package": "@mui/material",
+  "scenario": "task-workspace",
+  "supported": [
+    "task filtering and live result counts",
+    "task creation with required-title validation",
+    "scrollable task layout",
+    "portalled action menu lifecycle",
+    "modal dismissal from the backdrop",
+    "modal blocking of underlying controls",
+    "dynamic task deletion and layout invalidation"
+  ],
+  "limitations": [
+    {
+      "capability": "modal hit target",
+      "impact": "The full-viewport Modal root wins hit testing instead of its visible Backdrop child.",
+      "test": "test/task-workspace.test.tsx"
+    }
+  ]
+}

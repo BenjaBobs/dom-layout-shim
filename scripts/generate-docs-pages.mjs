@@ -1,7 +1,7 @@
-import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
-import { guideLayout, renderMarkdownPage } from '../docs-engine/render-md.mjs'
+import { articleLayout, guideLayout, renderMarkdownPage } from '../docs-engine/render-md.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const context = await readDocumentationContext(root)
@@ -29,6 +29,12 @@ const pages = [
     output: '.site/index.html',
     page: 'index.html',
     render: (source) => renderMarkdownPage(source, guideLayout),
+  },
+  {
+    source: 'docs/examples.md',
+    output: '.site/examples.html',
+    page: 'examples.html',
+    render: (source) => renderMarkdownPage(source, articleLayout),
   },
   {
     source: 'docs-engine/css-support-status.template.html',
@@ -62,6 +68,18 @@ for (const page of pages) {
     await writeFile(outputPath, output)
     console.log(`Generated ${page.output} from ${page.source}.`)
   }
+}
+
+for (const example of ['material-ui', 'ant-design']) {
+  const source = resolve(root, 'examples', example, 'dist')
+  const output = resolve(siteRoot, 'examples', example)
+  await rm(output, { recursive: true, force: true })
+  await cp(source, output, { recursive: true, force: true })
+  await copyFile(
+    resolve(root, 'examples', example, 'compatibility.json'),
+    resolve(output, 'compatibility.json'),
+  )
+  console.log(`Copied ${example} example to .site/examples/${example}.`)
 }
 
 function requiredMatch(source, pattern, file, description, group = 1) {

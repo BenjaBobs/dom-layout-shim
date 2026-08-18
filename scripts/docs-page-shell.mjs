@@ -20,6 +20,7 @@ export function renderDocumentationPage({
     : ''
   const internalPages = [
     ['index.html', './'],
+    ['examples.html', './examples.html'],
     ['css-support-status.html', './css-support-status.html'],
     ['changelog.html', './changelog.html'],
   ].filter(([file]) => file !== page)
@@ -56,6 +57,7 @@ export function renderDocumentationPage({
 export function renderNavigation({ page, version, upcoming }) {
   const links = [
     ['index.html', './', 'Guide'],
+    ['examples.html', './examples.html', 'Examples'],
     ['css-support-status.html', './css-support-status.html', 'CSS support'],
     ['changelog.html', './changelog.html', 'Changelog'],
   ]

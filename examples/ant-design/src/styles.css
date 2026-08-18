@@ -1,0 +1,126 @@
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #eef2f6;
+}
+
+.workspace {
+  width: 960px;
+  height: 560px;
+  margin: 32px auto;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgb(15 23 42 / 14%);
+}
+
+.workspace-sidebar {
+  padding: 24px 16px;
+  background: #f7f9fc !important;
+  border-right: 1px solid #e3e8ef;
+}
+
+.filter-button {
+  height: 40px;
+  margin-bottom: 4px;
+  text-align: left;
+}
+
+.filter-button-active {
+  color: #1677ff;
+  background: #e6f4ff;
+}
+
+.workspace-main {
+  min-width: 0;
+  padding: 28px;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.workspace-header h2,
+.workspace-sidebar h4 {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.task-list-region {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+}
+
+.task-row {
+  min-height: 104px;
+  padding: 16px 20px !important;
+}
+
+.task-row .ant-list-item-meta-title {
+  max-width: 430px;
+  white-space: normal;
+}
+
+.task-row .ant-list-item-meta-description {
+  max-width: 430px;
+}
+
+.task-form {
+  display: grid;
+  gap: 8px;
+}
+
+.task-form label:not(:first-child) {
+  margin-top: 8px;
+}
+
+/* Keep the scenario's overlay geometry explicit and deterministic in the shim. */
+.ant-modal-root .ant-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  height: 100vh;
+}
+
+.ant-modal-root .ant-modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  height: 100vh;
+  pointer-events: auto;
+}
+
+.ant-modal-root .ant-modal {
+  width: 520px !important;
+  margin: 120px auto 0;
+  pointer-events: auto;
+}
+
+@media (max-width: 760px) {
+  .workspace {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .workspace-sidebar {
+    display: none;
+  }
+
+  .workspace-main {
+    padding: 20px;
+  }
+}
