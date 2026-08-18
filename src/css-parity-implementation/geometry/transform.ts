@@ -1,4 +1,5 @@
 import type { Box } from '../../api/box.ts'
+import { resolveCalculatedDimension } from '../css/length-value.ts'
 import type {
   SupportedDimension,
   SupportedTransform,
@@ -115,10 +116,9 @@ function translation(x: number, y: number): AffineTransform {
 }
 
 function resolveDimension(value: SupportedDimension, size: number): number {
-  if (typeof value === 'number') {
-    return value
-  }
-  return Number.parseFloat(value) / 100 * size
+  const resolved = resolveCalculatedDimension(value, size)
+  if (typeof resolved === 'number') return resolved
+  return Number.parseFloat(resolved ?? '0') / 100 * size
 }
 
 function transformPoint(x: number, y: number, transform: AffineTransform): { x: number; y: number } {

@@ -246,8 +246,14 @@ expect(window.document.elementsFromPoint(centerX, centerY)).toContain(save)
 
 Layout declarations can use `em`, `rem`, viewport units, custom properties, and
 `calc()` expressions when the result reduces to one supported length,
-percentage, or number. Mixed percentage-and-pixel calculations remain outside
-the current Taffy dimension model.
+percentage, or number. Mixed percentage-and-pixel dimensions such as
+`calc(100% - 32px)` resolve when their containing-block axis is definite.
+
+Percentage insets resolve against the corresponding definite containing-block
+axis. Nested positioned stacking contexts keep descendant `z-index` values
+inside the ancestor context during point queries.
+The exported `HitBox` type exposes this optional nested paint key as
+`stackingOrder` for diagnostic consumers.
 
 Two-dimensional translation, scaling, rotation, skew, and matrix transforms
 project client rectangles and hit-test regions. Rotated and skewed elements use

@@ -3037,18 +3037,6 @@ function applyLength(
       return
     }
 
-    if (typeof length !== 'number') {
-      handleUnsupportedCss(context.policy, {
-        property,
-        value: originalValue,
-        reason: 'unsupported-value',
-        source: context.source,
-        selector: context.selector,
-        element: context.element,
-      })
-      return
-    }
-
     style[key] = length
     return
   }
@@ -3634,7 +3622,7 @@ function parseGridTrack(value: string): GridTrack | undefined {
 
   const length = parseNonNegativeDimension(value)
 
-  if (length !== undefined) {
+  if (length !== undefined && typeof length !== 'object') {
     return length
   }
 
@@ -3934,16 +3922,15 @@ function applyGapLength(
   style[key] = length
 }
 
-function parseInsetLength(value: string, context: DeclarationContext): number | 'auto' | undefined {
+function parseInsetLength(value: string, context: DeclarationContext): SupportedDimension | 'auto' | undefined {
   if (value === 'auto') return 'auto'
-  const length = parseDimension(value, context)
-  return typeof length === 'number' ? length : undefined
+  return parseDimension(value, context)
 }
 
 function setInsetSide(
   style: SupportedStyle,
   key: 'top' | 'right' | 'bottom' | 'left',
-  value: number | 'auto',
+  value: SupportedDimension | 'auto',
 ): void {
   style[key] = value === 'auto' ? undefined : value
 }
@@ -4187,6 +4174,7 @@ function applyZIndex(
 ): void {
   if (value === 'auto') {
     style.zIndex = 0
+    style.zIndexAuto = true
     return
   }
 
@@ -4205,6 +4193,7 @@ function applyZIndex(
   }
 
   style.zIndex = zIndex
+  style.zIndexAuto = false
 }
 
 function parsePxLength(value: string): number | undefined {

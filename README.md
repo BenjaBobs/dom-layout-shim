@@ -126,6 +126,13 @@ identifies the declaration and links to its compatibility entry.
 Supported layout lengths include pixels, percentages where documented, `em`,
 `rem`, and viewport units. `calc()` expressions and custom-property references
 are evaluated when they reduce to one supported length, percentage, or number.
+Mixed percentage-and-pixel dimensions such as `calc(100% - 32px)` resolve when
+their containing-block axis is definite. Styled flex buttons include inline
+icons, gaps, padding, and borders in deterministic intrinsic sizing. Nested
+positioned stacking contexts constrain descendant `z-index` values during point
+queries.
+The exported `HitBox` diagnostic type exposes the optional `stackingOrder`
+paint key used to compare nested contexts.
 Two-dimensional rotation, skew, and matrix transforms affect client geometry
 and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.

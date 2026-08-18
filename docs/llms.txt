@@ -67,8 +67,16 @@ the declaration routes through the unsupported CSS policy as
 
 Supported layout lengths include pixels, percentages where documented, `em`,
 `rem`, `vw`, `vh`, `vmin`, and `vmax`. Custom-property and `calc()` expressions
-are accepted when they reduce to one supported length, percentage, or number;
-mixed percentage-and-pixel calculations remain unsupported.
+are accepted when they reduce to one supported length, percentage, or number.
+Mixed percentage-and-pixel dimensions resolve when their containing-block axis
+is definite. Percentage insets resolve against the corresponding containing
+block axis.
+
+Nested positioned stacking contexts constrain descendant `z-index` values for
+point queries. Flex-styled buttons include text, inline icons, gaps, padding,
+and borders in deterministic intrinsic sizing.
+`HitBox.stackingOrder` is the optional diagnostic paint key for those nested
+contexts.
 
 Two-dimensional translate, scale, rotate, skew, and matrix transforms project
 client geometry after Taffy layout. Hit boxes retain the transformed polygon so
