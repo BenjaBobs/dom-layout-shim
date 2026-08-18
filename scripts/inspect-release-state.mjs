@@ -5,6 +5,7 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
 const packageName = packageJson.name
 const version = packageJson.version
 const tag = `v${version}`
+const currentSha = process.env.GITHUB_SHA ?? ''
 
 if (packageJson.private || version === '0.0.0') {
   writeOutputs({
@@ -14,6 +15,7 @@ if (packageJson.private || version === '0.0.0') {
     should_run: false,
     should_tag: false,
     tag,
+    tag_sha: currentSha,
     version,
   })
   process.exit()
@@ -29,6 +31,8 @@ if (registryResponse.status !== 200 && registryResponse.status !== 404) {
 }
 
 const shouldPublish = registryResponse.status === 404
+const publishedPackage = shouldPublish ? undefined : await registryResponse.json()
+const tagSha = publishedPackage?.gitHead ?? currentSha
 const repository = process.env.GITHUB_REPOSITORY
 const githubToken = process.env.GITHUB_TOKEN
 
@@ -76,6 +80,7 @@ writeOutputs({
   should_run: shouldPublish || shouldRelease,
   should_tag: shouldTag,
   tag,
+  tag_sha: tagSha,
   version,
 })
 
