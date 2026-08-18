@@ -75,7 +75,39 @@
         },
         {
           "kind": "limitation",
-          "text": "Rotation, skew, `matrix()`, perspective, and 3D transform functions remain unsupported and route through the configured unsupported CSS policy."
+          "text": "Perspective and non-zero 3D transform functions remain unsupported and route through the configured unsupported CSS policy."
+        }
+      ]
+    },
+    {
+      "id": "affine-transform-functions",
+      "description": "Rotation, skew, and matrix functions project client geometry and polygonal hit regions.",
+      "properties": [
+        "transform"
+      ],
+      "syntax": [
+        "rotate(<angle>)",
+        "skew(<angle>, <angle>?)",
+        "skewX(<angle>)",
+        "skewY(<angle>)",
+        "matrix(<number>{6})",
+        "translateZ(0)"
+      ],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": [
+          "transform"
+        ]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Bounding rectangles and point queries use the transformed quadrilateral, so empty corners of a rotated bounding rectangle do not become false hit targets."
+        },
+        {
+          "kind": "behavior-quirk",
+          "text": "`translateZ(0)` is accepted as a two-dimensional identity transform because the engine does not model compositing layers."
         }
       ]
     },

@@ -65,6 +65,9 @@ export type TableBorderSpacing = {
 export type SupportedTransform =
   | { type: 'translate'; x: SupportedDimension; y: SupportedDimension }
   | { type: 'scale'; x: number; y: number }
+  | { type: 'rotate'; radians: number }
+  | { type: 'skew'; xRadians: number; yRadians: number }
+  | { type: 'matrix'; a: number; b: number; c: number; d: number; e: number; f: number }
 
 export type TransformOrigin = {
   x: SupportedDimension

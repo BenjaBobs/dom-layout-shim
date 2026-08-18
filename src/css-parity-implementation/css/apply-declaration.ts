@@ -1933,8 +1933,54 @@ function parseTransformFunction(name: string, value: string): SupportedTransform
       const y = parseFiniteNumber(parts[0] ?? '')
       return parts.length === 1 && y !== undefined ? { type: 'scale', x: 1, y } : undefined
     }
+    case 'rotate': {
+      const radians = parseAngle(parts[0] ?? '')
+      return parts.length === 1 && radians !== undefined ? { type: 'rotate', radians } : undefined
+    }
+    case 'skew': {
+      const xRadians = parseAngle(parts[0] ?? '')
+      const yRadians = parts.length === 1 ? 0 : parseAngle(parts[1] ?? '')
+      return parts.length <= 2 && xRadians !== undefined && yRadians !== undefined
+        ? { type: 'skew', xRadians, yRadians }
+        : undefined
+    }
+    case 'skewx': {
+      const xRadians = parseAngle(parts[0] ?? '')
+      return parts.length === 1 && xRadians !== undefined
+        ? { type: 'skew', xRadians, yRadians: 0 }
+        : undefined
+    }
+    case 'skewy': {
+      const yRadians = parseAngle(parts[0] ?? '')
+      return parts.length === 1 && yRadians !== undefined
+        ? { type: 'skew', xRadians: 0, yRadians }
+        : undefined
+    }
+    case 'matrix': {
+      const values = parts.map(parseFiniteNumber)
+      return values.length === 6 && values.every((part) => part !== undefined)
+        ? { type: 'matrix', a: values[0]!, b: values[1]!, c: values[2]!, d: values[3]!, e: values[4]!, f: values[5]! }
+        : undefined
+    }
+    case 'translatez':
+      return parts.length === 1 && parsePxLength(parts[0] ?? '') === 0
+        ? { type: 'translate', x: 0, y: 0 }
+        : undefined
     default:
       return undefined
+  }
+}
+
+function parseAngle(value: string): number | undefined {
+  const match = /^(-?\d+(?:\.\d+)?)(deg|grad|rad|turn)$/.exec(value)
+  if (!match) return value === '0' ? 0 : undefined
+  const amount = Number(match[1])
+  switch (match[2]) {
+    case 'deg': return amount * Math.PI / 180
+    case 'grad': return amount * Math.PI / 200
+    case 'rad': return amount
+    case 'turn': return amount * Math.PI * 2
+    default: return undefined
   }
 }
 

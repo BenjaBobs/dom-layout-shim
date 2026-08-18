@@ -167,3 +167,30 @@ it('individual translate and scale properties compose before transform functions
     ],
   })
 })
+
+it('rotation, skew, and matrix transforms project geometry and precise hit regions', async () => {
+  await expectChromiumParity({
+    viewport: { width: 500, height: 400 },
+    html: `
+      <style>
+        body { margin: 0; }
+        #underlay { position: absolute; inset: 0; }
+        .box { position: absolute; width: 100px; height: 100px; transform-origin: center; }
+        #rotated { left: 100px; top: 100px; transform: rotate(45deg) translateZ(0); }
+        #skewed { left: 260px; top: 80px; transform: skewX(15deg); }
+        #matrix { left: 260px; top: 230px; transform: matrix(1, 0, 0, 1, 20, 10); }
+      </style>
+      <div id="underlay"></div>
+      <div id="rotated" class="box"></div>
+      <div id="skewed" class="box"></div>
+      <div id="matrix" class="box"></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#rotated' },
+      { type: 'rect', selector: '#skewed' },
+      { type: 'rect', selector: '#matrix' },
+      { type: 'point', x: 80, y: 80 },
+      { type: 'point', x: 150, y: 150 },
+    ],
+  })
+})
