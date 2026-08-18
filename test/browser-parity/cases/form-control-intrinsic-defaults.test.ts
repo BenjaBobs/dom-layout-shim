@@ -193,6 +193,7 @@ it('author width and height override form control intrinsic sizes', async () => 
 it('styled flex buttons include text, inline icons, gaps, padding, and borders', async () => {
   await expectChromiumParity({
     viewport: { width: 300, height: 200 },
+    typography: 'deterministic',
     html: `
       <style>
         body { margin: 0; }

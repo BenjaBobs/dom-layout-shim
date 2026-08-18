@@ -65,7 +65,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Styled flex buttons retain deterministic profile-backed anonymous inner spacing while authored inline icons and gaps contribute to the outer intrinsic width."
+          "text": "Styled flex buttons replace native inline padding with authored padding while inline icons and gaps contribute to the outer intrinsic width."
         }
       ]
     },
