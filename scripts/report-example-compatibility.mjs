@@ -2,7 +2,8 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { preview } from 'vite'
-import { compareCompatibilityRuns, runCompatibilityScenario } from './example-compatibility-core.mjs'
+import { cssSupportInventory } from '../dist/index.js'
+import { compareCompatibilityRuns, layoutStyleProperties, runCompatibilityScenario } from './example-compatibility-core.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve(root, '.playwright-browsers')
@@ -66,7 +67,7 @@ async function reportExample(example, definition) {
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
       },
       async capture(step) {
-        return page.evaluate(({ id, label, observe }) => {
+        return page.evaluate(({ step: { id, label, observe }, layoutStyleProperties }) => {
           const identify = (element) => {
             if (!element) return null
             const keyed = element.closest?.('[data-layout-key]')
@@ -80,14 +81,45 @@ async function reportExample(example, definition) {
             if (!element) continue
             const rect = element.getBoundingClientRect()
             const style = getComputedStyle(element)
+            const parentRect = element.parentElement?.getBoundingClientRect()
+            const centerX = rect.left + rect.width / 2
+            const centerY = rect.top + rect.height / 2
+            const ancestors = []
+            for (let ancestor = element.parentElement; ancestor && ancestors.length < 8; ancestor = ancestor.parentElement) {
+              const ancestorRect = ancestor.getBoundingClientRect()
+              ancestors.push({
+                element: identify(ancestor),
+                rect: { x: round(ancestorRect.x), y: round(ancestorRect.y), width: round(ancestorRect.width), height: round(ancestorRect.height) },
+              })
+            }
             elements[selector] = {
               rect: { x: round(rect.x), y: round(rect.y), width: round(rect.width), height: round(rect.height) },
+              relativeRect: {
+                x: round(rect.x - (parentRect?.x ?? 0)),
+                y: round(rect.y - (parentRect?.y ?? 0)),
+                width: round(rect.width),
+                height: round(rect.height),
+              },
+              parent: identify(element.parentElement),
+              ancestors,
+              layoutStyles: Object.fromEntries(layoutStyleProperties.map((property) => [property, style.getPropertyValue(property)])),
+              text: {
+                characters: element.textContent?.length ?? 0,
+                clientRects: Array.from(element.getClientRects()).slice(0, 12).map((clientRect) => ({
+                  x: round(clientRect.x), y: round(clientRect.y), width: round(clientRect.width), height: round(clientRect.height),
+                })),
+                fontFamily: style.fontFamily,
+                fontSize: style.fontSize,
+                fontWeight: style.fontWeight,
+                lineHeight: style.lineHeight,
+              },
               visible: style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0,
-              centerHit: identify(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)),
+              centerHit: identify(document.elementFromPoint(centerX, centerY)),
+              centerHitStack: document.elementsFromPoint(centerX, centerY).slice(0, 8).map(identify),
             }
           }
           return { id, label, elements }
-        }, step)
+        }, { step, layoutStyleProperties })
       },
     }
     chromiumResult = await runCompatibilityScenario(driver, scenario)
@@ -102,7 +134,7 @@ async function reportExample(example, definition) {
     chromiumVersion,
     viewport: { width: 1280, height: 720 },
     geometryMatchThresholdPx: 1,
-  })
+  }, cssSupportInventory)
   const reportPath = resolve(exampleRoot, 'compatibility-report.json')
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`)
   printSummary(report, reportPath)

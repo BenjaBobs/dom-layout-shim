@@ -107,7 +107,7 @@ function renderExamplesPage(source, reports) {
       <div class="report-metrics">
         <div><strong>${formatPercentage(report.summary.coverage)}</strong><span>Elements captured in both environments</span></div>
         <div><strong>${report.steps.length}</strong><span>Interaction checkpoints</span></div>
-        <div><strong>${report.summary.discrepancies}</strong><span>Recorded differences</span></div>
+        <div><strong>${report.summary.uniqueDiscrepancies ?? report.summary.discrepancies}</strong><span>Unique difference signatures</span></div>
       </div>
       <div class="report-links">
         <a class="report-action primary" href="./examples/${encodeURIComponent(example)}/" target="_blank" rel="noopener">Launch ${escapeHtml(profile.library)}</a>
@@ -137,6 +137,8 @@ function renderExamplesPage(source, reports) {
           </details>
         `).join('')}
       </div>
+      ${renderDiagnosticPriorities(report)}
+      ${renderUnsupportedCss(report)}
     </article>
   `).join('')
 
@@ -191,6 +193,17 @@ function renderExamplesPage(source, reports) {
       .discrepancy-kind { padding: .12rem .4rem; border-radius: 999px; background: color-mix(in srgb, var(--metric-color) 16%, transparent); color: var(--metric-color); font-size: .68rem; font-weight: 700; text-transform: uppercase; }
       .discrepancy-values { color: var(--muted); }
       .discrepancy-list code { overflow-wrap: anywhere; }
+      .diagnostic-summary { margin-top: 1.25rem; }
+      .diagnostic-summary > summary { cursor: pointer; color: var(--text); font-weight: 700; }
+      .diagnostic-summary > summary:hover { color: var(--brand); }
+      .priority-list { display: grid; gap: .45rem; margin: .7rem 0 0; padding: 0; list-style: none; }
+      .priority-list li { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; gap: .65rem; align-items: baseline; padding: .55rem .65rem; border-radius: 7px; background: var(--bg); font-size: .8rem; }
+      .priority-list small { color: var(--muted); }
+      .priority-badge { padding: .12rem .4rem; border-radius: 999px; background: color-mix(in srgb, var(--brand) 13%, transparent); color: var(--brand); font-size: .66rem; font-weight: 700; text-transform: uppercase; }
+      .unsupported-property { display: grid; min-width: 0; gap: .18rem; }
+      .unsupported-property > code { width: fit-content; }
+      .unsupported-property small { overflow-wrap: anywhere; }
+      .unsupported-property b { color: var(--text); font-weight: 600; }
       @media (max-width: 560px) {
         .compatibility-heading { align-items: stretch; flex-direction: column; }
         .agreement-score { text-align: left; }
@@ -200,6 +213,50 @@ function renderExamplesPage(source, reports) {
       }
     `,
   }
+}
+
+function renderDiagnosticPriorities(report) {
+  const groups = report.discrepancyGroups ?? []
+  if (groups.length === 0) return ''
+  return `<details class="diagnostic-summary">
+    <summary>Most repeated layout differences</summary>
+    <ul class="priority-list">${groups.slice(0, 8).map((group) => `<li>
+      <span class="priority-badge">${escapeHtml(group.category)}${group.field ? ` · ${escapeHtml(group.field)}` : ''}</span>
+      <span><code>${escapeHtml(group.selector)}</code>${group.scope ? ` <small>${escapeHtml(group.scope)}</small>` : ''}</span>
+      <small>${group.occurrences} checkpoint${group.occurrences === 1 ? '' : 's'}</small>
+    </li>`).join('')}</ul>
+  </details>`
+}
+
+function renderUnsupportedCss(report) {
+  const properties = report.unsupportedCss?.properties ?? []
+  if (properties.length === 0) return ''
+  const actionable = properties.filter((property) => property.priority !== 'visual-or-inert')
+  return `<details class="diagnostic-summary">
+    <summary>Unsupported CSS observed (${properties.length} properties)</summary>
+    <p class="report-meta">Ordered by likely layout impact and how often declarations were encountered. Computed values help identify fallback declarations that did not win the cascade.</p>
+    <ul class="priority-list">${actionable.slice(0, 12).map((property) => `<li>
+      <span class="priority-badge">${escapeHtml((property.priority ?? 'unclassified').replaceAll('-', ' '))}</span>
+      <span class="unsupported-property"><code>${escapeHtml(property.property)}</code>${renderCssValueSummary(property)}</span>
+      <small>${property.occurrences} occurrence${property.occurrences === 1 ? '' : 's'}</small>
+    </li>`).join('')}</ul>
+  </details>`
+}
+
+function renderCssValueSummary(property) {
+  const readableValues = property.values.filter((value) => !looksLikeSerializedSyntax(value))
+  const opaqueCount = property.values.length - readableValues.length
+  const computedValues = property.computedValues ?? []
+  const parts = []
+  if (readableValues.length > 0) parts.push(`<small><b>Authored:</b> ${escapeHtml(readableValues.slice(0, 3).join(', '))}${readableValues.length > 3 ? '…' : ''}</small>`)
+  if (computedValues.length > 0) parts.push(`<small><b>Computed:</b> ${escapeHtml(computedValues.slice(0, 3).join(', '))}${computedValues.length > 3 ? '…' : ''}</small>`)
+  if (opaqueCount > 0) parts.push(`<small>${opaqueCount} complex parsed value${opaqueCount === 1 ? '' : 's'} available in the JSON report</small>`)
+  return parts.join('')
+}
+
+function looksLikeSerializedSyntax(value) {
+  const trimmed = value.trim()
+  return (trimmed.startsWith('{') || trimmed.startsWith('[')) && trimmed.includes('"type"')
 }
 
 async function hydrateSetupMarkdown(example) {

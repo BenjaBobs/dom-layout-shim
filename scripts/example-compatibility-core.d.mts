@@ -23,7 +23,13 @@ export type ScenarioDriver = {
   capture(step: ScenarioStep): Promise<unknown>
 }
 
-export function runCompatibilityScenario(driver: ScenarioDriver, scenario: CompatibilityScenario): Promise<unknown>
+export type CompatibilityRun = {
+  scenario: string
+  checkpoints: unknown[]
+}
+
+export function runCompatibilityScenario(driver: ScenarioDriver, scenario: CompatibilityScenario): Promise<CompatibilityRun>
 export function createDomDriver(document: Document): ScenarioDriver
 export function captureDocument(document: Document, step: ScenarioStep): unknown
-export function compareCompatibilityRuns(example: string, scenario: CompatibilityScenario, chromium: unknown, engine: unknown, metadata?: object): unknown
+export const layoutStyleProperties: readonly string[]
+export function compareCompatibilityRuns(example: string, scenario: CompatibilityScenario, chromium: unknown, engine: unknown, metadata?: object, supportInventory?: readonly object[]): unknown

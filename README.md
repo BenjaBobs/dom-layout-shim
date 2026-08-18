@@ -157,9 +157,11 @@ console.log(summary.unsupportedDeclarationCount)
 ```
 
 The count represents unique unsupported combinations of property, value, and
-reason. `summary.declarations` contains stable, sorted details and the source
-types where each declaration was encountered. Call `reporter.reset()` between
-independent suites.
+reason. `summary.declarations` contains stable, sorted details, occurrence
+counts, source and selector types, affected elements, and the browser-like
+computed values observed when the warning was collected. These extra fields
+help separate active layout inputs from repeated or superseded fallback rules.
+Call `reporter.reset()` between independent suites.
 
 Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
 `'ignore'` to deliberately suppress unsupported declarations. Decisions can

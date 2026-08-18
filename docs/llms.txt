@@ -110,8 +110,10 @@ records its supported workflow and known library-specific limitations.
 Chromium and happy-dom with DOM Layout Shim, writing a structured
 `compatibility-report.json` for each UI-library example. Reports include
 observation coverage, agreement percentages for geometry, visibility, and hit
-testing, and raw discrepancies. Differences are non-gating; inability to run or
-capture the scenario is an infrastructure error.
+testing, repeated discrepancy groups, stability, diagnostic style and hit-stack
+comparisons, and unsupported CSS grouped by likely layout impact. Differences
+are non-gating; inability to run or capture the scenario is an infrastructure
+error.
 
 ## Source documentation
 

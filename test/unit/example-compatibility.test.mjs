@@ -34,11 +34,14 @@ describe('example compatibility reporting', () => {
     const report = compareCompatibilityRuns('example', scenario, chromium, engine)
 
     expect(report.summary.discrepancies).toBe(3)
+    expect(report.summary.uniqueDiscrepancies).toBe(3)
     expect(report.steps[0].scores).toEqual({
       coverage: 100,
       geometry: 50,
       visibility: 100,
       hitTesting: 0,
+      hitStack: 0,
+      styleInputs: 100,
       overall: 50,
     })
     expect(report.steps[0].discrepancies.map(({ category }) => category)).toEqual([
@@ -46,5 +49,8 @@ describe('example compatibility reporting', () => {
       'geometry',
       'hit-testing',
     ])
+    expect(report.schemaVersion).toBe(2)
+    expect(report.discrepancyGroups).toHaveLength(3)
+    expect(report.steps[0].diagnostics.hitStackDifferences).toHaveLength(1)
   })
 })

@@ -276,9 +276,10 @@ compatibility limitations alongside the working scenario.
 
 Run `pnpm run examples:compatibility` to execute every named checkpoint in both
 Chromium and happy-dom with the shim. The command reports observation coverage,
-agreement by geometry, visibility, and hit testing, and the raw differences. An
-ordinary difference does not fail the command; only failure to execute or
-capture the report does.
+agreement by geometry, visibility, and hit testing, repeated difference groups,
+stability, computed layout inputs, hit-test stacks, and unsupported CSS observed
+on the example elements. An ordinary difference does not fail the command; only
+failure to execute or capture the report does.
 
 ## Use it in a test lifecycle
 
