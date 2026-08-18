@@ -6,6 +6,7 @@ import { createDomDriver, runCompatibilityScenario } from '../../../scripts/exam
 import type { ScenarioAction } from '../../../scripts/example-compatibility-core.mjs'
 import { scenario } from '../compatibility/scenario.mjs'
 import { TaskWorkspace } from '../src/task-workspace.tsx'
+import { unsupportedCssReporter } from './setup.ts'
 
 const output = process.env.EXAMPLE_COMPATIBILITY_ENGINE_OUTPUT
 
@@ -29,7 +30,10 @@ it.skipIf(!output)('captures the full Material UI compatibility scenario', async
       await act(async () => dom.settle())
     },
   }
-  const result = await runCompatibilityScenario(driver, scenario)
+  const result = {
+    ...await runCompatibilityScenario(driver, scenario),
+    unsupportedCss: unsupportedCssReporter.getSummary(),
+  }
   await writeFile(output!, JSON.stringify(result, null, 2))
   await act(async () => root.unmount())
-})
+}, 15_000)
