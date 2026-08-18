@@ -9,7 +9,7 @@ const rules = [
   { match: prefix('test/unit/'), scopes: ['package'] },
   { match: prefix('test/bench/'), scopes: ['package'] },
   { match: prefix('test/browser-parity/'), scopes: ['parity'] },
-  { match: prefix('examples/'), scopes: ['package'] },
+  { match: prefix('examples/'), scopes: ['package', 'docs'] },
   { match: exact('vitest.config.ts'), scopes: ['package'] },
   { match: exact('vitest.browser-parity.config.ts'), scopes: ['parity'] },
   { match: oneOf('package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'), scopes: ['package', 'parity'] },

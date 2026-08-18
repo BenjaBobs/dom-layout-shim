@@ -88,6 +88,17 @@ normal flow while their visual geometry, descendants, and hit targets move
 together. They stop at the containing-block edge and apply to ordinary boxes
 and simple table parts.
 
+## UI library examples
+
+The documentation site hosts matching Material UI and Ant Design task
+workspaces at `examples.html`. Their happy-dom tests attach the public layout
+shim and exercise geometry-derived pointer targets, constrained scrolling,
+portalled menus, modal blocking, and invalidation after DOM changes.
+
+These are integration examples, not substitutes for exact Chromium parity
+fixtures. Each app includes a machine-readable `compatibility.json` report that
+records its supported workflow and known library-specific limitations.
+
 ## Source documentation
 
 - Repository and README: https://github.com/BenjaBobs/dom-layout-shim

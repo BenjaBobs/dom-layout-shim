@@ -23,3 +23,20 @@ pnpm run examples:check
 An example should provide `build`, `typecheck`, and `test` scripts. Keep
 library-specific setup and compatibility expectations in the example that owns
 them. Examples must not import from the root package's `src/` directory.
+
+## UI-library compatibility scenario
+
+Material UI and Ant Design implement the same task-workspace workflow without
+sharing application components. Each application uses its library idiomatically
+and covers a scrollable task list, portalled action menu, confirmation dialog and
+backdrop, working status filters, task creation and deletion, and
+coordinate-derived hit testing.
+
+Example tests own realistic consumer workflows. Exact browser-observable CSS
+semantics remain in `test/browser-parity/`; examples should not duplicate those
+fixtures. Known compatibility gaps must use narrow expectations and explain their
+behavioral impact rather than disabling an entire example.
+
+Hosted examples are built into `.site/examples/<name>/` by `pnpm run
+docs:generate`. The browser-hosted pages demonstrate the interaction, while the
+happy-dom tests are the evidence that DOM Layout Shim supports it.

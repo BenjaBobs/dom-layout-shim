@@ -38,11 +38,11 @@ describe('affected scope classification', () => {
     })
   })
 
-  it('runs package checks for example changes', () => {
+  it('runs package and documentation checks for hosted example changes', () => {
     expect(classifyAffectedScopes(['examples/basic/test/app.test.ts'])).toMatchObject({
       package: true,
       parity: false,
-      docs: false,
+      docs: true,
       release: false,
     })
   })

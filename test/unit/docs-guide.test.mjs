@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { guideLayout, renderMarkdownPage } from '../../docs-engine/render-md.mjs'
+import { articleLayout, guideLayout, renderMarkdownPage } from '../../docs-engine/render-md.mjs'
 
 const renderGuide = (source) => renderMarkdownPage(source, guideLayout)
 
@@ -37,6 +37,15 @@ describe('Markdown guide rendering', () => {
 
     expect(rendered.title).toBe('Test guide')
     expect(rendered.body).toContain('<h2>First step</h2>')
+  })
+
+  it('renders standalone authored documentation pages', () => {
+    const rendered = renderMarkdownPage(guide, articleLayout)
+
+    expect(rendered.title).toBe('Test guide')
+    expect(rendered.description).toBe('Test description')
+    expect(rendered.body).toContain('<article class="article">')
+    expect(rendered.body).toContain('<h1>Test title</h1>')
   })
 
   it('renders metadata, the hero, navigation, and numbered sections', () => {

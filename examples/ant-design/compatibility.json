@@ -1,0 +1,25 @@
+{
+  "library": "Ant Design",
+  "package": "antd",
+  "scenario": "task-workspace",
+  "supported": [
+    "task filtering and empty states",
+    "task creation with required-title validation",
+    "scrollable task layout",
+    "modal dismissal from the mask region",
+    "modal mask blocking of underlying controls",
+    "dynamic task deletion and layout invalidation"
+  ],
+  "limitations": [
+    {
+      "capability": "dropdown anchoring",
+      "impact": "The popup alignment helper places the portalled menu far outside the configured viewport.",
+      "test": "test/task-workspace.test.tsx"
+    },
+    {
+      "capability": "modal internal stacking",
+      "impact": "The flat stacking model places the mask above the dialog action buttons.",
+      "test": "test/task-workspace.test.tsx"
+    }
+  ]
+}

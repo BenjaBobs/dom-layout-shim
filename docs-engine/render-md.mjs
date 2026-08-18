@@ -49,6 +49,15 @@ export function guideLayout({ attributes, markdown, tokens }) {
   }
 }
 
+export function articleLayout({ attributes, markdown, tokens }) {
+  return {
+    title: requiredAttribute(attributes, 'title'),
+    description: requiredAttribute(attributes, 'description'),
+    pageStyles: articleStyles,
+    body: `<main><article class="article">${markdown.renderer.render(tokens, markdown.options, {})}</article></main>`,
+  }
+}
+
 function parseFrontmatter(source) {
   const match = /^---\n([\s\S]*?)\n---\n+([\s\S]*)$/.exec(source)
   if (!match) throw new Error('Guide requires frontmatter')
@@ -108,4 +117,16 @@ const guideStyles = `
   pre { margin:18px 0; }
   footer { margin-top:40px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
   @media (max-width:800px) { .hero,.guide { grid-template-columns:1fr; } .toc { position:static; } main { padding-top:42px; } }
+`
+
+const articleStyles = `
+  main { width:min(1080px,calc(100% - 40px)); margin:auto; padding:56px 0 80px; }
+  .article > h1 { max-width:780px; margin:0 0 18px; font-size:clamp(38px,6vw,60px); line-height:1.05; letter-spacing:-.035em; }
+  .article > p:first-of-type { max-width:760px; color:var(--muted); font-size:19px; }
+  .article h2 { margin:48px 0 14px; font-size:28px; letter-spacing:-.02em; }
+  .article p,.article li { max-width:800px; }
+  .article table { width:100%; margin:20px 0; border-collapse:collapse; background:var(--panel); }
+  .article th,.article td { padding:11px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  .article th { color:var(--muted); font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
+  .article a[href^="./examples/"] { display:inline-flex; margin:8px 8px 8px 0; padding:9px 14px; border-radius:8px; background:var(--brand); color:var(--bg); font-weight:700; text-decoration:none; }
 `
