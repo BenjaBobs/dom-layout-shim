@@ -56,8 +56,8 @@ describe('generated documentation experience', () => {
     expect(generator).toContain('class="score score-geometry"')
     expect(generator).toContain('docs/layout-shim-setup.md')
     expect(generator).toContain('class="setup-guide"')
-    expect(generator).toContain('extractDocumentationRegion(file, region, relativePath)')
-    expect(generator).toContain('View source:')
+    expect(generator).toContain("region.split('+').map((name) => extractDocumentationRegion(file, name, relativePath))")
+    expect(generator).toContain('source="${githubUrl}"')
   })
 
   it('renders support dimensions, semantic notes, inline code, and summary filters', async () => {

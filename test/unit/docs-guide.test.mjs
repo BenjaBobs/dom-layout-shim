@@ -33,6 +33,16 @@ describe('Markdown guide rendering', () => {
     expect(renderMarkdownFragment('Use `attachLayoutEngine`.')).toContain('<code>attachLayoutEngine</code>')
   })
 
+  it('renders fenced source as a reusable linked code box', () => {
+    const rendered = renderMarkdownFragment('```ts title="vitest.config.ts" source="https://example.test/vitest.config.ts" start="12"\nconst value = true\n```')
+
+    expect(rendered).toContain('<figure class="code-box">')
+    expect(rendered).toContain('<span class="code-language" aria-hidden="true">TS</span>')
+    expect(rendered).toContain('<a href="https://example.test/vitest.config.ts">vitest.config.ts</a>')
+    expect(rendered).toContain('<button class="code-copy" type="button" aria-label="Copy code">')
+    expect(rendered).toContain('<code data-language="ts" data-start-line="12">const value = true')
+  })
+
   it('lets another page layout reuse parsed Markdown and frontmatter', () => {
     const rendered = renderMarkdownPage(guide, ({ attributes, markdown, tokens }) => ({
       title: attributes.title,
@@ -71,7 +81,8 @@ describe('Markdown guide rendering', () => {
   it('labels code and escapes source HTML', () => {
     const rendered = renderGuide(guide)
 
-    expect(rendered.body).toContain('<code data-language="ts">')
+    expect(rendered.body).toContain('<code data-language="ts" data-start-line="1">')
+    expect(rendered.body).toContain('<figure class="code-box">')
     expect(rendered.body).toContain('&lt;button&gt;')
     expect(rendered.body).not.toContain("const value = '<button>'")
   })

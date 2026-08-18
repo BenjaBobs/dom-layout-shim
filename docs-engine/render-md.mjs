@@ -3,8 +3,22 @@ import MarkdownIt from 'markdown-it'
 const markdown = new MarkdownIt({ html: false, linkify: true })
 markdown.renderer.rules.fence = (tokens, index) => {
   const token = tokens[index]
-  const language = token.info.trim().split(/\s+/)[0] || 'text'
-  return `<pre><code data-language="${markdown.utils.escapeHtml(language)}">${markdown.utils.escapeHtml(token.content)}</code></pre>`
+  const [language = 'text'] = token.info.trim().split(/\s+/)
+  const metadata = Object.fromEntries([...token.info.matchAll(/([a-z]+)="([^"]*)"/g)].map((match) => [match[1], match[2]]))
+  return renderCodeBox(token.content, { language, title: metadata.title, source: metadata.source, startLine: metadata.start, lineRanges: metadata.lines })
+}
+
+export function renderCodeBox(source, { language = 'text', title, source: sourceUrl, startLine = 1, lineRanges } = {}) {
+  const escapedLanguage = markdown.utils.escapeHtml(language)
+  const label = title || languageLabel(language)
+  const escapedLabel = markdown.utils.escapeHtml(label)
+  const heading = sourceUrl
+    ? `<a href="${markdown.utils.escapeHtml(sourceUrl)}">${escapedLabel}</a>`
+    : `<span>${escapedLabel}</span>`
+  const parsedStartLine = Number.parseInt(startLine, 10)
+  const safeStartLine = Number.isSafeInteger(parsedStartLine) && parsedStartLine > 0 ? parsedStartLine : 1
+  const ranges = lineRanges ? ` data-line-ranges="${markdown.utils.escapeHtml(lineRanges)}"` : ''
+  return `<figure class="code-box"><figcaption><span class="code-language" aria-hidden="true">${markdown.utils.escapeHtml(languageBadge(language))}</span>${heading}<button class="code-copy" type="button" aria-label="Copy code"><span>Copy</span></button></figcaption><pre><code data-language="${escapedLanguage}" data-start-line="${safeStartLine}"${ranges}>${markdown.utils.escapeHtml(source)}</code></pre></figure>`
 }
 
 export function renderMarkdownPage(source, layout) {
@@ -110,6 +124,14 @@ function paragraphContent(tokens) {
 function requiredAttribute(attributes, name) {
   if (!attributes[name]) throw new Error(`Guide frontmatter requires ${name}`)
   return attributes[name]
+}
+
+function languageBadge(language) {
+  return ({ shell: 'SH', sh: 'SH', bash: 'SH', typescript: 'TS', ts: 'TS', tsx: 'TS', javascript: 'JS', js: 'JS', jsx: 'JS', css: 'CSS', html: 'HTML', json: '{}', text: 'TXT' })[language.toLowerCase()] || language.slice(0, 4).toUpperCase()
+}
+
+function languageLabel(language) {
+  return ({ shell: 'Shell', sh: 'Shell', bash: 'Shell', typescript: 'TypeScript', ts: 'TypeScript', tsx: 'TypeScript React', javascript: 'JavaScript', js: 'JavaScript', jsx: 'JavaScript React', css: 'CSS', html: 'HTML', json: 'JSON', text: 'Text' })[language.toLowerCase()] || language
 }
 
 const guideStyles = `

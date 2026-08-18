@@ -97,10 +97,56 @@ function executePageScript(next) {
   document.body.append(script)
 }
 
-function enhanceCode(root) {
+export function enhanceCode(root) {
   for (const code of root.querySelectorAll('code[data-language]')) {
-    code.innerHTML = highlight(code.textContent ?? '', code.dataset.language ?? '')
+    const source = (code.textContent ?? '').replace(/\n$/, '')
+    const language = code.dataset.language ?? ''
+    const startLine = Number.parseInt(code.dataset.startLine ?? '1', 10) || 1
+    const lineNumbers = expandLineRanges(code.dataset.lineRanges)
+    const copiedSource = source.replaceAll('__DOCS_CODE_SKIP__', '// … source lines omitted …')
+    code.classList.add('code-lines')
+    let sourceLineIndex = 0
+    code.innerHTML = source.split('\n').map((line, index) => {
+      if (line === '__DOCS_CODE_SKIP__') return '<span class="code-skip" aria-label="Source lines omitted"><span>⋮</span></span>'
+      const lineNumber = lineNumbers[sourceLineIndex] ?? startLine + index
+      sourceLineIndex += 1
+      return `<span class="code-line" data-line-number="${lineNumber}"><span class="line-source">${highlight(line, language) || ' '}</span></span>`
+    }).join('')
+    const button = code.closest('.code-box')?.querySelector('.code-copy')
+    button?.addEventListener('click', async () => {
+      await copyText(copiedSource)
+      button.dataset.copied = ''
+      button.querySelector('span').textContent = 'Copied'
+      setTimeout(() => {
+        delete button.dataset.copied
+        button.querySelector('span').textContent = 'Copy'
+      }, 1_500)
+    }, { once: false })
   }
+}
+
+function expandLineRanges(value = '') {
+  return value.split(',').flatMap((range) => {
+    const [start, end = start] = range.split('-').map(Number)
+    if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 1 || end < start) return []
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index)
+  })
+}
+
+async function copyText(source) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(source)
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = source
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.append(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  textarea.remove()
 }
 
 export function enhanceExternalLinks(root = document) {

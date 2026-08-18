@@ -213,11 +213,14 @@ async function hydrateSetupMarkdown(example) {
     if (!sourcePath.startsWith(`${exampleRoot}${sep}`)) throw new Error(`Setup source escapes ${example}: ${relativePath}`)
 
     const file = await readFile(sourcePath, 'utf8')
-    const code = extractDocumentationRegion(file, region, relativePath)
-    const githubUrl = `https://github.com/BenjaBobs/dom-layout-shim/blob/main/examples/${encodeURIComponent(example)}/${relativePath}`
+    const excerpts = region.split('+').map((name) => extractDocumentationRegion(file, name, relativePath))
+    const code = excerpts.map((excerpt) => excerpt.code).join('\n__DOCS_CODE_SKIP__\n')
+    const lineRanges = excerpts.map(({ code, startLine }) => `${startLine}-${startLine + code.split('\n').length - 1}`).join(',')
+    const startLine = excerpts[0].startLine
+    const githubUrl = `https://github.com/BenjaBobs/dom-layout-shim/blob/main/examples/${encodeURIComponent(example)}/${relativePath}#L${startLine}`
     hydrated = hydrated.replace(
       match[0],
-      `\`\`\`${language}\n${code}\n\`\`\`\n\n[View source: \`${relativePath}\`](${githubUrl})`,
+      `\`\`\`${language} title="${relativePath}" source="${githubUrl}" start="${startLine}" lines="${lineRanges}"\n${code}\n\`\`\``,
     )
   }
 
@@ -235,7 +238,8 @@ function extractDocumentationRegion(source, region, relativePath) {
   const contentStart = source.indexOf('\n', startIndex) + 1
   const lines = source.slice(contentStart, endIndex).trimEnd().split('\n')
   const indentation = Math.min(...lines.filter((line) => line.trim()).map((line) => line.match(/^\s*/)[0].length))
-  return lines.map((line) => line.slice(indentation)).join('\n')
+  const startLine = source.slice(0, contentStart).split('\n').length
+  return { code: lines.map((line) => line.slice(indentation)).join('\n'), startLine }
 }
 
 function renderDiscrepancy(discrepancy) {
