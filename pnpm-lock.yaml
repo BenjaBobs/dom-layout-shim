@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@chenglou/pretext':
-        specifier: 0.0.8
-        version: 0.0.8
       lightningcss:
         specifier: ^1.33.0
         version: 1.33.0
+      opentype.js:
+        specifier: 2.0.0
+        version: 2.0.0
       taffy-layout:
         specifier: ^2.0.3
         version: 2.0.3
@@ -33,9 +33,6 @@ importers:
       markdown-it:
         specifier: 15.0.0
         version: 15.0.0
-      opentype.js:
-        specifier: 2.0.0
-        version: 2.0.0
       tinybench:
         specifier: ^6.1.2
         version: 6.1.2
@@ -283,9 +280,6 @@ packages:
 
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
-
-  '@chenglou/pretext@0.0.8':
-    resolution: {integrity: sha512-yqm2GMxnPI7VHcHwe84P8ZF0JK/2d2DMKPqMN+s95jQhwDMYYXKVFVJUMEaVWckQStdsjdLav/0Vu+d9YbtGxA==}
 
   '@emotion/babel-plugin@11.13.5':
     resolution: {integrity: sha512-pxHCpT2ex+0q+HH91/zsdHkw/lXd468DIN2zvfvLtPKLLMo6gQj7oLObq8PhkrxOZb/gGCq03S3Z7PDhS8pduQ==}
@@ -2001,8 +1995,6 @@ snapshots:
       fs-extra: 7.0.1
       human-id: 4.2.0
       prettier: 2.8.8
-
-  '@chenglou/pretext@0.0.8': {}
 
   '@emotion/babel-plugin@11.13.5':
     dependencies:

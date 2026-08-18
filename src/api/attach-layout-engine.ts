@@ -2,6 +2,8 @@ import type { WindowLike } from './browser-dom/window-like.ts'
 import { attachToDocument } from './attachment/attach-to-document.ts'
 import { loadTaffyBackend } from '../css-parity-implementation/layout/taffy-layout-source.ts'
 import { normalizeConfig, type LayoutEngineConfig, type Viewport } from './layout-engine-config.ts'
+import { createDefaultTextMeasurer } from './text-measurer.ts'
+import { createDocumentFontTextMeasurer } from '../css-parity-implementation/layout/font-text-measurer.ts'
 
 export type AttachLayoutEngineOptions = LayoutEngineConfig & {
   window: WindowLike
@@ -13,7 +15,12 @@ export type LayoutEngineAttachment = {
 
 export async function attachLayoutEngine(options: AttachLayoutEngineOptions): Promise<LayoutEngineAttachment> {
   const { window, ...config } = options
-  const normalizedConfig = normalizeConfig(config)
+  const textMeasurer = config.textMeasurer ?? await createDocumentFontTextMeasurer(
+    window.document as Document,
+    config.stylesheets ?? [],
+    createDefaultTextMeasurer(),
+  )
+  const normalizedConfig = normalizeConfig({ ...config, textMeasurer })
 
   await loadTaffyBackend()
 

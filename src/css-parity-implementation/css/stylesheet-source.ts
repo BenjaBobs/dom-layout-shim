@@ -15,6 +15,12 @@ export type StyleRule = {
   pseudoElement?: 'before' | 'after'
 }
 
+export type FontFaceRule = {
+  family: string
+  weight: number
+  sources: Array<{ type: 'url'; url: string; format?: string } | { type: 'local'; name: string }>
+}
+
 type DocumentStylesheetSource = {
   element: Element
   sheet: CSSStyleSheet | null
@@ -62,6 +68,98 @@ export function readStyleRules(
   }
 
   return rules
+}
+
+export function readFontFaceRules(
+  document: Document,
+  configuredStylesheets: readonly string[] = [],
+): FontFaceRule[] {
+  const rules: FontFaceRule[] = []
+
+  for (const cssText of configuredStylesheets) {
+    collectFontFaceRules(cssText, document.baseURI, rules)
+  }
+
+  for (const source of documentStylesheetSources(document)) {
+    if (source.sheet?.disabled) continue
+    const cssText = readDocumentStylesheetCssText(source, undefined)
+    if (cssText !== undefined) {
+      collectFontFaceRules(cssText, source.sheet?.href ?? document.baseURI, rules)
+    }
+  }
+
+  for (const sheet of adoptedStylesheets(document)) {
+    if (sheet.disabled) continue
+    const cssText = readCssomRules(sheet, 'adopted stylesheet', undefined)
+    if (cssText !== undefined) collectFontFaceRules(cssText, document.baseURI, rules)
+  }
+
+  return rules
+}
+
+function collectFontFaceRules(cssText: string, baseUrl: string, rules: FontFaceRule[]): void {
+  try {
+    transform({
+      filename: baseUrl,
+      code: Buffer.from(cssText),
+      errorRecovery: true,
+      visitor: {
+        Rule(rule) {
+          if (rule.type === 'font-face') {
+            const parsed = parseFontFaceRule(rule.value, baseUrl)
+            if (parsed) rules.push(parsed)
+          }
+          return []
+        },
+      },
+    })
+  } catch {
+    // The ordinary stylesheet reader reports parse failures through the CSS
+    // policy. Font discovery is deliberately side-effect free.
+  }
+}
+
+function parseFontFaceRule(value: unknown, baseUrl: string): FontFaceRule | undefined {
+  if (!isRecord(value) || !Array.isArray(value.properties)) return undefined
+  let family: string | undefined
+  let weight = 400
+  let sources: FontFaceRule['sources'] = []
+
+  for (const property of value.properties) {
+    if (!isRecord(property) || typeof property.type !== 'string') continue
+    if (property.type === 'font-family' && typeof property.value === 'string') family = property.value
+    if (property.type === 'font-weight' && Array.isArray(property.value)) {
+      const candidate = property.value[0]
+      if (isRecord(candidate) && isRecord(candidate.value) && typeof candidate.value.value === 'number') {
+        weight = candidate.value.value
+      }
+    }
+    if (property.type === 'source' && Array.isArray(property.value)) {
+      sources = property.value.flatMap((source) => parseFontSource(source, baseUrl))
+    }
+  }
+
+  return family && sources.length > 0 ? { family, weight, sources } : undefined
+}
+
+function parseFontSource(source: unknown, baseUrl: string): FontFaceRule['sources'] {
+  if (!isRecord(source)) return []
+  if (source.type === 'local' && typeof source.value === 'string') {
+    return [{ type: 'local', name: source.value }]
+  }
+  if (!isRecord(source.value)) return []
+  if (source.type !== 'url' || !isRecord(source.value.url) || typeof source.value.url.url !== 'string') return []
+
+  let url: string
+  try {
+    url = new URL(source.value.url.url, baseUrl).href
+  } catch {
+    return []
+  }
+  const format = isRecord(source.value.format) && typeof source.value.format.type === 'string'
+    ? source.value.format.type
+    : undefined
+  return [{ type: 'url', url, format }]
 }
 
 export function readCssTextRules(
@@ -383,6 +481,10 @@ function readCssRules(
 
           if (rule.type === 'media') {
             collectMediaRule(rule.value, policy, rules, viewport)
+            return []
+          }
+
+          if (rule.type === 'font-face') {
             return []
           }
 

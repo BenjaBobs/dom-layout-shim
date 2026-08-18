@@ -97,10 +97,11 @@ Cases:
 - Button/label text leaf sizing.
 - Replaced element metadata for images and SVGs.
 
-Status: partially implemented. A deterministic text measurer is configurable,
-the default measurer uses Pretext when canvas measurement is available and falls
-back to deterministic measurement otherwise, text-only leaves can contribute to
-auto height, positioned text-only leaves can use measured auto width/height, and
+Status: partially implemented. A deterministic text measurer is configurable.
+The default attachment path discovers supported initial `@font-face` sources,
+measures registered glyph advances and kerning directly, and falls back to an
+approximation for unmatched families. Text-only leaves can contribute to auto
+height, positioned text-only leaves can use measured auto width/height, and
 replaced elements can use width/height attributes or `data-layout-*` metadata.
 
 ## Phase 6: Taffy Pipeline

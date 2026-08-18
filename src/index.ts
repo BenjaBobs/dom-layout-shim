@@ -44,6 +44,5 @@ export type { HitBox } from './api/hit-box.ts'
 export {
   createDefaultTextMeasurer,
   createDeterministicTextMeasurer,
-  createPretextTextMeasurer,
 } from './api/text-measurer.ts'
 export type { TextMeasureInput, TextMeasureResult, TextMeasurer } from './api/text-measurer.ts'

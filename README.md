@@ -4,9 +4,10 @@ Deterministic layout and hit testing for fast DOM test harnesses.
 
 This package is an early proof of concept. The core is framework agnostic and
 attaches to DOM-like documents such as happy-dom documents. Layout is computed
-through a Taffy-backed pipeline, with text measurement supplied through Pretext
-when the runtime supports canvas measurement. DOM API patching and hit testing
-are derived from the resulting layout snapshot.
+through a Taffy-backed pipeline. At attachment time it discovers supported
+`@font-face` rules and measures text directly from their font data, with a
+deterministic approximation for unmatched families. DOM API patching and hit
+testing are derived from the resulting layout snapshot.
 
 ## Installation
 
@@ -161,6 +162,10 @@ and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
 Text measurement receives inherited numeric `font-weight` and resolved
 `letter-spacing` in addition to family, size, line height, and white-space.
+Static TTF, OTF, and WOFF sources declared through `@font-face` are loaded at
+attachment time and their glyph advances and kerning drive text measurement.
+Data URLs and resolvable URL sources are supported; `local()` and WOFF2 sources
+fall through to the next source or deterministic measurement.
 Supported `text-transform` values (`none`, `uppercase`, `lowercase`, and
 `capitalize`) transform the string passed to intrinsic measurement without
 changing the element's authored `textContent`.
