@@ -21,7 +21,7 @@
       --teal: #087b83;
       --teal-bg: #def4f3;
       --gray-bg: #edf0f3;
-      --claim-bg: #fbfcfd;
+      --claim-bg: #ffffff;
       --heading-text: #394654;
       --chip-text: #34414f;
       --error-line: #e3b4b4;
@@ -47,7 +47,7 @@
         --teal: #72d9dc;
         --teal-bg: #153b3e;
         --gray-bg: #29353b;
-        --claim-bg: #121b20;
+        --claim-bg: #202b30;
         --heading-text: #c7d4da;
         --chip-text: #d6e1e5;
         --error-line: #744244;
@@ -187,8 +187,8 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) auto auto auto auto auto;
-      gap: 10px;
+      grid-template-columns: minmax(280px, 1fr) repeat(4, minmax(120px, max-content)) max-content;
+      gap: 12px;
       align-items: center;
     }
 
@@ -265,8 +265,8 @@
 
     tbody td:nth-child(4) {
       grid-column: 1 / -1;
-      border-top: 1px solid var(--line);
-      background: var(--claim-bg);
+      padding: 4px 10px 10px;
+      background: transparent;
     }
 
     .area-meta,
@@ -370,8 +370,8 @@
     }
 
     .parity-badge {
-      border: 1px solid currentColor;
-      background: transparent;
+      border: 0;
+      background: color-mix(in srgb, currentColor 13%, transparent);
     }
 
     .parity-verified { color: var(--green); }
@@ -428,21 +428,24 @@
 
     .claims {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+      gap: 12px;
       min-width: 0;
     }
 
     .claim {
+      display: flex;
+      flex-direction: column;
       min-width: 0;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
       background: var(--claim-bg);
+      box-shadow: 0 1px 2px color-mix(in srgb, var(--heading-text) 10%, transparent);
     }
 
     .claim-details > summary { cursor: pointer; color: var(--muted); font-weight: 700; }
-    .claim-details[open] > summary { margin-bottom: 10px; }
+    .claim-details[open] > summary { margin-bottom: 12px; }
 
     .claim-head {
       display: flex;
@@ -487,15 +490,9 @@
       background: var(--amber-bg);
     }
 
-    .claim-values-evidence {
-      border-left-color: var(--green);
-      background: var(--green-bg);
-    }
-
     .claim-values-properties .claim-label { color: var(--blue); }
     .claim-values-syntax .claim-label { color: var(--violet); }
     .claim-values-conditions .claim-label { color: var(--amber); }
-    .claim-values-evidence .claim-label { color: var(--green); }
 
     .claim-values .chip {
       max-width: 100%;
@@ -535,8 +532,8 @@
       grid-template-columns: 18px 1fr;
       gap: 8px;
       padding: 9px 10px;
-      border: 1px solid var(--line);
-      border-left-width: 3px;
+      border: 0;
+      border-left: 3px solid var(--line);
       border-radius: 6px;
       background: var(--panel);
     }
@@ -575,7 +572,33 @@
 
     .fixture-evidence {
       display: inline-flex;
+      min-width: 0;
       align-items: stretch;
+    }
+
+    .claim-evidence {
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .claim-evidence-inner {
+      padding: 9px 10px;
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--green-bg) 62%, var(--claim-bg));
+    }
+
+    .claim-evidence .claim-label {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      color: var(--green);
+    }
+
+    .claim-evidence .claim-label svg,
+    .fixture-preview svg {
+      width: 14px;
+      height: 14px;
+      flex: none;
     }
 
     .fixture-preview,
@@ -586,7 +609,23 @@
     }
 
     .fixture-preview {
+      display: inline-flex;
+      min-width: 0;
+      align-items: center;
       border-radius: 5px 0 0 5px;
+      overflow-wrap: anywhere;
+      text-align: left;
+      transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+      white-space: normal;
+    }
+
+    .fixture-preview:hover,
+    .fixture-preview:focus-visible {
+      background: var(--green-bg);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 55%, transparent);
+      color: var(--green);
+      outline: none;
+      transform: translateY(-1px);
     }
 
     .fixture-source-link {
@@ -1150,13 +1189,15 @@
               ${claim.properties?.length ? claimValues('Properties', claim.properties, query) : ''}
               ${claim.syntax?.length ? claimValues('Syntax', claim.syntax, query) : ''}
               ${claim.conditions?.length ? claimValues('Conditions', claim.conditions, query) : ''}
-              ${claim.parity.fixtures.length ? `
-                <div class="claim-section claim-values claim-values-evidence">
-                  <div class="claim-label">Chromium parity evidence</div>
-                  ${fixtureChips(claim.parity.fixtures, query)}
-                </div>
-              ` : ''}
               ${claim.notes.length ? `<div class="claim-section">${notes(claim.notes, query)}</div>` : ''}
+              ${claim.parity.fixtures.length ? `
+                <footer class="claim-evidence">
+                  <div class="claim-evidence-inner">
+                    <div class="claim-label">${testIcon()} Chromium parity tests</div>
+                    ${fixtureChips(claim.parity.fixtures, query)}
+                  </div>
+                </footer>
+              ` : ''}
             </article>
           `).join('')}
           </div>
@@ -1184,19 +1225,23 @@
                 type="button"
                 data-fixture="${escapeHtml(value)}"
                 data-tooltip="Preview this Chromium parity fixture"
-              >${highlight(value, query)}</button>
+              ><span>${highlight(`${value}.test.ts`, query)}</span></button>
               <a
                 class="fixture-source-link"
                 href="${githubFixtureUrl(value)}"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="View ${escapeHtml(value)} source on GitHub"
+                aria-label="View ${escapeHtml(value)}.test.ts source on GitHub"
                 data-tooltip="View source on GitHub"
               >↗</a>
             </span>
           `).join('')}
         </div>
       `
+    }
+
+    function testIcon() {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 3h6M10 3v5l-5.4 9.1A2.6 2.6 0 0 0 6.8 21h10.4a2.6 2.6 0 0 0 2.2-3.9L14 8V3M7.2 15h9.6M9.5 12h5"/></svg>`
     }
 
     function handleFixturePreview(event) {
@@ -1213,7 +1258,7 @@
       const copy = document.getElementById('fixtureDialogCopy')
       fixtureDialogTrigger = trigger
       activeFixture = fixture
-      document.getElementById('fixtureDialogTitle').textContent = label(fixture)
+      document.getElementById('fixtureDialogTitle').textContent = `${fixture}.test.ts`
       document.getElementById('fixtureDialogGithub').href = githubFixtureUrl(fixture)
       status.textContent = 'Loading fixture source…'
       status.hidden = false
