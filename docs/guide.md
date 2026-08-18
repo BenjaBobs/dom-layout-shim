@@ -23,6 +23,12 @@ const target = document.elementFromPoint(
 )
 ```
 
+Wrapped inline content follows the native geometry shape: `getClientRects()`
+returns one rectangle for each line fragment and `getBoundingClientRect()`
+returns the union of those fragments. Stylesheets may target structural and
+state pseudo-classes including `:first-child`, `:nth-child()`, `:last-child`,
+`:hover`, `:focus`, and `:disabled`.
+
 ## Install
 
 Install DOM Layout Shim alongside your DOM implementation. The engine supports

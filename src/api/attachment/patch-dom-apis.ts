@@ -142,6 +142,12 @@ function patchGetBoundingClientRect(prototype: object | undefined): void {
       return attachmentForElement(this).getBoundingClientRect(this)
     },
   })
+  Object.defineProperty(prototype, 'getClientRects', {
+    configurable: true,
+    value(this: Element) {
+      return attachmentForElement(this).getClientRects(this)
+    },
+  })
 }
 
 function patchElementInstanceRects(document: Document): void {

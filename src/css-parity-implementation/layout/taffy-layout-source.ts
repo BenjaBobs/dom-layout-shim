@@ -28,6 +28,7 @@ import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts'
 type TaffyLayoutState = {
   boxes: HitBox[]
   rects: Map<Element, Box>
+  fragmentRects: Map<Element, Box[]>
   layoutRects: Map<Element, Box>
   normalRects: Map<Element, Box>
   clientRects: Map<Element, Box>
@@ -206,6 +207,7 @@ function buildTaffyLayoutTree(
   const state: TaffyLayoutState = {
     boxes: [],
     rects: new Map<Element, Box>(),
+    fragmentRects: new Map<Element, Box[]>(),
     layoutRects: new Map<Element, Box>(),
     normalRects: new Map<Element, Box>(),
     clientRects: new Map<Element, Box>(),
@@ -257,11 +259,13 @@ function collectTaffyLayoutSnapshot(
     false,
     state,
   )
+  recordInlineFragments(document, state)
   applyVisualTransforms(document, state)
 
   return {
     boxes: state.boxes,
     rects: state.rects,
+    fragmentRects: state.fragmentRects,
     layoutRects: state.layoutRects,
     clientRects: state.clientRects,
     elementScrolls: state.elementScrolls,
@@ -269,6 +273,170 @@ function collectTaffyLayoutSnapshot(
     scrollContainers: collectScrollContainers(document, state),
     fixedElements: collectFixedElements(document, state),
   }
+}
+
+function recordInlineFragments(
+  document: Document,
+  state: TaffyLayoutState,
+): void {
+  for (const element of Array.from(document.getElementsByTagName('*'))) {
+    const style = state.styles.get(element)
+
+    if (style?.display !== 'inline' || isHidden(element)) {
+      continue
+    }
+
+    const host = nearestMeasuredAncestor(element, state)
+    const hostBox = host ? state.clientRects.get(host) : undefined
+
+    if (!host || !hostBox || hostBox.width <= 0) {
+      continue
+    }
+
+    const hostStyle = resolveSupportedStyle(host, state)
+    const fullText = normalizeInlineText(host.textContent ?? '', hostStyle.whiteSpace)
+    const targetText = normalizeInlineText(element.textContent ?? '', hostStyle.whiteSpace)
+
+    if (!targetText || !fullText) {
+      continue
+    }
+
+    const rawBefore = textBeforeDescendant(host, element)
+    const normalizedBefore = normalizeInlineText(rawBefore, hostStyle.whiteSpace)
+    const targetStart = Math.min(normalizedBefore.length, fullText.length)
+    const targetEnd = Math.min(targetStart + targetText.length, fullText.length)
+    const maximumWidth = hostStyle.whiteSpace === 'nowrap' || hostStyle.whiteSpace === 'pre'
+      ? Number.MAX_SAFE_INTEGER
+      : hostBox.width
+    const lines = layoutInlineLines(fullText, maximumWidth, hostStyle, state)
+    const fragments: Box[] = []
+    let textOffset = 0
+
+    for (const [lineIndex, line] of lines.entries()) {
+      const lineStart = fullText.indexOf(line, textOffset)
+      const resolvedLineStart = lineStart < 0 ? textOffset : lineStart
+      const lineEnd = resolvedLineStart + line.length
+      const fragmentStart = Math.max(targetStart, resolvedLineStart)
+      const fragmentEnd = Math.min(targetEnd, lineEnd)
+
+      if (fragmentEnd > fragmentStart) {
+        const prefix = fullText.slice(resolvedLineStart, fragmentStart)
+        const text = fullText.slice(fragmentStart, fragmentEnd)
+        const prefixWidth = measureInlineWidth(prefix, hostStyle, state)
+        const width = measureInlineWidth(text, hostStyle, state)
+        fragments.push({
+          x: hostBox.x + prefixWidth,
+          // CSS inline boxes use the font's em box inside the line box. The
+          // deterministic typography profile has no extra ascent/descent
+          // adjustment, so half-leading is split above and below the fragment.
+          y: hostBox.y + lineIndex * hostStyle.lineHeight +
+            (hostStyle.lineHeight - hostStyle.fontSize) / 2,
+          width,
+          height: hostStyle.fontSize,
+        })
+      }
+
+      textOffset = Math.max(textOffset, lineEnd)
+    }
+
+    state.fragmentRects.set(element, fragments)
+    state.rects.set(element, unionBoxes(fragments))
+  }
+}
+
+function layoutInlineLines(
+  text: string,
+  maximumWidth: number,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+): string[] {
+  if (maximumWidth === Number.MAX_SAFE_INTEGER) {
+    return text.split('\n')
+  }
+
+  const lines: string[] = []
+  for (const hardLine of text.split('\n')) {
+    const words = hardLine.split(' ')
+    let line = ''
+
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word
+      if (!line || measureInlineWidth(candidate, style, state) <= maximumWidth) {
+        line = candidate
+      } else {
+        lines.push(line)
+        line = word
+      }
+    }
+
+    lines.push(line)
+  }
+
+  return lines
+}
+
+function nearestMeasuredAncestor(element: Element, state: TaffyLayoutState): Element | undefined {
+  for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (
+      state.elementNodes.has(ancestor) &&
+      Array.from(ancestor.children).every((child) => resolveSupportedStyle(child, state).display === 'inline')
+    ) {
+      return ancestor
+    }
+  }
+
+  return undefined
+}
+
+function textBeforeDescendant(host: Element, target: Element): string {
+  let result = ''
+  const view = host.ownerDocument.defaultView
+  const walker = host.ownerDocument.createTreeWalker(host, view?.NodeFilter.SHOW_TEXT ?? 4)
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (target.contains(node)) {
+      break
+    }
+    result += node.textContent ?? ''
+  }
+
+  return result
+}
+
+function normalizeInlineText(text: string, whiteSpace: SupportedStyle['whiteSpace']): string {
+  if (whiteSpace === 'pre' || whiteSpace === 'pre-wrap') {
+    return text.replace(/\r\n?/g, '\n')
+  }
+  if (whiteSpace === 'pre-line') {
+    return text.replace(/\r\n?/g, '\n').replace(/[ \t\f\v]+/g, ' ').trim()
+  }
+  return text.replace(/\s+/g, ' ').trim()
+}
+
+function measureInlineWidth(
+  text: string,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+): number {
+  return state.textMeasurer.measure({
+    text,
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    lineHeight: style.lineHeight,
+    maxWidth: undefined,
+    whiteSpace: 'nowrap',
+  }).width
+}
+
+function unionBoxes(boxes: readonly Box[]): Box {
+  if (boxes.length === 0) {
+    return { x: 0, y: 0, width: 0, height: 0 }
+  }
+  const left = Math.min(...boxes.map((box) => box.x))
+  const top = Math.min(...boxes.map((box) => box.y))
+  const right = Math.max(...boxes.map((box) => box.x + box.width))
+  const bottom = Math.max(...boxes.map((box) => box.y + box.height))
+  return { x: left, y: top, width: right - left, height: bottom - top }
 }
 
 function applyVisualTransforms(document: Document, state: TaffyLayoutState): void {
@@ -283,7 +451,8 @@ function applyVisualTransforms(document: Document, state: TaffyLayoutState): voi
       : identityTransform
     const box = state.rects.get(element)
     const style = state.styles.get(element)
-    const localTransform = box && style && !state.contentsElements.has(element) && style.display !== 'none'
+    const localTransform = box && style && !state.contentsElements.has(element) &&
+        style.display !== 'none' && style.display !== 'inline'
       ? elementTransform(
           box,
           [style.translate, style.scale, ...style.transform].filter((value) => value !== undefined),
@@ -295,6 +464,11 @@ function applyVisualTransforms(document: Document, state: TaffyLayoutState): voi
 
     if (box) {
       state.rects.set(element, transformBox(box, transform))
+    }
+
+    const fragments = state.fragmentRects.get(element)
+    if (fragments) {
+      state.fragmentRects.set(element, fragments.map((fragment) => transformBox(fragment, transform)))
     }
   }
 
@@ -737,6 +911,7 @@ function readElementScrollOffset(element: Element): ScrollOffset {
 function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   const box = { x: 0, y: 0, width: 0, height: 0 }
   state.rects.set(element, box)
+  state.fragmentRects.set(element, [])
   state.layoutRects.set(element, box)
   state.normalRects.set(element, box)
   state.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 })
@@ -988,6 +1163,7 @@ function recordBox(
   normalBox: Box = layoutBox,
 ): void {
   state.rects.set(element, box)
+  state.fragmentRects.set(element, [box])
   state.layoutRects.set(element, layoutBox)
   state.normalRects.set(element, normalBox)
   state.clientRects.set(element, computeClientBox(box, style))

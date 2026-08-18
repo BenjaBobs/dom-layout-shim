@@ -4,6 +4,7 @@ import type { HitBox } from '../../api/hit-box.ts'
 export type LayoutSnapshot = {
   boxes: HitBox[]
   rects: Map<Element, Box>
+  fragmentRects: Map<Element, Box[]>
   layoutRects: Map<Element, Box>
   clientRects: Map<Element, Box>
   elementScrolls: Map<Element, ScrollOffset>

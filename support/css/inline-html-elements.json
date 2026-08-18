@@ -60,16 +60,18 @@
     },
     {
       "id": "inline-fragment-geometry",
-      "description": "Inline fragment rectangles and hit boxes are not modeled.",
-      "support": "unsupported",
+      "description": "Wrapped inline-only text exposes line fragment geometry through `getClientRects()` and union geometry through `getBoundingClientRect()`.",
+      "support": "partial",
       "parity": {
-        "status": "unverified",
-        "fixtures": []
+        "status": "verified",
+        "fixtures": [
+          "inline-html-defaults"
+        ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Inline fragment rectangles, inline hit boxes, mixed inline/block formatting, and baseline effects for `sub` and `sup` are not modeled; native inline elements currently expose zero rects unless author CSS changes their `display`."
+          "text": "Inline hit boxes, mixed inline/block formatting, nested elements with distinct typography, and baseline effects for `sub` and `sup` are not modeled."
         }
       ]
     }
