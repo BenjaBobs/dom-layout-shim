@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('closed dialogs are hidden while open dialogs are absolutely positioned outside normal flow', async () => {
   await expectChromiumParity({
@@ -34,8 +34,8 @@ it('closed dialogs are hidden while open dialogs are absolutely positioned outsi
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 10, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('author display can make a closed dialog participate in layout', async () => {
   await expectChromiumParity({
@@ -62,5 +62,5 @@ it('author display can make a closed dialog participate in layout', async () => 
       { type: 'rect', selector: '#closed' },
       { type: 'point', x: 10, y: 5 },
     ],
-  })
-})
+  });
+});

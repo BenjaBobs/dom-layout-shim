@@ -35,9 +35,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "inline-html-defaults"
-        ]
+        "fixtures": ["inline-html-defaults"]
       },
       "notes": [
         {
@@ -52,9 +50,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "inline-html-defaults"
-        ]
+        "fixtures": ["inline-html-defaults"]
       },
       "notes": []
     },
@@ -64,9 +60,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "inline-html-defaults"
-        ]
+        "fixtures": ["inline-html-defaults"]
       },
       "notes": [
         {

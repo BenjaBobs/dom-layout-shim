@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('pre-wrap text preserves explicit line breaks', async () => {
   await expectChromiumParity({
@@ -22,8 +22,8 @@ it('pre-wrap text preserves explicit line breaks', async () => {
 World</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('pre text preserves hard breaks without soft wrapping', async () => {
   await expectChromiumParity({
@@ -46,8 +46,8 @@ it('pre text preserves hard breaks without soft wrapping', async () => {
 Again</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('pre-line text preserves hard breaks and collapses spaces', async () => {
   await expectChromiumParity({
@@ -70,8 +70,8 @@ it('pre-line text preserves hard breaks and collapses spaces', async () => {
 Again</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('br elements create hard breaks in text leaves', async () => {
   await expectChromiumParity({
@@ -93,5 +93,5 @@ it('br elements create hard breaks in text leaves', async () => {
       <div id="text">Hello<br>World</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});

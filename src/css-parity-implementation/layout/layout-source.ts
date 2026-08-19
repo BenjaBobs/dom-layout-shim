@@ -1,19 +1,19 @@
-import type { Box } from '../../api/box.ts'
-import type { HitBox } from '../../api/hit-box.ts'
+import type { Box } from '../../api/box.ts';
+import type { HitBox } from '../../api/hit-box.ts';
 
 export type LayoutSnapshot = {
-  boxes: HitBox[]
-  rects: Map<Element, Box>
-  fragmentRects: Map<Element, Box[]>
-  layoutRects: Map<Element, Box>
-  clientRects: Map<Element, Box>
-  elementScrolls: Map<Element, ScrollOffset>
-  offsetParents: Map<Element, Element | null>
-  scrollContainers: Map<Element, { x: boolean; y: boolean }>
-  fixedElements: Set<Element>
-}
+  boxes: HitBox[];
+  rects: Map<Element, Box>;
+  fragmentRects: Map<Element, Box[]>;
+  layoutRects: Map<Element, Box>;
+  clientRects: Map<Element, Box>;
+  elementScrolls: Map<Element, ScrollOffset>;
+  offsetParents: Map<Element, Element | null>;
+  scrollContainers: Map<Element, { x: boolean; y: boolean }>;
+  fixedElements: Set<Element>;
+};
 
 export type ScrollOffset = {
-  x: number
-  y: number
-}
+  x: number;
+  y: number;
+};

@@ -1,115 +1,144 @@
-import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { TaskWorkspace } from '../src/task-workspace.tsx'
-import { clickWhereElementIs } from './click-where-element-is.ts'
-import { layoutEngine } from './setup.ts'
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { TaskWorkspace } from '../src/task-workspace.tsx';
+import { clickWhereElementIs } from './click-where-element-is.ts';
+import { layoutEngine } from './setup.ts';
 
-let reactRoot: Root
+let reactRoot: Root;
 
 function requiredElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector)
+  const element = document.querySelector<T>(selector);
 
   if (!element) {
-    throw new Error(`Missing element: ${selector}`)
+    throw new Error(`Missing element: ${selector}`);
   }
 
-  return element
+  return element;
 }
 
 async function click(element: Element): Promise<void> {
   await act(async () => {
-    element.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-  })
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
 }
 
-async function enterText(element: HTMLInputElement | HTMLTextAreaElement, value: string): Promise<void> {
-  const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
-  const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set
+async function enterText(
+  element: HTMLInputElement | HTMLTextAreaElement,
+  value: string,
+): Promise<void> {
+  const prototype =
+    element instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set;
 
   await act(async () => {
-    setter?.call(element, value)
-    element.dispatchEvent(new Event('input', { bubbles: true }))
-  })
+    setter?.call(element, value);
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 }
 
 async function settleTransitions(): Promise<void> {
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0))
-  })
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 }
 
 describe('Material UI task workspace consumer', () => {
   beforeEach(async () => {
     // docs:start mount-react
     // Mount the real Material UI tree exactly as the consumer test uses it.
-    document.body.innerHTML = '<div id="app"></div>'
-    reactRoot = createRoot(requiredElement('#app'))
-    await act(async () => reactRoot.render(<TaskWorkspace />))
+    document.body.innerHTML = '<div id="app"></div>';
+    reactRoot = createRoot(requiredElement('#app'));
+    await act(async () => reactRoot.render(<TaskWorkspace />));
     // docs:end mount-react
-  })
+  });
 
   afterEach(async () => {
-    await act(async () => reactRoot.unmount())
-  })
+    await act(async () => reactRoot.unmount());
+  });
 
   it('uses idiomatic portalled overlays and deletes a task', async () => {
-    await act(async () => clickWhereElementIs(requiredElement('[data-layout-key="task-1-menu-trigger"]')))
+    await act(async () =>
+      clickWhereElementIs(
+        requiredElement('[data-layout-key="task-1-menu-trigger"]'),
+      ),
+    );
 
-    expect(requiredElement('[data-layout-key="task-menu"]')).toBeTruthy()
-    await click(requiredElement('[role="menuitem"]'))
-    expect(requiredElement('[data-layout-key="delete-dialog"]')).toBeTruthy()
+    expect(requiredElement('[data-layout-key="task-menu"]')).toBeTruthy();
+    await click(requiredElement('[role="menuitem"]'));
+    expect(requiredElement('[data-layout-key="delete-dialog"]')).toBeTruthy();
 
-    await click(requiredElement('[data-layout-key="delete-dialog"] button:last-child'))
+    await click(
+      requiredElement('[data-layout-key="delete-dialog"] button:last-child'),
+    );
 
-    expect(document.querySelector('[data-layout-key="task-1"]')).toBeNull()
-    expect(document.body.textContent).toContain('Task deleted')
-  })
+    expect(document.querySelector('[data-layout-key="task-1"]')).toBeNull();
+    expect(document.body.textContent).toContain('Task deleted');
+  });
 
   it('filters tasks and creates a new task through the hosted controls', async () => {
-    await click([...document.querySelectorAll('button')].find((button) => button.textContent === 'Completed')!)
-    expect(document.querySelector('[data-layout-key="task-1"]')).toBeNull()
-    expect(document.querySelector('[data-layout-key="task-2"]')).not.toBeNull()
-    expect(document.body.textContent).toContain('1 task shown')
+    const completedFilter = [...document.querySelectorAll('button')].find(
+      button => button.textContent === 'Completed',
+    );
+    if (!completedFilter) throw new Error('Missing completed filter');
+    await click(completedFilter);
+    expect(document.querySelector('[data-layout-key="task-1"]')).toBeNull();
+    expect(document.querySelector('[data-layout-key="task-2"]')).not.toBeNull();
+    expect(document.body.textContent).toContain('1 task shown');
 
-    await click(requiredElement('[data-layout-key="underlying-control"]'))
-    await enterText(requiredElement<HTMLInputElement>('input[required]'), 'Follow up with maintainers')
-    await enterText(requiredElement<HTMLTextAreaElement>('textarea'), 'Share the compatibility findings.')
-    await click(requiredElement('[role="dialog"] button:last-child'))
+    await click(requiredElement('[data-layout-key="underlying-control"]'));
+    await enterText(
+      requiredElement<HTMLInputElement>('input[required]'),
+      'Follow up with maintainers',
+    );
+    await enterText(
+      requiredElement<HTMLTextAreaElement>('textarea'),
+      'Share the compatibility findings.',
+    );
+    await click(requiredElement('[role="dialog"] button:last-child'));
 
-    expect(document.body.textContent).toContain('Follow up with maintainers')
-    expect(document.body.textContent).toContain('4 tasks shown')
-    expect(document.body.textContent).toContain('Task added')
-  })
+    expect(document.body.textContent).toContain('Follow up with maintainers');
+    expect(document.body.textContent).toContain('4 tasks shown');
+    expect(document.body.textContent).toContain('Task added');
+  });
 
   it('proves a dialog backdrop blocks an underlying control by coordinates', async () => {
     // Override the shared default only because this assertion exercises viewport geometry.
-    layoutEngine.setViewport({ width: 1024, height: 768 })
+    layoutEngine.setViewport({ width: 1024, height: 768 });
 
     // docs:start geometry-assertion
-    const underlyingControl = requiredElement<HTMLElement>('[data-layout-key="underlying-control"]')
-    const rect = underlyingControl.getBoundingClientRect()
+    const underlyingControl = requiredElement<HTMLElement>(
+      '[data-layout-key="underlying-control"]',
+    );
+    const rect = underlyingControl.getBoundingClientRect();
     // Query the visual center instead of bypassing layout with `.click()`.
-    const point = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    const point = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
 
-    expect(rect.width).toBeGreaterThan(0)
-    expect(document.elementFromPoint(point.x, point.y)).toBe(underlyingControl)
+    expect(rect.width).toBeGreaterThan(0);
+    expect(document.elementFromPoint(point.x, point.y)).toBe(underlyingControl);
     // docs:end geometry-assertion
 
-    await click(requiredElement('[data-layout-key="task-1-menu-trigger"]'))
-    await click(requiredElement('[role="menuitem"]'))
+    await click(requiredElement('[data-layout-key="task-1-menu-trigger"]'));
+    await click(requiredElement('[role="menuitem"]'));
 
-    const backdrop = requiredElement('[data-layout-key="delete-backdrop"]')
-    const overlayHit = document.elementFromPoint(point.x, point.y)
+    const backdrop = requiredElement('[data-layout-key="delete-backdrop"]');
+    const overlayHit = document.elementFromPoint(point.x, point.y);
 
     // The exact MUI overlay descendant depends on how its portal wrappers cover
     // this point. Require the hit to stay inside the modal and, critically, to
     // block the covered application control.
-    expect(backdrop.parentElement?.contains(overlayHit)).toBe(true)
-    expect(overlayHit).not.toBe(underlyingControl)
+    expect(backdrop.parentElement?.contains(overlayHit)).toBe(true);
+    expect(overlayHit).not.toBe(underlyingControl);
 
-    await click(requiredElement('[data-layout-key="delete-dialog"] button:first-of-type'))
-    await settleTransitions()
-    expect(document.elementFromPoint(point.x, point.y)).toBe(underlyingControl)
-  })
-})
+    await click(
+      requiredElement('[data-layout-key="delete-dialog"] button:first-of-type'),
+    );
+    await settleTransitions();
+    expect(document.elementFromPoint(point.x, point.y)).toBe(underlyingControl);
+  });
+});

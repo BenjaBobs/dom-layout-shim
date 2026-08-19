@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid-area shorthand places items with explicit numeric lines', async () => {
   await expectChromiumParity({
@@ -31,8 +31,8 @@ it('grid-area shorthand places items with explicit numeric lines', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid-area shorthand supports span line values', async () => {
   await expectChromiumParity({
@@ -63,5 +63,5 @@ it('grid-area shorthand supports span line values', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

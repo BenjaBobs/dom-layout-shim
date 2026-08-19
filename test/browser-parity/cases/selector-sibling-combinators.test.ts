@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('matches adjacent and general sibling combinators', async () => {
   await expectChromiumParity({
@@ -57,5 +57,5 @@ it('matches adjacent and general sibling combinators', async () => {
       { type: 'rect', selector: '#general-match' },
       { type: 'rect', selector: '#nested-match' },
     ],
-  })
-})
+  });
+});

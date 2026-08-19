@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('border width contributes nothing when border style is none', async () => {
   await expectChromiumParity({
@@ -19,5 +19,5 @@ it('border width contributes nothing when border style is none', async () => {
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});

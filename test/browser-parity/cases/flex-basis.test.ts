@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex basis controls flex item base size', async () => {
   await expectChromiumParity({
@@ -37,8 +37,8 @@ it('flex basis controls flex item base size', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('percentage flex basis resolves against the container main size', async () => {
   await expectChromiumParity({
@@ -75,8 +75,8 @@ it('percentage flex basis resolves against the container main size', async () =>
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('auto flex basis uses the item main-size property', async () => {
   await expectChromiumParity({
@@ -113,8 +113,8 @@ it('auto flex basis uses the item main-size property', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('percentage flex basis resolves against height in column layout', async () => {
   await expectChromiumParity({
@@ -153,5 +153,5 @@ it('percentage flex basis resolves against height in column layout', async () =>
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

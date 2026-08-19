@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('resolves inherited, overridden, fallback, and cyclic custom properties across layout declarations', async () => {
   await expectChromiumParity({
@@ -54,5 +54,5 @@ it('resolves inherited, overridden, fallback, and cyclic custom properties acros
       { type: 'rect', selector: '#grid-second' },
       { type: 'rect', selector: '#positioned' },
     ],
-  })
-})
+  });
+});

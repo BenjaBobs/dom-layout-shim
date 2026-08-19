@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('inline content after a block child contributes a following line box', async () => {
   await expectChromiumParity({
@@ -19,8 +19,8 @@ it('inline content after a block child contributes a following line box', async 
       { type: 'rect', selector: '#secondary' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('stacked text blocks determine a flex item and row intrinsic height', async () => {
   await expectChromiumParity({
@@ -59,5 +59,5 @@ it('stacked text blocks determine a flex item and row intrinsic height', async (
       { type: 'rect', selector: '#secondary' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});

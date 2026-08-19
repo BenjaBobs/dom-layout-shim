@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid numeric line placement positions items on explicit tracks', async () => {
   await expectChromiumParity({
@@ -30,5 +30,5 @@ it('grid numeric line placement positions items on explicit tracks', async () =>
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#first' },
     ],
-  })
-})
+  });
+});

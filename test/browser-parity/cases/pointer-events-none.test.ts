@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('pointer-events none skips the overlay target', async () => {
   await expectChromiumParity({
@@ -28,8 +28,8 @@ it('pointer-events none skips the overlay target', async () => {
       <div id="skip"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('pointer-events none is inherited by descendants for hit testing', async () => {
   await expectChromiumParity({
@@ -65,8 +65,8 @@ it('pointer-events none is inherited by descendants for hit testing', async () =
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('pointer-events inherit preserves a skipped ancestor for hit testing', async () => {
   await expectChromiumParity({
@@ -103,8 +103,8 @@ it('pointer-events inherit preserves a skipped ancestor for hit testing', async 
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('pointer-events auto descendants override inherited none for hit testing', async () => {
   await expectChromiumParity({
@@ -141,8 +141,8 @@ it('pointer-events auto descendants override inherited none for hit testing', as
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('pointer-events initial descendants override inherited none for hit testing', async () => {
   await expectChromiumParity({
@@ -179,8 +179,8 @@ it('pointer-events initial descendants override inherited none for hit testing',
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('pointer-events unset preserves inherited none for hit testing', async () => {
   await expectChromiumParity({
@@ -217,5 +217,5 @@ it('pointer-events unset preserves inherited none for hit testing', async () => 
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});

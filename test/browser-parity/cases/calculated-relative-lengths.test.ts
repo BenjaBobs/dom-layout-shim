@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('resolves calculated viewport and font-relative lengths in layout properties', async () => {
   await expectChromiumParity({
@@ -25,8 +25,8 @@ it('resolves calculated viewport and font-relative lengths in layout properties'
       { type: 'rect', selector: '#variable' },
       { type: 'rect', selector: '#text' },
     ],
-  })
-})
+  });
+});
 
 it('resolves mixed percentage and pixel calculations against a definite containing block', async () => {
   await expectChromiumParity({
@@ -56,5 +56,5 @@ it('resolves mixed percentage and pixel calculations against a definite containi
       { type: 'rect', selector: '#size' },
       { type: 'rect', selector: '#constraint' },
     ],
-  })
-})
+  });
+});

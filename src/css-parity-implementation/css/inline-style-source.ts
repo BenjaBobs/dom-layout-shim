@@ -1,7 +1,13 @@
-import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
-import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
-import { applyCustomPropertyDeclaration, type CustomProperties } from './custom-properties.ts'
-import type { Viewport } from '../../api/layout-engine-config.ts'
+import type { Viewport } from '../../api/layout-engine-config.ts';
+import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
+import {
+  applyCustomPropertyDeclaration,
+  type CustomProperties,
+} from './custom-properties.ts';
+import {
+  applyDeclaration,
+  type SupportedStyle,
+} from './supported-declaration.ts';
 
 export function applyInlineStyle(
   style: SupportedStyle,
@@ -11,10 +17,10 @@ export function applyInlineStyle(
   customProperties?: CustomProperties,
   viewport?: Viewport,
 ): void {
-  const inlineStyle = element.getAttribute('style')
+  const inlineStyle = element.getAttribute('style');
 
   if (!inlineStyle) {
-    return
+    return;
   }
 
   for (const declaration of parseDeclarationBlock(inlineStyle)) {
@@ -25,7 +31,7 @@ export function applyInlineStyle(
       rootFontSize,
       viewport,
       customProperties,
-    })
+    });
   }
 }
 
@@ -34,32 +40,39 @@ export function applyInlineCustomProperties(
   inherited: CustomProperties,
   element: Element,
 ): void {
-  const inlineStyle = element.getAttribute('style')
+  const inlineStyle = element.getAttribute('style');
 
   if (!inlineStyle) {
-    return
+    return;
   }
 
   for (const declaration of parseDeclarationBlock(inlineStyle)) {
-    applyCustomPropertyDeclaration(properties, inherited, declaration.property, declaration.value)
+    applyCustomPropertyDeclaration(
+      properties,
+      inherited,
+      declaration.property,
+      declaration.value,
+    );
   }
 }
 
-export function parseDeclarationBlock(block: string): Array<{ property: string; value: string }> {
+export function parseDeclarationBlock(
+  block: string,
+): Array<{ property: string; value: string }> {
   return block
     .split(';')
-    .map((declaration) => declaration.trim())
+    .map(declaration => declaration.trim())
     .filter(Boolean)
-    .map((declaration) => {
-      const colonIndex = declaration.indexOf(':')
+    .map(declaration => {
+      const colonIndex = declaration.indexOf(':');
 
       if (colonIndex === -1) {
-        return { property: declaration, value: '' }
+        return { property: declaration, value: '' };
       }
 
       return {
         property: declaration.slice(0, colonIndex).trim(),
         value: declaration.slice(colonIndex + 1).trim(),
-      }
-    })
+      };
+    });
 }

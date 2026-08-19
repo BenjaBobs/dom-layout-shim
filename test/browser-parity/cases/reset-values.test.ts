@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('applies supported CSS reset values', async () => {
   await expectChromiumParity({
@@ -155,5 +155,5 @@ it('applies supported CSS reset values', async () => {
       { type: 'rect', selector: '#grid-reset-a' },
       { type: 'rect', selector: '#grid-reset-b' },
     ],
-  })
-})
+  });
+});

@@ -71,9 +71,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {
@@ -85,18 +83,11 @@
     {
       "id": "opacity-and-effects",
       "description": "Opacity, shadows, and filter declarations are accepted without affecting geometry or point queries.",
-      "properties": [
-        "opacity",
-        "box-shadow",
-        "filter",
-        "backdrop-filter"
-      ],
+      "properties": ["opacity", "box-shadow", "filter", "backdrop-filter"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {
@@ -134,9 +125,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {
@@ -158,9 +147,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {
@@ -172,16 +159,11 @@
     {
       "id": "replaced-content-painting",
       "description": "Object fitting and positioning declarations are accepted without changing replaced-element geometry.",
-      "properties": [
-        "object-fit",
-        "object-position"
-      ],
+      "properties": ["object-fit", "object-position"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {

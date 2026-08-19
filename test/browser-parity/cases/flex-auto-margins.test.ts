@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex auto main-axis margins absorb positive free space', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('flex auto main-axis margins absorb positive free space', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex auto cross-axis margins override stretch alignment', async () => {
   await expectChromiumParity({
@@ -66,5 +66,5 @@ it('flex auto cross-axis margins override stretch alignment', async () => {
       </div>
     `,
     queries: [{ type: 'rect', selector: '#child' }],
-  })
-})
+  });
+});

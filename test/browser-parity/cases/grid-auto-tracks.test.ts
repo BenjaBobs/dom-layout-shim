@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid auto rows size implicit rows', async () => {
   await expectChromiumParity({
@@ -27,8 +27,8 @@ it('grid auto rows size implicit rows', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid auto columns size implicit columns', async () => {
   await expectChromiumParity({
@@ -57,5 +57,5 @@ it('grid auto columns size implicit columns', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

@@ -29,9 +29,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "form-control-intrinsic-defaults"
-        ]
+        "fixtures": ["form-control-intrinsic-defaults"]
       },
       "notes": [
         {
@@ -58,9 +56,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "form-control-intrinsic-defaults"
-        ]
+        "fixtures": ["form-control-intrinsic-defaults"]
       },
       "notes": [
         {
@@ -90,9 +86,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "form-control-intrinsic-defaults"
-        ]
+        "fixtures": ["form-control-intrinsic-defaults"]
       },
       "notes": [
         {

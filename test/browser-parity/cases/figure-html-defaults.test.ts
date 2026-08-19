@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('figure applies native block margins around block children', async () => {
   await expectChromiumParity({
@@ -28,8 +28,8 @@ it('figure applies native block margins around block children', async () => {
       { type: 'rect', selector: '#child' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('author CSS can reset figure margins', async () => {
   await expectChromiumParity({
@@ -56,5 +56,5 @@ it('author CSS can reset figure margins', async () => {
       { type: 'rect', selector: '#figure' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});

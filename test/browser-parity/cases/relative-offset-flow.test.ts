@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('relative offsets move the visual box without moving following flow layout', async () => {
   await expectChromiumParity({
@@ -32,5 +32,5 @@ it('relative offsets move the visual box without moving following flow layout', 
       { type: 'point', x: 5, y: 5 },
       { type: 'point', x: 15, y: 10 },
     ],
-  })
-})
+  });
+});

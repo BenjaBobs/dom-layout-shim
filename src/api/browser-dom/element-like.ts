@@ -1,1 +1,1 @@
-export type ElementLike = Element
+export type ElementLike = Element;

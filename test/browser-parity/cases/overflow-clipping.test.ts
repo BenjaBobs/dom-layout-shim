@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('overflow hidden clips descendant hit testing without changing rects', async () => {
   await expectChromiumParity({
@@ -36,8 +36,8 @@ it('overflow hidden clips descendant hit testing without changing rects', async 
       { type: 'point', x: 80, y: 40 },
       { type: 'point', x: 100, y: 40 },
     ],
-  })
-})
+  });
+});
 
 it('overflow clip clips descendant hit testing per axis', async () => {
   await expectChromiumParity({
@@ -74,8 +74,8 @@ it('overflow clip clips descendant hit testing per axis', async () => {
       { type: 'point', x: 100, y: 65 },
       { type: 'point', x: 100, y: 95 },
     ],
-  })
-})
+  });
+});
 
 it('overflow auto clips descendant hit testing without changing rects', async () => {
   await expectChromiumParity({
@@ -112,8 +112,8 @@ it('overflow auto clips descendant hit testing without changing rects', async ()
       { type: 'point', x: 80, y: 40 },
       { type: 'point', x: 100, y: 40 },
     ],
-  })
-})
+  });
+});
 
 it('overflow scroll clips descendant hit testing per axis', async () => {
   await expectChromiumParity({
@@ -150,5 +150,5 @@ it('overflow scroll clips descendant hit testing per axis', async () => {
       { type: 'point', x: 100, y: 65 },
       { type: 'point', x: 100, y: 95 },
     ],
-  })
-})
+  });
+});

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid content alignment positions the explicit track grid', async () => {
   await expectChromiumParity({
@@ -47,8 +47,8 @@ it('grid content alignment positions the explicit track grid', async () => {
       { type: 'rect', selector: '#center-b' },
       { type: 'rect', selector: '#center-c' },
     ],
-  })
-})
+  });
+});
 
 it('grid content alignment distributes space between tracks', async () => {
   await expectChromiumParity({
@@ -80,5 +80,5 @@ it('grid content alignment distributes space between tracks', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});

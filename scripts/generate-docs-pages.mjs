@@ -1,101 +1,156 @@
-import { copyFile, cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { resolve, sep } from 'node:path'
-import { readDocumentationContext, renderDocumentationPage } from './docs-page-shell.mjs'
-import { articleLayout, guideLayout, renderMarkdownFragment, renderMarkdownPage } from '../docs-engine/render-md.mjs'
+import {
+  copyFile,
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { resolve, sep } from 'node:path';
+import {
+  articleLayout,
+  guideLayout,
+  renderMarkdownFragment,
+  renderMarkdownPage,
+} from '../docs-engine/render-md.mjs';
+import {
+  readDocumentationContext,
+  renderDocumentationPage,
+} from './docs-page-shell.mjs';
 
-const root = resolve(import.meta.dirname, '..')
-const context = await readDocumentationContext(root)
-const siteRoot = resolve(root, '.site')
-const exampleNames = ['material-ui', 'ant-design']
-const exampleCompatibility = await Promise.all(exampleNames.map(async (example) => ({
-  example,
-  profile: JSON.parse(await readFile(resolve(root, 'examples', example, 'compatibility.json'), 'utf8')),
-  report: JSON.parse(await readFile(resolve(root, 'examples', example, 'compatibility-report.json'), 'utf8')),
-  setup: renderMarkdownFragment(await hydrateSetupMarkdown(example)),
-})))
-await mkdir(siteRoot, { recursive: true })
+const root = resolve(import.meta.dirname, '..');
+const context = await readDocumentationContext(root);
+const siteRoot = resolve(root, '.site');
+const exampleNames = ['material-ui', 'ant-design'];
+const exampleCompatibility = await Promise.all(
+  exampleNames.map(async example => ({
+    example,
+    profile: JSON.parse(
+      await readFile(
+        resolve(root, 'examples', example, 'compatibility.json'),
+        'utf8',
+      ),
+    ),
+    report: JSON.parse(
+      await readFile(
+        resolve(root, 'examples', example, 'compatibility-report.json'),
+        'utf8',
+      ),
+    ),
+    setup: renderMarkdownFragment(await hydrateSetupMarkdown(example)),
+  })),
+);
+await mkdir(siteRoot, { recursive: true });
 
 for (const asset of ['site.css', 'site.js', 'css-support-search.js']) {
-  await copyFile(resolve(root, 'docs-engine/assets', asset), resolve(siteRoot, asset))
+  await copyFile(
+    resolve(root, 'docs-engine/assets', asset),
+    resolve(siteRoot, asset),
+  );
 }
 
-const paritySourceDirectory = resolve(root, 'test/browser-parity/cases')
-const paritySourceOutput = resolve(siteRoot, 'data/parity-sources')
+const paritySourceDirectory = resolve(root, 'test/browser-parity/cases');
+const paritySourceOutput = resolve(siteRoot, 'data/parity-sources');
 const paritySourceFiles = (await readdir(paritySourceDirectory))
-  .filter((file) => file.endsWith('.test.ts'))
-  .sort()
-await mkdir(paritySourceOutput, { recursive: true })
-await Promise.all(paritySourceFiles.map((file) =>
-  copyFile(resolve(paritySourceDirectory, file), resolve(paritySourceOutput, file)),
-))
-console.log(`Generated ${paritySourceFiles.length} parity source previews.`)
+  .filter(file => file.endsWith('.test.ts'))
+  .sort();
+await mkdir(paritySourceOutput, { recursive: true });
+await Promise.all(
+  paritySourceFiles.map(file =>
+    copyFile(
+      resolve(paritySourceDirectory, file),
+      resolve(paritySourceOutput, file),
+    ),
+  ),
+);
+console.log(`Generated ${paritySourceFiles.length} parity source previews.`);
 
 const pages = [
   {
     source: 'docs/guide.md',
     output: '.site/index.html',
     page: 'index.html',
-    render: (source) => renderMarkdownPage(source, guideLayout),
+    render: source => renderMarkdownPage(source, guideLayout),
   },
   {
     source: 'docs/examples.md',
     output: '.site/examples.html',
     page: 'examples.html',
-    render: (source) => renderExamplesPage(source, exampleCompatibility),
+    render: source => renderExamplesPage(source, exampleCompatibility),
   },
   {
     source: 'docs-engine/css-support-status.template.html',
     output: '.site/css-support-status.html',
     title: 'CSS Support Status',
-    description: 'Searchable implementation and Chromium parity status for CSS supported by DOM Layout Shim.',
+    description:
+      'Searchable implementation and Chromium parity status for CSS supported by DOM Layout Shim.',
     page: 'css-support-status.html',
     bodyPattern: /<header>[\s\S]*<\/header>[\s\S]*?<main>[\s\S]*?<\/main>/,
     inlineModulePattern: /<script type="module">([\s\S]*?)<\/script>/,
   },
-]
+];
 
 for (const page of pages) {
-  const source = await readFile(resolve(root, page.source), 'utf8')
+  const source = await readFile(resolve(root, page.source), 'utf8');
   const rendered = page.render
     ? page.render(source)
     : {
-        pageStyles: requiredMatch(source, /<style>([\s\S]*?)<\/style>/, page.source, 'page styles'),
-        body: requiredMatch(source, page.bodyPattern, page.source, 'page body', 0),
+        pageStyles: requiredMatch(
+          source,
+          /<style>([\s\S]*?)<\/style>/,
+          page.source,
+          'page styles',
+        ),
+        body: requiredMatch(
+          source,
+          page.bodyPattern,
+          page.source,
+          'page body',
+          0,
+        ),
         inlineModule: page.inlineModulePattern
-          ? requiredMatch(source, page.inlineModulePattern, page.source, 'inline module')
+          ? requiredMatch(
+              source,
+              page.inlineModulePattern,
+              page.source,
+              'inline module',
+            )
           : '',
-      }
-  const output = renderDocumentationPage({ ...context, ...page, ...rendered })
-  const outputPath = resolve(root, page.output)
+      };
+  const output = renderDocumentationPage({ ...context, ...page, ...rendered });
+  const outputPath = resolve(root, page.output);
 
   if (process.argv.includes('--check')) {
-    await writeFile(outputPath, output)
-    console.log(`Validated and generated ${page.output} from ${page.source}.`)
+    await writeFile(outputPath, output);
+    console.log(`Validated and generated ${page.output} from ${page.source}.`);
   } else {
-    await writeFile(outputPath, output)
-    console.log(`Generated ${page.output} from ${page.source}.`)
+    await writeFile(outputPath, output);
+    console.log(`Generated ${page.output} from ${page.source}.`);
   }
 }
 
 for (const example of exampleNames) {
-  const source = resolve(root, 'examples', example, 'dist')
-  const output = resolve(siteRoot, 'examples', example)
-  await rm(output, { recursive: true, force: true })
-  await cp(source, output, { recursive: true, force: true })
+  const source = resolve(root, 'examples', example, 'dist');
+  const output = resolve(siteRoot, 'examples', example);
+  await rm(output, { recursive: true, force: true });
+  await cp(source, output, { recursive: true, force: true });
   await copyFile(
     resolve(root, 'examples', example, 'compatibility.json'),
     resolve(output, 'compatibility.json'),
-  )
+  );
   await copyFile(
     resolve(root, 'examples', example, 'compatibility-report.json'),
     resolve(output, 'compatibility-report.json'),
-  )
-  console.log(`Copied ${example} example to .site/examples/${example}.`)
+  );
+  console.log(`Copied ${example} example to .site/examples/${example}.`);
 }
 
 function renderExamplesPage(source, reports) {
-  const rendered = renderMarkdownPage(source, articleLayout)
-  const cards = reports.map(({ example, profile, report, setup }) => `
+  const rendered = renderMarkdownPage(source, articleLayout);
+  const cards = reports
+    .map(
+      ({ example, profile, report, setup }) => `
     <article class="compatibility-card">
       <div class="compatibility-heading">
         <div>
@@ -121,7 +176,9 @@ function renderExamplesPage(source, reports) {
       </details>
       <h4>Interaction checkpoints</h4>
       <div class="checkpoint-list">
-        ${report.steps.map((step) => `
+        ${report.steps
+          .map(
+            step => `
           <details class="checkpoint">
             <summary><span>${escapeHtml(step.label)}</span><strong title="Equal-weight average of geometry, visibility, and hit-testing agreement">${formatPercentage(step.scores.overall)}</strong></summary>
             <dl class="score-grid">
@@ -131,20 +188,29 @@ function renderExamplesPage(source, reports) {
               <div class="score score-hit-testing"><dt>Hit testing <span>Center point resolves to the same element</span></dt><dd>${formatPercentage(step.scores.hitTesting)}</dd></div>
             </dl>
             <p>${step.observations} observations · ${step.discrepancies.length} differences</p>
-            ${step.discrepancies.length === 0
-              ? '<p>No differences recorded.</p>'
-              : `<ul class="discrepancy-list">${step.discrepancies.map(renderDiscrepancy).join('')}</ul>`}
+            ${
+              step.discrepancies.length === 0
+                ? '<p>No differences recorded.</p>'
+                : `<ul class="discrepancy-list">${step.discrepancies.map(renderDiscrepancy).join('')}</ul>`
+            }
           </details>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </div>
       ${renderDiagnosticPriorities(report)}
       ${renderUnsupportedCss(report)}
     </article>
-  `).join('')
+  `,
+    )
+    .join('');
 
   return {
     ...rendered,
-    body: rendered.body.replace('<p>{{compatibility-findings}}</p>', `<div class="compatibility-grid">${cards}</div>`),
+    body: rendered.body.replace(
+      '<p>{{compatibility-findings}}</p>',
+      `<div class="compatibility-grid">${cards}</div>`,
+    ),
     pageStyles: `${rendered.pageStyles}
       .compatibility-grid { display: grid; gap: 1.5rem; }
       .compatibility-card { padding: clamp(1.1rem, 3vw, 1.75rem); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow-panel); }
@@ -212,105 +278,155 @@ function renderExamplesPage(source, reports) {
         .discrepancy-list li { grid-template-columns: 1fr; gap: .25rem; }
       }
     `,
-  }
+  };
 }
 
 function renderDiagnosticPriorities(report) {
-  const groups = report.discrepancyGroups ?? []
-  if (groups.length === 0) return ''
+  const groups = report.discrepancyGroups ?? [];
+  if (groups.length === 0) return '';
   return `<details class="diagnostic-summary">
     <summary>Most repeated layout differences</summary>
-    <ul class="priority-list">${groups.slice(0, 8).map((group) => `<li>
+    <ul class="priority-list">${groups
+      .slice(0, 8)
+      .map(
+        group => `<li>
       <span class="priority-badge">${escapeHtml(group.category)}${group.field ? ` · ${escapeHtml(group.field)}` : ''}</span>
       <span><code>${escapeHtml(group.selector)}</code>${group.scope ? ` <small>${escapeHtml(group.scope)}</small>` : ''}</span>
       <small>${group.occurrences} checkpoint${group.occurrences === 1 ? '' : 's'}</small>
-    </li>`).join('')}</ul>
-  </details>`
+    </li>`,
+      )
+      .join('')}</ul>
+  </details>`;
 }
 
 function renderUnsupportedCss(report) {
-  const properties = report.unsupportedCss?.properties ?? []
-  if (properties.length === 0) return ''
-  const actionable = properties.filter((property) => property.priority !== 'visual-or-inert')
+  const properties = report.unsupportedCss?.properties ?? [];
+  if (properties.length === 0) return '';
+  const actionable = properties.filter(
+    property => property.priority !== 'visual-or-inert',
+  );
   return `<details class="diagnostic-summary">
     <summary>Unsupported CSS observed (${properties.length} properties)</summary>
     <p class="report-meta">Ordered by likely layout impact and how often declarations were encountered. Computed values help identify fallback declarations that did not win the cascade.</p>
-    <ul class="priority-list">${actionable.slice(0, 12).map((property) => `<li>
+    <ul class="priority-list">${actionable
+      .slice(0, 12)
+      .map(
+        property => `<li>
       <span class="priority-badge">${escapeHtml((property.priority ?? 'unclassified').replaceAll('-', ' '))}</span>
       <span class="unsupported-property"><code>${escapeHtml(property.property)}</code>${renderCssValueSummary(property)}</span>
       <small>${property.occurrences} occurrence${property.occurrences === 1 ? '' : 's'}</small>
-    </li>`).join('')}</ul>
-  </details>`
+    </li>`,
+      )
+      .join('')}</ul>
+  </details>`;
 }
 
 function renderCssValueSummary(property) {
-  const readableValues = property.values.filter((value) => !looksLikeSerializedSyntax(value))
-  const opaqueCount = property.values.length - readableValues.length
-  const computedValues = property.computedValues ?? []
-  const parts = []
-  if (readableValues.length > 0) parts.push(`<small><b>Authored:</b> ${escapeHtml(readableValues.slice(0, 3).join(', '))}${readableValues.length > 3 ? '…' : ''}</small>`)
-  if (computedValues.length > 0) parts.push(`<small><b>Computed:</b> ${escapeHtml(computedValues.slice(0, 3).join(', '))}${computedValues.length > 3 ? '…' : ''}</small>`)
-  if (opaqueCount > 0) parts.push(`<small>${opaqueCount} complex parsed value${opaqueCount === 1 ? '' : 's'} available in the JSON report</small>`)
-  return parts.join('')
+  const readableValues = property.values.filter(
+    value => !looksLikeSerializedSyntax(value),
+  );
+  const opaqueCount = property.values.length - readableValues.length;
+  const computedValues = property.computedValues ?? [];
+  const parts = [];
+  if (readableValues.length > 0)
+    parts.push(
+      `<small><b>Authored:</b> ${escapeHtml(readableValues.slice(0, 3).join(', '))}${readableValues.length > 3 ? '…' : ''}</small>`,
+    );
+  if (computedValues.length > 0)
+    parts.push(
+      `<small><b>Computed:</b> ${escapeHtml(computedValues.slice(0, 3).join(', '))}${computedValues.length > 3 ? '…' : ''}</small>`,
+    );
+  if (opaqueCount > 0)
+    parts.push(
+      `<small>${opaqueCount} complex parsed value${opaqueCount === 1 ? '' : 's'} available in the JSON report</small>`,
+    );
+  return parts.join('');
 }
 
 function looksLikeSerializedSyntax(value) {
-  const trimmed = value.trim()
-  return (trimmed.startsWith('{') || trimmed.startsWith('[')) && trimmed.includes('"type"')
+  const trimmed = value.trim();
+  return (
+    (trimmed.startsWith('{') || trimmed.startsWith('[')) &&
+    trimmed.includes('"type"')
+  );
 }
 
 async function hydrateSetupMarkdown(example) {
-  const source = await readFile(resolve(root, 'examples', example, 'docs/layout-shim-setup.md'), 'utf8')
-  let hydrated = source
+  const source = await readFile(
+    resolve(root, 'examples', example, 'docs/layout-shim-setup.md'),
+    'utf8',
+  );
+  let hydrated = source;
 
-  for (const match of source.matchAll(/\{\{source:([^#}]+)#([^:}]+):([^}]+)\}\}/g)) {
-    const [, relativePath, region, language] = match
-    const exampleRoot = resolve(root, 'examples', example)
-    const sourcePath = resolve(exampleRoot, relativePath)
-    if (!sourcePath.startsWith(`${exampleRoot}${sep}`)) throw new Error(`Setup source escapes ${example}: ${relativePath}`)
+  for (const match of source.matchAll(
+    /\{\{source:([^#}]+)#([^:}]+):([^}]+)\}\}/g,
+  )) {
+    const [, relativePath, region, language] = match;
+    const exampleRoot = resolve(root, 'examples', example);
+    const sourcePath = resolve(exampleRoot, relativePath);
+    if (!sourcePath.startsWith(`${exampleRoot}${sep}`))
+      throw new Error(`Setup source escapes ${example}: ${relativePath}`);
 
-    const file = await readFile(sourcePath, 'utf8')
-    const excerpts = region.split('+').map((name) => extractDocumentationRegion(file, name, relativePath))
-    const code = excerpts.map((excerpt) => excerpt.code).join('\n__DOCS_CODE_SKIP__\n')
-    const lineRanges = excerpts.map(({ code, startLine }) => `${startLine}-${startLine + code.split('\n').length - 1}`).join(',')
-    const startLine = excerpts[0].startLine
-    const githubUrl = `https://github.com/BenjaBobs/dom-layout-shim/blob/main/examples/${encodeURIComponent(example)}/${relativePath}#L${startLine}`
+    const file = await readFile(sourcePath, 'utf8');
+    const excerpts = region
+      .split('+')
+      .map(name => extractDocumentationRegion(file, name, relativePath));
+    const code = excerpts
+      .map(excerpt => excerpt.code)
+      .join('\n__DOCS_CODE_SKIP__\n');
+    const lineRanges = excerpts
+      .map(
+        ({ code, startLine }) =>
+          `${startLine}-${startLine + code.split('\n').length - 1}`,
+      )
+      .join(',');
+    const startLine = excerpts[0].startLine;
+    const githubUrl = `https://github.com/BenjaBobs/dom-layout-shim/blob/main/examples/${encodeURIComponent(example)}/${relativePath}#L${startLine}`;
     hydrated = hydrated.replace(
       match[0],
       `\`\`\`${language} title="${relativePath}" source="${githubUrl}" start="${startLine}" lines="${lineRanges}"\n${code}\n\`\`\``,
-    )
+    );
   }
 
-  if (hydrated.includes('{{source:')) throw new Error(`Unresolved setup source in ${example}`)
-  return hydrated
+  if (hydrated.includes('{{source:'))
+    throw new Error(`Unresolved setup source in ${example}`);
+  return hydrated;
 }
 
 function extractDocumentationRegion(source, region, relativePath) {
-  const start = `// docs:start ${region}`
-  const end = `// docs:end ${region}`
-  const startIndex = source.indexOf(start)
-  const endIndex = source.indexOf(end)
-  if (startIndex < 0 || endIndex < startIndex) throw new Error(`Missing region ${region} in ${relativePath}`)
+  const start = `// docs:start ${region}`;
+  const end = `// docs:end ${region}`;
+  const startIndex = source.indexOf(start);
+  const endIndex = source.indexOf(end);
+  if (startIndex < 0 || endIndex < startIndex)
+    throw new Error(`Missing region ${region} in ${relativePath}`);
 
-  const contentStart = source.indexOf('\n', startIndex) + 1
-  const lines = source.slice(contentStart, endIndex).trimEnd().split('\n')
-  const indentation = Math.min(...lines.filter((line) => line.trim()).map((line) => line.match(/^\s*/)[0].length))
-  const startLine = source.slice(0, contentStart).split('\n').length
-  return { code: lines.map((line) => line.slice(indentation)).join('\n'), startLine }
+  const contentStart = source.indexOf('\n', startIndex) + 1;
+  const lines = source.slice(contentStart, endIndex).trimEnd().split('\n');
+  const indentation = Math.min(
+    ...lines
+      .filter(line => line.trim())
+      .map(line => line.match(/^\s*/)[0].length),
+  );
+  const startLine = source.slice(0, contentStart).split('\n').length;
+  return {
+    code: lines.map(line => line.slice(indentation)).join('\n'),
+    startLine,
+  };
 }
 
 function renderDiscrepancy(discrepancy) {
-  const category = String(discrepancy.category)
-  const field = discrepancy.field ? ` · ${escapeHtml(discrepancy.field)}` : ''
-  return `<li class="category-${escapeHtml(category)}"><span class="discrepancy-kind">${escapeHtml(category.replace('-', ' '))}${field}</span><code>${escapeHtml(discrepancy.selector)}</code><span class="discrepancy-values">expected <code>${escapeHtml(formatValue(discrepancy.expected))}</code> · observed <code>${escapeHtml(formatValue(discrepancy.actual))}</code></span></li>`
+  const category = String(discrepancy.category);
+  const field = discrepancy.field ? ` · ${escapeHtml(discrepancy.field)}` : '';
+  return `<li class="category-${escapeHtml(category)}"><span class="discrepancy-kind">${escapeHtml(category.replace('-', ' '))}${field}</span><code>${escapeHtml(discrepancy.selector)}</code><span class="discrepancy-values">expected <code>${escapeHtml(formatValue(discrepancy.expected))}</code> · observed <code>${escapeHtml(formatValue(discrepancy.actual))}</code></span></li>`;
 }
 
 function formatValue(value) {
-  return typeof value === 'string' ? value : JSON.stringify(value)
+  return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
 function formatPercentage(value) {
-  return `${Number(value).toFixed(1)}%`
+  return `${Number(value).toFixed(1)}%`;
 }
 
 function escapeHtml(value) {
@@ -319,11 +435,11 @@ function escapeHtml(value) {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
+    .replaceAll("'", '&#39;');
 }
 
 function requiredMatch(source, pattern, file, description, group = 1) {
-  const match = pattern.exec(source)
-  if (!match?.[group]) throw new Error(`Missing ${description} in ${file}`)
-  return match[group]
+  const match = pattern.exec(source);
+  if (!match?.[group]) throw new Error(`Missing ${description} in ${file}`);
+  return match[group];
 }

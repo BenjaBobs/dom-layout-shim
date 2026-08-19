@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('display none removes the element from hit testing and layout rects', async () => {
   await expectChromiumParity({
@@ -31,5 +31,5 @@ it('display none removes the element from hit testing and layout rects', async (
       { type: 'point', x: 50, y: 50 },
       { type: 'rect', selector: '#hidden' },
     ],
-  })
-})
+  });
+});

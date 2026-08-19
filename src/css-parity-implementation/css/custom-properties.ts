@@ -1,5 +1,5 @@
-export type CustomProperties = ReadonlyMap<string, string>
-const emptyCustomProperties: CustomProperties = new Map()
+export type CustomProperties = ReadonlyMap<string, string>;
+const emptyCustomProperties: CustomProperties = new Map();
 
 export function applyCustomPropertyDeclaration(
   properties: Map<string, string>,
@@ -8,28 +8,28 @@ export function applyCustomPropertyDeclaration(
   value: string,
 ): void {
   if (!property.startsWith('--')) {
-    return
+    return;
   }
 
-  const keyword = value.trim().toLowerCase()
+  const keyword = value.trim().toLowerCase();
 
   if (keyword === 'initial') {
-    properties.delete(property)
-    return
+    properties.delete(property);
+    return;
   }
 
   if (keyword === 'inherit' || keyword === 'unset') {
-    const inheritedValue = inherited.get(property)
+    const inheritedValue = inherited.get(property);
 
     if (inheritedValue === undefined) {
-      properties.delete(property)
+      properties.delete(property);
     } else {
-      properties.set(property, inheritedValue)
+      properties.set(property, inheritedValue);
     }
-    return
+    return;
   }
 
-  properties.set(property, value.trim())
+  properties.set(property, value.trim());
 }
 
 export function resolveCustomPropertyValue(
@@ -37,13 +37,13 @@ export function resolveCustomPropertyValue(
   properties: CustomProperties = emptyCustomProperties,
 ): string | undefined {
   if (!value.toLowerCase().includes('var(')) {
-    return value
+    return value;
   }
 
-  const cyclic = new Set<string>()
-  const resolved = new Map<string, string | undefined>()
+  const cyclic = new Set<string>();
+  const resolved = new Map<string, string | undefined>();
 
-  return resolveValue(value, properties, [], cyclic, resolved)
+  return resolveValue(value, properties, [], cyclic, resolved);
 }
 
 function resolveValue(
@@ -53,33 +53,39 @@ function resolveValue(
   cyclic: Set<string>,
   resolved: Map<string, string | undefined>,
 ): string | undefined {
-  let output = ''
-  let index = 0
+  let output = '';
+  let index = 0;
 
   while (index < value.length) {
-    const variable = findNextVariable(value, index)
+    const variable = findNextVariable(value, index);
 
     if (!variable) {
-      output += value.slice(index)
-      break
+      output += value.slice(index);
+      break;
     }
 
-    output += value.slice(index, variable.start)
+    output += value.slice(index, variable.start);
     if (!variable.closed) {
-      return undefined
+      return undefined;
     }
 
-    const replacement = resolveVariable(variable.contents, properties, stack, cyclic, resolved)
+    const replacement = resolveVariable(
+      variable.contents,
+      properties,
+      stack,
+      cyclic,
+      resolved,
+    );
 
     if (replacement === undefined) {
-      return undefined
+      return undefined;
     }
 
-    output += replacement
-    index = variable.end
+    output += replacement;
+    index = variable.end;
   }
 
-  return output
+  return output;
 }
 
 function resolveVariable(
@@ -89,27 +95,33 @@ function resolveVariable(
   cyclic: Set<string>,
   resolved: Map<string, string | undefined>,
 ): string | undefined {
-  const comma = findTopLevelComma(contents)
-  const name = contents.slice(0, comma ?? contents.length).trim()
-  const fallback = comma === undefined ? undefined : contents.slice(comma + 1)
+  const comma = findTopLevelComma(contents);
+  const name = contents.slice(0, comma ?? contents.length).trim();
+  const fallback = comma === undefined ? undefined : contents.slice(comma + 1);
 
   if (!name.startsWith('--')) {
-    return undefined
+    return undefined;
   }
 
-  const replacement = resolveProperty(name, properties, stack, cyclic, resolved)
+  const replacement = resolveProperty(
+    name,
+    properties,
+    stack,
+    cyclic,
+    resolved,
+  );
 
   if (replacement !== undefined) {
-    return replacement
+    return replacement;
   }
 
-  if (stack.some((entry) => cyclic.has(entry))) {
-    return undefined
+  if (stack.some(entry => cyclic.has(entry))) {
+    return undefined;
   }
 
   return fallback === undefined
     ? undefined
-    : resolveValue(fallback, properties, stack, cyclic, resolved)
+    : resolveValue(fallback, properties, stack, cyclic, resolved);
 }
 
 function resolveProperty(
@@ -120,130 +132,151 @@ function resolveProperty(
   resolved: Map<string, string | undefined>,
 ): string | undefined {
   if (resolved.has(name)) {
-    return resolved.get(name)
+    return resolved.get(name);
   }
 
-  const cycleStart = stack.indexOf(name)
+  const cycleStart = stack.indexOf(name);
 
   if (cycleStart !== -1) {
     for (const entry of stack.slice(cycleStart)) {
-      cyclic.add(entry)
+      cyclic.add(entry);
     }
-    return undefined
+    return undefined;
   }
 
-  const authoredValue = properties.get(name)
+  const authoredValue = properties.get(name);
 
   if (authoredValue === undefined) {
-    return undefined
+    return undefined;
   }
 
-  stack.push(name)
-  const value = resolveValue(authoredValue, properties, stack, cyclic, resolved)
-  stack.pop()
-  const result = cyclic.has(name) ? undefined : value
-  resolved.set(name, result)
-  return result
+  stack.push(name);
+  const value = resolveValue(
+    authoredValue,
+    properties,
+    stack,
+    cyclic,
+    resolved,
+  );
+  stack.pop();
+  const result = cyclic.has(name) ? undefined : value;
+  resolved.set(name, result);
+  return result;
 }
 
 function findNextVariable(
   value: string,
   from: number,
-): { start: number; end: number; contents: string; closed: boolean } | undefined {
-  let quote: string | undefined
+):
+  | { start: number; end: number; contents: string; closed: boolean }
+  | undefined {
+  let quote: string | undefined;
 
   for (let index = from; index < value.length; index += 1) {
-    const character = value[index]
+    const character = value[index];
 
     if (character === '\\') {
-      index += 1
-      continue
+      index += 1;
+      continue;
     }
 
     if (quote) {
       if (character === quote) {
-        quote = undefined
+        quote = undefined;
       }
-      continue
+      continue;
     }
 
     if (character === '"' || character === "'") {
-      quote = character
-      continue
+      quote = character;
+      continue;
     }
 
-    const preceding = value[index - 1]
+    const preceding = value[index - 1];
 
     if (
       value.slice(index, index + 4).toLowerCase() !== 'var(' ||
       (preceding !== undefined && /[\w-]/.test(preceding))
     ) {
-      continue
+      continue;
     }
 
-    const end = findClosingParenthesis(value, index + 4)
+    const end = findClosingParenthesis(value, index + 4);
 
     if (end === undefined) {
-      return { start: index, end: value.length, contents: value.slice(index + 4), closed: false }
+      return {
+        start: index,
+        end: value.length,
+        contents: value.slice(index + 4),
+        closed: false,
+      };
     }
 
-    return { start: index, end: end + 1, contents: value.slice(index + 4, end), closed: true }
+    return {
+      start: index,
+      end: end + 1,
+      contents: value.slice(index + 4, end),
+      closed: true,
+    };
   }
 
-  return undefined
+  return undefined;
 }
 
-function findClosingParenthesis(value: string, from: number): number | undefined {
-  let depth = 1
-  let quote: string | undefined
+function findClosingParenthesis(
+  value: string,
+  from: number,
+): number | undefined {
+  let depth = 1;
+  let quote: string | undefined;
 
   for (let index = from; index < value.length; index += 1) {
-    const character = value[index]
+    const character = value[index];
 
     if (character === '\\') {
-      index += 1
+      index += 1;
     } else if (quote) {
       if (character === quote) {
-        quote = undefined
+        quote = undefined;
       }
     } else if (character === '"' || character === "'") {
-      quote = character
+      quote = character;
     } else if (character === '(') {
-      depth += 1
+      depth += 1;
     } else if (character === ')') {
-      depth -= 1
+      depth -= 1;
       if (depth === 0) {
-        return index
+        return index;
       }
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 function findTopLevelComma(value: string): number | undefined {
-  let depth = 0
-  let quote: string | undefined
+  let depth = 0;
+  let quote: string | undefined;
 
   for (let index = 0; index < value.length; index += 1) {
-    const character = value[index]
+    const character = value[index];
 
     if (character === '\\') {
-      index += 1
+      index += 1;
     } else if (quote) {
       if (character === quote) {
-        quote = undefined
+        quote = undefined;
       }
     } else if (character === '"' || character === "'") {
-      quote = character
+      quote = character;
     } else if (character === '(') {
-      depth += 1
+      depth += 1;
     } else if (character === ')') {
-      depth -= 1
+      depth -= 1;
     } else if (character === ',' && depth === 0) {
-      return index
+      return index;
     }
   }
 
-  return undefined
+  return undefined;
 }

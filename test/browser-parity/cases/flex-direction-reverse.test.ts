@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex row-reverse lays out children from the inline end', async () => {
   await expectChromiumParity({
@@ -38,8 +38,8 @@ it('flex row-reverse lays out children from the inline end', async () => {
       { type: 'point', x: 185, y: 10 },
       { type: 'point', x: 145, y: 10 },
     ],
-  })
-})
+  });
+});
 
 it('flex column-reverse lays out children from the block end', async () => {
   await expectChromiumParity({
@@ -78,5 +78,5 @@ it('flex column-reverse lays out children from the block end', async () => {
       { type: 'point', x: 10, y: 85 },
       { type: 'point', x: 10, y: 70 },
     ],
-  })
-})
+  });
+});

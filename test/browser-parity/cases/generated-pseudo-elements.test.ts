@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('before and after generated text contributes intrinsic size and block flow', async () => {
   await expectChromiumParity({
@@ -24,5 +24,5 @@ it('before and after generated text contributes intrinsic size and block flow', 
       { type: 'rect', selector: '#after' },
       { type: 'rect', selector: '#intrinsic' },
     ],
-  })
-})
+  });
+});

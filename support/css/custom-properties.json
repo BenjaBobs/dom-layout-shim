@@ -4,9 +4,7 @@
   "id": "custom-properties",
   "title": "Custom properties",
   "subjects": {
-    "properties": [
-      "--*"
-    ],
+    "properties": ["--*"],
     "elements": []
   },
   "effect": "layout",
@@ -15,9 +13,7 @@
     {
       "id": "inheritance-and-cascade",
       "description": "Custom properties inherit, cascade, and resolve before supported layout declarations are parsed.",
-      "properties": [
-        "--*"
-      ],
+      "properties": ["--*"],
       "syntax": [
         "var(--name)",
         "var(--name, <fallback>)",
@@ -30,10 +26,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "custom-properties",
-          "calculated-relative-lengths"
-        ]
+        "fixtures": ["custom-properties", "calculated-relative-lengths"]
       },
       "notes": [
         {
@@ -45,12 +38,8 @@
     {
       "id": "fallback-and-invalid-resolution",
       "description": "Nested fallbacks recover missing, invalid, and cyclic custom property references.",
-      "properties": [
-        "--*"
-      ],
-      "syntax": [
-        "var(--name, <fallback>)"
-      ],
+      "properties": ["--*"],
+      "syntax": ["var(--name, <fallback>)"],
       "conditions": [
         "Fallback values may contain nested `var()` references.",
         "Every custom property participating in a reference cycle is invalid.",
@@ -59,9 +48,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "custom-properties"
-        ]
+        "fixtures": ["custom-properties"]
       },
       "notes": [
         {

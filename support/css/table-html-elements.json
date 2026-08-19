@@ -38,10 +38,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "css-table-display",
-          "table-explicit-cells"
-        ]
+        "fixtures": ["css-table-display", "table-explicit-cells"]
       },
       "notes": [
         {
@@ -60,9 +57,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "table-explicit-cells"
-        ]
+        "fixtures": ["table-explicit-cells"]
       },
       "notes": [
         {
@@ -74,16 +69,11 @@
     {
       "id": "table-spacing-and-borders",
       "description": "`border-spacing` and supported collapsed-border geometry affect table layout.",
-      "properties": [
-        "border-collapse",
-        "border-spacing"
-      ],
+      "properties": ["border-collapse", "border-spacing"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "table-explicit-cells"
-        ]
+        "fixtures": ["table-explicit-cells"]
       },
       "notes": [
         {
@@ -95,30 +85,22 @@
     {
       "id": "captions-and-group-order",
       "description": "`caption-side` placement and row-group ordering follow the supported table model.",
-      "properties": [
-        "caption-side"
-      ],
+      "properties": ["caption-side"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "table-explicit-cells"
-        ]
+        "fixtures": ["table-explicit-cells"]
       },
       "notes": []
     },
     {
       "id": "table-visibility-and-hit-testing",
       "description": "Supported collapsed visibility and empty-cell behavior affect table geometry and hit testing.",
-      "properties": [
-        "empty-cells"
-      ],
+      "properties": ["empty-cells"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "table-explicit-cells"
-        ]
+        "fixtures": ["table-explicit-cells"]
       },
       "notes": [
         {
@@ -130,16 +112,11 @@
     {
       "id": "inert-table-hints",
       "description": "`table-layout` and `vertical-align` hints are accepted without changing the supported geometry subset.",
-      "properties": [
-        "table-layout",
-        "vertical-align"
-      ],
+      "properties": ["table-layout", "vertical-align"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "table-explicit-cells"
-        ]
+        "fixtures": ["table-explicit-cells"]
       },
       "notes": [
         {

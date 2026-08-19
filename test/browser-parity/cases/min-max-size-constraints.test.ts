@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('min and max size constraints clamp absolute box dimensions', async () => {
   await expectChromiumParity({
@@ -37,8 +37,8 @@ it('min and max size constraints clamp absolute box dimensions', async () => {
       { type: 'point', x: 169, y: 29 },
       { type: 'point', x: 170, y: 29 },
     ],
-  })
-})
+  });
+});
 
 it('percentage min and max constraints resolve against the containing block', async () => {
   await expectChromiumParity({
@@ -69,5 +69,5 @@ it('percentage min and max constraints resolve against the containing block', as
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});

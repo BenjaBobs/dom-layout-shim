@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('hr applies native border and vertical margins in block flow', async () => {
   await expectChromiumParity({
@@ -31,8 +31,8 @@ it('hr applies native border and vertical margins in block flow', async () => {
       { type: 'dimensions', selector: '#rule' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('author width and margin override hr native defaults while preserving the native border', async () => {
   await expectChromiumParity({
@@ -54,5 +54,5 @@ it('author width and margin override hr native defaults while preserving the nat
       { type: 'rect', selector: '#rule' },
       { type: 'dimensions', selector: '#rule' },
     ],
-  })
-})
+  });
+});

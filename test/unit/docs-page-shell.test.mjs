@@ -1,6 +1,6 @@
-import { readFile } from 'node:fs/promises'
-import { describe, expect, it } from 'vitest'
-import { renderDocumentationPage } from '../../scripts/docs-page-shell.mjs'
+import { readFile } from 'node:fs/promises';
+import { describe, expect, it } from 'vitest';
+import { renderDocumentationPage } from '../../scripts/docs-page-shell.mjs';
 
 describe('documentation page shell', () => {
   it('renders shared assets and navigation around page content', () => {
@@ -12,33 +12,56 @@ describe('documentation page shell', () => {
       page: 'changelog.html',
       version: '1.2.3',
       upcoming: true,
-    })
+    });
 
-    expect(output.match(/<nav class="site-nav" data-site-nav/g)).toHaveLength(1)
-    expect(output).toContain('aria-current="page">Changelog</a>')
-    expect(output).toContain('Latest v1.2.3</a>')
-    expect(output).toContain('href="./changelog.html#upcoming">Unreleased</a>')
-    expect(output).toContain('<a class="skip-link" href="#main-content">Skip to content</a>')
-    expect(output).toContain('<main id="main-content" tabindex="-1">')
-    expect(output).toContain('<div data-page-content>')
-    expect(output).toContain('<style data-page-styles>')
-    expect(output).toContain('<link rel="stylesheet" href="./site.css">')
-    expect(output).toContain('<script type="module" src="./site.js"></script>')
-    expect(output).toContain('<link rel="prefetch" href="./" as="document">')
-    expect(output).toContain('<link rel="prefetch" href="./css-support-status.html" as="document">')
-    expect(output).toContain('<link rel="prefetch" href="./examples.html" as="document">')
-    expect(output).not.toContain('<link rel="prefetch" href="./changelog.html" as="document">')
-    expect(output).toContain('<script type="speculationrules">')
-    const speculationRules = JSON.parse(/<script type="speculationrules">(.+)<\/script>/.exec(output)?.[1] || '{}')
-    expect(speculationRules.prerender[0].urls).toEqual(['./', './examples.html', './css-support-status.html'])
-    expect(output).toContain('<main id="main-content" tabindex="-1">Example content</main>')
-    expect(output).not.toMatch(/^\s+$/m)
-  })
+    expect(output.match(/<nav class="site-nav" data-site-nav/g)).toHaveLength(
+      1,
+    );
+    expect(output).toContain('aria-current="page">Changelog</a>');
+    expect(output).toContain('Latest v1.2.3</a>');
+    expect(output).toContain('href="./changelog.html#upcoming">Unreleased</a>');
+    expect(output).toContain(
+      '<a class="skip-link" href="#main-content">Skip to content</a>',
+    );
+    expect(output).toContain('<main id="main-content" tabindex="-1">');
+    expect(output).toContain('<div data-page-content>');
+    expect(output).toContain('<style data-page-styles>');
+    expect(output).toContain('<link rel="stylesheet" href="./site.css">');
+    expect(output).toContain('<script type="module" src="./site.js"></script>');
+    expect(output).toContain('<link rel="prefetch" href="./" as="document">');
+    expect(output).toContain(
+      '<link rel="prefetch" href="./css-support-status.html" as="document">',
+    );
+    expect(output).toContain(
+      '<link rel="prefetch" href="./examples.html" as="document">',
+    );
+    expect(output).not.toContain(
+      '<link rel="prefetch" href="./changelog.html" as="document">',
+    );
+    expect(output).toContain('<script type="speculationrules">');
+    const speculationRules = JSON.parse(
+      /<script type="speculationrules">(.+)<\/script>/.exec(output)?.[1] ||
+        '{}',
+    );
+    expect(speculationRules.prerender[0].urls).toEqual([
+      './',
+      './examples.html',
+      './css-support-status.html',
+    ]);
+    expect(output).toContain(
+      '<main id="main-content" tabindex="-1">Example content</main>',
+    );
+    expect(output).not.toMatch(/^\s+$/m);
+  });
 
   it('keeps the published version visible instead of the unreleased badge on mobile', async () => {
-    const styles = await readFile('docs-engine/assets/site.css', 'utf8')
+    const styles = await readFile('docs-engine/assets/site.css', 'utf8');
 
-    expect(styles).toMatch(/@media \(max-width: 700px\)[\s\S]*\.site-upcoming \{ display: none; \}/)
-    expect(styles).not.toMatch(/@media \(max-width: 700px\)[\s\S]*\.site-version \{ display: none; \}/)
-  })
-})
+    expect(styles).toMatch(
+      /@media \(max-width: 700px\)[\s\S]*\.site-upcoming \{\s*display: none;\s*\}/,
+    );
+    expect(styles).not.toMatch(
+      /@media \(max-width: 700px\)[\s\S]*\.site-version \{\s*display: none;\s*\}/,
+    );
+  });
+});

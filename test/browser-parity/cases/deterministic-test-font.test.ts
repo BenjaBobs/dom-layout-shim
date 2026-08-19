@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('uses repository-owned metrics for exact text wrapping', async () => {
   await expectChromiumParity({
@@ -30,5 +30,5 @@ it('uses repository-owned metrics for exact text wrapping', async () => {
       { type: 'rect', selector: '#text' },
       { type: 'rect', selector: '#natural' },
     ],
-  })
-})
+  });
+});

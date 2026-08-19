@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('element scroll offsets descendant viewport rects and hit testing inside the scrollport', async () => {
   await expectChromiumParity({
@@ -43,5 +43,5 @@ it('element scroll offsets descendant viewport rects and hit testing inside the 
       { type: 'point', x: 40, y: 55 },
       { type: 'point', x: 40, y: 95 },
     ],
-  })
-})
+  });
+});

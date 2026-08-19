@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex shorthand expands into grow shrink and basis inputs', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('flex shorthand expands into grow shrink and basis inputs', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex shorthand keywords map to their grow shrink and basis defaults', async () => {
   await expectChromiumParity({
@@ -80,5 +80,5 @@ it('flex shorthand keywords map to their grow shrink and basis defaults', async 
       { type: 'rect', selector: '#none' },
       { type: 'rect', selector: '#initial' },
     ],
-  })
-})
+  });
+});

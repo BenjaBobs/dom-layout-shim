@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('blockifies common display aliases for positioned elements', async () => {
   await expectChromiumParity({
@@ -55,8 +55,8 @@ it('blockifies common display aliases for positioned elements', async () => {
       { type: 'point', x: 120, y: 20 },
       { type: 'point', x: 170, y: 20 },
     ],
-  })
-})
+  });
+});
 
 it('maps inline flex and grid aliases to their layout modes', async () => {
   await expectChromiumParity({
@@ -107,5 +107,5 @@ it('maps inline flex and grid aliases to their layout modes', async () => {
       { type: 'rect', selector: '#grid-a' },
       { type: 'rect', selector: '#grid-b' },
     ],
-  })
-})
+  });
+});

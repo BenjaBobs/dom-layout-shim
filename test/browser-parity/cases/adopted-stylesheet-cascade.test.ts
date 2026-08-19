@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('applies adopted stylesheets after document stylesheets', async () => {
   await expectChromiumParity({
@@ -24,5 +24,5 @@ it('applies adopted stylesheets after document stylesheets', async () => {
       { type: 'rect', selector: '#box' },
       { type: 'dimensions', selector: '#box' },
     ],
-  })
-})
+  });
+});

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('absolute overlap uses the higher z-index element at the point', async () => {
   await expectChromiumParity({
@@ -28,5 +28,5 @@ it('absolute overlap uses the higher z-index element at the point', async () => 
       <div id="front"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});

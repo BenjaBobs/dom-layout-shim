@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('static block margins affect parent and child flow geometry', async () => {
   await expectChromiumParity({
@@ -29,8 +29,8 @@ it('static block margins affect parent and child flow geometry', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});
 
 it('auto inline margins center fixed-width block children', async () => {
   await expectChromiumParity({
@@ -59,8 +59,8 @@ it('auto inline margins center fixed-width block children', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});
 
 it('percentage margins resolve against containing block width', async () => {
   await expectChromiumParity({
@@ -89,5 +89,5 @@ it('percentage margins resolve against containing block width', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});

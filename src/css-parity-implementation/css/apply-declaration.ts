@@ -1,10 +1,23 @@
-import { handleUnsupportedCss, type UnsupportedCssPolicy, type UnsupportedCssSource } from '../../api/unsupported-css-policy.ts'
+import type { Viewport } from '../../api/layout-engine-config.ts';
+import {
+  handleUnsupportedCss,
+  type UnsupportedCssPolicy,
+  type UnsupportedCssSource,
+} from '../../api/unsupported-css-policy.ts';
+import {
+  type CustomProperties,
+  resolveCustomPropertyValue,
+} from './custom-properties.ts';
+import {
+  parseLengthPercentage,
+  parseNumberCalculation,
+} from './length-value.ts';
 import type {
   AlignContentValue,
   AlignItemsValue,
   AlignSelfValue,
-  BorderStyleValue,
   BorderStyles,
+  BorderStyleValue,
   Edges,
   FlexWrapValue,
   GridMaxTrackBreadth,
@@ -20,11 +33,8 @@ import type {
   SupportedStyle,
   SupportedTransform,
   TransformOrigin,
-} from './supported-style.ts'
-import { resolveCustomPropertyValue, type CustomProperties } from './custom-properties.ts'
-import type { Viewport } from '../../api/layout-engine-config.ts'
-import { parseLengthPercentage, parseNumberCalculation } from './length-value.ts'
-export { createDefaultStyle } from './supported-style.ts'
+} from './supported-style.ts';
+
 export type {
   AlignContentValue,
   AlignItemsValue,
@@ -41,18 +51,19 @@ export type {
   OverflowValue,
   SupportedDimension,
   SupportedStyle,
-} from './supported-style.ts'
+} from './supported-style.ts';
+export { createDefaultStyle } from './supported-style.ts';
 
 export type DeclarationContext = {
-  policy?: UnsupportedCssPolicy
-  source: UnsupportedCssSource
-  selector?: string
-  element?: Element
-  rootFontSize?: number
-  fontSize?: number
-  viewport?: Viewport
-  customProperties?: CustomProperties
-}
+  policy?: UnsupportedCssPolicy;
+  source: UnsupportedCssSource;
+  selector?: string;
+  element?: Element;
+  rootFontSize?: number;
+  fontSize?: number;
+  viewport?: Viewport;
+  customProperties?: CustomProperties;
+};
 
 export function applyDeclaration(
   style: SupportedStyle,
@@ -60,14 +71,20 @@ export function applyDeclaration(
   value: string,
   context: DeclarationContext,
 ): void {
-  context = { ...context, fontSize: style.fontSize }
-  const normalizedProperty = property.trim().toLowerCase()
+  context = { ...context, fontSize: style.fontSize };
+  const normalizedProperty = property.trim().toLowerCase();
 
-  if (normalizedProperty.startsWith('--') || isTransitionProperty(normalizedProperty)) {
-    return
+  if (
+    normalizedProperty.startsWith('--') ||
+    isTransitionProperty(normalizedProperty)
+  ) {
+    return;
   }
 
-  const resolvedValue = resolveCustomPropertyValue(value, context.customProperties)
+  const resolvedValue = resolveCustomPropertyValue(
+    value,
+    context.customProperties,
+  );
 
   if (resolvedValue === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -77,20 +94,20 @@ export function applyDeclaration(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const normalizedValue = resolvedValue.trim().toLowerCase()
+  const normalizedValue = resolvedValue.trim().toLowerCase();
 
   switch (normalizedProperty) {
     case 'display':
-      applyDisplay(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyDisplay(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'position':
       if (normalizedValue === 'initial' || normalizedValue === 'unset') {
-        style.position = 'static'
-        return
+        style.position = 'static';
+        return;
       }
       applyKeyword(
         style,
@@ -100,12 +117,12 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'box-sizing':
       if (normalizedValue === 'initial' || normalizedValue === 'unset') {
-        style.boxSizing = 'content-box'
-        return
+        style.boxSizing = 'content-box';
+        return;
       }
       applyKeyword(
         style,
@@ -115,11 +132,11 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'flex-direction':
       if (resetKeyword(style, 'flexDirection', normalizedValue, 'row')) {
-        return
+        return;
       }
       applyKeyword(
         style,
@@ -129,11 +146,11 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'flex-wrap':
       if (resetKeyword(style, 'flexWrap', normalizedValue, 'nowrap')) {
-        return
+        return;
       }
       applyKeyword(
         style,
@@ -143,19 +160,21 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'flex-flow':
       if (normalizedValue === 'initial' || normalizedValue === 'unset') {
-        style.flexDirection = 'row'
-        style.flexWrap = 'nowrap'
-        return
+        style.flexDirection = 'row';
+        style.flexWrap = 'nowrap';
+        return;
       }
-      applyFlexFlow(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyFlexFlow(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'align-items':
-      if (resetOptionalKeyword(style, 'alignItems', normalizedValue, undefined)) {
-        return
+      if (
+        resetOptionalKeyword(style, 'alignItems', normalizedValue, undefined)
+      ) {
+        return;
       }
       applyKeyword(
         style,
@@ -165,11 +184,11 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'align-self':
       if (resetKeyword(style, 'alignSelf', normalizedValue, 'auto')) {
-        return
+        return;
       }
       applyKeyword(
         style,
@@ -179,39 +198,69 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'align-content':
-      if (resetOptionalKeyword(style, 'alignContent', normalizedValue, undefined)) {
-        return
+      if (
+        resetOptionalKeyword(style, 'alignContent', normalizedValue, undefined)
+      ) {
+        return;
       }
       applyKeyword(
         style,
         'alignContent',
         normalizedValue,
-        ['start', 'end', 'flex-start', 'flex-end', 'center', 'stretch', 'space-between', 'space-around', 'space-evenly'],
+        [
+          'start',
+          'end',
+          'flex-start',
+          'flex-end',
+          'center',
+          'stretch',
+          'space-between',
+          'space-around',
+          'space-evenly',
+        ],
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'justify-content':
-      if (resetOptionalKeyword(style, 'justifyContent', normalizedValue, undefined)) {
-        return
+      if (
+        resetOptionalKeyword(
+          style,
+          'justifyContent',
+          normalizedValue,
+          undefined,
+        )
+      ) {
+        return;
       }
       applyKeyword(
         style,
         'justifyContent',
         normalizedValue,
-        ['start', 'end', 'flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'],
+        [
+          'start',
+          'end',
+          'flex-start',
+          'flex-end',
+          'center',
+          'space-between',
+          'space-around',
+          'space-evenly',
+        ],
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'justify-items':
-      if (resetOptionalKeyword(style, 'justifyItems', normalizedValue, undefined)) {
-        return
+      if (
+        resetOptionalKeyword(style, 'justifyItems', normalizedValue, undefined)
+      ) {
+        return;
       }
       applyKeyword(
         style,
@@ -221,11 +270,13 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'justify-self':
-      if (resetOptionalKeyword(style, 'justifySelf', normalizedValue, undefined)) {
-        return
+      if (
+        resetOptionalKeyword(style, 'justifySelf', normalizedValue, undefined)
+      ) {
+        return;
       }
       applyKeyword(
         style,
@@ -235,118 +286,272 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'place-content':
-      applyPlaceContent(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyPlaceContent(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'place-items':
-      applyPlaceItems(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyPlaceItems(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'place-self':
-      applyPlaceSelf(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyPlaceSelf(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'flex-grow':
       if (resetNumber(style, 'flexGrow', normalizedValue, 0)) {
-        return
+        return;
       }
-      applyNumber(style, 'flexGrow', normalizedValue, normalizedProperty, value, context)
-      return
+      applyNumber(
+        style,
+        'flexGrow',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'flex-shrink':
       if (resetNumber(style, 'flexShrink', normalizedValue, 1)) {
-        return
+        return;
       }
-      applyNumber(style, 'flexShrink', normalizedValue, normalizedProperty, value, context)
-      return
+      applyNumber(
+        style,
+        'flexShrink',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'flex-basis':
-      applyFlexBasis(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyFlexBasis(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'flex':
-      applyFlexShorthand(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyFlexShorthand(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'order':
       if (resetNumber(style, 'order', normalizedValue, 0)) {
-        return
+        return;
       }
-      applyInteger(style, 'order', normalizedValue, normalizedProperty, value, context)
-      return
+      applyInteger(
+        style,
+        'order',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'aspect-ratio':
-      applyAspectRatio(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyAspectRatio(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-auto-flow':
       if (resetKeyword(style, 'gridAutoFlow', normalizedValue, 'row')) {
-        return
+        return;
       }
-      applyGridAutoFlow(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridAutoFlow(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-template-columns':
-      applyGridTemplate(style, 'gridTemplateColumns', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridTemplate(
+        style,
+        'gridTemplateColumns',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-template-rows':
-      applyGridTemplate(style, 'gridTemplateRows', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridTemplate(
+        style,
+        'gridTemplateRows',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-template-areas':
-      applyGridTemplateAreas(style, resolvedValue.trim(), normalizedProperty, value, context)
-      return
+      applyGridTemplateAreas(
+        style,
+        resolvedValue.trim(),
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-auto-columns':
-      applyGridAutoTracks(style, 'gridAutoColumns', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridAutoTracks(
+        style,
+        'gridAutoColumns',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-auto-rows':
-      applyGridAutoTracks(style, 'gridAutoRows', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridAutoTracks(
+        style,
+        'gridAutoRows',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-column':
-      if (resetGridLine(style, normalizedValue, 'gridColumnStart', 'gridColumnEnd')) {
-        return
+      if (
+        resetGridLine(
+          style,
+          normalizedValue,
+          'gridColumnStart',
+          'gridColumnEnd',
+        )
+      ) {
+        return;
       }
-      applyGridLine(style, 'gridColumnStart', 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridLine(
+        style,
+        'gridColumnStart',
+        'gridColumnEnd',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-row':
       if (resetGridLine(style, normalizedValue, 'gridRowStart', 'gridRowEnd')) {
-        return
+        return;
       }
-      applyGridLine(style, 'gridRowStart', 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridLine(
+        style,
+        'gridRowStart',
+        'gridRowEnd',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-area':
       if (normalizedValue === 'initial' || normalizedValue === 'unset') {
-        style.gridRowStart = 'auto'
-        style.gridColumnStart = 'auto'
-        style.gridRowEnd = 'auto'
-        style.gridColumnEnd = 'auto'
-        return
+        style.gridRowStart = 'auto';
+        style.gridColumnStart = 'auto';
+        style.gridRowEnd = 'auto';
+        style.gridColumnEnd = 'auto';
+        return;
       }
-      applyGridArea(style, resolvedValue.trim(), normalizedProperty, value, context)
-      return
+      applyGridArea(
+        style,
+        resolvedValue.trim(),
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-column-start':
       if (resetGridPlacement(style, 'gridColumnStart', normalizedValue)) {
-        return
+        return;
       }
-      applyGridPlacement(style, 'gridColumnStart', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridPlacement(
+        style,
+        'gridColumnStart',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-column-end':
       if (resetGridPlacement(style, 'gridColumnEnd', normalizedValue)) {
-        return
+        return;
       }
-      applyGridPlacement(style, 'gridColumnEnd', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridPlacement(
+        style,
+        'gridColumnEnd',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-row-start':
       if (resetGridPlacement(style, 'gridRowStart', normalizedValue)) {
-        return
+        return;
       }
-      applyGridPlacement(style, 'gridRowStart', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridPlacement(
+        style,
+        'gridRowStart',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'grid-row-end':
       if (resetGridPlacement(style, 'gridRowEnd', normalizedValue)) {
-        return
+        return;
       }
-      applyGridPlacement(style, 'gridRowEnd', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGridPlacement(
+        style,
+        'gridRowEnd',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'pointer-events':
       if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
-        return
+        return;
       }
       if (normalizedValue === 'initial') {
-        style.pointerEvents = 'auto'
-        return
+        style.pointerEvents = 'auto';
+        return;
       }
       applyKeyword(
         style,
@@ -356,21 +561,27 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'visibility':
       if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
-        return
+        return;
       }
       if (normalizedValue === 'initial') {
-        style.visibility = 'visible'
-        return
+        style.visibility = 'visible';
+        return;
       }
-      applyVisibility(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisibility(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'overflow':
-      applyOverflow(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyOverflow(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'overflow-x':
       applyKeyword(
         style,
@@ -380,9 +591,9 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      normalizeOverflowAxes(style)
-      return
+      );
+      normalizeOverflowAxes(style);
+      return;
     case 'overflow-y':
       applyKeyword(
         style,
@@ -392,48 +603,68 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      normalizeOverflowAxes(style)
-      return
+      );
+      normalizeOverflowAxes(style);
+      return;
     case 'opacity':
-      applyOpacity(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOpacity(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'color':
     case 'background-color':
-      applyVisualColor(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualColor(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'background':
-      applyVisualBackground(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualBackground(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'background-image':
-      applyBackgroundImage(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundImage(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'background-repeat':
-      applyBackgroundRepeat(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundRepeat(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'background-position':
-      applyBackgroundPosition(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundPosition(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'background-size':
-      applyBackgroundSize(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundSize(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'background-origin':
     case 'background-clip':
-      applyBackgroundBox(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundBox(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'background-attachment':
-      applyBackgroundAttachment(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBackgroundAttachment(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'box-shadow':
-      applyBoxShadow(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBoxShadow(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'border-color':
-      applyVisualColors(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualColors(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'border-inline-color':
     case 'border-block-color':
-      applyVisualColors(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualColors(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'border-top-color':
     case 'border-right-color':
     case 'border-bottom-color':
@@ -443,29 +674,34 @@ export function applyDeclaration(
     case 'border-block-start-color':
     case 'border-block-end-color':
     case 'outline-color':
-      applyVisualColor(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualColor(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'outline':
-      applyOutline(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOutline(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'outline-width':
-      applyOutlineWidth(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOutlineWidth(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'outline-style':
-      applyOutlineStyle(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOutlineStyle(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'outline-offset':
-      applyOutlineOffset(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOutlineOffset(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'text-decoration':
-      applyTextDecoration(normalizedValue, normalizedProperty, value, context)
-      return
+      applyTextDecoration(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'text-decoration-line':
-      applyTextDecorationLine(normalizedValue, normalizedProperty, value, context)
-      return
+      applyTextDecorationLine(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'text-decoration-color':
-      applyVisualColor(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualColor(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'text-decoration-style':
       applyKeywordOnly(
         normalizedValue,
@@ -473,86 +709,190 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'text-decoration-thickness':
-      applyTextDecorationThickness(normalizedValue, normalizedProperty, value, context)
-      return
+      applyTextDecorationThickness(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'filter':
     case 'backdrop-filter':
-      applyVisualFilter(normalizedValue, normalizedProperty, value, context)
-      return
+      applyVisualFilter(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'transform':
-      applyTransform(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyTransform(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'translate':
-      applyIndividualTranslate(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyIndividualTranslate(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'scale':
-      applyIndividualScale(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyIndividualScale(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'transform-origin':
-      applyTransformOrigin(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyTransformOrigin(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'will-change':
-      applyWillChange(normalizedValue, normalizedProperty, value, context)
-      return
+      applyWillChange(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'appearance':
-      applyKeywordOnly(normalizedValue, ['auto', 'none'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'accent-color':
     case 'caret-color':
-      applyAutoOrVisualColor(normalizedValue, normalizedProperty, value, context)
-      return
+      applyAutoOrVisualColor(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'scroll-behavior':
-      applyKeywordOnly(normalizedValue, ['auto', 'smooth'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'smooth'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'scrollbar-width':
-      applyKeywordOnly(normalizedValue, ['auto', 'thin', 'none'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'thin', 'none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'scrollbar-color':
-      applyScrollbarColor(normalizedValue, normalizedProperty, value, context)
-      return
+      applyScrollbarColor(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'overscroll-behavior':
-      applyOverscrollBehavior(normalizedValue, normalizedProperty, value, context)
-      return
+      applyOverscrollBehavior(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'overscroll-behavior-x':
     case 'overscroll-behavior-y':
-      applyKeywordOnly(normalizedValue, ['auto', 'contain', 'none'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'contain', 'none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'isolation':
-      applyKeywordOnly(normalizedValue, ['auto', 'isolate'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'isolate'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'mix-blend-mode':
-      applyKeywordOnly(normalizedValue, supportedBlendModes, normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        supportedBlendModes,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'list-style':
-      applyListStyle(normalizedValue, normalizedProperty, value, context)
-      return
+      applyListStyle(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'list-style-type':
-      applyKeywordOnly(normalizedValue, ['none', 'disc', 'circle', 'square', 'decimal'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['none', 'disc', 'circle', 'square', 'decimal'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'list-style-position':
-      applyKeywordOnly(normalizedValue, ['inside', 'outside'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['inside', 'outside'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'list-style-image':
-      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'forced-color-adjust':
-      applyKeywordOnly(normalizedValue, ['auto', 'none', 'preserve-parent-color'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'none', 'preserve-parent-color'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'color-scheme':
-      applyColorScheme(normalizedValue, normalizedProperty, value, context)
-      return
+      applyColorScheme(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'border-radius':
-      applyBorderRadius(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderRadius(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'border-top-left-radius':
     case 'border-top-right-radius':
     case 'border-bottom-right-radius':
     case 'border-bottom-left-radius':
-      applyBorderCornerRadius(normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderCornerRadius(
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'object-fit':
       applyKeywordOnly(
         normalizedValue,
@@ -560,20 +900,32 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'object-position':
-      applyObjectPosition(normalizedValue, normalizedProperty, value, context)
-      return
+      applyObjectPosition(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'cursor':
-      applyKeywordOnly(normalizedValue, supportedCursorKeywords, normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        supportedCursorKeywords,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'user-select':
-      applyKeywordOnly(normalizedValue, ['auto', 'text', 'none', 'contain', 'all'], normalizedProperty, value, context)
-      return
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'text', 'none', 'contain', 'all'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'touch-action':
-      applyTouchAction(normalizedValue, normalizedProperty, value, context)
-      return
+      applyTouchAction(normalizedValue, normalizedProperty, value, context);
+      return;
     case 'resize':
       applyKeywordOnly(
         normalizedValue,
@@ -581,197 +933,571 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'direction':
-      applyKeywordOnly(normalizedValue, ['ltr'], normalizedProperty, value, context)
-      return
-    case 'writing-mode':
-      applyKeywordOnly(normalizedValue, ['horizontal-tb'], normalizedProperty, value, context)
-      return
-    case 'float':
-    case 'clear':
-      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
-      return
-    case 'contain':
-      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
-      return
-    case 'container-type':
-      applyKeywordOnly(normalizedValue, ['normal'], normalizedProperty, value, context)
-      return
-    case 'container-name':
-      applyKeywordOnly(normalizedValue, ['none'], normalizedProperty, value, context)
-      return
-    case 'caption-side':
-      applyKeyword(style, 'captionSide', normalizedValue, ['top', 'bottom'], normalizedProperty, value, context)
-      return
-    case 'border-collapse':
-      applyKeyword(style, 'borderCollapse', normalizedValue, ['separate', 'collapse'], normalizedProperty, value, context)
-      return
-    case 'empty-cells':
-      applyKeyword(style, 'emptyCells', normalizedValue, ['show', 'hide'], normalizedProperty, value, context)
-      return
-    case 'border-spacing':
-      applyBorderSpacing(style, normalizedValue, normalizedProperty, value, context)
-      return
-    case 'table-layout':
-      applyKeywordOnly(normalizedValue, ['auto', 'fixed'], normalizedProperty, value, context)
-      return
-    case 'vertical-align':
       applyKeywordOnly(
         normalizedValue,
-        ['baseline', 'top', 'middle', 'bottom', 'sub', 'super', 'text-top', 'text-bottom'],
+        ['ltr'],
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
+    case 'writing-mode':
+      applyKeywordOnly(
+        normalizedValue,
+        ['horizontal-tb'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'float':
+    case 'clear':
+      applyKeywordOnly(
+        normalizedValue,
+        ['none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'contain':
+      applyKeywordOnly(
+        normalizedValue,
+        ['none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'container-type':
+      applyKeywordOnly(
+        normalizedValue,
+        ['normal'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'container-name':
+      applyKeywordOnly(
+        normalizedValue,
+        ['none'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'caption-side':
+      applyKeyword(
+        style,
+        'captionSide',
+        normalizedValue,
+        ['top', 'bottom'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'border-collapse':
+      applyKeyword(
+        style,
+        'borderCollapse',
+        normalizedValue,
+        ['separate', 'collapse'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'empty-cells':
+      applyKeyword(
+        style,
+        'emptyCells',
+        normalizedValue,
+        ['show', 'hide'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'border-spacing':
+      applyBorderSpacing(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'table-layout':
+      applyKeywordOnly(
+        normalizedValue,
+        ['auto', 'fixed'],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
+    case 'vertical-align':
+      applyKeywordOnly(
+        normalizedValue,
+        [
+          'baseline',
+          'top',
+          'middle',
+          'bottom',
+          'sub',
+          'super',
+          'text-top',
+          'text-bottom',
+        ],
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inline-size':
-      applyLength(style, 'width', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'width',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'block-size':
-      applyLength(style, 'height', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'height',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'min-inline-size':
-      applyLength(style, 'minWidth', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'minWidth',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'min-block-size':
-      applyLength(style, 'minHeight', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'minHeight',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'max-inline-size':
-      applyLength(style, 'maxWidth', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'maxWidth',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'max-block-size':
-      applyLength(style, 'maxHeight', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'maxHeight',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'left':
     case 'right':
     case 'top':
     case 'bottom':
     case 'width':
     case 'height':
-      applyLength(style, normalizedProperty, normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        normalizedProperty,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'min-width':
-      applyLength(style, 'minWidth', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'minWidth',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'min-height':
-      applyLength(style, 'minHeight', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'minHeight',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'max-width':
-      applyLength(style, 'maxWidth', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'maxWidth',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'max-height':
-      applyLength(style, 'maxHeight', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'maxHeight',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset':
-      applyInset(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyInset(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'inset-inline':
-      applyLogicalInset(style, 'inline', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalInset(
+        style,
+        'inline',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset-block':
-      applyLogicalInset(style, 'block', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalInset(
+        style,
+        'block',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset-inline-start':
-      applyLength(style, 'left', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'left',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset-inline-end':
-      applyLength(style, 'right', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'right',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset-block-start':
-      applyLength(style, 'top', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'top',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'inset-block-end':
-      applyLength(style, 'bottom', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLength(
+        style,
+        'bottom',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'z-index':
-      applyZIndex(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyZIndex(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'padding':
-      applyPaddingEdges(style.padding, normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdges(
+        style.padding,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-inline':
-      applyLogicalPaddingEdges(style.padding, 'inline', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalPaddingEdges(
+        style.padding,
+        'inline',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-block':
-      applyLogicalPaddingEdges(style.padding, 'block', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalPaddingEdges(
+        style.padding,
+        'block',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-inline-start':
-      applyPaddingEdge(style.padding, 'left', normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdge(
+        style.padding,
+        'left',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-inline-end':
-      applyPaddingEdge(style.padding, 'right', normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdge(
+        style.padding,
+        'right',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-block-start':
-      applyPaddingEdge(style.padding, 'top', normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdge(
+        style.padding,
+        'top',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-block-end':
-      applyPaddingEdge(style.padding, 'bottom', normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdge(
+        style.padding,
+        'bottom',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'padding-top':
     case 'padding-right':
     case 'padding-bottom':
     case 'padding-left':
-      applyPaddingEdge(style.padding, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
-      return
+      applyPaddingEdge(
+        style.padding,
+        edgeNameFromProperty(normalizedProperty),
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin':
-      applyMarginEdges(style.margin, normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdges(
+        style.margin,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-inline':
-      applyLogicalMarginEdges(style.margin, 'inline', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalMarginEdges(
+        style.margin,
+        'inline',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-block':
-      applyLogicalMarginEdges(style.margin, 'block', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalMarginEdges(
+        style.margin,
+        'block',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-inline-start':
-      applyMarginEdge(style.margin, 'left', normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdge(
+        style.margin,
+        'left',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-inline-end':
-      applyMarginEdge(style.margin, 'right', normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdge(
+        style.margin,
+        'right',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-block-start':
-      applyMarginEdge(style.margin, 'top', normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdge(
+        style.margin,
+        'top',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-block-end':
-      applyMarginEdge(style.margin, 'bottom', normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdge(
+        style.margin,
+        'bottom',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'margin-top':
     case 'margin-right':
     case 'margin-bottom':
     case 'margin-left':
-      applyMarginEdge(style.margin, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
-      return
+      applyMarginEdge(
+        style.margin,
+        edgeNameFromProperty(normalizedProperty),
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'gap':
-      applyGap(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyGap(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'row-gap':
-      applyGapLength(style, 'rowGap', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGapLength(
+        style,
+        'rowGap',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'column-gap':
-      applyGapLength(style, 'columnGap', normalizedValue, normalizedProperty, value, context)
-      return
+      applyGapLength(
+        style,
+        'columnGap',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-width':
-      applyBorderWidths(style.borderWidth, normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderWidths(
+        style.borderWidth,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-inline-width':
-      applyLogicalEdges(style.borderWidth, 'inline', normalizedValue, normalizedProperty, value, context, parseBorderWidth)
-      return
+      applyLogicalEdges(
+        style.borderWidth,
+        'inline',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+        parseBorderWidth,
+      );
+      return;
     case 'border-block-width':
-      applyLogicalEdges(style.borderWidth, 'block', normalizedValue, normalizedProperty, value, context, parseBorderWidth)
-      return
+      applyLogicalEdges(
+        style.borderWidth,
+        'block',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+        parseBorderWidth,
+      );
+      return;
     case 'border-inline-start-width':
-      applyBorderWidthEdge(style.borderWidth, 'left', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderWidthEdge(
+        style.borderWidth,
+        'left',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-inline-end-width':
-      applyBorderWidthEdge(style.borderWidth, 'right', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderWidthEdge(
+        style.borderWidth,
+        'right',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-block-start-width':
-      applyBorderWidthEdge(style.borderWidth, 'top', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderWidthEdge(
+        style.borderWidth,
+        'top',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-block-end-width':
-      applyBorderWidthEdge(style.borderWidth, 'bottom', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderWidthEdge(
+        style.borderWidth,
+        'bottom',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-top-width':
     case 'border-right-width':
     case 'border-bottom-width':
@@ -783,29 +1509,77 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'border-style':
-      applyBorderStyles(style.borderStyle, normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderStyles(
+        style.borderStyle,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-inline-style':
-      applyLogicalBorderStyles(style.borderStyle, 'inline', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalBorderStyles(
+        style.borderStyle,
+        'inline',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-block-style':
-      applyLogicalBorderStyles(style.borderStyle, 'block', normalizedValue, normalizedProperty, value, context)
-      return
+      applyLogicalBorderStyles(
+        style.borderStyle,
+        'block',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-inline-start-style':
-      applyBorderStyle(style.borderStyle, 'left', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderStyle(
+        style.borderStyle,
+        'left',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-inline-end-style':
-      applyBorderStyle(style.borderStyle, 'right', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderStyle(
+        style.borderStyle,
+        'right',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-block-start-style':
-      applyBorderStyle(style.borderStyle, 'top', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderStyle(
+        style.borderStyle,
+        'top',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-block-end-style':
-      applyBorderStyle(style.borderStyle, 'bottom', normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderStyle(
+        style.borderStyle,
+        'bottom',
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-top-style':
     case 'border-right-style':
     case 'border-bottom-style':
@@ -817,46 +1591,78 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'border':
-      applyBorderShorthand(style, undefined, normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderShorthand(
+        style,
+        undefined,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'border-top':
     case 'border-right':
     case 'border-bottom':
     case 'border-left':
-      applyBorderShorthand(style, edgeNameFromProperty(normalizedProperty), normalizedValue, normalizedProperty, value, context)
-      return
+      applyBorderShorthand(
+        style,
+        edgeNameFromProperty(normalizedProperty),
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'font-family':
       if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
-        return
+        return;
       }
       if (normalizedValue === 'initial') {
-        style.fontFamily = 'sans-serif'
-        return
+        style.fontFamily = 'sans-serif';
+        return;
       }
-      style.fontFamily = value.trim()
-      return
+      style.fontFamily = value.trim();
+      return;
     case 'font-size':
-      applyFontSize(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyFontSize(style, normalizedValue, normalizedProperty, value, context);
+      return;
     case 'font-weight':
-      applyFontWeight(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyFontWeight(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'letter-spacing':
-      applyLetterSpacing(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyLetterSpacing(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'line-height':
-      applyLineHeight(style, normalizedValue, normalizedProperty, value, context)
-      return
+      applyLineHeight(
+        style,
+        normalizedValue,
+        normalizedProperty,
+        value,
+        context,
+      );
+      return;
     case 'white-space':
       if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
-        return
+        return;
       }
       if (normalizedValue === 'initial') {
-        style.whiteSpace = 'normal'
-        return
+        style.whiteSpace = 'normal';
+        return;
       }
       applyKeyword(
         style,
@@ -866,15 +1672,15 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     case 'text-transform':
       if (normalizedValue === 'inherit' || normalizedValue === 'unset') {
-        return
+        return;
       }
       if (normalizedValue === 'initial') {
-        style.textTransform = 'none'
-        return
+        style.textTransform = 'none';
+        return;
       }
       applyKeyword(
         style,
@@ -884,8 +1690,8 @@ export function applyDeclaration(
         normalizedProperty,
         value,
         context,
-      )
-      return
+      );
+      return;
     default:
       handleUnsupportedCss(context.policy, {
         property: normalizedProperty,
@@ -894,7 +1700,7 @@ export function applyDeclaration(
         source: context.source,
         selector: context.selector,
         element: context.element,
-      })
+      });
   }
 }
 
@@ -906,7 +1712,7 @@ function isTransitionProperty(property: string): boolean {
     property === 'transition-timing-function' ||
     property === 'transition-delay' ||
     property === 'transition-behavior'
-  )
+  );
 }
 
 function applyFlexFlow(
@@ -916,7 +1722,7 @@ function applyFlexFlow(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -926,12 +1732,12 @@ function applyFlexFlow(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  let direction: SupportedStyle['flexDirection'] | undefined
-  let wrap: FlexWrapValue | undefined
+  let direction: SupportedStyle['flexDirection'] | undefined;
+  let wrap: FlexWrapValue | undefined;
 
   for (const part of parts) {
     if (isFlexDirectionValue(part)) {
@@ -943,12 +1749,12 @@ function applyFlexFlow(
           source: context.source,
           selector: context.selector,
           element: context.element,
-        })
-        return
+        });
+        return;
       }
 
-      direction = part
-      continue
+      direction = part;
+      continue;
     }
 
     if (isFlexWrapValue(part)) {
@@ -960,12 +1766,12 @@ function applyFlexFlow(
           source: context.source,
           selector: context.selector,
           element: context.element,
-        })
-        return
+        });
+        return;
       }
 
-      wrap = part
-      continue
+      wrap = part;
+      continue;
     }
 
     handleUnsupportedCss(context.policy, {
@@ -975,20 +1781,27 @@ function applyFlexFlow(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.flexDirection = direction ?? 'row'
-  style.flexWrap = wrap ?? 'nowrap'
+  style.flexDirection = direction ?? 'row';
+  style.flexWrap = wrap ?? 'nowrap';
 }
 
-function isFlexDirectionValue(value: string): value is SupportedStyle['flexDirection'] {
-  return value === 'row' || value === 'row-reverse' || value === 'column' || value === 'column-reverse'
+function isFlexDirectionValue(
+  value: string,
+): value is SupportedStyle['flexDirection'] {
+  return (
+    value === 'row' ||
+    value === 'row-reverse' ||
+    value === 'column' ||
+    value === 'column-reverse'
+  );
 }
 
 function isFlexWrapValue(value: string): value is FlexWrapValue {
-  return value === 'nowrap' || value === 'wrap' || value === 'wrap-reverse'
+  return value === 'nowrap' || value === 'wrap' || value === 'wrap-reverse';
 }
 
 function applyDisplay(
@@ -1004,12 +1817,12 @@ function applyDisplay(
     case 'inline-block':
     case 'flow-root':
     case 'list-item':
-      style.display = 'block'
-      return
+      style.display = 'block';
+      return;
     case 'table':
     case 'inline-table':
-      style.display = 'table'
-      return
+      style.display = 'table';
+      return;
     case 'table-row-group':
     case 'table-header-group':
     case 'table-footer-group':
@@ -1018,22 +1831,22 @@ function applyDisplay(
     case 'table-caption':
     case 'table-column-group':
     case 'table-column':
-      style.display = value
-      return
+      style.display = value;
+      return;
     case 'contents':
-      style.display = 'contents'
-      return
+      style.display = 'contents';
+      return;
     case 'flex':
     case 'inline-flex':
-      style.display = 'flex'
-      return
+      style.display = 'flex';
+      return;
     case 'grid':
     case 'inline-grid':
-      style.display = 'grid'
-      return
+      style.display = 'grid';
+      return;
     case 'none':
-      style.display = 'none'
-      return
+      style.display = 'none';
+      return;
     default:
       handleUnsupportedCss(context.policy, {
         property,
@@ -1042,7 +1855,7 @@ function applyDisplay(
         source: context.source,
         selector: context.selector,
         element: context.element,
-      })
+      });
   }
 }
 
@@ -1054,47 +1867,47 @@ function applyFontSize(
   context: DeclarationContext,
 ): void {
   if (value === 'inherit' || value === 'unset') {
-    return
+    return;
   }
 
   if (value === 'initial') {
-    applyFontSizeLength(style, 16)
-    return
+    applyFontSizeLength(style, 16);
+    return;
   }
 
-  const calculatedLength = parseLengthPercentage(value, context)
+  const calculatedLength = parseLengthPercentage(value, context);
 
   if (typeof calculatedLength === 'number' && calculatedLength >= 0) {
-    applyFontSizeLength(style, calculatedLength)
-    return
+    applyFontSizeLength(style, calculatedLength);
+    return;
   }
 
-  const length = parsePxLength(value)
+  const length = parsePxLength(value);
 
   if (length !== undefined && length >= 0) {
-    applyFontSizeLength(style, length)
-    return
+    applyFontSizeLength(style, length);
+    return;
   }
 
-  const percentage = parsePercentage(value)
+  const percentage = parsePercentage(value);
 
   if (percentage !== undefined && percentage >= 0) {
-    applyFontSizeLength(style, style.fontSize * (percentage / 100))
-    return
+    applyFontSizeLength(style, style.fontSize * (percentage / 100));
+    return;
   }
 
-  const em = parseEmLength(value)
+  const em = parseEmLength(value);
 
   if (em !== undefined && em >= 0) {
-    applyFontSizeLength(style, style.fontSize * em)
-    return
+    applyFontSizeLength(style, style.fontSize * em);
+    return;
   }
 
-  const rem = parseRemLength(value)
+  const rem = parseRemLength(value);
 
   if (rem !== undefined && rem >= 0 && context.rootFontSize !== undefined) {
-    applyFontSizeLength(style, context.rootFontSize * rem)
-    return
+    applyFontSizeLength(style, context.rootFontSize * rem);
+    return;
   }
 
   if (length === undefined || length < 0) {
@@ -1105,15 +1918,15 @@ function applyFontSize(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 }
 
 function applyFontSizeLength(style: SupportedStyle, length: number): void {
-  const ratio = style.lineHeight / style.fontSize
-  style.fontSize = length
-  style.lineHeight = ratio * length
+  const ratio = style.lineHeight / style.fontSize;
+  style.fontSize = length;
+  style.lineHeight = ratio * length;
 }
 
 function applyFontWeight(
@@ -1123,21 +1936,28 @@ function applyFontWeight(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (value === 'inherit' || value === 'unset') return
+  if (value === 'inherit' || value === 'unset') return;
   if (value === 'initial' || value === 'normal') {
-    style.fontWeight = 400
-    return
+    style.fontWeight = 400;
+    return;
   }
   if (value === 'bold') {
-    style.fontWeight = 700
-    return
+    style.fontWeight = 700;
+    return;
   }
-  const weight = Number(value)
+  const weight = Number(value);
   if (Number.isInteger(weight) && weight >= 1 && weight <= 1000) {
-    style.fontWeight = weight
-    return
+    style.fontWeight = weight;
+    return;
   }
-  handleUnsupportedCss(context.policy, { property, value: originalValue, reason: 'unsupported-value', source: context.source, selector: context.selector, element: context.element })
+  handleUnsupportedCss(context.policy, {
+    property,
+    value: originalValue,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  });
 }
 
 function applyLetterSpacing(
@@ -1147,17 +1967,24 @@ function applyLetterSpacing(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (value === 'inherit' || value === 'unset') return
+  if (value === 'inherit' || value === 'unset') return;
   if (value === 'initial' || value === 'normal') {
-    style.letterSpacing = 0
-    return
+    style.letterSpacing = 0;
+    return;
   }
-  const length = parseDimension(value, context)
+  const length = parseDimension(value, context);
   if (typeof length === 'number') {
-    style.letterSpacing = length
-    return
+    style.letterSpacing = length;
+    return;
   }
-  handleUnsupportedCss(context.policy, { property, value: originalValue, reason: 'unsupported-value', source: context.source, selector: context.selector, element: context.element })
+  handleUnsupportedCss(context.policy, {
+    property,
+    value: originalValue,
+    reason: 'unsupported-value',
+    source: context.source,
+    selector: context.selector,
+    element: context.element,
+  });
 }
 
 function applyLineHeight(
@@ -1168,54 +1995,58 @@ function applyLineHeight(
   context: DeclarationContext,
 ): void {
   if (value === 'inherit' || value === 'unset') {
-    return
+    return;
   }
 
   if (value === 'normal') {
-    style.lineHeight = style.fontSize * 1.2
-    return
+    style.lineHeight = style.fontSize * 1.2;
+    return;
   }
 
-  const calculatedLength = parseLengthPercentage(value, context)
+  const calculatedLength = parseLengthPercentage(value, context);
 
   if (typeof calculatedLength === 'number' && calculatedLength >= 0) {
-    style.lineHeight = calculatedLength
-    return
+    style.lineHeight = calculatedLength;
+    return;
   }
 
-  const pxLength = parsePxLength(value)
+  const pxLength = parsePxLength(value);
 
   if (pxLength !== undefined && pxLength >= 0) {
-    style.lineHeight = pxLength
-    return
+    style.lineHeight = pxLength;
+    return;
   }
 
-  const percentage = parsePercentage(value)
+  const percentage = parsePercentage(value);
 
   if (percentage !== undefined && percentage >= 0) {
-    style.lineHeight = (percentage / 100) * style.fontSize
-    return
+    style.lineHeight = (percentage / 100) * style.fontSize;
+    return;
   }
 
-  const emLength = parseEmLength(value)
+  const emLength = parseEmLength(value);
 
   if (emLength !== undefined && emLength >= 0) {
-    style.lineHeight = emLength * style.fontSize
-    return
+    style.lineHeight = emLength * style.fontSize;
+    return;
   }
 
-  const remLength = parseRemLength(value)
+  const remLength = parseRemLength(value);
 
-  if (remLength !== undefined && remLength >= 0 && context.rootFontSize !== undefined) {
-    style.lineHeight = remLength * context.rootFontSize
-    return
+  if (
+    remLength !== undefined &&
+    remLength >= 0 &&
+    context.rootFontSize !== undefined
+  ) {
+    style.lineHeight = remLength * context.rootFontSize;
+    return;
   }
 
-  const multiplier = Number(value)
+  const multiplier = Number(value);
 
   if (Number.isFinite(multiplier) && multiplier >= 0) {
-    style.lineHeight = multiplier * style.fontSize
-    return
+    style.lineHeight = multiplier * style.fontSize;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1225,7 +2056,7 @@ function applyLineHeight(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyOverflow(
@@ -1235,7 +2066,7 @@ function applyOverflow(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -1245,17 +2076,17 @@ function applyOverflow(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const [x, y = x] = parts
+  const [x, y = x] = parts;
 
   if (isOverflowValue(x) && isOverflowValue(y)) {
-    style.overflowX = x
-    style.overflowY = y
-    normalizeOverflowAxes(style)
-    return
+    style.overflowX = x;
+    style.overflowY = y;
+    normalizeOverflowAxes(style);
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1265,7 +2096,7 @@ function applyOverflow(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isOverflowValue(value: string | undefined): value is OverflowValue {
@@ -1275,7 +2106,7 @@ function isOverflowValue(value: string | undefined): value is OverflowValue {
     value === 'clip' ||
     value === 'auto' ||
     value === 'scroll'
-  )
+  );
 }
 
 function applyVisibility(
@@ -1286,8 +2117,8 @@ function applyVisibility(
   context: DeclarationContext,
 ): void {
   if (value === 'visible' || value === 'hidden' || value === 'collapse') {
-    style.visibility = value
-    return
+    style.visibility = value;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1297,23 +2128,23 @@ function applyVisibility(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function normalizeOverflowAxes(style: SupportedStyle): void {
   // Browsers compute visible to auto when the opposite axis clips overflow.
   // This matters here because hit boxes use the computed overflow axes as clipping flags.
   if (style.overflowX === 'visible' && isClippingOverflow(style.overflowY)) {
-    style.overflowX = 'auto'
+    style.overflowX = 'auto';
   }
 
   if (style.overflowY === 'visible' && isClippingOverflow(style.overflowX)) {
-    style.overflowY = 'auto'
+    style.overflowY = 'auto';
   }
 }
 
 function isClippingOverflow(value: OverflowValue): boolean {
-  return value === 'hidden' || value === 'auto' || value === 'scroll'
+  return value === 'hidden' || value === 'auto' || value === 'scroll';
 }
 
 function applyOpacity(
@@ -1322,10 +2153,10 @@ function applyOpacity(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const opacity = Number(value)
+  const opacity = Number(value);
 
   if (Number.isFinite(opacity) && opacity >= 0 && opacity <= 1) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1335,7 +2166,7 @@ function applyOpacity(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyVisualColor(
@@ -1345,7 +2176,7 @@ function applyVisualColor(
   context: DeclarationContext,
 ): void {
   if (isVisualColorToken(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1355,7 +2186,7 @@ function applyVisualColor(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyVisualColors(
@@ -1364,10 +2195,14 @@ function applyVisualColors(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (parts.length >= 1 && parts.length <= 4 && parts.every(isVisualColorToken)) {
-    return
+  if (
+    parts.length >= 1 &&
+    parts.length <= 4 &&
+    parts.every(isVisualColorToken)
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1377,7 +2212,7 @@ function applyVisualColors(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyVisualBackground(
@@ -1387,7 +2222,7 @@ function applyVisualBackground(
   context: DeclarationContext,
 ): void {
   if (value === 'none' || isVisualColorToken(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1397,7 +2232,7 @@ function applyVisualBackground(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBackgroundImage(
@@ -1406,8 +2241,11 @@ function applyBackgroundImage(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every((layer) => layer === 'none')) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(layer => layer === 'none')
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1417,7 +2255,7 @@ function applyBackgroundImage(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBackgroundRepeat(
@@ -1426,8 +2264,11 @@ function applyBackgroundRepeat(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every(isBackgroundRepeatLayer)) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(isBackgroundRepeatLayer)
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1437,14 +2278,25 @@ function applyBackgroundRepeat(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isBackgroundRepeatLayer(value: string): boolean {
-  const parts = value.split(/\s+/).filter(Boolean)
-  const keywords = ['repeat', 'repeat-x', 'repeat-y', 'space', 'round', 'no-repeat']
+  const parts = value.split(/\s+/).filter(Boolean);
+  const keywords = [
+    'repeat',
+    'repeat-x',
+    'repeat-y',
+    'space',
+    'round',
+    'no-repeat',
+  ];
 
-  return parts.length >= 1 && parts.length <= 2 && parts.every((part) => keywords.includes(part))
+  return (
+    parts.length >= 1 &&
+    parts.length <= 2 &&
+    parts.every(part => keywords.includes(part))
+  );
 }
 
 function applyBackgroundPosition(
@@ -1453,8 +2305,11 @@ function applyBackgroundPosition(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every(isPositionLayer)) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(isPositionLayer)
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1464,12 +2319,14 @@ function applyBackgroundPosition(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isPositionLayer(value: string): boolean {
-  const parts = value.split(/\s+/).filter(Boolean)
-  return parts.length >= 1 && parts.length <= 4 && parts.every(isObjectPositionPart)
+  const parts = value.split(/\s+/).filter(Boolean);
+  return (
+    parts.length >= 1 && parts.length <= 4 && parts.every(isObjectPositionPart)
+  );
 }
 
 function applyBackgroundSize(
@@ -1478,8 +2335,11 @@ function applyBackgroundSize(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every(isBackgroundSizeLayer)) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(isBackgroundSizeLayer)
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1489,16 +2349,22 @@ function applyBackgroundSize(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isBackgroundSizeLayer(value: string): boolean {
   if (value === 'cover' || value === 'contain') {
-    return true
+    return true;
   }
 
-  const parts = value.split(/\s+/).filter(Boolean)
-  return parts.length >= 1 && parts.length <= 2 && parts.every((part) => part === 'auto' || parseNonNegativeDimension(part) !== undefined)
+  const parts = value.split(/\s+/).filter(Boolean);
+  return (
+    parts.length >= 1 &&
+    parts.length <= 2 &&
+    parts.every(
+      part => part === 'auto' || parseNonNegativeDimension(part) !== undefined,
+    )
+  );
 }
 
 function applyBackgroundBox(
@@ -1507,10 +2373,13 @@ function applyBackgroundBox(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const boxes = ['border-box', 'padding-box', 'content-box']
+  const boxes = ['border-box', 'padding-box', 'content-box'];
 
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every((layer) => boxes.includes(layer))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(layer => boxes.includes(layer))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1520,7 +2389,7 @@ function applyBackgroundBox(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBackgroundAttachment(
@@ -1529,10 +2398,13 @@ function applyBackgroundAttachment(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const attachments = ['scroll', 'fixed', 'local']
+  const attachments = ['scroll', 'fixed', 'local'];
 
-  if (cssWideKeywords.has(value) || splitCssCommaList(value).every((layer) => attachments.includes(layer))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    splitCssCommaList(value).every(layer => attachments.includes(layer))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1542,7 +2414,7 @@ function applyBackgroundAttachment(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBoxShadow(
@@ -1552,7 +2424,7 @@ function applyBoxShadow(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || value === 'none' || parseBoxShadow(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1562,113 +2434,113 @@ function applyBoxShadow(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseBoxShadow(value: string): boolean {
-  return splitCssCommaList(value).every(parseSingleBoxShadow)
+  return splitCssCommaList(value).every(parseSingleBoxShadow);
 }
 
 function splitCssCommaList(value: string): string[] {
-  const parts: string[] = []
-  let current = ''
-  let depth = 0
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
 
   for (const char of value) {
     if (char === '(') {
-      depth += 1
+      depth += 1;
     } else if (char === ')') {
-      depth = Math.max(0, depth - 1)
+      depth = Math.max(0, depth - 1);
     }
 
     if (char === ',' && depth === 0) {
-      parts.push(current.trim())
-      current = ''
-      continue
+      parts.push(current.trim());
+      current = '';
+      continue;
     }
 
-    current += char
+    current += char;
   }
 
-  parts.push(current.trim())
-  return parts.filter(Boolean)
+  parts.push(current.trim());
+  return parts.filter(Boolean);
 }
 
 function splitCssWhitespaceList(value: string): string[] {
-  const parts: string[] = []
-  let current = ''
-  let depth = 0
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
 
   for (const char of value) {
     if (char === '(') {
-      depth += 1
+      depth += 1;
     } else if (char === ')') {
-      depth = Math.max(0, depth - 1)
+      depth = Math.max(0, depth - 1);
     }
 
     if (/\s/.test(char) && depth === 0) {
       if (current.trim()) {
-        parts.push(current.trim())
+        parts.push(current.trim());
       }
 
-      current = ''
-      continue
+      current = '';
+      continue;
     }
 
-    current += char
+    current += char;
   }
 
   if (current.trim()) {
-    parts.push(current.trim())
+    parts.push(current.trim());
   }
 
-  return parts
+  return parts;
 }
 
 function parseSingleBoxShadow(value: string): boolean {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 2) {
-    return false
+    return false;
   }
 
-  let lengths = 0
-  let color = false
-  let inset = false
+  let lengths = 0;
+  let color = false;
+  let inset = false;
 
   for (const part of parts) {
     if (part === 'inset') {
       if (inset) {
-        return false
+        return false;
       }
 
-      inset = true
-      continue
+      inset = true;
+      continue;
     }
 
     if (parsePxLength(part) !== undefined) {
-      lengths += 1
+      lengths += 1;
 
       if (lengths > 4) {
-        return false
+        return false;
       }
 
-      continue
+      continue;
     }
 
     if (isVisualColorToken(part)) {
       if (color) {
-        return false
+        return false;
       }
 
-      color = true
-      continue
+      color = true;
+      continue;
     }
 
-    return false
+    return false;
   }
 
-  return lengths >= 2
+  return lengths >= 2;
 }
 
 function applyOutline(
@@ -1678,7 +2550,7 @@ function applyOutline(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || parseOutline(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1688,7 +2560,7 @@ function applyOutline(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyOutlineWidth(
@@ -1698,7 +2570,7 @@ function applyOutlineWidth(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || parseBorderWidth(value) !== undefined) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1708,7 +2580,7 @@ function applyOutlineWidth(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyOutlineStyle(
@@ -1718,7 +2590,7 @@ function applyOutlineStyle(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || isKnownLineStyle(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1728,7 +2600,7 @@ function applyOutlineStyle(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyOutlineOffset(
@@ -1738,7 +2610,7 @@ function applyOutlineOffset(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || parsePxLength(value) !== undefined) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1748,7 +2620,7 @@ function applyOutlineOffset(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBorderRadius(
@@ -1758,7 +2630,7 @@ function applyBorderRadius(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || parseBorderRadius(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1768,7 +2640,7 @@ function applyBorderRadius(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyTextDecoration(
@@ -1778,7 +2650,7 @@ function applyTextDecoration(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || parseTextDecoration(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1788,62 +2660,66 @@ function applyTextDecoration(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseTextDecoration(value: string): boolean {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
-    return false
+    return false;
   }
 
-  let line = false
-  let style = false
-  let color = false
-  let thickness = false
+  let line = false;
+  let style = false;
+  let color = false;
+  let thickness = false;
 
   for (const part of parts) {
     if (isTextDecorationLinePart(part)) {
       if (line) {
-        return false
+        return false;
       }
 
-      line = true
-      continue
+      line = true;
+      continue;
     }
 
     if (['solid', 'double', 'dotted', 'dashed', 'wavy'].includes(part)) {
       if (style) {
-        return false
+        return false;
       }
 
-      style = true
-      continue
+      style = true;
+      continue;
     }
 
     if (isVisualColorToken(part)) {
       if (color) {
-        return false
+        return false;
       }
 
-      color = true
-      continue
+      color = true;
+      continue;
     }
 
-    if (part === 'auto' || part === 'from-font' || parseNonNegativeDimension(part) !== undefined) {
+    if (
+      part === 'auto' ||
+      part === 'from-font' ||
+      parseNonNegativeDimension(part) !== undefined
+    ) {
       if (thickness) {
-        return false
+        return false;
       }
 
-      thickness = true
-      continue
+      thickness = true;
+      continue;
     }
 
-    return false
+    return false;
   }
 
-  return true
+  return true;
 }
 
 function applyTextDecorationLine(
@@ -1852,10 +2728,13 @@ function applyTextDecorationLine(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (cssWideKeywords.has(value) || (parts.length > 0 && parts.every(isTextDecorationLinePart))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length > 0 && parts.every(isTextDecorationLinePart))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1865,11 +2744,13 @@ function applyTextDecorationLine(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isTextDecorationLinePart(value: string): boolean {
-  return ['none', 'underline', 'overline', 'line-through', 'blink'].includes(value)
+  return ['none', 'underline', 'overline', 'line-through', 'blink'].includes(
+    value,
+  );
 }
 
 function applyTextDecorationThickness(
@@ -1878,8 +2759,13 @@ function applyTextDecorationThickness(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || value === 'auto' || value === 'from-font' || parseNonNegativeDimension(value) !== undefined) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    value === 'auto' ||
+    value === 'from-font' ||
+    parseNonNegativeDimension(value) !== undefined
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1889,7 +2775,7 @@ function applyTextDecorationThickness(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyVisualFilter(
@@ -1898,8 +2784,12 @@ function applyVisualFilter(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (cssWideKeywords.has(value) || value === 'none' || parseVisualFilter(value)) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    value === 'none' ||
+    parseVisualFilter(value)
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1909,7 +2799,7 @@ function applyVisualFilter(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyTransform(
@@ -1920,19 +2810,19 @@ function applyTransform(
   context: DeclarationContext,
 ): void {
   if (value === 'none' || value === '[]') {
-    style.transform = []
-    return
+    style.transform = [];
+    return;
   }
 
   if (value === 'initial' || value === 'unset') {
-    style.transform = []
-    return
+    style.transform = [];
+    return;
   }
 
-  const transform = parseTransformList(value)
+  const transform = parseTransformList(value);
   if (transform) {
-    style.transform = transform
-    return
+    style.transform = transform;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -1942,119 +2832,156 @@ function applyTransform(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseTransformList(value: string): SupportedTransform[] | undefined {
-  const transforms: SupportedTransform[] = []
-  const functionPattern = /([a-z][a-z0-9]*)\(([^()]*)\)/gi
-  let consumed = 0
+  const transforms: SupportedTransform[] = [];
+  const functionPattern = /([a-z][a-z0-9]*)\(([^()]*)\)/gi;
+  let consumed = 0;
 
   for (const match of value.matchAll(functionPattern)) {
-    if (match.index === undefined || value.slice(consumed, match.index).trim() !== '') {
-      return undefined
+    if (
+      match.index === undefined ||
+      value.slice(consumed, match.index).trim() !== ''
+    ) {
+      return undefined;
     }
 
-    const transform = parseTransformFunction(match[1]?.toLowerCase() ?? '', match[2] ?? '')
+    const transform = parseTransformFunction(
+      match[1]?.toLowerCase() ?? '',
+      match[2] ?? '',
+    );
     if (!transform) {
-      return undefined
+      return undefined;
     }
 
-    transforms.push(transform)
-    consumed = match.index + match[0].length
+    transforms.push(transform);
+    consumed = match.index + match[0].length;
   }
 
-  return transforms.length > 0 && value.slice(consumed).trim() === '' ? transforms : undefined
+  return transforms.length > 0 && value.slice(consumed).trim() === ''
+    ? transforms
+    : undefined;
 }
 
-function parseTransformFunction(name: string, value: string): SupportedTransform | undefined {
-  const parts = value.split(/\s*,\s*|\s+/).filter(Boolean)
+function parseTransformFunction(
+  name: string,
+  value: string,
+): SupportedTransform | undefined {
+  const parts = value.split(/\s*,\s*|\s+/).filter(Boolean);
 
   switch (name) {
     case 'translate': {
-      const x = parseDimension(parts[0] ?? '')
-      const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '')
+      const x = parseDimension(parts[0] ?? '');
+      const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '');
       return parts.length <= 2 && x !== undefined && y !== undefined
         ? { type: 'translate', x, y }
-        : undefined
+        : undefined;
     }
     case 'translatex': {
-      const x = parseDimension(parts[0] ?? '')
-      return parts.length === 1 && x !== undefined ? { type: 'translate', x, y: 0 } : undefined
+      const x = parseDimension(parts[0] ?? '');
+      return parts.length === 1 && x !== undefined
+        ? { type: 'translate', x, y: 0 }
+        : undefined;
     }
     case 'translatey': {
-      const y = parseDimension(parts[0] ?? '')
-      return parts.length === 1 && y !== undefined ? { type: 'translate', x: 0, y } : undefined
+      const y = parseDimension(parts[0] ?? '');
+      return parts.length === 1 && y !== undefined
+        ? { type: 'translate', x: 0, y }
+        : undefined;
     }
     case 'scale': {
-      const x = parseFiniteNumber(parts[0] ?? '')
-      const y = parts.length === 1 ? x : parseFiniteNumber(parts[1] ?? '')
+      const x = parseFiniteNumber(parts[0] ?? '');
+      const y = parts.length === 1 ? x : parseFiniteNumber(parts[1] ?? '');
       return parts.length <= 2 && x !== undefined && y !== undefined
         ? { type: 'scale', x, y }
-        : undefined
+        : undefined;
     }
     case 'scalex': {
-      const x = parseFiniteNumber(parts[0] ?? '')
-      return parts.length === 1 && x !== undefined ? { type: 'scale', x, y: 1 } : undefined
+      const x = parseFiniteNumber(parts[0] ?? '');
+      return parts.length === 1 && x !== undefined
+        ? { type: 'scale', x, y: 1 }
+        : undefined;
     }
     case 'scaley': {
-      const y = parseFiniteNumber(parts[0] ?? '')
-      return parts.length === 1 && y !== undefined ? { type: 'scale', x: 1, y } : undefined
+      const y = parseFiniteNumber(parts[0] ?? '');
+      return parts.length === 1 && y !== undefined
+        ? { type: 'scale', x: 1, y }
+        : undefined;
     }
     case 'rotate': {
-      const radians = parseAngle(parts[0] ?? '')
-      return parts.length === 1 && radians !== undefined ? { type: 'rotate', radians } : undefined
+      const radians = parseAngle(parts[0] ?? '');
+      return parts.length === 1 && radians !== undefined
+        ? { type: 'rotate', radians }
+        : undefined;
     }
     case 'skew': {
-      const xRadians = parseAngle(parts[0] ?? '')
-      const yRadians = parts.length === 1 ? 0 : parseAngle(parts[1] ?? '')
-      return parts.length <= 2 && xRadians !== undefined && yRadians !== undefined
+      const xRadians = parseAngle(parts[0] ?? '');
+      const yRadians = parts.length === 1 ? 0 : parseAngle(parts[1] ?? '');
+      return parts.length <= 2 &&
+        xRadians !== undefined &&
+        yRadians !== undefined
         ? { type: 'skew', xRadians, yRadians }
-        : undefined
+        : undefined;
     }
     case 'skewx': {
-      const xRadians = parseAngle(parts[0] ?? '')
+      const xRadians = parseAngle(parts[0] ?? '');
       return parts.length === 1 && xRadians !== undefined
         ? { type: 'skew', xRadians, yRadians: 0 }
-        : undefined
+        : undefined;
     }
     case 'skewy': {
-      const yRadians = parseAngle(parts[0] ?? '')
+      const yRadians = parseAngle(parts[0] ?? '');
       return parts.length === 1 && yRadians !== undefined
         ? { type: 'skew', xRadians: 0, yRadians }
-        : undefined
+        : undefined;
     }
     case 'matrix': {
-      const values = parts.map(parseFiniteNumber)
-      return values.length === 6 && values.every((part) => part !== undefined)
-        ? { type: 'matrix', a: values[0]!, b: values[1]!, c: values[2]!, d: values[3]!, e: values[4]!, f: values[5]! }
-        : undefined
+      if (parts.length !== 6) return undefined;
+      const [a, b, c, d, e, f] = parts.map(parseFiniteNumber);
+      if (
+        a === undefined ||
+        b === undefined ||
+        c === undefined ||
+        d === undefined ||
+        e === undefined ||
+        f === undefined
+      ) {
+        return undefined;
+      }
+      return { type: 'matrix', a, b, c, d, e, f };
     }
     case 'translatez':
       return parts.length === 1 && parsePxLength(parts[0] ?? '') === 0
         ? { type: 'translate', x: 0, y: 0 }
-        : undefined
+        : undefined;
     default:
-      return undefined
+      return undefined;
   }
 }
 
 function parseAngle(value: string): number | undefined {
-  const match = /^(-?\d+(?:\.\d+)?)(deg|grad|rad|turn)$/.exec(value)
-  if (!match) return value === '0' ? 0 : undefined
-  const amount = Number(match[1])
+  const match = /^(-?\d+(?:\.\d+)?)(deg|grad|rad|turn)$/.exec(value);
+  if (!match) return value === '0' ? 0 : undefined;
+  const amount = Number(match[1]);
   switch (match[2]) {
-    case 'deg': return amount * Math.PI / 180
-    case 'grad': return amount * Math.PI / 200
-    case 'rad': return amount
-    case 'turn': return amount * Math.PI * 2
-    default: return undefined
+    case 'deg':
+      return (amount * Math.PI) / 180;
+    case 'grad':
+      return (amount * Math.PI) / 200;
+    case 'rad':
+      return amount;
+    case 'turn':
+      return amount * Math.PI * 2;
+    default:
+      return undefined;
   }
 }
 
 function parseFiniteNumber(value: string): number | undefined {
-  const number = Number(value)
-  return value.trim() !== '' && Number.isFinite(number) ? number : undefined
+  const number = Number(value);
+  return value.trim() !== '' && Number.isFinite(number) ? number : undefined;
 }
 
 function applyIndividualTranslate(
@@ -2065,20 +2992,20 @@ function applyIndividualTranslate(
   context: DeclarationContext,
 ): void {
   if (value === 'none' || value === 'initial' || value === 'unset') {
-    style.translate = undefined
-    return
+    style.translate = undefined;
+    return;
   }
 
-  const parts = value.split(/\s+/).filter(Boolean)
-  const x = parseDimension(parts[0] ?? '')
-  const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '')
+  const parts = value.split(/\s+/).filter(Boolean);
+  const x = parseDimension(parts[0] ?? '');
+  const y = parts.length === 1 ? 0 : parseDimension(parts[1] ?? '');
 
   if (parts.length <= 2 && x !== undefined && y !== undefined) {
-    style.translate = { type: 'translate', x, y }
-    return
+    style.translate = { type: 'translate', x, y };
+    return;
   }
 
-  reportUnsupportedTransformProperty(property, originalValue, context)
+  reportUnsupportedTransformProperty(property, originalValue, context);
 }
 
 function applyIndividualScale(
@@ -2089,25 +3016,25 @@ function applyIndividualScale(
   context: DeclarationContext,
 ): void {
   if (value === 'none' || value === 'initial' || value === 'unset') {
-    style.scale = undefined
-    return
+    style.scale = undefined;
+    return;
   }
 
-  const parts = value.split(/\s+/).filter(Boolean)
-  const x = parseScaleFactor(parts[0] ?? '')
-  const y = parts.length === 1 ? x : parseScaleFactor(parts[1] ?? '')
+  const parts = value.split(/\s+/).filter(Boolean);
+  const x = parseScaleFactor(parts[0] ?? '');
+  const y = parts.length === 1 ? x : parseScaleFactor(parts[1] ?? '');
 
   if (parts.length <= 2 && x !== undefined && y !== undefined) {
-    style.scale = { type: 'scale', x, y }
-    return
+    style.scale = { type: 'scale', x, y };
+    return;
   }
 
-  reportUnsupportedTransformProperty(property, originalValue, context)
+  reportUnsupportedTransformProperty(property, originalValue, context);
 }
 
 function parseScaleFactor(value: string): number | undefined {
-  const percentage = parsePercentage(value)
-  return percentage === undefined ? parseFiniteNumber(value) : percentage / 100
+  const percentage = parsePercentage(value);
+  return percentage === undefined ? parseFiniteNumber(value) : percentage / 100;
 }
 
 function reportUnsupportedTransformProperty(
@@ -2122,15 +3049,15 @@ function reportUnsupportedTransformProperty(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseVisualFilter(value: string): boolean {
   if (value.includes('url(')) {
-    return false
+    return false;
   }
 
-  return /^[-a-z]+\(.*\)(\s+[-a-z]+\(.*\))*$/.test(value)
+  return /^[-a-z]+\(.*\)(\s+[-a-z]+\(.*\))*$/.test(value);
 }
 
 function applyTransformOrigin(
@@ -2141,14 +3068,14 @@ function applyTransformOrigin(
   context: DeclarationContext,
 ): void {
   if (value === 'initial' || value === 'unset') {
-    style.transformOrigin = { x: '50%', y: '50%' }
-    return
+    style.transformOrigin = { x: '50%', y: '50%' };
+    return;
   }
 
-  const origin = parseTransformOrigin(value)
+  const origin = parseTransformOrigin(value);
   if (origin) {
-    style.transformOrigin = origin
-    return
+    style.transformOrigin = origin;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2158,53 +3085,55 @@ function applyTransformOrigin(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseTransformOrigin(value: string): TransformOrigin | undefined {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
   if (parts.length < 1 || parts.length > 2) {
-    return undefined
+    return undefined;
   }
 
   if (parts.length === 1) {
-    const part = parts[0] ?? ''
+    const part = parts[0] ?? '';
     if (part === 'top' || part === 'bottom') {
-      return { x: '50%', y: originKeyword(part) }
+      return { x: '50%', y: originKeyword(part) };
     }
-    const x = originHorizontal(part)
-    return x === undefined ? undefined : { x, y: '50%' }
+    const x = originHorizontal(part);
+    return x === undefined ? undefined : { x, y: '50%' };
   }
 
-  let [horizontal, vertical] = parts
+  let [horizontal, vertical] = parts;
   if (horizontal === 'top' || horizontal === 'bottom') {
-    ;[horizontal, vertical] = [vertical, horizontal]
+    [horizontal, vertical] = [vertical, horizontal];
   }
 
-  const x = originHorizontal(horizontal ?? '')
-  const y = originVertical(vertical ?? '')
-  return x === undefined || y === undefined ? undefined : { x, y }
+  const x = originHorizontal(horizontal ?? '');
+  const y = originVertical(vertical ?? '');
+  return x === undefined || y === undefined ? undefined : { x, y };
 }
 
 function originHorizontal(value: string): SupportedDimension | undefined {
   if (value === 'left' || value === 'right' || value === 'center') {
-    return originKeyword(value)
+    return originKeyword(value);
   }
-  return parseDimension(value)
+  return parseDimension(value);
 }
 
 function originVertical(value: string): SupportedDimension | undefined {
   if (value === 'top' || value === 'bottom' || value === 'center') {
-    return originKeyword(value)
+    return originKeyword(value);
   }
-  return parseDimension(value)
+  return parseDimension(value);
 }
 
-function originKeyword(value: 'left' | 'right' | 'top' | 'bottom' | 'center'): `${number}%` {
+function originKeyword(
+  value: 'left' | 'right' | 'top' | 'bottom' | 'center',
+): `${number}%` {
   if (value === 'left' || value === 'top') {
-    return '0%'
+    return '0%';
   }
-  return value === 'center' ? '50%' : '100%'
+  return value === 'center' ? '50%' : '100%';
 }
 
 function applyWillChange(
@@ -2213,14 +3142,14 @@ function applyWillChange(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssCommaList(value)
+  const parts = splitCssCommaList(value);
 
   if (
     cssWideKeywords.has(value) ||
     value === 'auto' ||
-    (parts.length > 0 && parts.every((part) => /^[a-z-]+$/.test(part)))
+    (parts.length > 0 && parts.every(part => /^[a-z-]+$/.test(part)))
   ) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2230,7 +3159,7 @@ function applyWillChange(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyAutoOrVisualColor(
@@ -2240,7 +3169,7 @@ function applyAutoOrVisualColor(
   context: DeclarationContext,
 ): void {
   if (value === 'auto' || isVisualColorToken(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2250,7 +3179,7 @@ function applyAutoOrVisualColor(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyScrollbarColor(
@@ -2259,10 +3188,14 @@ function applyScrollbarColor(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (cssWideKeywords.has(value) || value === 'auto' || (parts.length === 2 && parts.every(isVisualColorToken))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    value === 'auto' ||
+    (parts.length === 2 && parts.every(isVisualColorToken))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2272,7 +3205,7 @@ function applyScrollbarColor(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyOverscrollBehavior(
@@ -2281,10 +3214,15 @@ function applyOverscrollBehavior(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (cssWideKeywords.has(value) || (parts.length >= 1 && parts.length <= 2 && parts.every((part) => ['auto', 'contain', 'none'].includes(part)))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length >= 1 &&
+      parts.length <= 2 &&
+      parts.every(part => ['auto', 'contain', 'none'].includes(part)))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2294,7 +3232,7 @@ function applyOverscrollBehavior(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyListStyle(
@@ -2303,11 +3241,22 @@ function applyListStyle(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
-  const keywords = ['none', 'disc', 'circle', 'square', 'decimal', 'inside', 'outside']
+  const parts = value.split(/\s+/).filter(Boolean);
+  const keywords = [
+    'none',
+    'disc',
+    'circle',
+    'square',
+    'decimal',
+    'inside',
+    'outside',
+  ];
 
-  if (cssWideKeywords.has(value) || (parts.length > 0 && parts.every((part) => keywords.includes(part)))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length > 0 && parts.every(part => keywords.includes(part)))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2317,7 +3266,7 @@ function applyListStyle(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyColorScheme(
@@ -2326,10 +3275,14 @@ function applyColorScheme(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (cssWideKeywords.has(value) || (parts.length > 0 && parts.every((part) => ['normal', 'light', 'dark', 'only'].includes(part)))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length > 0 &&
+      parts.every(part => ['normal', 'light', 'dark', 'only'].includes(part)))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2339,7 +3292,7 @@ function applyColorScheme(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 const supportedBlendModes = [
@@ -2361,7 +3314,7 @@ const supportedBlendModes = [
   'luminosity',
   'plus-darker',
   'plus-lighter',
-]
+];
 
 function applyBorderCornerRadius(
   value: string,
@@ -2369,13 +3322,15 @@ function applyBorderCornerRadius(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (
     cssWideKeywords.has(value) ||
-    (parts.length >= 1 && parts.length <= 2 && parts.every((part) => parseNonNegativeDimension(part) !== undefined))
+    (parts.length >= 1 &&
+      parts.length <= 2 &&
+      parts.every(part => parseNonNegativeDimension(part) !== undefined))
   ) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2385,20 +3340,24 @@ function applyBorderCornerRadius(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function parseBorderRadius(value: string): boolean {
-  const parts = value.split('/').map((part) => part.trim())
+  const parts = value.split('/').map(part => part.trim());
 
   if (parts.length < 1 || parts.length > 2) {
-    return false
+    return false;
   }
 
-  return parts.every((part) => {
-    const radii = part.split(/\s+/).filter(Boolean)
-    return radii.length >= 1 && radii.length <= 4 && radii.every((radius) => parseNonNegativeDimension(radius) !== undefined)
-  })
+  return parts.every(part => {
+    const radii = part.split(/\s+/).filter(Boolean);
+    return (
+      radii.length >= 1 &&
+      radii.length <= 4 &&
+      radii.every(radius => parseNonNegativeDimension(radius) !== undefined)
+    );
+  });
 }
 
 function applyKeywordOnly(
@@ -2409,7 +3368,7 @@ function applyKeywordOnly(
   context: DeclarationContext,
 ): void {
   if (cssWideKeywords.has(value) || supported.includes(value)) {
-    return
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2419,7 +3378,7 @@ function applyKeywordOnly(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyObjectPosition(
@@ -2428,10 +3387,15 @@ function applyObjectPosition(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
-  if (cssWideKeywords.has(value) || (parts.length >= 1 && parts.length <= 4 && parts.every(isObjectPositionPart))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length >= 1 &&
+      parts.length <= 4 &&
+      parts.every(isObjectPositionPart))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2441,11 +3405,14 @@ function applyObjectPosition(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isObjectPositionPart(value: string): boolean {
-  return ['left', 'right', 'top', 'bottom', 'center'].includes(value) || parseDimension(value) !== undefined
+  return (
+    ['left', 'right', 'top', 'bottom', 'center'].includes(value) ||
+    parseDimension(value) !== undefined
+  );
 }
 
 function applyTouchAction(
@@ -2454,11 +3421,27 @@ function applyTouchAction(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
-  const supported = ['auto', 'none', 'manipulation', 'pan-x', 'pan-y', 'pan-left', 'pan-right', 'pan-up', 'pan-down', 'pinch-zoom']
+  const parts = value.split(/\s+/).filter(Boolean);
+  const supported = [
+    'auto',
+    'none',
+    'manipulation',
+    'pan-x',
+    'pan-y',
+    'pan-left',
+    'pan-right',
+    'pan-up',
+    'pan-down',
+    'pinch-zoom',
+  ];
 
-  if (cssWideKeywords.has(value) || (parts.length >= 1 && parts.length <= 3 && parts.every((part) => supported.includes(part)))) {
-    return
+  if (
+    cssWideKeywords.has(value) ||
+    (parts.length >= 1 &&
+      parts.length <= 3 &&
+      parts.every(part => supported.includes(part)))
+  ) {
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2468,7 +3451,7 @@ function applyTouchAction(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 const supportedCursorKeywords = [
@@ -2508,51 +3491,51 @@ const supportedCursorKeywords = [
   'nwse-resize',
   'zoom-in',
   'zoom-out',
-]
+];
 
 function parseOutline(value: string): boolean {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
-    return false
+    return false;
   }
 
-  let width = false
-  let style = false
-  let color = false
+  let width = false;
+  let style = false;
+  let color = false;
 
   for (const part of parts) {
     if (parseBorderWidth(part) !== undefined) {
       if (width) {
-        return false
+        return false;
       }
 
-      width = true
-      continue
+      width = true;
+      continue;
     }
 
     if (isKnownLineStyle(part)) {
       if (style) {
-        return false
+        return false;
       }
 
-      style = true
-      continue
+      style = true;
+      continue;
     }
 
     if (isVisualColorToken(part)) {
       if (color) {
-        return false
+        return false;
       }
 
-      color = true
-      continue
+      color = true;
+      continue;
     }
 
-    return false
+    return false;
   }
 
-  return true
+  return true;
 }
 
 function isKnownLineStyle(value: string): boolean {
@@ -2568,7 +3551,7 @@ function isKnownLineStyle(value: string): boolean {
     'ridge',
     'inset',
     'outset',
-  ].includes(value)
+  ].includes(value);
 }
 
 function isVisualColorToken(value: string): boolean {
@@ -2577,7 +3560,7 @@ function isVisualColorToken(value: string): boolean {
     cssWideKeywords.has(value) ||
     /^#[0-9a-f]{3,8}$/i.test(value) ||
     /^(?:rgb|rgba|hsl|hsla)\(.+\)$/.test(value)
-  )
+  );
 }
 
 function applyPaddingEdges(
@@ -2587,16 +3570,22 @@ function applyPaddingEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context, (part) => parsePaddingLength(part, context))
+  const lengths = parseEdgeLengths(
+    value,
+    property,
+    originalValue,
+    context,
+    part => parsePaddingLength(part, context),
+  );
 
   if (!lengths) {
-    return
+    return;
   }
 
-  edges.top = lengths.top
-  edges.right = lengths.right
-  edges.bottom = lengths.bottom
-  edges.left = lengths.left
+  edges.top = lengths.top;
+  edges.right = lengths.right;
+  edges.bottom = lengths.bottom;
+  edges.left = lengths.left;
 }
 
 function applyPaddingEdge(
@@ -2607,9 +3596,10 @@ function applyPaddingEdge(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = edge === 'left' || edge === 'right'
-    ? parsePaddingLength(value, context)
-    : parsePaddingLength(value, context)
+  const length =
+    edge === 'left' || edge === 'right'
+      ? parsePaddingLength(value, context)
+      : parsePaddingLength(value, context);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2619,11 +3609,11 @@ function applyPaddingEdge(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  edges[edge] = length
+  edges[edge] = length;
 }
 
 function applyMarginEdges(
@@ -2633,16 +3623,22 @@ function applyMarginEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context, (part) => parseMarginLength(part, context))
+  const lengths = parseEdgeLengths(
+    value,
+    property,
+    originalValue,
+    context,
+    part => parseMarginLength(part, context),
+  );
 
   if (!lengths) {
-    return
+    return;
   }
 
-  edges.top = lengths.top
-  edges.right = lengths.right
-  edges.bottom = lengths.bottom
-  edges.left = lengths.left
+  edges.top = lengths.top;
+  edges.right = lengths.right;
+  edges.bottom = lengths.bottom;
+  edges.left = lengths.left;
 }
 
 function applyMarginEdge(
@@ -2653,7 +3649,7 @@ function applyMarginEdge(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parseMarginLength(value, context)
+  const length = parseMarginLength(value, context);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2663,11 +3659,11 @@ function applyMarginEdge(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  edges[edge] = length
+  edges[edge] = length;
 }
 
 function applyBorderWidths(
@@ -2677,16 +3673,22 @@ function applyBorderWidths(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const lengths = parseEdgeLengths(value, property, originalValue, context, parseBorderWidth)
+  const lengths = parseEdgeLengths(
+    value,
+    property,
+    originalValue,
+    context,
+    parseBorderWidth,
+  );
 
   if (!lengths) {
-    return
+    return;
   }
 
-  edges.top = lengths.top
-  edges.right = lengths.right
-  edges.bottom = lengths.bottom
-  edges.left = lengths.left
+  edges.top = lengths.top;
+  edges.right = lengths.right;
+  edges.bottom = lengths.bottom;
+  edges.left = lengths.left;
 }
 
 function applyLogicalEdges<Value>(
@@ -2698,7 +3700,7 @@ function applyLogicalEdges<Value>(
   context: DeclarationContext,
   parseLength: (value: string) => Value | undefined,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2708,12 +3710,12 @@ function applyLogicalEdges<Value>(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const start = parseLength(parts[0] ?? '')
-  const end = parseLength(parts[1] ?? parts[0] ?? '')
+  const start = parseLength(parts[0] ?? '');
+  const end = parseLength(parts[1] ?? parts[0] ?? '');
 
   if (start === undefined || end === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2723,18 +3725,18 @@ function applyLogicalEdges<Value>(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
   if (axis === 'inline') {
-    edges.left = start
-    edges.right = end
-    return
+    edges.left = start;
+    edges.right = end;
+    return;
   }
 
-  edges.top = start
-  edges.bottom = end
+  edges.top = start;
+  edges.bottom = end;
 }
 
 function applyLogicalMarginEdges(
@@ -2745,7 +3747,15 @@ function applyLogicalMarginEdges(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  applyLogicalEdges(edges, axis, value, property, originalValue, context, (part) => parseMarginLength(part, context))
+  applyLogicalEdges(
+    edges,
+    axis,
+    value,
+    property,
+    originalValue,
+    context,
+    part => parseMarginLength(part, context),
+  );
 }
 
 function applyLogicalPaddingEdges(
@@ -2763,8 +3773,8 @@ function applyLogicalPaddingEdges(
     property,
     originalValue,
     context,
-    (part) => parsePaddingLength(part, context),
-  )
+    part => parsePaddingLength(part, context),
+  );
 }
 
 function applyBorderWidthEdge(
@@ -2775,7 +3785,7 @@ function applyBorderWidthEdge(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parseBorderWidth(value)
+  const length = parseBorderWidth(value);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -2785,11 +3795,11 @@ function applyBorderWidthEdge(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  edges[edge] = length
+  edges[edge] = length;
 }
 
 function applyKeyword<Key extends keyof SupportedStyle>(
@@ -2802,8 +3812,8 @@ function applyKeyword<Key extends keyof SupportedStyle>(
   context: DeclarationContext,
 ): void {
   if (supported.includes(value as SupportedStyle[Key])) {
-    style[key] = value as SupportedStyle[Key]
-    return
+    style[key] = value as SupportedStyle[Key];
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2813,7 +3823,7 @@ function applyKeyword<Key extends keyof SupportedStyle>(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function resetKeyword<Key extends keyof SupportedStyle>(
@@ -2823,11 +3833,11 @@ function resetKeyword<Key extends keyof SupportedStyle>(
   initialValue: SupportedStyle[Key],
 ): boolean {
   if (value !== 'initial' && value !== 'unset') {
-    return false
+    return false;
   }
 
-  style[key] = initialValue
-  return true
+  style[key] = initialValue;
+  return true;
 }
 
 function resetOptionalKeyword<Key extends keyof SupportedStyle>(
@@ -2836,7 +3846,7 @@ function resetOptionalKeyword<Key extends keyof SupportedStyle>(
   value: string,
   initialValue: SupportedStyle[Key],
 ): boolean {
-  return resetKeyword(style, key, value, initialValue)
+  return resetKeyword(style, key, value, initialValue);
 }
 
 function resetNumber<Key extends keyof SupportedStyle>(
@@ -2846,11 +3856,11 @@ function resetNumber<Key extends keyof SupportedStyle>(
   initialValue: Extract<SupportedStyle[Key], number>,
 ): boolean {
   if (value !== 'initial' && value !== 'unset') {
-    return false
+    return false;
   }
 
-  style[key] = initialValue as SupportedStyle[Key]
-  return true
+  style[key] = initialValue as SupportedStyle[Key];
+  return true;
 }
 
 function resetGridLine(
@@ -2860,12 +3870,12 @@ function resetGridLine(
   endKey: 'gridColumnEnd' | 'gridRowEnd',
 ): boolean {
   if (value !== 'initial' && value !== 'unset') {
-    return false
+    return false;
   }
 
-  style[startKey] = 'auto'
-  style[endKey] = 'auto'
-  return true
+  style[startKey] = 'auto';
+  style[endKey] = 'auto';
+  return true;
 }
 
 function resetGridPlacement(
@@ -2874,11 +3884,11 @@ function resetGridPlacement(
   value: string,
 ): boolean {
   if (value !== 'initial' && value !== 'unset') {
-    return false
+    return false;
   }
 
-  style[key] = 'auto'
-  return true
+  style[key] = 'auto';
+  return true;
 }
 
 function applyPlaceContent(
@@ -2888,7 +3898,7 @@ function applyPlaceContent(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2898,17 +3908,17 @@ function applyPlaceContent(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const align = parts[0] ?? ''
-  const justify = parts[1] ?? align
+  const align = parts[0] ?? '';
+  const justify = parts[1] ?? align;
 
   if (isAlignContentValue(align) && isJustifyContentValue(justify)) {
-    style.alignContent = align
-    style.justifyContent = justify
-    return
+    style.alignContent = align;
+    style.justifyContent = justify;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2918,7 +3928,7 @@ function applyPlaceContent(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyPlaceItems(
@@ -2928,7 +3938,7 @@ function applyPlaceItems(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2938,17 +3948,17 @@ function applyPlaceItems(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const align = parts[0] ?? ''
-  const justify = parts[1] ?? align
+  const align = parts[0] ?? '';
+  const justify = parts[1] ?? align;
 
   if (isAlignItemsValue(align) && isAlignItemsValue(justify)) {
-    style.alignItems = align
-    style.justifyItems = justify
-    return
+    style.alignItems = align;
+    style.justifyItems = justify;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2958,7 +3968,7 @@ function applyPlaceItems(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyPlaceSelf(
@@ -2968,7 +3978,7 @@ function applyPlaceSelf(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -2978,17 +3988,17 @@ function applyPlaceSelf(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const align = parts[0] ?? ''
-  const justify = parts[1] ?? align
+  const align = parts[0] ?? '';
+  const justify = parts[1] ?? align;
 
   if (isAlignSelfValue(align) && isAlignSelfValue(justify)) {
-    style.alignSelf = align
-    style.justifySelf = justify
-    return
+    style.alignSelf = align;
+    style.justifySelf = justify;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -2998,23 +4008,39 @@ function applyPlaceSelf(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function isAlignItemsValue(value: string): value is AlignItemsValue {
-  return ['start', 'end', 'flex-start', 'flex-end', 'center', 'stretch'].includes(value)
+  return [
+    'start',
+    'end',
+    'flex-start',
+    'flex-end',
+    'center',
+    'stretch',
+  ].includes(value);
 }
 
 function isAlignSelfValue(value: string): value is AlignSelfValue {
-  return value === 'auto' || isAlignItemsValue(value)
+  return value === 'auto' || isAlignItemsValue(value);
 }
 
 function isJustifyContentValue(value: string): value is JustifyContentValue {
-  return ['start', 'end', 'flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'].includes(value)
+  return [
+    'start',
+    'end',
+    'flex-start',
+    'flex-end',
+    'center',
+    'space-between',
+    'space-around',
+    'space-evenly',
+  ].includes(value);
 }
 
 function isAlignContentValue(value: string): value is AlignContentValue {
-  return value === 'stretch' || isJustifyContentValue(value)
+  return value === 'stretch' || isJustifyContentValue(value);
 }
 
 function applyLength(
@@ -3037,11 +4063,11 @@ function applyLength(
 ): void {
   if (isInsetLengthKey(key)) {
     if (value === 'auto') {
-      style[key] = undefined
-      return
+      style[key] = undefined;
+      return;
     }
 
-    const length = parseDimension(value, context)
+    const length = parseDimension(value, context);
 
     if (length === undefined) {
       handleUnsupportedCss(context.policy, {
@@ -3051,25 +4077,31 @@ function applyLength(
         source: context.source,
         selector: context.selector,
         element: context.element,
-      })
-      return
+      });
+      return;
     }
 
-    style[key] = length
-    return
+    style[key] = length;
+    return;
   }
 
-  if (value === 'auto' && (key === 'width' || key === 'height' || key === 'minWidth' || key === 'minHeight')) {
-    style[key] = undefined
-    return
+  if (
+    value === 'auto' &&
+    (key === 'width' ||
+      key === 'height' ||
+      key === 'minWidth' ||
+      key === 'minHeight')
+  ) {
+    style[key] = undefined;
+    return;
   }
 
   if (value === 'none' && (key === 'maxWidth' || key === 'maxHeight')) {
-    style[key] = undefined
-    return
+    style[key] = undefined;
+    return;
   }
 
-  const length = parseDimension(value, context)
+  const length = parseDimension(value, context);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3079,11 +4111,11 @@ function applyLength(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = length
+  style[key] = length;
 }
 
 function applyBorderSpacing(
@@ -3093,7 +4125,7 @@ function applyBorderSpacing(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3103,14 +4135,19 @@ function applyBorderSpacing(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const horizontal = parsePxLength(parts[0])
-  const vertical = parsePxLength(parts[1] ?? parts[0])
+  const horizontal = parsePxLength(parts[0]);
+  const vertical = parsePxLength(parts[1] ?? parts[0]);
 
-  if (horizontal === undefined || vertical === undefined || horizontal < 0 || vertical < 0) {
+  if (
+    horizontal === undefined ||
+    vertical === undefined ||
+    horizontal < 0 ||
+    vertical < 0
+  ) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3118,17 +4155,17 @@ function applyBorderSpacing(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.tableBorderSpacing = { horizontal, vertical }
+  style.tableBorderSpacing = { horizontal, vertical };
 }
 
 function isInsetLengthKey(
   key: Parameters<typeof applyLength>[1],
 ): key is 'left' | 'right' | 'top' | 'bottom' {
-  return key === 'left' || key === 'right' || key === 'top' || key === 'bottom'
+  return key === 'left' || key === 'right' || key === 'top' || key === 'bottom';
 }
 
 function applyNumber(
@@ -3139,7 +4176,7 @@ function applyNumber(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const number = Number(value)
+  const number = Number(value);
 
   if (!Number.isFinite(number) || number < 0) {
     handleUnsupportedCss(context.policy, {
@@ -3149,11 +4186,11 @@ function applyNumber(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = number
+  style[key] = number;
 }
 
 function applyInteger(
@@ -3164,7 +4201,7 @@ function applyInteger(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const number = Number(value)
+  const number = Number(value);
 
   if (!Number.isInteger(number)) {
     handleUnsupportedCss(context.policy, {
@@ -3174,11 +4211,11 @@ function applyInteger(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = number
+  style[key] = number;
 }
 
 function applyFlexBasis(
@@ -3189,11 +4226,11 @@ function applyFlexBasis(
   context: DeclarationContext,
 ): void {
   if (value === 'auto') {
-    style.flexBasis = undefined
-    return
+    style.flexBasis = undefined;
+    return;
   }
 
-  const length = parseNonNegativeDimension(value)
+  const length = parseNonNegativeDimension(value);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3203,11 +4240,11 @@ function applyFlexBasis(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.flexBasis = length
+  style.flexBasis = length;
 }
 
 function applyFlexShorthand(
@@ -3218,28 +4255,28 @@ function applyFlexShorthand(
   context: DeclarationContext,
 ): void {
   if (value === 'auto') {
-    style.flexGrow = 1
-    style.flexShrink = 1
-    style.flexBasis = undefined
-    return
+    style.flexGrow = 1;
+    style.flexShrink = 1;
+    style.flexBasis = undefined;
+    return;
   }
 
   if (value === 'none') {
-    style.flexGrow = 0
-    style.flexShrink = 0
-    style.flexBasis = undefined
-    return
+    style.flexGrow = 0;
+    style.flexShrink = 0;
+    style.flexBasis = undefined;
+    return;
   }
 
   if (value === 'initial') {
-    style.flexGrow = 0
-    style.flexShrink = 1
-    style.flexBasis = undefined
-    return
+    style.flexGrow = 0;
+    style.flexShrink = 1;
+    style.flexBasis = undefined;
+    return;
   }
 
-  const parts = value.split(/\s+/).filter(Boolean)
-  const parsed = parseFlexShorthand(parts)
+  const parts = value.split(/\s+/).filter(Boolean);
+  const parsed = parseFlexShorthand(parts);
 
   if (!parsed) {
     handleUnsupportedCss(context.policy, {
@@ -3249,13 +4286,13 @@ function applyFlexShorthand(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.flexGrow = parsed.grow
-  style.flexShrink = parsed.shrink
-  style.flexBasis = parsed.basis
+  style.flexGrow = parsed.grow;
+  style.flexShrink = parsed.shrink;
+  style.flexBasis = parsed.basis;
 }
 
 function applyAspectRatio(
@@ -3266,11 +4303,11 @@ function applyAspectRatio(
   context: DeclarationContext,
 ): void {
   if (value === 'auto') {
-    style.aspectRatio = undefined
-    return
+    style.aspectRatio = undefined;
+    return;
   }
 
-  const ratio = parseAspectRatio(value)
+  const ratio = parseAspectRatio(value);
 
   if (ratio === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3280,11 +4317,11 @@ function applyAspectRatio(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.aspectRatio = ratio
+  style.aspectRatio = ratio;
 }
 
 function applyGridTemplate(
@@ -3296,13 +4333,13 @@ function applyGridTemplate(
   context: DeclarationContext,
 ): void {
   if (value === 'none') {
-    style[key] = []
-    return
+    style[key] = [];
+    return;
   }
 
-  const tracks = splitCssWhitespaceList(value).map(parseGridTemplateTrack)
+  const tracks = splitCssWhitespaceList(value).map(parseGridTemplateTrack);
 
-  if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
+  if (tracks.length === 0 || tracks.some(track => track === undefined)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3310,11 +4347,11 @@ function applyGridTemplate(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = tracks as GridTemplateTrack[]
+  style[key] = tracks as GridTemplateTrack[];
 }
 
 function applyGridAutoTracks(
@@ -3325,9 +4362,9 @@ function applyGridAutoTracks(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const tracks = splitCssWhitespaceList(value).map(parseGridTrack)
+  const tracks = splitCssWhitespaceList(value).map(parseGridTrack);
 
-  if (tracks.length === 0 || tracks.some((track) => track === undefined)) {
+  if (tracks.length === 0 || tracks.some(track => track === undefined)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3335,11 +4372,11 @@ function applyGridAutoTracks(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = tracks as GridTrack[]
+  style[key] = tracks as GridTrack[];
 }
 
 function applyGridLine(
@@ -3351,7 +4388,10 @@ function applyGridLine(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+  const parts = value
+    .split('/')
+    .map(part => part.trim())
+    .filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3361,12 +4401,12 @@ function applyGridLine(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const start = parseGridPlacement(parts[0] ?? '')
-  const end = parts.length === 2 ? parseGridPlacement(parts[1] ?? '') : 'auto'
+  const start = parseGridPlacement(parts[0] ?? '');
+  const end = parts.length === 2 ? parseGridPlacement(parts[1] ?? '') : 'auto';
 
   if (start === undefined || end === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3376,12 +4416,12 @@ function applyGridLine(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[startKey] = start
-  style[endKey] = end
+  style[startKey] = start;
+  style[endKey] = end;
 }
 
 function applyGridTemplateAreas(
@@ -3391,68 +4431,77 @@ function applyGridTemplateAreas(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  if (value.toLowerCase() === 'none' || value.toLowerCase() === 'initial' || value.toLowerCase() === 'unset') {
-    style.gridTemplateAreas = undefined
-    return
+  if (
+    value.toLowerCase() === 'none' ||
+    value.toLowerCase() === 'initial' ||
+    value.toLowerCase() === 'unset'
+  ) {
+    style.gridTemplateAreas = undefined;
+    return;
   }
 
-  const rows = [...value.matchAll(/(["'])(.*?)\1/g)].map((match) =>
-    (match[2] ?? '').trim().split(/\s+/))
-  const withoutRows = value.replace(/(["'])(.*?)\1/g, '').trim()
+  const rows = [...value.matchAll(/(["'])(.*?)\1/g)].map(match =>
+    (match[2] ?? '').trim().split(/\s+/),
+  );
+  const withoutRows = value.replace(/(["'])(.*?)\1/g, '').trim();
 
   if (
     rows.length === 0 ||
     withoutRows !== '' ||
     rows[0]?.length === 0 ||
-    rows.some((row) => row.length !== rows[0]?.length)
+    rows.some(row => row.length !== rows[0]?.length)
   ) {
-    reportUnsupportedDeclaration(property, originalValue, context)
-    return
+    reportUnsupportedDeclaration(property, originalValue, context);
+    return;
   }
 
-  const areas = new Map<string, GridTemplateArea>()
+  const areas = new Map<string, GridTemplateArea>();
 
   for (const [rowIndex, row] of rows.entries()) {
     for (const [columnIndex, name] of row.entries()) {
       if (name === '.' || /^\.+$/.test(name)) {
-        continue
+        continue;
       }
 
       if (!isGridAreaName(name)) {
-        reportUnsupportedDeclaration(property, originalValue, context)
-        return
+        reportUnsupportedDeclaration(property, originalValue, context);
+        return;
       }
 
-      const area = areas.get(name)
+      const area = areas.get(name);
 
       if (area) {
-        area.rowStart = Math.min(area.rowStart, rowIndex + 1)
-        area.rowEnd = Math.max(area.rowEnd, rowIndex + 2)
-        area.columnStart = Math.min(area.columnStart, columnIndex + 1)
-        area.columnEnd = Math.max(area.columnEnd, columnIndex + 2)
+        area.rowStart = Math.min(area.rowStart, rowIndex + 1);
+        area.rowEnd = Math.max(area.rowEnd, rowIndex + 2);
+        area.columnStart = Math.min(area.columnStart, columnIndex + 1);
+        area.columnEnd = Math.max(area.columnEnd, columnIndex + 2);
       } else {
         areas.set(name, {
           rowStart: rowIndex + 1,
           rowEnd: rowIndex + 2,
           columnStart: columnIndex + 1,
           columnEnd: columnIndex + 2,
-        })
+        });
       }
     }
   }
 
   for (const [name, area] of areas) {
     for (let row = area.rowStart - 1; row < area.rowEnd - 1; row += 1) {
-      for (let column = area.columnStart - 1; column < area.columnEnd - 1; column += 1) {
+      for (
+        let column = area.columnStart - 1;
+        column < area.columnEnd - 1;
+        column += 1
+      ) {
         if (rows[row]?.[column] !== name) {
-          reportUnsupportedDeclaration(property, originalValue, context)
-          return
+          reportUnsupportedDeclaration(property, originalValue, context);
+          return;
         }
       }
     }
   }
 
-  style.gridTemplateAreas = areas
+  style.gridTemplateAreas = areas;
 }
 
 function reportUnsupportedDeclaration(
@@ -3467,7 +4516,7 @@ function reportUnsupportedDeclaration(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyGridArea(
@@ -3477,15 +4526,18 @@ function applyGridArea(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+  const parts = value
+    .split('/')
+    .map(part => part.trim())
+    .filter(Boolean);
 
   if (parts.length === 1 && isGridAreaName(parts[0] ?? '')) {
-    const area = { area: parts[0] ?? '' }
-    style.gridRowStart = area
-    style.gridColumnStart = area
-    style.gridRowEnd = area
-    style.gridColumnEnd = area
-    return
+    const area = { area: parts[0] ?? '' };
+    style.gridRowStart = area;
+    style.gridColumnStart = area;
+    style.gridRowEnd = area;
+    style.gridColumnEnd = area;
+    return;
   }
 
   if (parts.length !== 4) {
@@ -3496,12 +4548,13 @@ function applyGridArea(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const [rowStart, columnStart, rowEnd, columnEnd] = parts.map((part) =>
-    parseGridPlacement(part, true))
+  const [rowStart, columnStart, rowEnd, columnEnd] = parts.map(part =>
+    parseGridPlacement(part, true),
+  );
 
   if (
     rowStart === undefined ||
@@ -3516,14 +4569,14 @@ function applyGridArea(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.gridRowStart = rowStart
-  style.gridColumnStart = columnStart
-  style.gridRowEnd = rowEnd
-  style.gridColumnEnd = columnEnd
+  style.gridRowStart = rowStart;
+  style.gridColumnStart = columnStart;
+  style.gridRowEnd = rowEnd;
+  style.gridColumnEnd = columnEnd;
 }
 
 function applyGridPlacement(
@@ -3534,7 +4587,7 @@ function applyGridPlacement(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const placement = parseGridPlacement(value)
+  const placement = parseGridPlacement(value);
 
   if (placement === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3544,32 +4597,35 @@ function applyGridPlacement(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = placement
+  style[key] = placement;
 }
 
-function parseGridPlacement(value: string, allowArea = false): GridPlacementValue | undefined {
-  const normalizedValue = value.toLowerCase()
+function parseGridPlacement(
+  value: string,
+  allowArea = false,
+): GridPlacementValue | undefined {
+  const normalizedValue = value.toLowerCase();
 
   if (normalizedValue === 'auto') {
-    return 'auto'
+    return 'auto';
   }
 
-  const span = parseGridSpan(normalizedValue)
+  const span = parseGridSpan(normalizedValue);
 
   if (span) {
-    return span
+    return span;
   }
 
-  const number = Number(value)
+  const number = Number(value);
   if (Number.isInteger(number) && number !== 0) {
-    return number
+    return number;
   }
 
-  return allowArea && isGridAreaName(value) ? { area: value } : undefined
+  return allowArea && isGridAreaName(value) ? { area: value } : undefined;
 }
 
 const reservedGridAreaNames = new Set([
@@ -3581,21 +4637,24 @@ const reservedGridAreaNames = new Set([
   'revert-layer',
   'span',
   'unset',
-])
+]);
 
 function isGridAreaName(value: string): boolean {
-  return /^-?[_a-zA-Z][_a-zA-Z0-9-]*$/.test(value) && !reservedGridAreaNames.has(value.toLowerCase())
+  return (
+    /^-?[_a-zA-Z][_a-zA-Z0-9-]*$/.test(value) &&
+    !reservedGridAreaNames.has(value.toLowerCase())
+  );
 }
 
 function parseGridSpan(value: string): { span: number } | undefined {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length !== 2 || parts[0] !== 'span') {
-    return undefined
+    return undefined;
   }
 
-  const span = Number(parts[1])
-  return Number.isInteger(span) && span > 0 ? { span } : undefined
+  const span = Number(parts[1]);
+  return Number.isInteger(span) && span > 0 ? { span } : undefined;
 }
 
 function applyGridAutoFlow(
@@ -3605,12 +4664,19 @@ function applyGridAutoFlow(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
-  const direction = parts.find((part) => part === 'row' || part === 'column') ?? 'row'
-  const hasDense = parts.includes('dense')
-  const unsupported = parts.some((part) => part !== 'row' && part !== 'column' && part !== 'dense')
+  const parts = value.split(/\s+/).filter(Boolean);
+  const direction =
+    parts.find(part => part === 'row' || part === 'column') ?? 'row';
+  const hasDense = parts.includes('dense');
+  const unsupported = parts.some(
+    part => part !== 'row' && part !== 'column' && part !== 'dense',
+  );
 
-  if (unsupported || parts.length > 2 || parts.filter((part) => part === 'row' || part === 'column').length > 1) {
+  if (
+    unsupported ||
+    parts.length > 2 ||
+    parts.filter(part => part === 'row' || part === 'column').length > 1
+  ) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3618,171 +4684,192 @@ function applyGridAutoFlow(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.gridAutoFlow = hasDense ? `${direction} dense` : direction
+  style.gridAutoFlow = hasDense ? `${direction} dense` : direction;
 }
 
 function parseGridTrack(value: string): GridTrack | undefined {
-  const minMax = parseGridMinMax(value)
+  const minMax = parseGridMinMax(value);
 
   if (minMax) {
-    return minMax
+    return minMax;
   }
 
-  const fraction = parseGridFraction(value)
+  const fraction = parseGridFraction(value);
 
   if (fraction !== undefined) {
-    return fraction
+    return fraction;
   }
 
-  const length = parseNonNegativeDimension(value)
+  const length = parseNonNegativeDimension(value);
 
   if (length !== undefined && typeof length !== 'object') {
-    return length
+    return length;
   }
 
-  return undefined
+  return undefined;
 }
 
-function parseGridMinMax(value: string): { min: GridMinTrackBreadth; max: GridMaxTrackBreadth } | undefined {
-  const match = /^minmax\(\s*(.*)\s*,\s*(.*)\s*\)$/.exec(value)
+function parseGridMinMax(
+  value: string,
+): { min: GridMinTrackBreadth; max: GridMaxTrackBreadth } | undefined {
+  const match = /^minmax\(\s*(.*)\s*,\s*(.*)\s*\)$/.exec(value);
 
   if (!match) {
-    return undefined
+    return undefined;
   }
 
-  const min = parseGridMinTrackBreadth(match[1]?.trim() ?? '')
-  const max = parseGridMaxTrackBreadth(match[2]?.trim() ?? '')
+  const min = parseGridMinTrackBreadth(match[1]?.trim() ?? '');
+  const max = parseGridMaxTrackBreadth(match[2]?.trim() ?? '');
 
-  return min === undefined || max === undefined ? undefined : { min, max }
+  return min === undefined || max === undefined ? undefined : { min, max };
 }
 
-function parseGridMinTrackBreadth(value: string): GridMinTrackBreadth | undefined {
+function parseGridMinTrackBreadth(
+  value: string,
+): GridMinTrackBreadth | undefined {
   if (value === 'auto' || value === 'min-content' || value === 'max-content') {
-    return value
+    return value;
   }
 
-  return parseNonNegativeDimension(value) as GridMinTrackBreadth | undefined
+  return parseNonNegativeDimension(value) as GridMinTrackBreadth | undefined;
 }
 
-function parseGridMaxTrackBreadth(value: string): GridMaxTrackBreadth | undefined {
-  const fraction = parseGridFraction(value)
+function parseGridMaxTrackBreadth(
+  value: string,
+): GridMaxTrackBreadth | undefined {
+  const fraction = parseGridFraction(value);
 
   if (fraction !== undefined) {
-    return fraction
+    return fraction;
   }
 
-  return parseGridMinTrackBreadth(value)
+  return parseGridMinTrackBreadth(value);
 }
 
 function parseGridTemplateTrack(value: string): GridTemplateTrack | undefined {
-  const repeat = parseGridRepeat(value)
+  const repeat = parseGridRepeat(value);
 
   if (repeat) {
-    return repeat
+    return repeat;
   }
 
-  return parseGridTrack(value)
+  return parseGridTrack(value);
 }
 
-function parseGridRepeat(value: string): { repeat: number; tracks: GridTrack[] } | undefined {
-  const match = /^repeat\(\s*(\d+)\s*,\s*(.*)\s*\)$/.exec(value)
+function parseGridRepeat(
+  value: string,
+): { repeat: number; tracks: GridTrack[] } | undefined {
+  const match = /^repeat\(\s*(\d+)\s*,\s*(.*)\s*\)$/.exec(value);
 
   if (!match) {
-    return undefined
+    return undefined;
   }
 
-  const count = Number(match[1])
-  const tracks = splitCssWhitespaceList(match[2] ?? '').map(parseGridTrack)
+  const count = Number(match[1]);
+  const tracks = splitCssWhitespaceList(match[2] ?? '').map(parseGridTrack);
 
-  if (!Number.isInteger(count) || count <= 0 || tracks.length === 0 || tracks.some((track) => track === undefined)) {
-    return undefined
+  if (
+    !Number.isInteger(count) ||
+    count <= 0 ||
+    tracks.length === 0 ||
+    tracks.some(track => track === undefined)
+  ) {
+    return undefined;
   }
 
-  return { repeat: count, tracks: tracks as GridTrack[] }
+  return { repeat: count, tracks: tracks as GridTrack[] };
 }
 
 function parseGridFraction(value: string): `${number}fr` | undefined {
   if (!value.endsWith('fr')) {
-    return undefined
+    return undefined;
   }
 
-  const number = parsePositiveNumber(value.slice(0, -2))
-  return number === undefined ? undefined : `${number}fr`
+  const number = parsePositiveNumber(value.slice(0, -2));
+  return number === undefined ? undefined : `${number}fr`;
 }
 
 function parseAspectRatio(value: string): number | undefined {
-  const parts = value.split('/').map((part) => part.trim()).filter(Boolean)
+  const parts = value
+    .split('/')
+    .map(part => part.trim())
+    .filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
-    return undefined
+    return undefined;
   }
 
-  const numerator = parsePositiveNumber(parts[0] ?? '')
-  const denominator = parts.length === 2 ? parsePositiveNumber(parts[1] ?? '') : 1
+  const numerator = parsePositiveNumber(parts[0] ?? '');
+  const denominator =
+    parts.length === 2 ? parsePositiveNumber(parts[1] ?? '') : 1;
 
   if (numerator === undefined || denominator === undefined) {
-    return undefined
+    return undefined;
   }
 
-  return numerator / denominator
+  return numerator / denominator;
 }
 
 function parseFlexShorthand(
   parts: string[],
-): { grow: number; shrink: number; basis: SupportedDimension | undefined } | undefined {
+):
+  | { grow: number; shrink: number; basis: SupportedDimension | undefined }
+  | undefined {
   if (parts.length < 1 || parts.length > 3) {
-    return undefined
+    return undefined;
   }
 
   if (parts.length === 1) {
-    const number = parseNonNegativeNumber(parts[0] ?? '')
+    const number = parseNonNegativeNumber(parts[0] ?? '');
 
     if (number !== undefined) {
-      return { grow: number, shrink: 1, basis: 0 }
+      return { grow: number, shrink: 1, basis: 0 };
     }
 
-    const basis = parseFlexBasisValue(parts[0] ?? '')
-    return basis !== null ? { grow: 1, shrink: 1, basis } : undefined
+    const basis = parseFlexBasisValue(parts[0] ?? '');
+    return basis !== null ? { grow: 1, shrink: 1, basis } : undefined;
   }
 
-  const grow = parseNonNegativeNumber(parts[0] ?? '')
+  const grow = parseNonNegativeNumber(parts[0] ?? '');
 
   if (grow === undefined) {
-    return undefined
+    return undefined;
   }
 
   if (parts.length === 2) {
-    const shrink = parseNonNegativeNumber(parts[1] ?? '')
+    const shrink = parseNonNegativeNumber(parts[1] ?? '');
 
     if (shrink !== undefined) {
-      return { grow, shrink, basis: 0 }
+      return { grow, shrink, basis: 0 };
     }
 
-    const basis = parseFlexBasisValue(parts[1] ?? '')
-    return basis !== null ? { grow, shrink: 1, basis } : undefined
+    const basis = parseFlexBasisValue(parts[1] ?? '');
+    return basis !== null ? { grow, shrink: 1, basis } : undefined;
   }
 
-  const shrink = parseNonNegativeNumber(parts[1] ?? '')
-  const basis = parseFlexBasisValue(parts[2] ?? '')
+  const shrink = parseNonNegativeNumber(parts[1] ?? '');
+  const basis = parseFlexBasisValue(parts[2] ?? '');
 
   if (shrink === undefined || basis === null) {
-    return undefined
+    return undefined;
   }
 
-  return { grow, shrink, basis }
+  return { grow, shrink, basis };
 }
 
-function parseFlexBasisValue(value: string): SupportedDimension | undefined | null {
+function parseFlexBasisValue(
+  value: string,
+): SupportedDimension | undefined | null {
   if (value === 'auto') {
-    return undefined
+    return undefined;
   }
 
-  const length = parseNonNegativeDimension(value)
-  return length === undefined ? null : length
+  const length = parseNonNegativeDimension(value);
+  return length === undefined ? null : length;
 }
 
 function applyInset(
@@ -3792,7 +4879,7 @@ function applyInset(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 4) {
     handleUnsupportedCss(context.policy, {
@@ -3802,13 +4889,13 @@ function applyInset(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const lengths = parts.map((part) => parseInsetLength(part, context))
+  const lengths = parts.map(part => parseInsetLength(part, context));
 
-  if (lengths.some((length) => length === undefined)) {
+  if (lengths.some(length => length === undefined)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3816,16 +4903,18 @@ function applyInset(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const [top, right = top, bottom = top, left = right] = lengths as Array<number | 'auto'>
+  const [top, right = top, bottom = top, left = right] = lengths as Array<
+    number | 'auto'
+  >;
 
-  setInsetSide(style, 'top', top)
-  setInsetSide(style, 'right', right)
-  setInsetSide(style, 'bottom', bottom)
-  setInsetSide(style, 'left', left)
+  setInsetSide(style, 'top', top);
+  setInsetSide(style, 'right', right);
+  setInsetSide(style, 'bottom', bottom);
+  setInsetSide(style, 'left', left);
 }
 
 function applyLogicalInset(
@@ -3836,7 +4925,7 @@ function applyLogicalInset(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3846,12 +4935,12 @@ function applyLogicalInset(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const start = parseInsetLength(parts[0] ?? '', context)
-  const end = parseInsetLength(parts[1] ?? parts[0] ?? '', context)
+  const start = parseInsetLength(parts[0] ?? '', context);
+  const end = parseInsetLength(parts[1] ?? parts[0] ?? '', context);
 
   if (start === undefined || end === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3861,18 +4950,18 @@ function applyLogicalInset(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
   if (axis === 'inline') {
-    setInsetSide(style, 'left', start)
-    setInsetSide(style, 'right', end)
-    return
+    setInsetSide(style, 'left', start);
+    setInsetSide(style, 'right', end);
+    return;
   }
 
-  setInsetSide(style, 'top', start)
-  setInsetSide(style, 'bottom', end)
+  setInsetSide(style, 'top', start);
+  setInsetSide(style, 'bottom', end);
 }
 
 function applyGap(
@@ -3882,7 +4971,7 @@ function applyGap(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -3892,13 +4981,13 @@ function applyGap(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const lengths = parts.map((part) => parseGapLength(part, context))
+  const lengths = parts.map(part => parseGapLength(part, context));
 
-  if (lengths.some((length) => length === undefined)) {
+  if (lengths.some(length => length === undefined)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -3906,13 +4995,13 @@ function applyGap(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const [rowGap, columnGap = rowGap] = lengths as SupportedDimension[]
-  style.rowGap = rowGap
-  style.columnGap = columnGap
+  const [rowGap, columnGap = rowGap] = lengths as SupportedDimension[];
+  style.rowGap = rowGap;
+  style.columnGap = columnGap;
 }
 
 function applyGapLength(
@@ -3923,7 +5012,7 @@ function applyGapLength(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const length = parseGapLength(value, context)
+  const length = parseGapLength(value, context);
 
   if (length === undefined) {
     handleUnsupportedCss(context.policy, {
@@ -3933,16 +5022,19 @@ function applyGapLength(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style[key] = length
+  style[key] = length;
 }
 
-function parseInsetLength(value: string, context: DeclarationContext): SupportedDimension | 'auto' | undefined {
-  if (value === 'auto') return 'auto'
-  return parseDimension(value, context)
+function parseInsetLength(
+  value: string,
+  context: DeclarationContext,
+): SupportedDimension | 'auto' | undefined {
+  if (value === 'auto') return 'auto';
+  return parseDimension(value, context);
 }
 
 function setInsetSide(
@@ -3950,22 +5042,31 @@ function setInsetSide(
   key: 'top' | 'right' | 'bottom' | 'left',
   value: SupportedDimension | 'auto',
 ): void {
-  style[key] = value === 'auto' ? undefined : value
+  style[key] = value === 'auto' ? undefined : value;
 }
 
-function parseGapLength(value: string, context: DeclarationContext): SupportedDimension | undefined {
-  if (value === 'normal') return 0
-  const length = parseDimension(value, context)
-  return isNonNegativeDimension(length) ? length : undefined
+function parseGapLength(
+  value: string,
+  context: DeclarationContext,
+): SupportedDimension | undefined {
+  if (value === 'normal') return 0;
+  const length = parseDimension(value, context);
+  return isNonNegativeDimension(length) ? length : undefined;
 }
 
-function parsePaddingLength(value: string, context: DeclarationContext): SupportedDimension | undefined {
-  const length = parseDimension(value, context)
-  return isNonNegativeDimension(length) ? length : undefined
+function parsePaddingLength(
+  value: string,
+  context: DeclarationContext,
+): SupportedDimension | undefined {
+  const length = parseDimension(value, context);
+  return isNonNegativeDimension(length) ? length : undefined;
 }
 
-function parseMarginLength(value: string, context?: DeclarationContext): MarginValue | undefined {
-  return value === 'auto' ? 'auto' : parseDimension(value, context)
+function parseMarginLength(
+  value: string,
+  context?: DeclarationContext,
+): MarginValue | undefined {
+  return value === 'auto' ? 'auto' : parseDimension(value, context);
 }
 
 function applyBorderStyles(
@@ -3975,7 +5076,7 @@ function applyBorderStyles(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 4) {
     handleUnsupportedCss(context.policy, {
@@ -3985,15 +5086,15 @@ function applyBorderStyles(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const [top, right = top, bottom = top, left = right] = parts
-  applyBorderStyle(styles, 'top', top, property, originalValue, context)
-  applyBorderStyle(styles, 'right', right, property, originalValue, context)
-  applyBorderStyle(styles, 'bottom', bottom, property, originalValue, context)
-  applyBorderStyle(styles, 'left', left, property, originalValue, context)
+  const [top, right = top, bottom = top, left = right] = parts;
+  applyBorderStyle(styles, 'top', top, property, originalValue, context);
+  applyBorderStyle(styles, 'right', right, property, originalValue, context);
+  applyBorderStyle(styles, 'bottom', bottom, property, originalValue, context);
+  applyBorderStyle(styles, 'left', left, property, originalValue, context);
 }
 
 function applyLogicalBorderStyles(
@@ -4004,7 +5105,7 @@ function applyLogicalBorderStyles(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parts = value.split(/\s+/).filter(Boolean)
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length < 1 || parts.length > 2) {
     handleUnsupportedCss(context.policy, {
@@ -4014,21 +5115,21 @@ function applyLogicalBorderStyles(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const start = parts[0] ?? ''
-  const end = parts[1] ?? start
+  const start = parts[0] ?? '';
+  const end = parts[1] ?? start;
 
   if (axis === 'inline') {
-    applyBorderStyle(styles, 'left', start, property, originalValue, context)
-    applyBorderStyle(styles, 'right', end, property, originalValue, context)
-    return
+    applyBorderStyle(styles, 'left', start, property, originalValue, context);
+    applyBorderStyle(styles, 'right', end, property, originalValue, context);
+    return;
   }
 
-  applyBorderStyle(styles, 'top', start, property, originalValue, context)
-  applyBorderStyle(styles, 'bottom', end, property, originalValue, context)
+  applyBorderStyle(styles, 'top', start, property, originalValue, context);
+  applyBorderStyle(styles, 'bottom', end, property, originalValue, context);
 }
 
 function applyBorderStyle(
@@ -4040,8 +5141,8 @@ function applyBorderStyle(
   context: DeclarationContext,
 ): void {
   if (isSupportedBorderStyle(value)) {
-    styles[edge] = value
-    return
+    styles[edge] = value;
+    return;
   }
 
   handleUnsupportedCss(context.policy, {
@@ -4051,7 +5152,7 @@ function applyBorderStyle(
     source: context.source,
     selector: context.selector,
     element: context.element,
-  })
+  });
 }
 
 function applyBorderShorthand(
@@ -4062,7 +5163,7 @@ function applyBorderShorthand(
   originalValue: string,
   context: DeclarationContext,
 ): void {
-  const parsed = parseBorderShorthand(value)
+  const parsed = parseBorderShorthand(value);
 
   if (!parsed) {
     handleUnsupportedCss(context.policy, {
@@ -4072,72 +5173,76 @@ function applyBorderShorthand(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  const edges: Array<keyof Edges> = edge ? [edge] : ['top', 'right', 'bottom', 'left']
+  const edges: Array<keyof Edges> = edge
+    ? [edge]
+    : ['top', 'right', 'bottom', 'left'];
 
   for (const currentEdge of edges) {
-    style.borderWidth[currentEdge] = parsed.width
-    style.borderStyle[currentEdge] = parsed.style
+    style.borderWidth[currentEdge] = parsed.width;
+    style.borderStyle[currentEdge] = parsed.style;
   }
 }
 
-function parseBorderShorthand(value: string): { width: number; style: BorderStyleValue } | undefined {
-  const parts = value.split(/\s+/).filter(Boolean)
+function parseBorderShorthand(
+  value: string,
+): { width: number; style: BorderStyleValue } | undefined {
+  const parts = value.split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
-    return undefined
+    return undefined;
   }
 
-  let width: number | undefined
-  let style: BorderStyleValue | undefined
+  let width: number | undefined;
+  let style: BorderStyleValue | undefined;
 
   for (const part of parts) {
-    const parsedWidth = parseBorderWidth(part)
+    const parsedWidth = parseBorderWidth(part);
 
     if (parsedWidth !== undefined) {
       if (width !== undefined) {
-        return undefined
+        return undefined;
       }
 
-      width = parsedWidth
-      continue
+      width = parsedWidth;
+      continue;
     }
 
     if (isSupportedBorderStyle(part)) {
       if (style !== undefined) {
-        return undefined
+        return undefined;
       }
 
-      style = part
-      continue
+      style = part;
+      continue;
     }
 
     // Border color has no effect on layout or hit testing, so recognized color-like
     // tokens are accepted and intentionally discarded.
     if (!isBorderColorLikeToken(part)) {
-      return undefined
+      return undefined;
     }
   }
 
   return {
     width: width ?? 3,
     style: style ?? 'none',
-  }
+  };
 }
 
 function parseBorderWidth(value: string): number | undefined {
   switch (value) {
     case 'thin':
-      return 1
+      return 1;
     case 'medium':
-      return 3
+      return 3;
     case 'thick':
-      return 5
+      return 5;
     default:
-      return parsePxLength(value)
+      return parsePxLength(value);
   }
 }
 
@@ -4153,11 +5258,11 @@ function isSupportedBorderStyle(value: string): value is BorderStyleValue {
     'ridge',
     'inset',
     'outset',
-  ].includes(value)
+  ].includes(value);
 }
 
 function isBorderColorLikeToken(value: string): boolean {
-  return isVisualColorToken(value) && !cssWideKeywords.has(value)
+  return isVisualColorToken(value) && !cssWideKeywords.has(value);
 }
 
 const cssWideKeywords = new Set([
@@ -4166,7 +5271,7 @@ const cssWideKeywords = new Set([
   'revert',
   'revert-layer',
   'unset',
-])
+]);
 
 const basicNamedColors = new Set([
   'black',
@@ -4181,7 +5286,7 @@ const basicNamedColors = new Set([
   'transparent',
   'white',
   'yellow',
-])
+]);
 
 function applyZIndex(
   style: SupportedStyle,
@@ -4191,12 +5296,12 @@ function applyZIndex(
   context: DeclarationContext,
 ): void {
   if (value === 'auto') {
-    style.zIndex = 0
-    style.zIndexAuto = true
-    return
+    style.zIndex = 0;
+    style.zIndexAuto = true;
+    return;
   }
 
-  const zIndex = parseNumberCalculation(value)
+  const zIndex = parseNumberCalculation(value);
 
   if (zIndex === undefined || !Number.isInteger(zIndex)) {
     handleUnsupportedCss(context.policy, {
@@ -4206,70 +5311,76 @@ function applyZIndex(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return
+    });
+    return;
   }
 
-  style.zIndex = zIndex
-  style.zIndexAuto = false
+  style.zIndex = zIndex;
+  style.zIndexAuto = false;
 }
 
 function parsePxLength(value: string): number | undefined {
   if (value === '0') {
-    return 0
+    return 0;
   }
 
-  const match = /^(-?\d+(?:\.\d+)?)px$/.exec(value)
-  return match ? Number(match[1]) : undefined
+  const match = /^(-?\d+(?:\.\d+)?)px$/.exec(value);
+  return match ? Number(match[1]) : undefined;
 }
 
 function parseEmLength(value: string): number | undefined {
-  const match = /^(-?\d+(?:\.\d+)?)em$/.exec(value)
-  return match ? Number(match[1]) : undefined
+  const match = /^(-?\d+(?:\.\d+)?)em$/.exec(value);
+  return match ? Number(match[1]) : undefined;
 }
 
 function parseRemLength(value: string): number | undefined {
-  const match = /^(-?\d+(?:\.\d+)?)rem$/.exec(value)
-  return match ? Number(match[1]) : undefined
+  const match = /^(-?\d+(?:\.\d+)?)rem$/.exec(value);
+  return match ? Number(match[1]) : undefined;
 }
 
-function parseDimension(value: string, context?: DeclarationContext): SupportedDimension | undefined {
-  return parseLengthPercentage(value, context)
+function parseDimension(
+  value: string,
+  context?: DeclarationContext,
+): SupportedDimension | undefined {
+  return parseLengthPercentage(value, context);
 }
 
 function parsePercentage(value: string): number | undefined {
-  const match = /^(-?\d+(?:\.\d+)?)%$/.exec(value)
-  return match ? Number(match[1]) : undefined
+  const match = /^(-?\d+(?:\.\d+)?)%$/.exec(value);
+  return match ? Number(match[1]) : undefined;
 }
 
-function parseNonNegativeDimension(value: string): SupportedDimension | undefined {
-  const length = parseDimension(value)
+function parseNonNegativeDimension(
+  value: string,
+): SupportedDimension | undefined {
+  const length = parseDimension(value);
 
-  return isNonNegativeDimension(length) ? length : undefined
+  return isNonNegativeDimension(length) ? length : undefined;
 }
 
-function isNonNegativeDimension(length: SupportedDimension | undefined): length is SupportedDimension {
-
+function isNonNegativeDimension(
+  length: SupportedDimension | undefined,
+): length is SupportedDimension {
   if (typeof length === 'number') {
-    return length >= 0
+    return length >= 0;
   }
 
   if (typeof length === 'string') {
-    const percentage = parsePercentage(length)
-    return percentage !== undefined && percentage >= 0
+    const percentage = parsePercentage(length);
+    return percentage !== undefined && percentage >= 0;
   }
 
-  return false
+  return false;
 }
 
 function parseNonNegativeNumber(value: string): number | undefined {
-  const number = Number(value)
-  return Number.isFinite(number) && number >= 0 ? number : undefined
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : undefined;
 }
 
 function parsePositiveNumber(value: string): number | undefined {
-  const number = Number(value)
-  return Number.isFinite(number) && number > 0 ? number : undefined
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : undefined;
 }
 
 function parseEdgeLengths<Value = number>(
@@ -4277,9 +5388,11 @@ function parseEdgeLengths<Value = number>(
   property: string,
   originalValue: string,
   context: DeclarationContext,
-  parseLength: (value: string) => Value | undefined = parsePxLength as (value: string) => Value | undefined,
+  parseLength: (value: string) => Value | undefined = parsePxLength as (
+    value: string,
+  ) => Value | undefined,
 ): Edges<Value> | undefined {
-  const parts = splitCssComponents(value)
+  const parts = splitCssComponents(value);
 
   if (parts.length < 1 || parts.length > 4) {
     handleUnsupportedCss(context.policy, {
@@ -4289,13 +5402,13 @@ function parseEdgeLengths<Value = number>(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return undefined
+    });
+    return undefined;
   }
 
-  const lengths = parts.map(parseLength)
+  const lengths = parts.map(parseLength);
 
-  if (lengths.some((length) => length === undefined)) {
+  if (lengths.some(length => length === undefined)) {
     handleUnsupportedCss(context.policy, {
       property,
       value: originalValue,
@@ -4303,46 +5416,46 @@ function parseEdgeLengths<Value = number>(
       source: context.source,
       selector: context.selector,
       element: context.element,
-    })
-    return undefined
+    });
+    return undefined;
   }
 
-  const [top, right = top, bottom = top, left = right] = lengths as Value[]
-  return { top, right, bottom, left }
+  const [top, right = top, bottom = top, left = right] = lengths as Value[];
+  return { top, right, bottom, left };
 }
 
 function splitCssComponents(value: string): string[] {
-  const parts: string[] = []
-  let start = 0
-  let depth = 0
+  const parts: string[] = [];
+  let start = 0;
+  let depth = 0;
 
   for (let index = 0; index <= value.length; index += 1) {
-    const character = value[index]
-    if (character === '(') depth += 1
-    if (character === ')') depth -= 1
+    const character = value[index];
+    if (character === '(') depth += 1;
+    if (character === ')') depth -= 1;
 
     if ((character === undefined || /\s/.test(character)) && depth === 0) {
-      const part = value.slice(start, index).trim()
-      if (part) parts.push(part)
-      start = index + 1
+      const part = value.slice(start, index).trim();
+      if (part) parts.push(part);
+      start = index + 1;
     }
   }
 
-  return parts
+  return parts;
 }
 
 function edgeNameFromProperty(property: string): keyof Edges {
   if (property.includes('-right-') || property.endsWith('-right')) {
-    return 'right'
+    return 'right';
   }
 
   if (property.includes('-bottom-') || property.endsWith('-bottom')) {
-    return 'bottom'
+    return 'bottom';
   }
 
   if (property.includes('-left-') || property.endsWith('-left')) {
-    return 'left'
+    return 'left';
   }
 
-  return 'top'
+  return 'top';
 }

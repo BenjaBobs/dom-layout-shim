@@ -74,6 +74,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check formatting and lint rules
+        run: pnpm run biome:check
+
       - name: Generate UI-library compatibility reports
         run: pnpm run examples:compatibility
         env:

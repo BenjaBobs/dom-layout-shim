@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('applies border shorthands to layout geometry', async () => {
   await expectChromiumParity({
@@ -64,5 +64,5 @@ it('applies border shorthands to layout geometry', async () => {
       { type: 'rect', selector: '#hidden' },
       { type: 'dimensions', selector: '#hidden' },
     ],
-  })
-})
+  });
+});

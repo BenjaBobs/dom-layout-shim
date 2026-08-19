@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid items stretch auto sizes to their grid areas', async () => {
   await expectChromiumParity({
@@ -34,8 +34,8 @@ it('grid items stretch auto sizes to their grid areas', async () => {
       { type: 'rect', selector: '#auto' },
       { type: 'rect', selector: '#explicit' },
     ],
-  })
-})
+  });
+});
 
 it('grid self alignment overrides container item alignment', async () => {
   await expectChromiumParity({
@@ -73,5 +73,5 @@ it('grid self alignment overrides container item alignment', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

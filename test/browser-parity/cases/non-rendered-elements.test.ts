@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('non-rendered elements do not create layout or hit-test boxes', async () => {
   await expectChromiumParity({
@@ -54,5 +54,5 @@ it('non-rendered elements do not create layout or hit-test boxes', async () => {
       { type: 'rect', selector: '#title' },
       { type: 'rect', selector: '#wbr' },
     ],
-  })
-})
+  });
+});

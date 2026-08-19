@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('native inline phrasing elements contribute text without block breaks', async () => {
   await expectChromiumParity({
@@ -29,8 +29,8 @@ it('native inline phrasing elements contribute text without block breaks', async
       { type: 'rect', selector: '#host' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('author display overrides native inline phrasing defaults', async () => {
   await expectChromiumParity({
@@ -59,8 +59,8 @@ it('author display overrides native inline phrasing defaults', async () => {
       { type: 'rect', selector: '#inline' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('native inline phrasing elements preserve br line breaks in ancestor text measurement', async () => {
   await expectChromiumParity({
@@ -91,8 +91,8 @@ it('native inline phrasing elements preserve br line breaks in ancestor text mea
       { type: 'rect', selector: '#host' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('reports one client rect per wrapped inline fragment', async () => {
   await expectChromiumParity({
@@ -109,5 +109,5 @@ it('reports one client rect per wrapped inline fragment', async () => {
       { type: 'rect', selector: '#inline' },
       { type: 'client-rects', selector: '#inline' },
     ],
-  })
-})
+  });
+});

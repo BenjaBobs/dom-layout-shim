@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('sticks a toolbar to the top of its nearest scroll container', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('sticks a toolbar to the top of its nearest scroll container', async () => {
       { type: 'dimensions', selector: '#toolbar' },
       { type: 'point', x: 20, y: 30 },
     ],
-  })
-})
+  });
+});
 
 it('sticks against the viewport when no scrolling ancestor exists', async () => {
   await expectChromiumParity({
@@ -63,8 +63,8 @@ it('sticks against the viewport when no scrolling ancestor exists', async () => 
       { type: 'dimensions', selector: '#toolbar' },
       { type: 'point', x: 20, y: 20 },
     ],
-  })
-})
+  });
+});
 
 it('sticks horizontally inside a scrolled container', async () => {
   await expectChromiumParity({
@@ -100,8 +100,8 @@ it('sticks horizontally inside a scrolled container', async () => {
       { type: 'dimensions', selector: '#sticky' },
       { type: 'point', x: 20, y: 30 },
     ],
-  })
-})
+  });
+});
 
 it('stops at the end of its containing block', async () => {
   await expectChromiumParity({
@@ -137,8 +137,8 @@ it('stops at the end of its containing block', async () => {
       { type: 'rect', selector: '#sticky' },
       { type: 'point', x: 20, y: 25 },
     ],
-  })
-})
+  });
+});
 
 it('honors physical bottom and right sticky insets', async () => {
   await expectChromiumParity({
@@ -196,8 +196,8 @@ it('honors physical bottom and right sticky insets', async () => {
       { type: 'rect', selector: '#bottom' },
       { type: 'rect', selector: '#right' },
     ],
-  })
-})
+  });
+});
 
 it('sticks table header cells inside a scrolling table container', async () => {
   await expectChromiumParity({
@@ -235,5 +235,5 @@ it('sticks table header cells inside a scrolling table container', async () => {
       { type: 'rect', selector: '#heading' },
       { type: 'point', x: 20, y: 30 },
     ],
-  })
-})
+  });
+});

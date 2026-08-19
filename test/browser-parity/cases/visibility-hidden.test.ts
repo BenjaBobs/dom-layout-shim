@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('visibility hidden removes the element from hit testing', async () => {
   await expectChromiumParity({
@@ -28,8 +28,8 @@ it('visibility hidden removes the element from hit testing', async () => {
       <div id="hidden"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('visibility collapse removes regular elements from hit testing', async () => {
   await expectChromiumParity({
@@ -61,8 +61,8 @@ it('visibility collapse removes regular elements from hit testing', async () => 
       { type: 'rect', selector: '#collapsed' },
       { type: 'point', x: 50, y: 50 },
     ],
-  })
-})
+  });
+});
 
 it('visibility hidden is inherited by descendants for hit testing', async () => {
   await expectChromiumParity({
@@ -98,8 +98,8 @@ it('visibility hidden is inherited by descendants for hit testing', async () => 
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('visibility inherit preserves a hidden ancestor for hit testing', async () => {
   await expectChromiumParity({
@@ -136,8 +136,8 @@ it('visibility inherit preserves a hidden ancestor for hit testing', async () =>
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('visibility visible descendants override a hidden ancestor for hit testing', async () => {
   await expectChromiumParity({
@@ -174,8 +174,8 @@ it('visibility visible descendants override a hidden ancestor for hit testing', 
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('visibility initial descendants override a hidden ancestor for hit testing', async () => {
   await expectChromiumParity({
@@ -212,8 +212,8 @@ it('visibility initial descendants override a hidden ancestor for hit testing', 
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('visibility unset preserves a hidden ancestor for hit testing', async () => {
   await expectChromiumParity({
@@ -250,5 +250,5 @@ it('visibility unset preserves a hidden ancestor for hit testing', async () => {
       </div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});

@@ -1,35 +1,47 @@
-import { transform } from 'lightningcss'
-import { readDeclaration } from './lightningcss-value-stringifier.ts'
-import { readSelectorList } from './selector-parser.ts'
-import { applyDeclaration, type SupportedStyle } from './supported-declaration.ts'
-import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
-import { applyCustomPropertyDeclaration, type CustomProperties } from './custom-properties.ts'
-import { matchesViewportMediaQuery } from '../../api/attachment/viewport-media-query.ts'
-import type { Viewport } from '../../api/layout-engine-config.ts'
+import { transform } from 'lightningcss';
+import { matchesViewportMediaQuery } from '../../api/attachment/viewport-media-query.ts';
+import type { Viewport } from '../../api/layout-engine-config.ts';
+import {
+  handleUnsupportedCss,
+  type UnsupportedCssPolicy,
+} from '../../api/unsupported-css-policy.ts';
+import {
+  applyCustomPropertyDeclaration,
+  type CustomProperties,
+} from './custom-properties.ts';
+import { readDeclaration } from './lightningcss-value-stringifier.ts';
+import { readSelectorList } from './selector-parser.ts';
+import {
+  applyDeclaration,
+  type SupportedStyle,
+} from './supported-declaration.ts';
 
 export type StyleRule = {
-  selector: string
-  declarations: Array<{ property: string; value: string }>
-  specificity: number
-  order: number
-  pseudoElement?: 'before' | 'after'
-}
+  selector: string;
+  declarations: Array<{ property: string; value: string }>;
+  specificity: number;
+  order: number;
+  pseudoElement?: 'before' | 'after';
+};
 
 export type FontFaceRule = {
-  family: string
-  weight: number
-  sources: Array<{ type: 'url'; url: string; format?: string } | { type: 'local'; name: string }>
-}
+  family: string;
+  weight: number;
+  sources: Array<
+    | { type: 'url'; url: string; format?: string }
+    | { type: 'local'; name: string }
+  >;
+};
 
 type DocumentStylesheetSource = {
-  element: Element
-  sheet: CSSStyleSheet | null
-  type: 'style' | 'external'
-  filename: string
-}
+  element: Element;
+  sheet: CSSStyleSheet | null;
+  type: 'style' | 'external';
+  filename: string;
+};
 
-const stylesheetIds = new WeakMap<StyleSheet, number>()
-let nextStylesheetId = 1
+const stylesheetIds = new WeakMap<StyleSheet, number>();
+let nextStylesheetId = 1;
 
 export function readStyleRules(
   document: Document,
@@ -37,67 +49,92 @@ export function readStyleRules(
   configuredStylesheets: readonly string[] = [],
   viewport?: Viewport,
 ): StyleRule[] {
-  const rules: StyleRule[] = []
+  const rules: StyleRule[] = [];
 
   for (const [index, cssText] of configuredStylesheets.entries()) {
-    readCssRules(cssText, `configured-style-${index}.css`, policy, rules, viewport)
+    readCssRules(
+      cssText,
+      `configured-style-${index}.css`,
+      policy,
+      rules,
+      viewport,
+    );
   }
 
   for (const source of documentStylesheetSources(document)) {
     if (source.sheet?.disabled) {
-      continue
+      continue;
     }
 
-    const cssText = readDocumentStylesheetCssText(source, policy)
+    const cssText = readDocumentStylesheetCssText(source, policy);
 
     if (cssText !== undefined) {
-      readCssRules(cssText, source.filename, policy, rules, viewport)
+      readCssRules(cssText, source.filename, policy, rules, viewport);
     }
   }
 
   for (const [index, sheet] of adoptedStylesheets(document).entries()) {
     if (sheet.disabled) {
-      continue
+      continue;
     }
 
-    const cssText = readCssomRules(sheet, `adopted stylesheet ${index}`, policy)
+    const cssText = readCssomRules(
+      sheet,
+      `adopted stylesheet ${index}`,
+      policy,
+    );
 
     if (cssText !== undefined) {
-      readCssRules(cssText, `adopted-style-${index}.css`, policy, rules, viewport)
+      readCssRules(
+        cssText,
+        `adopted-style-${index}.css`,
+        policy,
+        rules,
+        viewport,
+      );
     }
   }
 
-  return rules
+  return rules;
 }
 
 export function readFontFaceRules(
   document: Document,
   configuredStylesheets: readonly string[] = [],
 ): FontFaceRule[] {
-  const rules: FontFaceRule[] = []
+  const rules: FontFaceRule[] = [];
 
   for (const cssText of configuredStylesheets) {
-    collectFontFaceRules(cssText, document.baseURI, rules)
+    collectFontFaceRules(cssText, document.baseURI, rules);
   }
 
   for (const source of documentStylesheetSources(document)) {
-    if (source.sheet?.disabled) continue
-    const cssText = readDocumentStylesheetCssText(source, undefined)
+    if (source.sheet?.disabled) continue;
+    const cssText = readDocumentStylesheetCssText(source, undefined);
     if (cssText !== undefined) {
-      collectFontFaceRules(cssText, source.sheet?.href ?? document.baseURI, rules)
+      collectFontFaceRules(
+        cssText,
+        source.sheet?.href ?? document.baseURI,
+        rules,
+      );
     }
   }
 
   for (const sheet of adoptedStylesheets(document)) {
-    if (sheet.disabled) continue
-    const cssText = readCssomRules(sheet, 'adopted stylesheet', undefined)
-    if (cssText !== undefined) collectFontFaceRules(cssText, document.baseURI, rules)
+    if (sheet.disabled) continue;
+    const cssText = readCssomRules(sheet, 'adopted stylesheet', undefined);
+    if (cssText !== undefined)
+      collectFontFaceRules(cssText, document.baseURI, rules);
   }
 
-  return rules
+  return rules;
 }
 
-function collectFontFaceRules(cssText: string, baseUrl: string, rules: FontFaceRule[]): void {
+function collectFontFaceRules(
+  cssText: string,
+  baseUrl: string,
+  rules: FontFaceRule[],
+): void {
   try {
     transform({
       filename: baseUrl,
@@ -106,60 +143,80 @@ function collectFontFaceRules(cssText: string, baseUrl: string, rules: FontFaceR
       visitor: {
         Rule(rule) {
           if (rule.type === 'font-face') {
-            const parsed = parseFontFaceRule(rule.value, baseUrl)
-            if (parsed) rules.push(parsed)
+            const parsed = parseFontFaceRule(rule.value, baseUrl);
+            if (parsed) rules.push(parsed);
           }
-          return []
+          return [];
         },
       },
-    })
+    });
   } catch {
     // The ordinary stylesheet reader reports parse failures through the CSS
     // policy. Font discovery is deliberately side-effect free.
   }
 }
 
-function parseFontFaceRule(value: unknown, baseUrl: string): FontFaceRule | undefined {
-  if (!isRecord(value) || !Array.isArray(value.properties)) return undefined
-  let family: string | undefined
-  let weight = 400
-  let sources: FontFaceRule['sources'] = []
+function parseFontFaceRule(
+  value: unknown,
+  baseUrl: string,
+): FontFaceRule | undefined {
+  if (!isRecord(value) || !Array.isArray(value.properties)) return undefined;
+  let family: string | undefined;
+  let weight = 400;
+  let sources: FontFaceRule['sources'] = [];
 
   for (const property of value.properties) {
-    if (!isRecord(property) || typeof property.type !== 'string') continue
-    if (property.type === 'font-family' && typeof property.value === 'string') family = property.value
+    if (!isRecord(property) || typeof property.type !== 'string') continue;
+    if (property.type === 'font-family' && typeof property.value === 'string')
+      family = property.value;
     if (property.type === 'font-weight' && Array.isArray(property.value)) {
-      const candidate = property.value[0]
-      if (isRecord(candidate) && isRecord(candidate.value) && typeof candidate.value.value === 'number') {
-        weight = candidate.value.value
+      const candidate = property.value[0];
+      if (
+        isRecord(candidate) &&
+        isRecord(candidate.value) &&
+        typeof candidate.value.value === 'number'
+      ) {
+        weight = candidate.value.value;
       }
     }
     if (property.type === 'source' && Array.isArray(property.value)) {
-      sources = property.value.flatMap((source) => parseFontSource(source, baseUrl))
+      sources = property.value.flatMap(source =>
+        parseFontSource(source, baseUrl),
+      );
     }
   }
 
-  return family && sources.length > 0 ? { family, weight, sources } : undefined
+  return family && sources.length > 0 ? { family, weight, sources } : undefined;
 }
 
-function parseFontSource(source: unknown, baseUrl: string): FontFaceRule['sources'] {
-  if (!isRecord(source)) return []
+function parseFontSource(
+  source: unknown,
+  baseUrl: string,
+): FontFaceRule['sources'] {
+  if (!isRecord(source)) return [];
   if (source.type === 'local' && typeof source.value === 'string') {
-    return [{ type: 'local', name: source.value }]
+    return [{ type: 'local', name: source.value }];
   }
-  if (!isRecord(source.value)) return []
-  if (source.type !== 'url' || !isRecord(source.value.url) || typeof source.value.url.url !== 'string') return []
+  if (!isRecord(source.value)) return [];
+  if (
+    source.type !== 'url' ||
+    !isRecord(source.value.url) ||
+    typeof source.value.url.url !== 'string'
+  )
+    return [];
 
-  let url: string
+  let url: string;
   try {
-    url = new URL(source.value.url.url, baseUrl).href
+    url = new URL(source.value.url.url, baseUrl).href;
   } catch {
-    return []
+    return [];
   }
-  const format = isRecord(source.value.format) && typeof source.value.format.type === 'string'
-    ? source.value.format.type
-    : undefined
-  return [{ type: 'url', url, format }]
+  const format =
+    isRecord(source.value.format) &&
+    typeof source.value.format.type === 'string'
+      ? source.value.format.type
+      : undefined;
+  return [{ type: 'url', url, format }];
 }
 
 export function readCssTextRules(
@@ -168,28 +225,43 @@ export function readCssTextRules(
   policy: UnsupportedCssPolicy | undefined,
   viewport?: Viewport,
 ): StyleRule[] {
-  const rules: StyleRule[] = []
-  readCssRules(cssText, filename, policy, rules, viewport)
-  return rules
+  const rules: StyleRule[] = [];
+  readCssRules(cssText, filename, policy, rules, viewport);
+  return rules;
 }
 
 export function documentStylesheetFingerprint(document: Document): string {
   // MutationObserver cannot see CSSOM edits or adoptedStyleSheets assignment.
   // Include sheet identity as well as serialized rules so replacement and
   // reordering invalidate layout even when two sheets have identical content.
-  const documentSources = documentStylesheetSources(document).map((source) => {
-    const identity = source.sheet ? stylesheetIdentity(source.sheet) : 'none'
-    const disabled = source.sheet?.disabled ? 'disabled' : 'enabled'
-    const cssText = readDocumentStylesheetCssText(source, undefined, false)
-    return fingerprintPart(source.type, identity, disabled, cssText ?? 'inaccessible')
-  })
-  const adoptedSources = adoptedStylesheets(document).map((sheet) => {
-    const disabled = sheet.disabled ? 'disabled' : 'enabled'
-    const cssText = readCssomRules(sheet, 'adopted stylesheet', undefined, false)
-    return fingerprintPart('adopted', stylesheetIdentity(sheet), disabled, cssText ?? 'inaccessible')
-  })
+  const documentSources = documentStylesheetSources(document).map(source => {
+    const identity = source.sheet ? stylesheetIdentity(source.sheet) : 'none';
+    const disabled = source.sheet?.disabled ? 'disabled' : 'enabled';
+    const cssText = readDocumentStylesheetCssText(source, undefined, false);
+    return fingerprintPart(
+      source.type,
+      identity,
+      disabled,
+      cssText ?? 'inaccessible',
+    );
+  });
+  const adoptedSources = adoptedStylesheets(document).map(sheet => {
+    const disabled = sheet.disabled ? 'disabled' : 'enabled';
+    const cssText = readCssomRules(
+      sheet,
+      'adopted stylesheet',
+      undefined,
+      false,
+    );
+    return fingerprintPart(
+      'adopted',
+      stylesheetIdentity(sheet),
+      disabled,
+      cssText ?? 'inaccessible',
+    );
+  });
 
-  return [...documentSources, ...adoptedSources].join('|')
+  return [...documentSources, ...adoptedSources].join('|');
 }
 
 export function applyStyleRules(
@@ -201,22 +273,24 @@ export function applyStyleRules(
   customProperties?: CustomProperties,
   viewport?: Viewport,
 ): void {
-  rules
-    .filter((rule) => !rule.pseudoElement && matchesSelector(element, rule.selector, policy))
-    .toSorted(compareStyleRuleCascadeOrder)
-    .forEach((rule) => {
-      for (const declaration of rule.declarations) {
-        applyDeclaration(style, declaration.property, declaration.value, {
-          policy,
-          source: 'stylesheet',
-          selector: rule.selector,
-          element,
-          rootFontSize,
-          viewport,
-          customProperties,
-        })
-      }
-    })
+  for (const rule of rules
+    .filter(
+      rule =>
+        !rule.pseudoElement && matchesSelector(element, rule.selector, policy),
+    )
+    .toSorted(compareStyleRuleCascadeOrder)) {
+    for (const declaration of rule.declarations) {
+      applyDeclaration(style, declaration.property, declaration.value, {
+        policy,
+        source: 'stylesheet',
+        selector: rule.selector,
+        element,
+        rootFontSize,
+        viewport,
+        customProperties,
+      });
+    }
+  }
 }
 
 export function applyStylesheetCustomProperties(
@@ -227,10 +301,19 @@ export function applyStylesheetCustomProperties(
   policy: UnsupportedCssPolicy | undefined,
 ): void {
   for (const rule of rules
-    .filter((candidate) => !candidate.pseudoElement && matchesSelector(element, candidate.selector, policy))
+    .filter(
+      candidate =>
+        !candidate.pseudoElement &&
+        matchesSelector(element, candidate.selector, policy),
+    )
     .toSorted(compareStyleRuleCascadeOrder)) {
     for (const declaration of rule.declarations) {
-      applyCustomPropertyDeclaration(properties, inherited, declaration.property, declaration.value)
+      applyCustomPropertyDeclaration(
+        properties,
+        inherited,
+        declaration.property,
+        declaration.value,
+      );
     }
   }
 }
@@ -240,37 +323,50 @@ export function readGeneratedContent(
   rules: readonly StyleRule[],
   policy: UnsupportedCssPolicy | undefined,
 ): { before: string; after: string } {
-  const result = { before: '', after: '' }
+  const result = { before: '', after: '' };
 
   for (const pseudoElement of ['before', 'after'] as const) {
     const declarations = rules
-      .filter((rule) => rule.pseudoElement === pseudoElement && matchesSelector(element, rule.selector, policy))
+      .filter(
+        rule =>
+          rule.pseudoElement === pseudoElement &&
+          matchesSelector(element, rule.selector, policy),
+      )
       .toSorted(compareStyleRuleCascadeOrder)
-      .flatMap((rule) => rule.declarations)
-    const content = declarations.filter((declaration) => declaration.property === 'content').at(-1)?.value
-    result[pseudoElement] = resolveGeneratedContent(content, element)
+      .flatMap(rule => rule.declarations);
+    const content = declarations
+      .filter(declaration => declaration.property === 'content')
+      .at(-1)?.value;
+    result[pseudoElement] = resolveGeneratedContent(content, element);
   }
 
-  return result
+  return result;
 }
 
-function resolveGeneratedContent(value: string | undefined, element: Element): string {
-  if (!value || value === 'none' || value === 'normal') return ''
+function resolveGeneratedContent(
+  value: string | undefined,
+  element: Element,
+): string {
+  if (!value || value === 'none' || value === 'normal') return '';
   if (value.startsWith('attr(') && value.endsWith(')')) {
-    return element.getAttribute(value.slice(5, -1).trim()) ?? ''
+    return element.getAttribute(value.slice(5, -1).trim()) ?? '';
   }
   if (value.startsWith('"') && value.endsWith('"')) {
-    try { return JSON.parse(value) as string } catch { return '' }
+    try {
+      return JSON.parse(value) as string;
+    } catch {
+      return '';
+    }
   }
-  return ''
+  return '';
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {
   if (a.specificity !== b.specificity) {
-    return a.specificity - b.specificity
+    return a.specificity - b.specificity;
   }
 
-  return a.order - b.order
+  return a.order - b.order;
 }
 
 function matchesSelector(
@@ -279,12 +375,12 @@ function matchesSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): boolean {
   try {
-    return expandTopLevelSelectorFunctions(selector).some((candidate) => {
+    return expandTopLevelSelectorFunctions(selector).some(candidate => {
       if (candidate.includes(' i]')) {
-        return matchesAsciiInsensitiveAttributes(element, candidate)
+        return matchesAsciiInsensitiveAttributes(element, candidate);
       }
-      return element.matches(candidate)
-    })
+      return element.matches(candidate);
+    });
   } catch {
     handleUnsupportedCss(policy, {
       property: 'selector',
@@ -293,8 +389,8 @@ function matchesSelector(
       source: 'stylesheet',
       selector,
       element,
-    })
-    return false
+    });
+    return false;
   }
 }
 
@@ -303,158 +399,179 @@ function matchesSelector(
 // only top-level alternatives and let the host match the resulting ordinary
 // selectors; nested functions retain their original boolean semantics.
 function expandTopLevelSelectorFunctions(selector: string): string[] {
-  const cached = expandedSelectorCache.get(selector)
-  if (cached) return cached
+  const cached = expandedSelectorCache.get(selector);
+  if (cached) return cached;
 
-  const functional = findTopLevelSelectorFunction(selector)
+  const functional = findTopLevelSelectorFunction(selector);
 
   if (!functional) {
-    const result = [selector]
-    expandedSelectorCache.set(selector, result)
-    return result
+    const result = [selector];
+    expandedSelectorCache.set(selector, result);
+    return result;
   }
 
-  const result = splitSelectorArguments(selector.slice(functional.contentStart, functional.contentEnd))
-    .flatMap((argument) => expandTopLevelSelectorFunctions(
-      selector.slice(0, functional.start) + argument.trim() + selector.slice(functional.contentEnd + 1),
-    ))
-  expandedSelectorCache.set(selector, result)
-  return result
+  const result = splitSelectorArguments(
+    selector.slice(functional.contentStart, functional.contentEnd),
+  ).flatMap(argument =>
+    expandTopLevelSelectorFunctions(
+      selector.slice(0, functional.start) +
+        argument.trim() +
+        selector.slice(functional.contentEnd + 1),
+    ),
+  );
+  expandedSelectorCache.set(selector, result);
+  return result;
 }
 
-const expandedSelectorCache = new Map<string, string[]>()
+const expandedSelectorCache = new Map<string, string[]>();
 
 function findTopLevelSelectorFunction(
   selector: string,
 ): { start: number; contentStart: number; contentEnd: number } | undefined {
-  let quote: string | undefined
-  let bracketDepth = 0
-  let parenthesisDepth = 0
+  let quote: string | undefined;
+  let bracketDepth = 0;
+  let parenthesisDepth = 0;
 
   for (let index = 0; index < selector.length; index += 1) {
-    const character = selector[index]
+    const character = selector[index];
 
     if (character === '\\') {
-      index += 1
-      continue
+      index += 1;
+      continue;
     }
     if (quote) {
-      if (character === quote) quote = undefined
-      continue
+      if (character === quote) quote = undefined;
+      continue;
     }
     if (character === '"' || character === "'") {
-      quote = character
-      continue
+      quote = character;
+      continue;
     }
-    if (character === '[') bracketDepth += 1
-    if (character === ']') bracketDepth -= 1
+    if (character === '[') bracketDepth += 1;
+    if (character === ']') bracketDepth -= 1;
 
     if (bracketDepth === 0 && parenthesisDepth === 0) {
-      const match = selector.slice(index).match(/^:(?:where|is)\(/)
+      const match = selector.slice(index).match(/^:(?:where|is)\(/);
       if (match) {
-        const contentStart = index + match[0].length
-        const contentEnd = findClosingParenthesis(selector, contentStart)
-        if (contentEnd !== undefined) return { start: index, contentStart, contentEnd }
+        const contentStart = index + match[0].length;
+        const contentEnd = findClosingParenthesis(selector, contentStart);
+        if (contentEnd !== undefined)
+          return { start: index, contentStart, contentEnd };
       }
     }
 
-    if (bracketDepth === 0 && character === '(') parenthesisDepth += 1
-    if (bracketDepth === 0 && character === ')') parenthesisDepth -= 1
+    if (bracketDepth === 0 && character === '(') parenthesisDepth += 1;
+    if (bracketDepth === 0 && character === ')') parenthesisDepth -= 1;
   }
 
-  return undefined
+  return undefined;
 }
 
-function findClosingParenthesis(selector: string, contentStart: number): number | undefined {
-  let quote: string | undefined
-  let bracketDepth = 0
-  let depth = 1
+function findClosingParenthesis(
+  selector: string,
+  contentStart: number,
+): number | undefined {
+  let quote: string | undefined;
+  let bracketDepth = 0;
+  let depth = 1;
 
   for (let index = contentStart; index < selector.length; index += 1) {
-    const character = selector[index]
+    const character = selector[index];
     if (character === '\\') {
-      index += 1
-      continue
+      index += 1;
+      continue;
     }
     if (quote) {
-      if (character === quote) quote = undefined
-      continue
+      if (character === quote) quote = undefined;
+      continue;
     }
     if (character === '"' || character === "'") {
-      quote = character
-      continue
+      quote = character;
+      continue;
     }
-    if (character === '[') bracketDepth += 1
-    if (character === ']') bracketDepth -= 1
-    if (bracketDepth !== 0) continue
-    if (character === '(') depth += 1
-    if (character === ')') depth -= 1
-    if (depth === 0) return index
+    if (character === '[') bracketDepth += 1;
+    if (character === ']') bracketDepth -= 1;
+    if (bracketDepth !== 0) continue;
+    if (character === '(') depth += 1;
+    if (character === ')') depth -= 1;
+    if (depth === 0) return index;
   }
 
-  return undefined
+  return undefined;
 }
 
 function splitSelectorArguments(value: string): string[] {
-  const argumentsList: string[] = []
-  let start = 0
-  let quote: string | undefined
-  let bracketDepth = 0
-  let parenthesisDepth = 0
+  const argumentsList: string[] = [];
+  let start = 0;
+  let quote: string | undefined;
+  let bracketDepth = 0;
+  let parenthesisDepth = 0;
 
   for (let index = 0; index < value.length; index += 1) {
-    const character = value[index]
+    const character = value[index];
     if (character === '\\') {
-      index += 1
-      continue
+      index += 1;
+      continue;
     }
     if (quote) {
-      if (character === quote) quote = undefined
-      continue
+      if (character === quote) quote = undefined;
+      continue;
     }
     if (character === '"' || character === "'") {
-      quote = character
-      continue
+      quote = character;
+      continue;
     }
-    if (character === '[') bracketDepth += 1
-    if (character === ']') bracketDepth -= 1
-    if (bracketDepth !== 0) continue
-    if (character === '(') parenthesisDepth += 1
-    if (character === ')') parenthesisDepth -= 1
+    if (character === '[') bracketDepth += 1;
+    if (character === ']') bracketDepth -= 1;
+    if (bracketDepth !== 0) continue;
+    if (character === '(') parenthesisDepth += 1;
+    if (character === ')') parenthesisDepth -= 1;
     if (character === ',' && parenthesisDepth === 0) {
-      argumentsList.push(value.slice(start, index))
-      start = index + 1
+      argumentsList.push(value.slice(start, index));
+      start = index + 1;
     }
   }
 
-  argumentsList.push(value.slice(start))
-  return argumentsList
+  argumentsList.push(value.slice(start));
+  return argumentsList;
 }
 
-function matchesAsciiInsensitiveAttributes(element: Element, selector: string): boolean {
-  const attributes: Array<{ name: string; operator: string; value: string }> = []
+function matchesAsciiInsensitiveAttributes(
+  element: Element,
+  selector: string,
+): boolean {
+  const attributes: Array<{ name: string; operator: string; value: string }> =
+    [];
   const structuralSelector = selector.replace(
     /\[([\w-]+)(=|~=|\|=|\^=|\$=|\*=)"([^"]*)" i\]/g,
     (_match, name: string, operator: string, value: string) => {
-      attributes.push({ name, operator, value: value.toLowerCase() })
-      return `[${name}]`
+      attributes.push({ name, operator, value: value.toLowerCase() });
+      return `[${name}]`;
     },
-  )
-  if (attributes.length === 0 || !element.matches(structuralSelector)) return false
+  );
+  if (attributes.length === 0 || !element.matches(structuralSelector))
+    return false;
 
   return attributes.every(({ name, operator, value }) => {
-    const actual = element.getAttribute(name)?.toLowerCase()
-    if (actual === undefined) return false
+    const actual = element.getAttribute(name)?.toLowerCase();
+    if (actual === undefined) return false;
     switch (operator) {
-      case '=': return actual === value
-      case '~=': return actual.split(/\s+/).includes(value)
-      case '|=': return actual === value || actual.startsWith(`${value}-`)
-      case '^=': return actual.startsWith(value)
-      case '$=': return actual.endsWith(value)
-      case '*=': return actual.includes(value)
-      default: return false
+      case '=':
+        return actual === value;
+      case '~=':
+        return actual.split(/\s+/).includes(value);
+      case '|=':
+        return actual === value || actual.startsWith(`${value}-`);
+      case '^=':
+        return actual.startsWith(value);
+      case '$=':
+        return actual.endsWith(value);
+      case '*=':
+        return actual.includes(value);
+      default:
+        return false;
     }
-  })
+  });
 }
 
 function readCssRules(
@@ -472,20 +589,20 @@ function readCssRules(
       visitor: {
         Rule(rule) {
           if (rule.type === 'style') {
-            collectStyleRule(rule.value, policy, rules)
+            collectStyleRule(rule.value, policy, rules);
             // This transform is collection-only. Returning a rule containing
             // unresolved var() tokens makes Lightning CSS serialize its internal
             // unparsed-token representation, which its Node binding cannot round-trip.
-            return []
+            return [];
           }
 
           if (rule.type === 'media') {
-            collectMediaRule(rule.value, policy, rules, viewport)
-            return []
+            collectMediaRule(rule.value, policy, rules, viewport);
+            return [];
           }
 
           if (rule.type === 'font-face') {
-            return []
+            return [];
           }
 
           handleUnsupportedCss(policy, {
@@ -493,18 +610,18 @@ function readCssRules(
             value: rule.type,
             reason: 'unsupported-rule',
             source: 'stylesheet',
-          })
-          return []
+          });
+          return [];
         },
       },
-    })
+    });
   } catch (error) {
     handleUnsupportedCss(policy, {
       property: 'stylesheet',
       value: error instanceof Error ? error.message : String(error),
       reason: 'unsupported-rule',
       source: 'stylesheet',
-    })
+    });
   }
 }
 
@@ -515,35 +632,39 @@ function collectMediaRule(
   viewport: Viewport | undefined,
 ): void {
   if (!isRecord(mediaRule) || !Array.isArray(mediaRule.rules)) {
-    reportUnsupportedMediaRule(policy, mediaRule)
-    return
+    reportUnsupportedMediaRule(policy, mediaRule);
+    return;
   }
 
-  const query = stringifyMediaQueryList(mediaRule.query)
+  const query = stringifyMediaQueryList(mediaRule.query);
 
   if (viewport === undefined || query === undefined) {
-    reportUnsupportedMediaRule(policy, mediaRule.query)
-    return
+    reportUnsupportedMediaRule(policy, mediaRule.query);
+    return;
   }
 
   if (!matchesViewportMediaQuery(query, viewport)) {
-    return
+    return;
   }
 
   for (const nestedRule of mediaRule.rules) {
     if (!isRecord(nestedRule) || typeof nestedRule.type !== 'string') {
-      reportUnsupportedMediaRule(policy, nestedRule)
+      reportUnsupportedMediaRule(policy, nestedRule);
     } else if (nestedRule.type === 'style') {
-      collectStyleRule(nestedRule.value as Parameters<typeof collectStyleRule>[0], policy, rules)
+      collectStyleRule(
+        nestedRule.value as Parameters<typeof collectStyleRule>[0],
+        policy,
+        rules,
+      );
     } else if (nestedRule.type === 'media') {
-      collectMediaRule(nestedRule.value, policy, rules, viewport)
+      collectMediaRule(nestedRule.value, policy, rules, viewport);
     } else {
       handleUnsupportedCss(policy, {
         property: `@${nestedRule.type}`,
         value: nestedRule.type,
         reason: 'unsupported-rule',
         source: 'stylesheet',
-      })
+      });
     }
   }
 }
@@ -557,164 +678,195 @@ function reportUnsupportedMediaRule(
     value: JSON.stringify(value),
     reason: 'unsupported-rule',
     source: 'stylesheet',
-  })
+  });
 }
 
 function stringifyMediaQueryList(value: unknown): string | undefined {
   if (!isRecord(value) || !Array.isArray(value.mediaQueries)) {
-    return undefined
+    return undefined;
   }
 
-  const queries = value.mediaQueries.map(stringifyMediaQuery)
+  const queries = value.mediaQueries.map(stringifyMediaQuery);
   return queries.every((query): query is string => query !== undefined)
     ? queries.join(', ')
-    : undefined
+    : undefined;
 }
 
 function stringifyMediaQuery(value: unknown): string | undefined {
   if (!isRecord(value) || typeof value.mediaType !== 'string') {
-    return undefined
+    return undefined;
   }
 
-  const qualifier = value.qualifier === 'not' || value.qualifier === 'only'
-    ? `${value.qualifier} `
-    : ''
-  const condition = value.condition === null ? undefined : stringifyMediaCondition(value.condition)
+  const qualifier =
+    value.qualifier === 'not' || value.qualifier === 'only'
+      ? `${value.qualifier} `
+      : '';
+  const condition =
+    value.condition === null
+      ? undefined
+      : stringifyMediaCondition(value.condition);
 
   if (value.condition !== null && condition === undefined) {
-    return undefined
+    return undefined;
   }
 
   if (value.mediaType === 'all' && !qualifier && condition) {
-    return condition
+    return condition;
   }
 
-  return `${qualifier}${value.mediaType}${condition ? ` and ${condition}` : ''}`
+  return `${qualifier}${value.mediaType}${condition ? ` and ${condition}` : ''}`;
 }
 
 function stringifyMediaCondition(value: unknown): string | undefined {
   if (!isRecord(value)) {
-    return undefined
+    return undefined;
   }
 
   if (value.type === 'feature') {
-    return stringifyMediaFeature(value.value)
+    return stringifyMediaFeature(value.value);
   }
 
-  if (value.type === 'operation' && value.operator === 'and' && Array.isArray(value.conditions)) {
-    const conditions = value.conditions.map(stringifyMediaCondition)
-    return conditions.every((condition): condition is string => condition !== undefined)
+  if (
+    value.type === 'operation' &&
+    value.operator === 'and' &&
+    Array.isArray(value.conditions)
+  ) {
+    const conditions = value.conditions.map(stringifyMediaCondition);
+    return conditions.every(
+      (condition): condition is string => condition !== undefined,
+    )
       ? conditions.join(' and ')
-      : undefined
+      : undefined;
   }
 
-  return undefined
+  return undefined;
 }
 
 function stringifyMediaFeature(value: unknown): string | undefined {
   if (!isRecord(value) || typeof value.name !== 'string') {
-    return undefined
+    return undefined;
   }
 
-  if (value.type === 'boolean' && (value.name === 'width' || value.name === 'height')) {
-    return `(${value.name})`
+  if (
+    value.type === 'boolean' &&
+    (value.name === 'width' || value.name === 'height')
+  ) {
+    return `(${value.name})`;
   }
 
   if (value.type === 'plain') {
-    if (!['width', 'height', 'orientation', 'aspect-ratio'].includes(value.name)) {
-      return undefined
+    if (
+      !['width', 'height', 'orientation', 'aspect-ratio'].includes(value.name)
+    ) {
+      return undefined;
     }
 
-    const featureValue = stringifyMediaFeatureValue(value.value)
-    return featureValue === undefined ? undefined : `(${value.name}: ${featureValue})`
+    const featureValue = stringifyMediaFeatureValue(value.value);
+    return featureValue === undefined
+      ? undefined
+      : `(${value.name}: ${featureValue})`;
   }
 
   if (value.type === 'range') {
     const operator = {
-      'equal': '=',
+      equal: '=',
       'less-than': '<',
       'less-than-equal': '<=',
       'greater-than': '>',
       'greater-than-equal': '>=',
-    }[String(value.operator)]
-    const featureValue = stringifyMediaFeatureValue(value.value)
+    }[String(value.operator)];
+    const featureValue = stringifyMediaFeatureValue(value.value);
 
     if (value.name === 'aspect-ratio') {
-      const prefix = operator === '>=' ? 'min-' : operator === '<=' ? 'max-' : operator === '=' ? '' : undefined
+      const prefix =
+        operator === '>='
+          ? 'min-'
+          : operator === '<='
+            ? 'max-'
+            : operator === '='
+              ? ''
+              : undefined;
       return prefix === undefined || featureValue === undefined
         ? undefined
-        : `(${prefix}aspect-ratio: ${featureValue})`
+        : `(${prefix}aspect-ratio: ${featureValue})`;
     }
 
     if (value.name !== 'width' && value.name !== 'height') {
-      return undefined
+      return undefined;
     }
 
     return operator === undefined || featureValue === undefined
       ? undefined
-      : `(${value.name} ${operator} ${featureValue})`
+      : `(${value.name} ${operator} ${featureValue})`;
   }
 
-  return undefined
+  return undefined;
 }
 
 function stringifyMediaFeatureValue(value: unknown): string | undefined {
   if (!isRecord(value)) {
-    return undefined
+    return undefined;
   }
 
   if (value.type === 'ident' && typeof value.value === 'string') {
-    return value.value
+    return value.value;
   }
 
   if (value.type === 'ratio' && Array.isArray(value.value)) {
-    const [numerator, denominator] = value.value
+    const [numerator, denominator] = value.value;
     return typeof numerator === 'number' && typeof denominator === 'number'
       ? `${numerator} / ${denominator}`
-      : undefined
+      : undefined;
   }
 
   if (value.type === 'length' && isRecord(value.value)) {
-    const length = value.value.type === 'value' ? value.value.value : value.value
+    const length =
+      value.value.type === 'value' ? value.value.value : value.value;
 
-    if (isRecord(length) && typeof length.value === 'number' && typeof length.unit === 'string') {
-      return `${length.value}${length.unit}`
+    if (
+      isRecord(length) &&
+      typeof length.value === 'number' &&
+      typeof length.unit === 'string'
+    ) {
+      return `${length.value}${length.unit}`;
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+  return typeof value === 'object' && value !== null;
 }
 
 function readStyleElementCssText(styleElement: Element): string {
-  const authoredCssText = styleElement.textContent ?? ''
-  const sheet = (styleElement as HTMLStyleElement).sheet
+  const authoredCssText = styleElement.textContent ?? '';
+  const sheet = (styleElement as HTMLStyleElement).sheet;
 
   if (!sheet) {
-    return authoredCssText
+    return authoredCssText;
   }
 
   try {
-    const cssomRules = Array.from(sheet.cssRules, (rule) => rule.cssText)
+    const cssomRules = Array.from(sheet.cssRules, rule => rule.cssText);
 
     if (!authoredCssText.trim()) {
-      return cssomRules.join('\n')
+      return cssomRules.join('\n');
     }
 
-    const authoredRules = canonicalCssRules(styleElement.ownerDocument, authoredCssText)
+    const authoredRules = canonicalCssRules(
+      styleElement.ownerDocument,
+      authoredCssText,
+    );
 
-    if (
-      authoredRules &&
-      authoredRules.every((rule, index) => cssomRules[index] === rule)
-    ) {
+    if (authoredRules?.every((rule, index) => cssomRules[index] === rule)) {
       // Keep authored text intact because CSSOM serialization expands some
       // shorthands into declarations that do not round-trip through our
       // supported subset. CSS-in-JS runtimes append insertRule entries, so
       // only the CSSOM-only suffix needs serialization.
-      return [authoredCssText, ...cssomRules.slice(authoredRules.length)].join('\n')
+      return [authoredCssText, ...cssomRules.slice(authoredRules.length)].join(
+        '\n',
+      );
     }
 
     // Once an authored rule is changed or removed through CSSOM, textContent is
@@ -722,47 +874,54 @@ function readStyleElementCssText(styleElement: Element): string {
     // expand shorthands, but it is the only deterministic source that preserves
     // rule edits and deletions without replaying declarations that no longer
     // exist.
-    return cssomRules.join('\n')
+    return cssomRules.join('\n');
   } catch {
     // Accessing cssRules can throw for inaccessible stylesheets. A style
     // element's own text remains the best deterministic source in that case.
-    return authoredCssText
+    return authoredCssText;
   }
 }
 
-function documentStylesheetSources(document: Document): DocumentStylesheetSource[] {
-  let styleIndex = 0
-  let externalIndex = 0
+function documentStylesheetSources(
+  document: Document,
+): DocumentStylesheetSource[] {
+  let styleIndex = 0;
+  let externalIndex = 0;
 
-  return Array.from(document.querySelectorAll('style, link'))
-    .flatMap((element): DocumentStylesheetSource[] => {
+  return Array.from(document.querySelectorAll('style, link')).flatMap(
+    (element): DocumentStylesheetSource[] => {
       if (element.localName === 'style') {
-        return [{
-          element,
-          sheet: (element as HTMLStyleElement).sheet,
-          type: 'style',
-          filename: `style-${styleIndex++}.css`,
-        }]
+        return [
+          {
+            element,
+            sheet: (element as HTMLStyleElement).sheet,
+            type: 'style',
+            filename: `style-${styleIndex++}.css`,
+          },
+        ];
       }
 
-      const link = element as HTMLLinkElement
-      const rels = link.rel.toLowerCase().split(/\s+/)
+      const link = element as HTMLLinkElement;
+      const rels = link.rel.toLowerCase().split(/\s+/);
 
       if (!rels.includes('stylesheet')) {
-        return []
+        return [];
       }
 
-      return [{
-        element,
-        sheet: link.sheet,
-        type: 'external',
-        filename: `external-style-${externalIndex++}.css`,
-      }]
-    })
+      return [
+        {
+          element,
+          sheet: link.sheet,
+          type: 'external',
+          filename: `external-style-${externalIndex++}.css`,
+        },
+      ];
+    },
+  );
 }
 
 function adoptedStylesheets(document: Document): CSSStyleSheet[] {
-  return Array.from(document.adoptedStyleSheets ?? [])
+  return Array.from(document.adoptedStyleSheets ?? []);
 }
 
 function readDocumentStylesheetCssText(
@@ -771,14 +930,18 @@ function readDocumentStylesheetCssText(
   reportUnavailable = true,
 ): string | undefined {
   if (source.type === 'style') {
-    return readStyleElementCssText(source.element)
+    return readStyleElementCssText(source.element);
   }
 
   if (!source.sheet) {
     if (reportUnavailable) {
-      reportUnavailableStylesheet(policy, describeExternalStylesheet(source.element), 'is unavailable')
+      reportUnavailableStylesheet(
+        policy,
+        describeExternalStylesheet(source.element),
+        'is unavailable',
+      );
     }
-    return undefined
+    return undefined;
   }
 
   return readCssomRules(
@@ -786,7 +949,7 @@ function readDocumentStylesheetCssText(
     describeExternalStylesheet(source.element),
     policy,
     reportUnavailable,
-  )
+  );
 }
 
 function readCssomRules(
@@ -796,16 +959,16 @@ function readCssomRules(
   reportUnavailable = true,
 ): string | undefined {
   try {
-    return Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n')
+    return Array.from(sheet.cssRules, rule => rule.cssText).join('\n');
   } catch (error) {
     if (reportUnavailable) {
       reportUnavailableStylesheet(
         policy,
         description,
         error instanceof Error ? error.message : String(error),
-      )
+      );
     }
-    return undefined
+    return undefined;
   }
 }
 
@@ -819,24 +982,27 @@ function reportUnavailableStylesheet(
     value: `${description} ${detail}`,
     reason: 'unsupported-rule',
     source: 'stylesheet',
-  })
+  });
 }
 
 function describeExternalStylesheet(element: Element): string {
-  const href = (element as HTMLLinkElement).href || element.getAttribute('href') || '<unknown>'
-  return `external stylesheet "${href}"`
+  const href =
+    (element as HTMLLinkElement).href ||
+    element.getAttribute('href') ||
+    '<unknown>';
+  return `external stylesheet "${href}"`;
 }
 
 function stylesheetIdentity(sheet: StyleSheet): number {
-  const existing = stylesheetIds.get(sheet)
+  const existing = stylesheetIds.get(sheet);
 
   if (existing !== undefined) {
-    return existing
+    return existing;
   }
 
-  const identity = nextStylesheetId++
-  stylesheetIds.set(sheet, identity)
-  return identity
+  const identity = nextStylesheetId++;
+  stylesheetIds.set(sheet, identity);
+  return identity;
 }
 
 function fingerprintPart(
@@ -845,32 +1011,35 @@ function fingerprintPart(
   disabled: string,
   cssText: string,
 ): string {
-  return `${type}:${identity}:${disabled}:${cssText.length}:${cssText}`
+  return `${type}:${identity}:${disabled}:${cssText.length}:${cssText}`;
 }
 
-function canonicalCssRules(document: Document, cssText: string): string[] | undefined {
-  const CSSStyleSheet = document.defaultView?.CSSStyleSheet
+function canonicalCssRules(
+  document: Document,
+  cssText: string,
+): string[] | undefined {
+  const CSSStyleSheet = document.defaultView?.CSSStyleSheet;
 
   if (!CSSStyleSheet) {
-    return undefined
+    return undefined;
   }
 
   try {
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync(cssText)
-    return Array.from(sheet.cssRules, (rule) => rule.cssText)
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    return Array.from(sheet.cssRules, rule => rule.cssText);
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
 function collectStyleRule(
   rule: {
-    selectors: unknown
+    selectors: unknown;
     declarations?: {
-      declarations?: unknown[]
-      importantDeclarations?: unknown[]
-    }
+      declarations?: unknown[];
+      importantDeclarations?: unknown[];
+    };
   },
   policy: UnsupportedCssPolicy | undefined,
   rules: StyleRule[],
@@ -878,7 +1047,7 @@ function collectStyleRule(
   const declarations = [
     ...(rule.declarations?.declarations ?? []),
     ...(rule.declarations?.importantDeclarations ?? []),
-  ].map(readDeclaration)
+  ].map(readDeclaration);
 
   for (const selector of readSelectorList(rule.selectors, policy)) {
     rules.push({
@@ -886,7 +1055,9 @@ function collectStyleRule(
       declarations,
       specificity: selector.specificity,
       order: rules.length,
-      ...(selector.pseudoElement ? { pseudoElement: selector.pseudoElement } : {}),
-    })
+      ...(selector.pseudoElement
+        ? { pseudoElement: selector.pseudoElement }
+        : {}),
+    });
   }
 }

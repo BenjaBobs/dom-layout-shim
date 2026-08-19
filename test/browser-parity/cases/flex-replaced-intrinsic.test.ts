@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('replaced element intrinsic size participates in flex layout', async () => {
   await expectChromiumParity({
@@ -30,5 +30,5 @@ it('replaced element intrinsic size participates in flex layout', async () => {
       { type: 'rect', selector: '#logo' },
       { type: 'rect', selector: '#box' },
     ],
-  })
-})
+  });
+});

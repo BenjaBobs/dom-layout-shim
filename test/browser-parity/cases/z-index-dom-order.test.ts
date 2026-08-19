@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('dom order breaks z-index ties', async () => {
   await expectChromiumParity({
@@ -19,5 +19,5 @@ it('dom order breaks z-index ties', async () => {
       <div id="second"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});

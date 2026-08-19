@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('content-box dimensions include padding and border outside the declared size', async () => {
   await expectChromiumParity({
@@ -25,5 +25,5 @@ it('content-box dimensions include padding and border outside the declared size'
       { type: 'point', x: 137, y: 83 },
       { type: 'point', x: 138, y: 83 },
     ],
-  })
-})
+  });
+});

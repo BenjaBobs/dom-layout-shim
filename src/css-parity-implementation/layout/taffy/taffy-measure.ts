@@ -1,39 +1,44 @@
-import type { MeasureFunction, Size } from 'taffy-layout'
-import type { SupportedStyle } from '../../css/supported-style.ts'
-import type { TextMeasurer } from '../../../api/text-measurer.ts'
-import type { NativeControlMetrics } from '../../../api/native-control-profile.ts'
+import type { MeasureFunction, Size } from 'taffy-layout';
+import type { NativeControlMetrics } from '../../../api/native-control-profile.ts';
+import type { TextMeasurer } from '../../../api/text-measurer.ts';
+import type { SupportedStyle } from '../../css/supported-style.ts';
 
-const elementNodeType = 1
-const textNodeType = 3
-const commentNodeType = 8
+const elementNodeType = 1;
+const textNodeType = 3;
+const commentNodeType = 8;
 
 export type MeasureContext = {
-  text?: string
-  fontFamily: string
-  fontSize: number
-  fontWeight: number
-  letterSpacing: number
-  lineHeight: number
-  whiteSpace: SupportedStyle['whiteSpace']
-  textTransform: SupportedStyle['textTransform']
-  textMeasurer: TextMeasurer
-  replacedSize?: Size<number>
-  inlineAdvance?: number
-}
+  text?: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  letterSpacing: number;
+  lineHeight: number;
+  whiteSpace: SupportedStyle['whiteSpace'];
+  textTransform: SupportedStyle['textTransform'];
+  textMeasurer: TextMeasurer;
+  replacedSize?: Size<number>;
+  inlineAdvance?: number;
+};
 
 export function createMeasureContext(
   element: Element,
   style: SupportedStyle,
   textMeasurer: TextMeasurer,
   nativeControlMetrics: NativeControlMetrics,
-  generatedContent: { before: string; after: string } = { before: '', after: '' },
+  generatedContent: { before: string; after: string } = {
+    before: '',
+    after: '',
+  },
 ): MeasureContext | undefined {
-  const replacedSize = replacedElementSize(element) ?? formControlIntrinsicSize(
-    element,
-    style,
-    textMeasurer,
-    nativeControlMetrics,
-  )
+  const replacedSize =
+    replacedElementSize(element) ??
+    formControlIntrinsicSize(
+      element,
+      style,
+      textMeasurer,
+      nativeControlMetrics,
+    );
 
   if (replacedSize) {
     return {
@@ -46,10 +51,10 @@ export function createMeasureContext(
       textTransform: style.textTransform,
       textMeasurer,
       replacedSize,
-    }
+    };
   }
 
-  const text = `${generatedContent.before}${textContentForMeasurement(element)}${generatedContent.after}`
+  const text = `${generatedContent.before}${textContentForMeasurement(element)}${generatedContent.after}`;
 
   if (
     !text.trim() &&
@@ -57,7 +62,7 @@ export function createMeasureContext(
     style.whiteSpace !== 'pre-line' &&
     style.whiteSpace !== 'pre-wrap'
   ) {
-    return undefined
+    return undefined;
   }
 
   return {
@@ -71,48 +76,62 @@ export function createMeasureContext(
     textTransform: style.textTransform,
     textMeasurer,
     inlineAdvance: flexButtonInlineAdvance(element, style),
-  }
+  };
 }
 
 export function canMeasureTextLeaf(element: Element): boolean {
-  return Array.from(element.childNodes).every((node) => {
+  return Array.from(element.childNodes).every(node => {
     if (node.nodeType === textNodeType || node.nodeType === commentNodeType) {
-      return true
+      return true;
     }
 
-    return node.nodeType === elementNodeType && (node as Element).tagName.toLowerCase() === 'br'
-  })
+    return (
+      node.nodeType === elementNodeType &&
+      (node as Element).tagName.toLowerCase() === 'br'
+    );
+  });
 }
 
-export function transformMeasuredText(text: string, transform: SupportedStyle['textTransform']): string {
+export function transformMeasuredText(
+  text: string,
+  transform: SupportedStyle['textTransform'],
+): string {
   switch (transform) {
     case 'uppercase':
-      return text.toUpperCase()
+      return text.toUpperCase();
     case 'lowercase':
-      return text.toLowerCase()
+      return text.toLowerCase();
     case 'capitalize':
-      return text.replace(/(^|[^\p{L}\p{N}])(\p{L})/gu, (_, boundary: string, letter: string) =>
-        `${boundary}${letter.toUpperCase()}`)
+      return text.replace(
+        /(^|[^\p{L}\p{N}])(\p{L})/gu,
+        (_, boundary: string, letter: string) =>
+          `${boundary}${letter.toUpperCase()}`,
+      );
     default:
-      return text
+      return text;
   }
 }
 
-export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpace, _node, context): Size<number> => {
-  const measureContext = context as MeasureContext | undefined
+export const measureTaffyNode: MeasureFunction = (
+  knownDimensions,
+  availableSpace,
+  _node,
+  context,
+): Size<number> => {
+  const measureContext = context as MeasureContext | undefined;
 
   if (!measureContext) {
     return {
       width: knownDimensions.width ?? 0,
       height: knownDimensions.height ?? 0,
-    }
+    };
   }
 
   if (measureContext.replacedSize) {
     return {
       width: knownDimensions.width ?? measureContext.replacedSize.width,
       height: knownDimensions.height ?? measureContext.replacedSize.height,
-    }
+    };
   }
 
   const maxWidth =
@@ -120,9 +139,12 @@ export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpac
       ? availableSpace.width
       : typeof knownDimensions.width === 'number'
         ? knownDimensions.width
-        : Number.MAX_SAFE_INTEGER
+        : Number.MAX_SAFE_INTEGER;
   const measured = measureContext.textMeasurer.measure({
-    text: transformMeasuredText(measureContext.text ?? '', measureContext.textTransform),
+    text: transformMeasuredText(
+      measureContext.text ?? '',
+      measureContext.textTransform,
+    ),
     fontFamily: measureContext.fontFamily,
     fontSize: measureContext.fontSize,
     fontWeight: measureContext.fontWeight,
@@ -130,58 +152,62 @@ export const measureTaffyNode: MeasureFunction = (knownDimensions, availableSpac
     lineHeight: measureContext.lineHeight,
     maxWidth,
     whiteSpace: measureContext.whiteSpace,
-  })
+  });
 
   return {
-    width: knownDimensions.width ?? measured.width + (measureContext.inlineAdvance ?? 0),
+    width:
+      knownDimensions.width ??
+      measured.width + (measureContext.inlineAdvance ?? 0),
     height: knownDimensions.height ?? measured.height,
-  }
-}
+  };
+};
 
 function replacedElementSize(element: Element): Size<number> | undefined {
-  const dataWidth = readNumberAttribute(element, 'data-layout-width')
-  const dataHeight = readNumberAttribute(element, 'data-layout-height')
+  const dataWidth = readNumberAttribute(element, 'data-layout-width');
+  const dataHeight = readNumberAttribute(element, 'data-layout-height');
 
   if (dataWidth !== undefined && dataHeight !== undefined) {
-    return { width: dataWidth, height: dataHeight }
+    return { width: dataWidth, height: dataHeight };
   }
 
-  const tagName = element.tagName.toLowerCase()
+  const tagName = element.tagName.toLowerCase();
 
   if (tagName === 'audio') {
-    return element.hasAttribute('controls') ? { width: 300, height: 54 } : undefined
+    return element.hasAttribute('controls')
+      ? { width: 300, height: 54 }
+      : undefined;
   }
 
   if (tagName === 'object' && hasObjectFallbackContent(element)) {
-    return undefined
+    return undefined;
   }
 
   if (tagName === 'iframe' || tagName === 'object') {
     return {
       width: readNumberAttribute(element, 'width') ?? 300,
       height: readNumberAttribute(element, 'height') ?? 150,
-    }
+    };
   }
 
   if (tagName === 'svg' || tagName === 'canvas' || tagName === 'video') {
     return {
       width: readNumberAttribute(element, 'width') ?? 300,
       height: readNumberAttribute(element, 'height') ?? 150,
-    }
+    };
   }
 
   if (tagName !== 'img') {
-    return undefined
+    return undefined;
   }
 
-  const width = readNumberAttribute(element, 'width')
-  const height = readNumberAttribute(element, 'height')
+  const width = readNumberAttribute(element, 'width');
+  const height = readNumberAttribute(element, 'height');
 
   if (width === undefined && height === undefined) {
-    return undefined
+    return undefined;
   }
 
-  return { width: width ?? 0, height: height ?? 0 }
+  return { width: width ?? 0, height: height ?? 0 };
 }
 
 function formControlIntrinsicSize(
@@ -190,71 +216,84 @@ function formControlIntrinsicSize(
   textMeasurer: TextMeasurer,
   metrics: NativeControlMetrics,
 ): Size<number> | undefined {
-  const tagName = element.tagName.toLowerCase()
+  const tagName = element.tagName.toLowerCase();
 
   if (tagName === 'textarea') {
     return {
-      width: (readPositiveIntegerAttribute(element, 'cols') ?? 20) * metrics.textarea.columnWidth + metrics.textarea.paddingWidth,
-      height: (readPositiveIntegerAttribute(element, 'rows') ?? 2) * metrics.textarea.rowHeight + metrics.textarea.paddingHeight,
-    }
+      width:
+        (readPositiveIntegerAttribute(element, 'cols') ?? 20) *
+          metrics.textarea.columnWidth +
+        metrics.textarea.paddingWidth,
+      height:
+        (readPositiveIntegerAttribute(element, 'rows') ?? 2) *
+          metrics.textarea.rowHeight +
+        metrics.textarea.paddingHeight,
+    };
   }
 
   if (tagName === 'select') {
-    return selectIntrinsicSize(element, style, textMeasurer, metrics)
+    return selectIntrinsicSize(element, style, textMeasurer, metrics);
   }
 
   if (tagName === 'progress') {
-    return metrics.progress
+    return metrics.progress;
   }
 
   if (tagName === 'meter') {
-    return metrics.meter
+    return metrics.meter;
   }
 
   if (tagName === 'button') {
     if (style.display === 'flex') {
-      return styledFlexButtonIntrinsicSize(element, style, textMeasurer)
+      return styledFlexButtonIntrinsicSize(element, style, textMeasurer);
     }
-    return buttonLikeIntrinsicSize(element.textContent ?? '', style, textMeasurer, metrics)
+    return buttonLikeIntrinsicSize(
+      element.textContent ?? '',
+      style,
+      textMeasurer,
+      metrics,
+    );
   }
 
   if (tagName !== 'input') {
-    return undefined
+    return undefined;
   }
 
-  const type = (element.getAttribute('type') ?? 'text').toLowerCase()
+  const type = (element.getAttribute('type') ?? 'text').toLowerCase();
 
   if (type === 'image') {
-    const width = readNumberAttribute(element, 'width')
-    const height = readNumberAttribute(element, 'height')
+    const width = readNumberAttribute(element, 'width');
+    const height = readNumberAttribute(element, 'height');
 
     if (width !== undefined && height !== undefined) {
-      return { width, height }
+      return { width, height };
     }
 
-    return metrics.imageFallback
+    return metrics.imageFallback;
   }
 
   if (type === 'file') {
-    return metrics.file
+    return metrics.file;
   }
 
   switch (type) {
     case 'checkbox':
     case 'radio':
-      return metrics.checkboxRadio
+      return metrics.checkboxRadio;
     case 'color':
-      return metrics.color
+      return metrics.color;
     case 'time':
-      return metrics.time
+      return metrics.time;
     case 'range':
-      return metrics.range
+      return metrics.range;
     case 'button': {
-      const value = element.getAttribute('value') ?? ''
-      return value ? buttonLikeIntrinsicSize(value, style, textMeasurer, metrics) : {
-        width: metrics.button.emptyWidth,
-        height: metrics.button.height,
-      }
+      const value = element.getAttribute('value') ?? '';
+      return value
+        ? buttonLikeIntrinsicSize(value, style, textMeasurer, metrics)
+        : {
+            width: metrics.button.emptyWidth,
+            height: metrics.button.height,
+          };
     }
     case 'reset':
     case 'submit':
@@ -263,9 +302,12 @@ function formControlIntrinsicSize(
         style,
         textMeasurer,
         metrics,
-      )
+      );
     default:
-      return { width: inputTextLikeIntrinsicWidth(element, type, metrics), height: metrics.textInput.height }
+      return {
+        width: inputTextLikeIntrinsicWidth(element, type, metrics),
+        height: metrics.textInput.height,
+      };
   }
 }
 
@@ -275,7 +317,10 @@ function styledFlexButtonIntrinsicSize(
   textMeasurer: TextMeasurer,
 ): Size<number> {
   const measured = textMeasurer.measure({
-    text: transformMeasuredText(element.textContent?.trim() ?? '', style.textTransform),
+    text: transformMeasuredText(
+      element.textContent?.trim() ?? '',
+      style.textTransform,
+    ),
     fontFamily: style.fontFamily,
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
@@ -283,65 +328,94 @@ function styledFlexButtonIntrinsicSize(
     lineHeight: style.lineHeight,
     maxWidth: Number.MAX_SAFE_INTEGER,
     whiteSpace: 'nowrap',
-  })
+  });
   const borderWidth = (side: 'left' | 'right' | 'top' | 'bottom') =>
-    style.borderStyle[side] === 'none' || style.borderStyle[side] === 'hidden' ? 0 : style.borderWidth[side]
+    style.borderStyle[side] === 'none' || style.borderStyle[side] === 'hidden'
+      ? 0
+      : style.borderWidth[side];
 
   return {
     // Author padding replaces Chromium's native button inline padding once
     // the control is switched to flex layout; retaining a native inset here
     // makes explicitly styled component-library buttons too wide.
-    width: measured.width + flexButtonInlineAdvance(element, style) +
-      fixedLength(style.padding.left) + fixedLength(style.padding.right) + borderWidth('left') + borderWidth('right'),
-    height: measured.height + fixedLength(style.padding.top) + fixedLength(style.padding.bottom) + borderWidth('top') + borderWidth('bottom'),
-  }
+    width:
+      measured.width +
+      flexButtonInlineAdvance(element, style) +
+      fixedLength(style.padding.left) +
+      fixedLength(style.padding.right) +
+      borderWidth('left') +
+      borderWidth('right'),
+    height:
+      measured.height +
+      fixedLength(style.padding.top) +
+      fixedLength(style.padding.bottom) +
+      borderWidth('top') +
+      borderWidth('bottom'),
+  };
 }
 
 function fixedLength(value: SupportedStyle['padding']['top']): number {
-  return typeof value === 'number' ? value : 0
+  return typeof value === 'number' ? value : 0;
 }
 
-function flexButtonInlineAdvance(element: Element, style: SupportedStyle): number {
-  if (element.tagName.toLowerCase() !== 'button' || style.display !== 'flex') return 0
+function flexButtonInlineAdvance(
+  element: Element,
+  style: SupportedStyle,
+): number {
+  if (element.tagName.toLowerCase() !== 'button' || style.display !== 'flex')
+    return 0;
 
-  const children = Array.from(element.children)
+  const children = Array.from(element.children);
   const iconWidth = children.reduce((width, child) => {
-    if ((child.textContent ?? '').trim()) return width
+    if ((child.textContent ?? '').trim()) return width;
     if (child.matches('svg, img') || child.querySelector('svg, img')) {
-      return width + replacedInlineWidth(child, style.fontSize)
+      return width + replacedInlineWidth(child, style.fontSize);
     }
-    return width
-  }, 0)
-  const contentRuns = children.length > 0
-    ? children.filter((child) => (child.textContent ?? '').trim() || child.matches('svg, img') || child.querySelector('svg, img')).length
-    : 1
+    return width;
+  }, 0);
+  const contentRuns =
+    children.length > 0
+      ? children.filter(
+          child =>
+            (child.textContent ?? '').trim() ||
+            child.matches('svg, img') ||
+            child.querySelector('svg, img'),
+        ).length
+      : 1;
 
-  return iconWidth + Math.max(0, contentRuns - 1) * numericGap(style.columnGap)
+  return iconWidth + Math.max(0, contentRuns - 1) * numericGap(style.columnGap);
 }
 
 function replacedInlineWidth(element: Element, fallback: number): number {
-  const replaced = element.matches('svg, img') ? element : element.querySelector('svg, img')
-  if (!replaced) return 0
-  return readNumberAttribute(replaced, 'width') ?? fallback
+  const replaced = element.matches('svg, img')
+    ? element
+    : element.querySelector('svg, img');
+  if (!replaced) return 0;
+  return readNumberAttribute(replaced, 'width') ?? fallback;
 }
 
 function numericGap(value: SupportedStyle['columnGap']): number {
-  return typeof value === 'number' ? value : 0
+  return typeof value === 'number' ? value : 0;
 }
 
-function inputTextLikeIntrinsicWidth(element: Element, type: string, metrics: NativeControlMetrics): number {
+function inputTextLikeIntrinsicWidth(
+  element: Element,
+  type: string,
+  metrics: NativeControlMetrics,
+): number {
   if (!textLikeInputSizeAttributeApplies(type)) {
-    return metrics.textInput.width
+    return metrics.textInput.width;
   }
 
-  const size = readPositiveIntegerAttribute(element, 'size')
+  const size = readPositiveIntegerAttribute(element, 'size');
   return size === undefined
     ? metrics.textInput.width
-    : size * metrics.textInput.sizeCharacterWidth + metrics.textInput.sizePaddingWidth
+    : size * metrics.textInput.sizeCharacterWidth +
+        metrics.textInput.sizePaddingWidth;
 }
 
 function textLikeInputSizeAttributeApplies(type: string): boolean {
-  return ['text', 'password', 'search', 'email', 'url', 'tel'].includes(type)
+  return ['text', 'password', 'search', 'email', 'url', 'tel'].includes(type);
 }
 
 function selectIntrinsicSize(
@@ -350,26 +424,39 @@ function selectIntrinsicSize(
   textMeasurer: TextMeasurer,
   metrics: NativeControlMetrics,
 ): Size<number> {
-  const size = readPositiveIntegerAttribute(element, 'size')
-  const listRows = size && size > 1 ? size : element.hasAttribute('multiple') ? 4 : undefined
-  const optionWidth = widestOptionTextWidth(element, style, textMeasurer)
+  const size = readPositiveIntegerAttribute(element, 'size');
+  const listRows =
+    size && size > 1 ? size : element.hasAttribute('multiple') ? 4 : undefined;
+  const optionWidth = widestOptionTextWidth(element, style, textMeasurer);
 
   if (listRows) {
     return {
       width: optionWidth + metrics.select.listPaddingWidth,
-      height: listRows * metrics.select.listRowHeight + metrics.select.listPaddingHeight,
-    }
+      height:
+        listRows * metrics.select.listRowHeight +
+        metrics.select.listPaddingHeight,
+    };
   }
 
   return {
-    width: Math.max(metrics.select.minWidth, optionWidth + metrics.select.paddingWidth),
+    width: Math.max(
+      metrics.select.minWidth,
+      optionWidth + metrics.select.paddingWidth,
+    ),
     height: metrics.select.height,
-  }
+  };
 }
 
-function widestOptionTextWidth(element: Element, style: SupportedStyle, textMeasurer: TextMeasurer): number {
-  const options = Array.from(element.querySelectorAll('option'))
-  const texts = options.length > 0 ? options.map((option) => option.textContent?.trim() ?? '') : [element.textContent?.trim() ?? '']
+function widestOptionTextWidth(
+  element: Element,
+  style: SupportedStyle,
+  textMeasurer: TextMeasurer,
+): number {
+  const options = Array.from(element.querySelectorAll('option'));
+  const texts =
+    options.length > 0
+      ? options.map(option => option.textContent?.trim() ?? '')
+      : [element.textContent?.trim() ?? ''];
 
   return texts.reduce((width, text) => {
     const measured = textMeasurer.measure({
@@ -381,10 +468,10 @@ function widestOptionTextWidth(element: Element, style: SupportedStyle, textMeas
       lineHeight: style.lineHeight,
       maxWidth: Number.MAX_SAFE_INTEGER,
       whiteSpace: 'nowrap',
-    })
+    });
 
-    return Math.max(width, measured.width)
-  }, 0)
+    return Math.max(width, measured.width);
+  }, 0);
 }
 
 function buttonLikeIntrinsicSize(
@@ -393,10 +480,13 @@ function buttonLikeIntrinsicSize(
   textMeasurer: TextMeasurer,
   metrics: NativeControlMetrics,
 ): Size<number> {
-  const label = text.trim()
+  const label = text.trim();
 
   if (!label) {
-    return { width: metrics.button.emptyWidth, height: metrics.button.emptyHeight }
+    return {
+      width: metrics.button.emptyWidth,
+      height: metrics.button.emptyHeight,
+    };
   }
 
   const measured = textMeasurer.measure({
@@ -408,84 +498,95 @@ function buttonLikeIntrinsicSize(
     lineHeight: style.lineHeight,
     maxWidth: Number.MAX_SAFE_INTEGER,
     whiteSpace: 'nowrap',
-  })
+  });
 
   return {
     width: measured.width + metrics.button.horizontalPadding,
     height: metrics.button.height,
-  }
+  };
 }
 
 function defaultInputButtonLabel(type: string): string {
   switch (type) {
     case 'reset':
-      return 'Reset'
+      return 'Reset';
     case 'submit':
-      return 'Submit'
+      return 'Submit';
     default:
-      return ''
+      return '';
   }
 }
 
 function textContentForMeasurement(element: Element): string {
   if (!canMeasureTextLeaf(element)) {
-    return flattenedTextContent(element)
+    return flattenedTextContent(element);
   }
 
   return Array.from(element.childNodes)
-    .map((node) => {
-      if (node.nodeType === elementNodeType && (node as Element).tagName.toLowerCase() === 'br') {
-        return '\n'
+    .map(node => {
+      if (
+        node.nodeType === elementNodeType &&
+        (node as Element).tagName.toLowerCase() === 'br'
+      ) {
+        return '\n';
       }
 
-      return node.textContent ?? ''
+      return node.textContent ?? '';
     })
-    .join('')
+    .join('');
 }
 
 function flattenedTextContent(node: Node): string {
   if (node.nodeType === textNodeType || node.nodeType === commentNodeType) {
-    return node.textContent ?? ''
+    return node.textContent ?? '';
   }
 
   if (node.nodeType !== elementNodeType) {
-    return node.textContent ?? ''
+    return node.textContent ?? '';
   }
 
-  const element = node as Element
+  const element = node as Element;
 
   if (element.tagName.toLowerCase() === 'br') {
-    return '\n'
+    return '\n';
   }
 
-  return Array.from(element.childNodes).map(flattenedTextContent).join('')
+  return Array.from(element.childNodes).map(flattenedTextContent).join('');
 }
 
-function readNumberAttribute(element: Element, name: string): number | undefined {
-  const value = element.getAttribute(name)
+function readNumberAttribute(
+  element: Element,
+  name: string,
+): number | undefined {
+  const value = element.getAttribute(name);
 
   if (!value) {
-    return undefined
+    return undefined;
   }
 
-  const number = Number(value)
-  return Number.isFinite(number) ? number : undefined
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
 }
 
 function hasObjectFallbackContent(element: Element): boolean {
   return (
     !element.hasAttribute('type') &&
     !element.hasAttribute('data') &&
-    Array.from(element.children).some((child) => child.tagName.toLowerCase() !== 'param')
-  )
+    Array.from(element.children).some(
+      child => child.tagName.toLowerCase() !== 'param',
+    )
+  );
 }
 
-function readPositiveIntegerAttribute(element: Element, name: string): number | undefined {
-  const number = readNumberAttribute(element, name)
+function readPositiveIntegerAttribute(
+  element: Element,
+  name: string,
+): number | undefined {
+  const number = readNumberAttribute(element, name);
 
   if (number === undefined || number < 1 || !Number.isInteger(number)) {
-    return undefined
+    return undefined;
   }
 
-  return number
+  return number;
 }

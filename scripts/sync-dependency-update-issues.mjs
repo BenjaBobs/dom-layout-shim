@@ -1,46 +1,54 @@
-import { execFileSync } from 'node:child_process'
-import process from 'node:process'
-import { pathToFileURL } from 'node:url'
+import { execFileSync } from 'node:child_process';
+import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 
-const issueLabel = 'dependencies'
-const markerPattern = /^<!-- dependency-update:npm:(.+) -->$/m
+const issueLabel = 'dependencies';
+const markerPattern = /^<!-- dependency-update:npm:(.+) -->$/m;
 
 export function dependencyIssueMarker(packageName) {
-  return `<!-- dependency-update:npm:${packageName} -->`
+  return `<!-- dependency-update:npm:${packageName} -->`;
 }
 
 export function dependencyIssueTitle(packageName, current, latest) {
-  return `chore: Update ${packageName} from ${current} to ${latest}`
+  return `chore: Update ${packageName} from ${current} to ${latest}`;
 }
 
 export function planDependencyIssueChanges(outdatedDependencies, openIssues) {
-  const changes = []
-  const trackedIssues = new Map()
+  const changes = [];
+  const trackedIssues = new Map();
 
   for (const issue of openIssues) {
-    const packageName = readTrackedPackage(issue.body)
+    const packageName = readTrackedPackage(issue.body);
 
     if (!packageName) {
-      continue
+      continue;
     }
 
-    const issues = trackedIssues.get(packageName) ?? []
-    issues.push(issue)
-    trackedIssues.set(packageName, issues)
+    const issues = trackedIssues.get(packageName) ?? [];
+    issues.push(issue);
+    trackedIssues.set(packageName, issues);
   }
 
-  for (const [packageName, update] of Object.entries(outdatedDependencies).toSorted()) {
+  for (const [packageName, update] of Object.entries(
+    outdatedDependencies,
+  ).toSorted()) {
     if (!isVersionUpdate(update)) {
-      throw new Error(`Invalid pnpm outdated result for ${packageName}`)
+      throw new Error(`Invalid pnpm outdated result for ${packageName}`);
     }
 
-    const title = dependencyIssueTitle(packageName, update.current, update.latest)
-    const body = dependencyIssueMarker(packageName)
-    const issues = (trackedIssues.get(packageName) ?? []).toSorted((a, b) => a.number - b.number)
-    const [keptIssue, ...duplicates] = issues
+    const title = dependencyIssueTitle(
+      packageName,
+      update.current,
+      update.latest,
+    );
+    const body = dependencyIssueMarker(packageName);
+    const issues = (trackedIssues.get(packageName) ?? []).toSorted(
+      (a, b) => a.number - b.number,
+    );
+    const [keptIssue, ...duplicates] = issues;
 
     if (!keptIssue) {
-      changes.push({ type: 'create', packageName, title, body })
+      changes.push({ type: 'create', packageName, title, body });
     } else if (keptIssue.title !== title || keptIssue.body !== body) {
       changes.push({
         type: 'update',
@@ -48,7 +56,7 @@ export function planDependencyIssueChanges(outdatedDependencies, openIssues) {
         number: keptIssue.number,
         title,
         body,
-      })
+      });
     }
 
     for (const duplicate of duplicates) {
@@ -57,10 +65,10 @@ export function planDependencyIssueChanges(outdatedDependencies, openIssues) {
         packageName,
         number: duplicate.number,
         reason: 'duplicate',
-      })
+      });
     }
 
-    trackedIssues.delete(packageName)
+    trackedIssues.delete(packageName);
   }
 
   for (const [packageName, issues] of trackedIssues) {
@@ -70,15 +78,15 @@ export function planDependencyIssueChanges(outdatedDependencies, openIssues) {
         packageName,
         number: issue.number,
         reason: 'resolved',
-      })
+      });
     }
   }
 
-  return changes
+  return changes;
 }
 
 function readTrackedPackage(body) {
-  return typeof body === 'string' ? body.match(markerPattern)?.[1] : undefined
+  return typeof body === 'string' ? body.match(markerPattern)?.[1] : undefined;
 }
 
 function isVersionUpdate(value) {
@@ -87,15 +95,17 @@ function isVersionUpdate(value) {
     value !== null &&
     typeof value.current === 'string' &&
     typeof value.latest === 'string'
-  )
+  );
 }
 
 function readOutdatedDependencies() {
   try {
-    return parseOutdatedOutput(execFileSync('pnpm', ['outdated', '--format', 'json'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'inherit'],
-    }))
+    return parseOutdatedOutput(
+      execFileSync('pnpm', ['outdated', '--format', 'json'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'inherit'],
+      }),
+    );
   } catch (error) {
     if (
       typeof error === 'object' &&
@@ -104,31 +114,31 @@ function readOutdatedDependencies() {
       error.status === 1 &&
       'stdout' in error
     ) {
-      return parseOutdatedOutput(String(error.stdout))
+      return parseOutdatedOutput(String(error.stdout));
     }
 
-    throw error
+    throw error;
   }
 }
 
 function parseOutdatedOutput(output) {
-  return output.trim() ? JSON.parse(output) : {}
+  return output.trim() ? JSON.parse(output) : {};
 }
 
 async function listOpenDependencyIssues(repository, token) {
-  const issues = []
+  const issues = [];
 
   for (let page = 1; ; page += 1) {
     const response = await githubRequest(
       `https://api.github.com/repos/${repository}/issues?state=open&labels=${issueLabel}&per_page=100&page=${page}`,
       token,
-    )
-    const pageIssues = await response.json()
+    );
+    const pageIssues = await response.json();
 
-    issues.push(...pageIssues.filter((issue) => !issue.pull_request))
+    issues.push(...pageIssues.filter(issue => !issue.pull_request));
 
     if (pageIssues.length < 100) {
-      return issues
+      return issues;
     }
   }
 }
@@ -137,16 +147,20 @@ async function applyChanges(repository, token, changes) {
   for (const change of changes) {
     switch (change.type) {
       case 'create':
-        await githubRequest(`https://api.github.com/repos/${repository}/issues`, token, {
-          method: 'POST',
-          body: JSON.stringify({
-            title: change.title,
-            body: change.body,
-            labels: [issueLabel],
-          }),
-        })
-        console.log(`Created dependency issue for ${change.packageName}`)
-        break
+        await githubRequest(
+          `https://api.github.com/repos/${repository}/issues`,
+          token,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              title: change.title,
+              body: change.body,
+              labels: [issueLabel],
+            }),
+          },
+        );
+        console.log(`Created dependency issue for ${change.packageName}`);
+        break;
       case 'update':
         await githubRequest(
           `https://api.github.com/repos/${repository}/issues/${change.number}`,
@@ -158,9 +172,11 @@ async function applyChanges(repository, token, changes) {
               body: change.body,
             }),
           },
-        )
-        console.log(`Updated dependency issue #${change.number} for ${change.packageName}`)
-        break
+        );
+        console.log(
+          `Updated dependency issue #${change.number} for ${change.packageName}`,
+        );
+        break;
       case 'close':
         await githubRequest(
           `https://api.github.com/repos/${repository}/issues/${change.number}`,
@@ -169,14 +185,15 @@ async function applyChanges(repository, token, changes) {
             method: 'PATCH',
             body: JSON.stringify({
               state: 'closed',
-              state_reason: change.reason === 'duplicate' ? 'not_planned' : 'completed',
+              state_reason:
+                change.reason === 'duplicate' ? 'not_planned' : 'completed',
             }),
           },
-        )
+        );
         console.log(
           `Closed ${change.reason} dependency issue #${change.number} for ${change.packageName}`,
-        )
-        break
+        );
+        break;
     }
   }
 }
@@ -191,35 +208,40 @@ async function githubRequest(url, token, init = {}) {
       'X-GitHub-Api-Version': '2022-11-28',
       ...init.headers,
     },
-  })
+  });
 
   if (!response.ok) {
-    throw new Error(`GitHub request failed: ${response.status} ${await response.text()}`)
+    throw new Error(
+      `GitHub request failed: ${response.status} ${await response.text()}`,
+    );
   }
 
-  return response
+  return response;
 }
 
 async function main() {
-  const repository = process.env.GITHUB_REPOSITORY
-  const token = process.env.GITHUB_TOKEN
+  const repository = process.env.GITHUB_REPOSITORY;
+  const token = process.env.GITHUB_TOKEN;
 
   if (!repository || !token) {
-    throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required')
+    throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required');
   }
 
-  const outdatedDependencies = readOutdatedDependencies()
-  const openIssues = await listOpenDependencyIssues(repository, token)
-  const changes = planDependencyIssueChanges(outdatedDependencies, openIssues)
+  const outdatedDependencies = readOutdatedDependencies();
+  const openIssues = await listOpenDependencyIssues(repository, token);
+  const changes = planDependencyIssueChanges(outdatedDependencies, openIssues);
 
   if (changes.length === 0) {
-    console.log('Dependency update issues are already synchronized.')
-    return
+    console.log('Dependency update issues are already synchronized.');
+    return;
   }
 
-  await applyChanges(repository, token, changes)
+  await applyChanges(repository, token, changes);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await main()
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  await main();
 }

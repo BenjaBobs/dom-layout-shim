@@ -21,10 +21,7 @@
     {
       "id": "font-family-and-size",
       "description": "Inherited `font-family` and supported `font-size` units feed deterministic text measurement.",
-      "properties": [
-        "font-family",
-        "font-size"
-      ],
+      "properties": ["font-family", "font-size"],
       "syntax": [
         "<family-list>",
         "<px>",
@@ -37,10 +34,7 @@
       "support": "partial",
       "parity": {
         "status": "partially-verified",
-        "fixtures": [
-          "static-text-line-height",
-          "calculated-relative-lengths"
-        ]
+        "fixtures": ["static-text-line-height", "calculated-relative-lengths"]
       },
       "notes": [
         {
@@ -52,10 +46,7 @@
     {
       "id": "weight-and-letter-spacing",
       "description": "Inherited font weight and letter spacing contribute to configured and default text measurement.",
-      "properties": [
-        "font-weight",
-        "letter-spacing"
-      ],
+      "properties": ["font-weight", "letter-spacing"],
       "syntax": [
         "font-weight: normal | bold | <number>",
         "letter-spacing: normal | <length>"
@@ -63,9 +54,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "static-text-line-height"
-        ]
+        "fixtures": ["static-text-line-height"]
       },
       "notes": [
         {
@@ -81,21 +70,12 @@
     {
       "id": "text-transform",
       "description": "Inherited case transforms are applied before intrinsic text measurement without changing DOM text content.",
-      "properties": [
-        "text-transform"
-      ],
-      "syntax": [
-        "none",
-        "uppercase",
-        "lowercase",
-        "capitalize"
-      ],
+      "properties": ["text-transform"],
+      "syntax": ["none", "uppercase", "lowercase", "capitalize"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "text-transform"
-        ]
+        "fixtures": ["text-transform"]
       },
       "notes": [
         {
@@ -111,9 +91,7 @@
     {
       "id": "line-height",
       "description": "Supported `line-height` values determine measured line boxes.",
-      "properties": [
-        "line-height"
-      ],
+      "properties": ["line-height"],
       "syntax": [
         "<number>",
         "normal",
@@ -127,9 +105,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "static-text-line-height"
-        ]
+        "fixtures": ["static-text-line-height"]
       },
       "notes": [
         {
@@ -141,21 +117,12 @@
     {
       "id": "font-face-sources",
       "description": "Initial supported `@font-face` sources provide deterministic glyph advances and kerning.",
-      "properties": [
-        "font-family",
-        "font-weight"
-      ],
-      "syntax": [
-        "@font-face",
-        "url(<ttf-or-otf-or-woff>)",
-        "data:<font>"
-      ],
+      "properties": ["font-family", "font-weight"],
+      "syntax": ["@font-face", "url(<ttf-or-otf-or-woff>)", "data:<font>"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "font-face-measurement"
-        ]
+        "fixtures": ["font-face-measurement"]
       },
       "notes": [
         {
@@ -171,21 +138,12 @@
     {
       "id": "white-space-and-line-breaks",
       "description": "Supported `white-space` modes control text preservation and wrapping.",
-      "properties": [
-        "white-space"
-      ],
-      "syntax": [
-        "pre",
-        "pre-line",
-        "pre-wrap",
-        "nowrap"
-      ],
+      "properties": ["white-space"],
+      "syntax": ["pre", "pre-line", "pre-wrap", "nowrap"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "static-pre-wrap-text-lines"
-        ]
+        "fixtures": ["static-pre-wrap-text-lines"]
       },
       "notes": [
         {
@@ -200,9 +158,7 @@
       "support": "partial",
       "parity": {
         "status": "partially-verified",
-        "fixtures": [
-          "mixed-inline-block-flow"
-        ]
+        "fixtures": ["mixed-inline-block-flow"]
       },
       "notes": [
         {

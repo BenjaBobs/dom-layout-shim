@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('authored CSS table display lays out explicit row and cell boxes', async () => {
   await expectChromiumParity({
@@ -69,8 +69,8 @@ it('authored CSS table display lays out explicit row and cell boxes', async () =
       { type: 'point', x: 5, y: 5 },
       { type: 'point', x: 55, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('authored CSS table display supports row groups and captions', async () => {
   await expectChromiumParity({
@@ -126,8 +126,8 @@ it('authored CSS table display supports row groups and captions', async () => {
       { type: 'rect', selector: '#cell' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('table-layout and vertical-align are accepted for explicit table geometry', async () => {
   await expectChromiumParity({
@@ -172,5 +172,5 @@ it('table-layout and vertical-align are accepted for explicit table geometry', a
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});

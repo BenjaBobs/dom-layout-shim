@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('scrolls nested containers and the viewport to reveal an element', async () => {
   await expectChromiumParity({
@@ -41,8 +41,8 @@ it('scrolls nested containers and the viewport to reveal an element', async () =
       { type: 'scroll', selector: '#scroller' },
       { type: 'scroll' },
     ],
-  })
-})
+  });
+});
 
 it('supports boolean end alignment and leaves visible inline content unchanged', async () => {
   await expectChromiumParity({
@@ -70,12 +70,9 @@ it('supports boolean end alignment and leaves visible inline content unchanged',
       selector: '#target',
       arg: false,
     },
-    queries: [
-      { type: 'rect', selector: '#target' },
-      { type: 'scroll' },
-    ],
-  })
-})
+    queries: [{ type: 'rect', selector: '#target' }, { type: 'scroll' }],
+  });
+});
 
 it('supports center alignment in the configured viewport', async () => {
   await expectChromiumParity({
@@ -107,9 +104,6 @@ it('supports center alignment in the configured viewport', async () => {
       selector: '#target',
       arg: { block: 'center' },
     },
-    queries: [
-      { type: 'rect', selector: '#target' },
-      { type: 'scroll' },
-    ],
-  })
-})
+    queries: [{ type: 'rect', selector: '#target' }, { type: 'scroll' }],
+  });
+});

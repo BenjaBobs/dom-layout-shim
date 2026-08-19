@@ -4,12 +4,7 @@
   "id": "transforms",
   "title": "Two-dimensional transforms",
   "subjects": {
-    "properties": [
-      "transform",
-      "transform-origin",
-      "translate",
-      "scale"
-    ],
+    "properties": ["transform", "transform-origin", "translate", "scale"],
     "elements": []
   },
   "effect": "layout",
@@ -18,10 +13,7 @@
     {
       "id": "translation",
       "description": "Transform-list and individual translation functions project client geometry and hit boxes.",
-      "properties": [
-        "transform",
-        "translate"
-      ],
+      "properties": ["transform", "translate"],
       "syntax": [
         "none",
         "translate(<px-or-percentage>, <px-or-percentage>?)",
@@ -32,9 +24,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "transform"
-        ]
+        "fixtures": ["transform"]
       },
       "notes": [
         {
@@ -50,10 +40,7 @@
     {
       "id": "scaling",
       "description": "Transform-list and individual scale functions project client geometry and hit boxes.",
-      "properties": [
-        "transform",
-        "scale"
-      ],
+      "properties": ["transform", "scale"],
       "syntax": [
         "none",
         "scale(<number>, <number>?)",
@@ -64,9 +51,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "transform"
-        ]
+        "fixtures": ["transform"]
       },
       "notes": [
         {
@@ -82,9 +67,7 @@
     {
       "id": "affine-transform-functions",
       "description": "Rotation, skew, and matrix functions project client geometry and polygonal hit regions.",
-      "properties": [
-        "transform"
-      ],
+      "properties": ["transform"],
       "syntax": [
         "rotate(<angle>)",
         "skew(<angle>, <angle>?)",
@@ -96,9 +79,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "transform"
-        ]
+        "fixtures": ["transform"]
       },
       "notes": [
         {
@@ -114,18 +95,12 @@
     {
       "id": "transform-origin",
       "description": "Supported transform origins change the projection center without affecting layout flow.",
-      "properties": [
-        "transform-origin"
-      ],
-      "syntax": [
-        "transform-origin: <keyword-or-px-or-percentage>{1,2}"
-      ],
+      "properties": ["transform-origin"],
+      "syntax": ["transform-origin: <keyword-or-px-or-percentage>{1,2}"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "transform"
-        ]
+        "fixtures": ["transform"]
       },
       "notes": [
         {

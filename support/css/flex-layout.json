@@ -31,11 +31,7 @@
     {
       "id": "direction-and-wrapping",
       "description": "Flex direction, reversal, wrapping, and the `flex-flow` shorthand affect placement on row and column axes.",
-      "properties": [
-        "flex-direction",
-        "flex-wrap",
-        "flex-flow"
-      ],
+      "properties": ["flex-direction", "flex-wrap", "flex-flow"],
       "syntax": [
         "row",
         "row-reverse",
@@ -60,43 +56,27 @@
     {
       "id": "flexible-lengths",
       "description": "`flex-grow` and `flex-shrink` factors distribute free space and respect supported min/max constraints.",
-      "properties": [
-        "flex-grow",
-        "flex-shrink"
-      ],
-      "syntax": [
-        "<number>"
-      ],
+      "properties": ["flex-grow", "flex-shrink"],
+      "syntax": ["<number>"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-grow",
-          "flex-shrink"
-        ]
+        "fixtures": ["flex-grow", "flex-shrink"]
       },
       "notes": []
     },
     {
       "id": "flex-basis",
       "description": "Pixel, percentage, and `auto` flex bases resolve on row and column main axes.",
-      "properties": [
-        "flex-basis"
-      ],
-      "syntax": [
-        "<px>",
-        "<percentage>",
-        "auto"
-      ],
+      "properties": ["flex-basis"],
+      "syntax": ["<px>", "<percentage>", "auto"],
       "conditions": [
         "Percentage bases require a definite container main size."
       ],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-basis"
-        ]
+        "fixtures": ["flex-basis"]
       },
       "notes": [
         {
@@ -108,9 +88,7 @@
     {
       "id": "flex-shorthand",
       "description": "The `flex` shorthand expands supported factor and basis forms, including its CSS-wide reset behavior.",
-      "properties": [
-        "flex"
-      ],
+      "properties": ["flex"],
       "syntax": [
         "none",
         "auto",
@@ -122,9 +100,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-shorthand"
-        ]
+        "fixtures": ["flex-shorthand"]
       },
       "notes": []
     },
@@ -159,18 +135,12 @@
     {
       "id": "order",
       "description": "Flex items are laid out in order-modified document order.",
-      "properties": [
-        "order"
-      ],
-      "syntax": [
-        "<integer>"
-      ],
+      "properties": ["order"],
+      "syntax": ["<integer>"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-order"
-        ]
+        "fixtures": ["flex-order"]
       },
       "notes": [
         {
@@ -185,9 +155,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-auto-margins"
-        ]
+        "fixtures": ["flex-auto-margins"]
       },
       "notes": []
     },
@@ -197,9 +165,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-replaced-intrinsic"
-        ]
+        "fixtures": ["flex-replaced-intrinsic"]
       },
       "notes": []
     }

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('places and spans items through named grid template areas', async () => {
   await expectChromiumParity({
@@ -34,8 +34,8 @@ it('places and spans items through named grid template areas', async () => {
       { type: 'rect', selector: '#sidebar' },
       { type: 'rect', selector: '#main' },
     ],
-  })
-})
+  });
+});
 
 it('supports named areas that span multiple rows', async () => {
   await expectChromiumParity({
@@ -66,5 +66,5 @@ it('supports named areas that span multiple rows', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#tall' },
     ],
-  })
-})
+  });
+});

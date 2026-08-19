@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('border width keywords contribute browser-equivalent geometry', async () => {
   await expectChromiumParity({
@@ -24,5 +24,5 @@ it('border width keywords contribute browser-equivalent geometry', async () => {
       { type: 'rect', selector: '#box' },
       { type: 'dimensions', selector: '#box' },
     ],
-  })
-})
+  });
+});

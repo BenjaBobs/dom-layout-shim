@@ -1,7 +1,7 @@
 // @ts-expect-error -- opentype.js has no bundled declaration file
-import opentype from 'opentype.js'
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import opentype from 'opentype.js';
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 const font = new opentype.Font({
   familyName: 'Fixture Metrics',
@@ -10,12 +10,26 @@ const font = new opentype.Font({
   ascender: 800,
   descender: -200,
   glyphs: [
-    new opentype.Glyph({ name: '.notdef', advanceWidth: 500, path: new opentype.Path() }),
-    new opentype.Glyph({ name: 'A', unicode: 65, advanceWidth: 900, path: new opentype.Path() }),
-    new opentype.Glyph({ name: 'B', unicode: 66, advanceWidth: 300, path: new opentype.Path() }),
+    new opentype.Glyph({
+      name: '.notdef',
+      advanceWidth: 500,
+      path: new opentype.Path(),
+    }),
+    new opentype.Glyph({
+      name: 'A',
+      unicode: 65,
+      advanceWidth: 900,
+      path: new opentype.Path(),
+    }),
+    new opentype.Glyph({
+      name: 'B',
+      unicode: 66,
+      advanceWidth: 300,
+      path: new opentype.Path(),
+    }),
   ],
-})
-const fontData = Buffer.from(font.toArrayBuffer()).toString('base64')
+});
+const fontData = Buffer.from(font.toArrayBuffer()).toString('base64');
 
 it('discovers a data URL font face and uses its glyph advances', async () => {
   await expectChromiumParity({
@@ -42,5 +56,5 @@ it('discovers a data URL font face and uses its glyph advances', async () => {
       <button id="label">AB</button>
     `,
     queries: [{ type: 'rect', selector: '#label' }],
-  })
-})
+  });
+});

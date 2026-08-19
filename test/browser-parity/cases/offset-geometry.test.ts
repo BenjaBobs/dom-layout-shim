@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('reports offset geometry relative to the nearest positioned ancestor', async () => {
   await expectChromiumParity({
@@ -42,13 +42,11 @@ it('reports offset geometry relative to the nearest positioned ancestor', async 
       </div>
       <div id="fixed"></div>
     `,
-    elementScrolls: [
-      { selector: '#outer', x: 3, y: 5 },
-    ],
+    elementScrolls: [{ selector: '#outer', x: 3, y: 5 }],
     queries: [
       { type: 'dimensions', selector: '#outer' },
       { type: 'dimensions', selector: '#inner' },
       { type: 'dimensions', selector: '#fixed' },
     ],
-  })
-})
+  });
+});

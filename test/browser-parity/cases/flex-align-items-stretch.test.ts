@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex align items stretches auto cross sizes but preserves explicit sizes', async () => {
   await expectChromiumParity({
@@ -35,5 +35,5 @@ it('flex align items stretches auto cross sizes but preserves explicit sizes', a
       { type: 'rect', selector: '#auto' },
       { type: 'rect', selector: '#explicit' },
     ],
-  })
-})
+  });
+});

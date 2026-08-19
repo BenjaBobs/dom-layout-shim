@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('translation changes geometry and hit testing without changing sibling flow or offsets', async () => {
   await expectChromiumParity({
@@ -20,8 +20,8 @@ it('translation changes geometry and hit testing without changing sibling flow o
       { type: 'point', x: 60, y: 25 },
       { type: 'point', x: 10, y: 10 },
     ],
-  })
-})
+  });
+});
 
 it('scale uses the default center origin and keeps layout dimensions unchanged', async () => {
   await expectChromiumParity({
@@ -46,8 +46,8 @@ it('scale uses the default center origin and keeps layout dimensions unchanged',
       { type: 'point', x: 60, y: 115 },
       { type: 'point', x: 60, y: 100 },
     ],
-  })
-})
+  });
+});
 
 it('transform origin and function order match Chromium', async () => {
   await expectChromiumParity({
@@ -79,8 +79,8 @@ it('transform origin and function order match Chromium', async () => {
       { type: 'rect', selector: '#scale-translate' },
       { type: 'rect', selector: '#percentage-origin' },
     ],
-  })
-})
+  });
+});
 
 it('percentage translation resolves against the transformed border box', async () => {
   await expectChromiumParity({
@@ -100,8 +100,8 @@ it('percentage translation resolves against the transformed border box', async (
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});
 
 it('ancestor transforms propagate to descendant geometry and hit testing', async () => {
   await expectChromiumParity({
@@ -132,8 +132,8 @@ it('ancestor transforms propagate to descendant geometry and hit testing', async
       { type: 'rect', selector: '#child' },
       { type: 'point', x: 0, y: 10 },
     ],
-  })
-})
+  });
+});
 
 it('individual translate and scale properties compose before transform functions', async () => {
   await expectChromiumParity({
@@ -165,8 +165,8 @@ it('individual translate and scale properties compose before transform functions
       { type: 'rect', selector: '#inline-box' },
       { type: 'point', x: 100, y: 65 },
     ],
-  })
-})
+  });
+});
 
 it('rotation, skew, and matrix transforms project geometry and precise hit regions', async () => {
   await expectChromiumParity({
@@ -192,5 +192,5 @@ it('rotation, skew, and matrix transforms project geometry and precise hit regio
       { type: 'point', x: 80, y: 80 },
       { type: 'point', x: 150, y: 150 },
     ],
-  })
-})
+  });
+});

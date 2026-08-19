@@ -20,9 +20,7 @@
     {
       "id": "transitions",
       "description": "The transition shorthand is accepted without affecting deterministic layout or hit testing.",
-      "properties": [
-        "transition"
-      ],
+      "properties": ["transition"],
       "support": "partial",
       "parity": {
         "status": "not-applicable",

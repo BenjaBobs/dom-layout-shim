@@ -1,1 +1,1 @@
-export { debugLayout } from './attachment/patch-dom-apis.ts'
+export { debugLayout } from './attachment/patch-dom-apis.ts';

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('unordered lists apply native margins and inline padding for list items', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('unordered lists apply native margins and inline padding for list items', asy
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 45, y: 30 },
     ],
-  })
-})
+  });
+});
 
 it('definition list defaults position descriptions with native indentation', async () => {
   await expectChromiumParity({
@@ -72,5 +72,5 @@ it('definition list defaults position descriptions with native indentation', asy
       { type: 'rect', selector: '#description' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});

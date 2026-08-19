@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('window scroll offsets viewport rects and point queries without moving fixed boxes', async () => {
   await expectChromiumParity({
@@ -37,5 +37,5 @@ it('window scroll offsets viewport rects and point queries without moving fixed 
       { type: 'point', x: 20, y: 20 },
       { type: 'point', x: 20, y: 60 },
     ],
-  })
-})
+  });
+});

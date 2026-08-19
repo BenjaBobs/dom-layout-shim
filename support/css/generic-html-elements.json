@@ -44,10 +44,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "generic-html-defaults",
-          "static-block-flow"
-        ]
+        "fixtures": ["generic-html-defaults", "static-block-flow"]
       },
       "notes": [
         {
@@ -86,9 +83,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "details-summary-defaults"
-        ]
+        "fixtures": ["details-summary-defaults"]
       },
       "notes": [
         {
@@ -103,9 +98,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "dialog-html-defaults"
-        ]
+        "fixtures": ["dialog-html-defaults"]
       },
       "notes": [
         {
@@ -120,9 +113,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "hidden-attribute"
-        ]
+        "fixtures": ["hidden-attribute"]
       },
       "notes": [
         {

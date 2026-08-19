@@ -15,6 +15,8 @@ Tests live under `test/`: unit coverage is in `test/unit/`, Chromium parity case
 
 Use `pnpm` for all package commands.
 
+- `pnpm run biome:check`: checks formatting, lint rules, and import organization.
+- `pnpm run biome:fix`: applies Biome's safe formatting, lint, and import fixes.
 - `pnpm run typecheck`: runs TypeScript with `noEmit`.
 - `pnpm run build`: emits `dist/` using `tsconfig.build.json`.
 - `pnpm test`: runs Vitest unit tests in `happy-dom`.
@@ -27,7 +29,7 @@ The test scripts create repo-local `.tmp` and `.cache` directories to avoid sand
 
 Write TypeScript as ES modules. Use explicit `.ts` extensions for local relative imports so Node can execute TypeScript files directly; build output rewrites them to `.js`. Prefer named exports and wire public API additions through `src/index.ts`.
 
-Follow the existing style: two-space indentation, no semicolons, single quotes, concise type names, and kebab-case file names such as `create-layout-engine.ts`. There is no separate formatter or linter configured; rely on `pnpm run typecheck` and local consistency.
+Biome defines and enforces the repository's formatting and lint rules. Follow the configured style: two-space indentation, semicolons, single quotes, trailing commas, concise type names, and kebab-case file names such as `create-layout-engine.ts`. Run `pnpm run biome:check` before opening a pull request, or `pnpm run biome:fix` to apply safe fixes.
 
 ## Documentation Guidelines
 

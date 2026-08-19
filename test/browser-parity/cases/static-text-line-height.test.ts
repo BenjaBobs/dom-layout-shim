@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('static text line height determines block height', async () => {
   await expectChromiumParity({
@@ -20,8 +20,8 @@ it('static text line height determines block height', async () => {
       <div id="text">Hello</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('percentage line height resolves against font size', async () => {
   await expectChromiumParity({
@@ -42,8 +42,8 @@ it('percentage line height resolves against font size', async () => {
       <div id="text">Hello</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('em line height resolves against font size', async () => {
   await expectChromiumParity({
@@ -64,8 +64,8 @@ it('em line height resolves against font size', async () => {
       <div id="text">Hello</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('rem line height resolves against the root font size', async () => {
   await expectChromiumParity({
@@ -90,8 +90,8 @@ it('rem line height resolves against the root font size', async () => {
       <div id="text">Hello</div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('nested text inherits parent font metrics', async () => {
   await expectChromiumParity({
@@ -117,8 +117,8 @@ it('nested text inherits parent font metrics', async () => {
       </div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('font weight and letter spacing inherit into intrinsic text measurement', async () => {
   await expectChromiumParity({
@@ -133,8 +133,8 @@ it('font weight and letter spacing inherit into intrinsic text measurement', asy
       <div id="host"><div id="text">Hello</div></div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('percentage font size resolves against inherited parent font size', async () => {
   await expectChromiumParity({
@@ -161,8 +161,8 @@ it('percentage font size resolves against inherited parent font size', async () 
       </div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('em font size resolves against inherited parent font size', async () => {
   await expectChromiumParity({
@@ -189,8 +189,8 @@ it('em font size resolves against inherited parent font size', async () => {
       </div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('rem font size resolves against the root font size', async () => {
   await expectChromiumParity({
@@ -221,8 +221,8 @@ it('rem font size resolves against the root font size', async () => {
       </div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('inherited text declarations preserve parent text metrics', async () => {
   await expectChromiumParity({
@@ -253,8 +253,8 @@ it('inherited text declarations preserve parent text metrics', async () => {
 World</div></div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('font-size initial resets inherited parent font size', async () => {
   await expectChromiumParity({
@@ -279,8 +279,8 @@ it('font-size initial resets inherited parent font size', async () => {
       <div id="host"><div id="text">Hello</div></div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('font-size unset preserves inherited parent font size', async () => {
   await expectChromiumParity({
@@ -305,8 +305,8 @@ it('font-size unset preserves inherited parent font size', async () => {
       <div id="host"><div id="text">Hello</div></div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});
 
 it('white-space initial resets inherited pre-wrap behavior', async () => {
   await expectChromiumParity({
@@ -333,5 +333,5 @@ it('white-space initial resets inherited pre-wrap behavior', async () => {
 World</div></div>
     `,
     queries: [{ type: 'rect', selector: '#text' }],
-  })
-})
+  });
+});

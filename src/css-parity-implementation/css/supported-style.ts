@@ -1,13 +1,13 @@
-import type { WhiteSpace } from '../../api/text-measurer.ts'
+import type { WhiteSpace } from '../../api/text-measurer.ts';
 
-export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize'
+export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 
 export type Edges<Value = number> = {
-  top: Value
-  right: Value
-  bottom: Value
-  left: Value
-}
+  top: Value;
+  right: Value;
+  bottom: Value;
+  left: Value;
+};
 
 export type BorderStyleValue =
   | 'none'
@@ -19,17 +19,23 @@ export type BorderStyleValue =
   | 'groove'
   | 'ridge'
   | 'inset'
-  | 'outset'
+  | 'outset';
 
 export type BorderStyles = {
-  top: BorderStyleValue
-  right: BorderStyleValue
-  bottom: BorderStyleValue
-  left: BorderStyleValue
-}
+  top: BorderStyleValue;
+  right: BorderStyleValue;
+  bottom: BorderStyleValue;
+  left: BorderStyleValue;
+};
 
-export type AlignItemsValue = 'start' | 'end' | 'flex-start' | 'flex-end' | 'center' | 'stretch'
-export type AlignSelfValue = 'auto' | AlignItemsValue
+export type AlignItemsValue =
+  | 'start'
+  | 'end'
+  | 'flex-start'
+  | 'flex-end'
+  | 'center'
+  | 'stretch';
+export type AlignSelfValue = 'auto' | AlignItemsValue;
 export type JustifyContentValue =
   | 'start'
   | 'end'
@@ -38,44 +44,66 @@ export type JustifyContentValue =
   | 'center'
   | 'space-between'
   | 'space-around'
-  | 'space-evenly'
-export type AlignContentValue = JustifyContentValue | 'stretch'
-export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse'
-export type OverflowValue = 'visible' | 'hidden' | 'clip' | 'auto' | 'scroll'
-export type CalculatedDimension = { percentage: number; length: number }
-export type SupportedDimension = number | `${number}%` | CalculatedDimension
-export type MarginValue = SupportedDimension | 'auto'
-export type GridMinTrackBreadth = number | `${number}%` | 'auto' | 'min-content' | 'max-content'
-export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`
-export type GridTrack = GridMinTrackBreadth | `${number}fr` | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }
-export type GridTemplateTrack = GridTrack | { repeat: number; tracks: GridTrack[] }
-export type GridPlacementValue = 'auto' | number | { span: number } | { area: string }
+  | 'space-evenly';
+export type AlignContentValue = JustifyContentValue | 'stretch';
+export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse';
+export type OverflowValue = 'visible' | 'hidden' | 'clip' | 'auto' | 'scroll';
+export type CalculatedDimension = { percentage: number; length: number };
+export type SupportedDimension = number | `${number}%` | CalculatedDimension;
+export type MarginValue = SupportedDimension | 'auto';
+export type GridMinTrackBreadth =
+  | number
+  | `${number}%`
+  | 'auto'
+  | 'min-content'
+  | 'max-content';
+export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`;
+export type GridTrack =
+  | GridMinTrackBreadth
+  | `${number}fr`
+  | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth };
+export type GridTemplateTrack =
+  | GridTrack
+  | { repeat: number; tracks: GridTrack[] };
+export type GridPlacementValue =
+  | 'auto'
+  | number
+  | { span: number }
+  | { area: string };
 export type GridTemplateArea = {
-  rowStart: number
-  rowEnd: number
-  columnStart: number
-  columnEnd: number
-}
-export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense'
-export type CaptionSideValue = 'top' | 'bottom'
-export type EmptyCellsValue = 'show' | 'hide'
-export type BorderCollapseValue = 'separate' | 'collapse'
+  rowStart: number;
+  rowEnd: number;
+  columnStart: number;
+  columnEnd: number;
+};
+export type GridAutoFlowValue = 'row' | 'column' | 'row dense' | 'column dense';
+export type CaptionSideValue = 'top' | 'bottom';
+export type EmptyCellsValue = 'show' | 'hide';
+export type BorderCollapseValue = 'separate' | 'collapse';
 export type TableBorderSpacing = {
-  horizontal: number
-  vertical: number
-}
+  horizontal: number;
+  vertical: number;
+};
 
 export type SupportedTransform =
   | { type: 'translate'; x: SupportedDimension; y: SupportedDimension }
   | { type: 'scale'; x: number; y: number }
   | { type: 'rotate'; radians: number }
   | { type: 'skew'; xRadians: number; yRadians: number }
-  | { type: 'matrix'; a: number; b: number; c: number; d: number; e: number; f: number }
+  | {
+      type: 'matrix';
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+      e: number;
+      f: number;
+    };
 
 export type TransformOrigin = {
-  x: SupportedDimension
-  y: SupportedDimension
-}
+  x: SupportedDimension;
+  y: SupportedDimension;
+};
 
 export type SupportedStyle = {
   display:
@@ -93,70 +121,70 @@ export type SupportedStyle = {
     | 'table-column-group'
     | 'table-column'
     | 'contents'
-    | 'none'
-  position: 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky'
-  boxSizing: 'content-box' | 'border-box'
-  flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
-  flexWrap: FlexWrapValue
-  alignItems?: AlignItemsValue
-  alignSelf: AlignSelfValue
-  alignContent?: AlignContentValue
-  justifyContent?: JustifyContentValue
-  justifyItems?: AlignItemsValue
-  justifySelf?: AlignSelfValue
-  flexGrow: number
-  flexShrink: number
-  flexBasis?: SupportedDimension
-  order: number
-  aspectRatio?: number
-  gridAutoFlow: GridAutoFlowValue
-  gridTemplateColumns: GridTemplateTrack[]
-  gridTemplateRows: GridTemplateTrack[]
-  gridTemplateAreas?: Map<string, GridTemplateArea>
-  gridAutoColumns: GridTrack[]
-  gridAutoRows: GridTrack[]
-  gridColumnStart: GridPlacementValue
-  gridColumnEnd: GridPlacementValue
-  gridRowStart: GridPlacementValue
-  gridRowEnd: GridPlacementValue
-  captionSide: CaptionSideValue
-  borderCollapse: BorderCollapseValue
-  emptyCells?: EmptyCellsValue
-  tableBorderSpacing: TableBorderSpacing
-  width?: SupportedDimension
-  height?: SupportedDimension
-  minWidth?: SupportedDimension
-  minHeight?: SupportedDimension
-  maxWidth?: SupportedDimension
-  maxHeight?: SupportedDimension
-  top?: SupportedDimension
-  right?: SupportedDimension
-  bottom?: SupportedDimension
-  left?: SupportedDimension
-  zIndex: number
-  zIndexAuto: boolean
-  pointerEvents: 'auto' | 'none'
-  visibility: 'visible' | 'hidden' | 'collapse'
-  overflowX: OverflowValue
-  overflowY: OverflowValue
-  margin: Edges<MarginValue>
-  padding: Edges<SupportedDimension>
-  rowGap: SupportedDimension
-  columnGap: SupportedDimension
-  borderWidth: Edges
-  borderStyle: BorderStyles
-  fontFamily: string
-  fontSize: number
-  fontWeight: number
-  letterSpacing: number
-  lineHeight: number
-  whiteSpace: WhiteSpace
-  textTransform: TextTransform
-  transform: SupportedTransform[]
-  translate?: Extract<SupportedTransform, { type: 'translate' }>
-  scale?: Extract<SupportedTransform, { type: 'scale' }>
-  transformOrigin: TransformOrigin
-}
+    | 'none';
+  position: 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky';
+  boxSizing: 'content-box' | 'border-box';
+  flexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse';
+  flexWrap: FlexWrapValue;
+  alignItems?: AlignItemsValue;
+  alignSelf: AlignSelfValue;
+  alignContent?: AlignContentValue;
+  justifyContent?: JustifyContentValue;
+  justifyItems?: AlignItemsValue;
+  justifySelf?: AlignSelfValue;
+  flexGrow: number;
+  flexShrink: number;
+  flexBasis?: SupportedDimension;
+  order: number;
+  aspectRatio?: number;
+  gridAutoFlow: GridAutoFlowValue;
+  gridTemplateColumns: GridTemplateTrack[];
+  gridTemplateRows: GridTemplateTrack[];
+  gridTemplateAreas?: Map<string, GridTemplateArea>;
+  gridAutoColumns: GridTrack[];
+  gridAutoRows: GridTrack[];
+  gridColumnStart: GridPlacementValue;
+  gridColumnEnd: GridPlacementValue;
+  gridRowStart: GridPlacementValue;
+  gridRowEnd: GridPlacementValue;
+  captionSide: CaptionSideValue;
+  borderCollapse: BorderCollapseValue;
+  emptyCells?: EmptyCellsValue;
+  tableBorderSpacing: TableBorderSpacing;
+  width?: SupportedDimension;
+  height?: SupportedDimension;
+  minWidth?: SupportedDimension;
+  minHeight?: SupportedDimension;
+  maxWidth?: SupportedDimension;
+  maxHeight?: SupportedDimension;
+  top?: SupportedDimension;
+  right?: SupportedDimension;
+  bottom?: SupportedDimension;
+  left?: SupportedDimension;
+  zIndex: number;
+  zIndexAuto: boolean;
+  pointerEvents: 'auto' | 'none';
+  visibility: 'visible' | 'hidden' | 'collapse';
+  overflowX: OverflowValue;
+  overflowY: OverflowValue;
+  margin: Edges<MarginValue>;
+  padding: Edges<SupportedDimension>;
+  rowGap: SupportedDimension;
+  columnGap: SupportedDimension;
+  borderWidth: Edges;
+  borderStyle: BorderStyles;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  letterSpacing: number;
+  lineHeight: number;
+  whiteSpace: WhiteSpace;
+  textTransform: TextTransform;
+  transform: SupportedTransform[];
+  translate?: Extract<SupportedTransform, { type: 'translate' }>;
+  scale?: Extract<SupportedTransform, { type: 'scale' }>;
+  transformOrigin: TransformOrigin;
+};
 
 export function createDefaultStyle(): SupportedStyle {
   return {
@@ -210,7 +238,7 @@ export function createDefaultStyle(): SupportedStyle {
     textTransform: 'none',
     transform: [],
     transformOrigin: { x: '50%', y: '50%' },
-  }
+  };
 }
 
 export function zeroEdges(): Edges {
@@ -219,5 +247,5 @@ export function zeroEdges(): Edges {
     right: 0,
     bottom: 0,
     left: 0,
-  }
+  };
 }
