@@ -60,9 +60,7 @@ jobs:
       should_publish: ${{ steps.release.outputs.should_publish }}
       should_release: ${{ steps.release.outputs.should_release }}
       should_run: ${{ steps.release.outputs.should_run }}
-      should_tag: ${{ steps.release.outputs.should_tag }}
       tag: ${{ steps.release.outputs.tag }}
-      tag_sha: ${{ steps.release.outputs.tag_sha }}
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Check out repository
@@ -123,23 +121,11 @@ jobs:
         if: needs.inspect.outputs.should_publish == 'true'
         run: npm publish --access public
 
-      - name: Create release tag
-        if: needs.inspect.outputs.should_tag == 'true'
-        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.git.createRef({
-              ...context.repo,
-              ref: 'refs/tags/${{ needs.inspect.outputs.tag }}',
-              sha: '${{ needs.inspect.outputs.tag_sha }}',
-            })
-
       - name: Prepare release notes
         if: needs.inspect.outputs.should_release == 'true'
         run: node scripts/extract-release-notes.mjs "${{ needs.inspect.outputs.version }}" .tmp/release-notes.md
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release and missing tag
         if: needs.inspect.outputs.should_release == 'true'
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
         with:
@@ -150,6 +136,7 @@ jobs:
             await github.rest.repos.createRelease({
               ...context.repo,
               tag_name: '${{ needs.inspect.outputs.tag }}',
+              target_commitish: context.sha,
               name: '${{ needs.inspect.outputs.package_name }} ${{ needs.inspect.outputs.version }}',
               body,
             })
