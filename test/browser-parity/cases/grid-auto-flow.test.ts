@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid auto flow column places items down columns', async () => {
   await expectChromiumParity({
@@ -29,8 +29,8 @@ it('grid auto flow column places items down columns', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});
 
 it('grid auto flow dense backfills available cells', async () => {
   await expectChromiumParity({
@@ -68,5 +68,5 @@ it('grid auto flow dense backfills available cells', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});

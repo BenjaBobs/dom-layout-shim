@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex alignment contributes to child placement', async () => {
   await expectChromiumParity({
@@ -38,5 +38,5 @@ it('flex alignment contributes to child placement', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

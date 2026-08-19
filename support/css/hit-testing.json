@@ -32,39 +32,24 @@
     {
       "id": "pointer-event-participation",
       "description": "`pointer-events` controls whether boxes and descendants participate in point queries.",
-      "properties": [
-        "pointer-events"
-      ],
-      "syntax": [
-        "auto",
-        "none"
-      ],
+      "properties": ["pointer-events"],
+      "syntax": ["auto", "none"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "pointer-events-none"
-        ]
+        "fixtures": ["pointer-events-none"]
       },
       "notes": []
     },
     {
       "id": "visibility-participation",
       "description": "`visibility` controls point-query participation while retaining layout boxes.",
-      "properties": [
-        "visibility"
-      ],
-      "syntax": [
-        "visible",
-        "hidden",
-        "collapse"
-      ],
+      "properties": ["visibility"],
+      "syntax": ["visible", "hidden", "collapse"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visibility-hidden"
-        ]
+        "fixtures": ["visibility-hidden"]
       },
       "notes": [
         {
@@ -76,24 +61,12 @@
     {
       "id": "overflow-clipping",
       "description": "Overflow modes clip descendant hit boxes to the padding box.",
-      "properties": [
-        "overflow",
-        "overflow-x",
-        "overflow-y"
-      ],
-      "syntax": [
-        "visible",
-        "hidden",
-        "clip",
-        "auto",
-        "scroll"
-      ],
+      "properties": ["overflow", "overflow-x", "overflow-y"],
+      "syntax": ["visible", "hidden", "clip", "auto", "scroll"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "overflow-clipping"
-        ]
+        "fixtures": ["overflow-clipping"]
       },
       "notes": [
         {

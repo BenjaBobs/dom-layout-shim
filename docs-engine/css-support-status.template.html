@@ -490,10 +490,6 @@
       background: var(--amber-bg);
     }
 
-    .claim-values-properties .claim-label { color: var(--blue); }
-    .claim-values-syntax .claim-label { color: var(--violet); }
-    .claim-values-conditions .claim-label { color: var(--amber); }
-
     .claim-values .chip {
       max-width: 100%;
       border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
@@ -515,6 +511,10 @@
       letter-spacing: .04em;
       text-transform: uppercase;
     }
+
+    .claim-values-properties .claim-label { color: var(--blue); }
+    .claim-values-syntax .claim-label { color: var(--violet); }
+    .claim-values-conditions .claim-label { color: var(--amber); }
 
     .more {
       color: var(--muted);
@@ -812,7 +812,7 @@
   <nav data-site-nav></nav>
   <header>
     <div><h1>CSS Support Status</h1><p class="subhead">Generated from the machine-readable records in <code>support/css/</code></p></div>
-    <div class="control-bar-inner" aria-label="CSS support controls">
+    <div class="control-bar-inner">
       <section class="summary" id="summary" aria-label="Summary"><span>Loading support inventory…</span></section>
       <section class="toolbar" aria-label="Filters">
       <label class="visually-hidden" for="search">Search support records</label>
@@ -936,7 +936,9 @@
       inventory = await loadInventory()
       populateFilters()
       restoreFilters()
-      document.querySelectorAll('.toolbar :is(input, select, button)').forEach((control) => control.disabled = false)
+      for (const control of document.querySelectorAll('.toolbar :is(input, select, button)')) {
+        control.disabled = false
+      }
       render()
       document.getElementById('search').addEventListener('input', render)
       document.getElementById('status').addEventListener('change', render)
@@ -1079,11 +1081,13 @@
         </${metric.status ? 'button' : 'div'}>
       `).join('')
 
-      document.querySelectorAll('.metric-filter').forEach((metric) => metric.addEventListener('click', () => {
-        const status = document.getElementById('status')
-        status.value = status.value === metric.dataset.status ? '' : metric.dataset.status
-        render()
-      }))
+      for (const metric of document.querySelectorAll('.metric-filter')) {
+        metric.addEventListener('click', () => {
+          const status = document.getElementById('status')
+          status.value = status.value === metric.dataset.status ? '' : metric.dataset.status
+          render()
+        })
+      }
     }
 
     function renderRows(entries, query) {

@@ -70,9 +70,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "visual-only-properties"
-        ]
+        "fixtures": ["visual-only-properties"]
       },
       "notes": [
         {
@@ -84,14 +82,8 @@
     {
       "id": "writing-direction-defaults",
       "description": "Default left-to-right horizontal writing declarations are accepted without changing layout.",
-      "properties": [
-        "direction",
-        "writing-mode"
-      ],
-      "syntax": [
-        "ltr",
-        "horizontal-tb"
-      ],
+      "properties": ["direction", "writing-mode"],
+      "syntax": ["ltr", "horizontal-tb"],
       "support": "partial",
       "parity": {
         "status": "unverified",
@@ -107,13 +99,8 @@
     {
       "id": "float-defaults",
       "description": "Non-floating defaults are accepted while floated layout remains unsupported.",
-      "properties": [
-        "float",
-        "clear"
-      ],
-      "syntax": [
-        "none"
-      ],
+      "properties": ["float", "clear"],
+      "syntax": ["none"],
       "support": "partial",
       "parity": {
         "status": "unverified",
@@ -129,15 +116,8 @@
     {
       "id": "containment-defaults",
       "description": "Non-containing defaults are accepted while containment and container queries remain unsupported.",
-      "properties": [
-        "contain",
-        "container-type",
-        "container-name"
-      ],
-      "syntax": [
-        "none",
-        "normal"
-      ],
+      "properties": ["contain", "container-type", "container-name"],
+      "syntax": ["none", "normal"],
       "support": "partial",
       "parity": {
         "status": "unverified",

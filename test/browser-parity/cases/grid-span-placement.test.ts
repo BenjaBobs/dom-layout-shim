@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid span placement spans tracks from auto placement', async () => {
   await expectChromiumParity({
@@ -36,8 +36,8 @@ it('grid span placement spans tracks from auto placement', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});
 
 it('grid span placement spans tracks from explicit lines', async () => {
   await expectChromiumParity({
@@ -69,5 +69,5 @@ it('grid span placement spans tracks from explicit lines', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('uppercase text and letter spacing determine styled button intrinsic width', async () => {
   await expectChromiumParity({
@@ -30,5 +30,5 @@ it('uppercase text and letter spacing determine styled button intrinsic width', 
       { type: 'rect', selector: '#button' },
       { type: 'dimensions', selector: '#button' },
     ],
-  })
-})
+  });
+});

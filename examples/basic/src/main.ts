@@ -1,9 +1,9 @@
-import { mountApp } from './app.ts'
+import { mountApp } from './app.ts';
 
-const root = document.querySelector('#app')
+const root = document.querySelector('#app');
 
 if (!root) {
-  throw new Error('Missing example application root')
+  throw new Error('Missing example application root');
 }
 
-mountApp(root)
+mountApp(root);

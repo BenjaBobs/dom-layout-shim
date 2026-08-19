@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('right and bottom position an absolute box from the viewport edges', async () => {
   await expectChromiumParity({
@@ -20,5 +20,5 @@ it('right and bottom position an absolute box from the viewport edges', async ()
       { type: 'rect', selector: '#box' },
       { type: 'point', x: 250, y: 150 },
     ],
-  })
-})
+  });
+});

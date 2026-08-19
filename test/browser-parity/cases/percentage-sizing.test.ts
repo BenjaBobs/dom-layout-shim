@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('percentage dimensions resolve against containing block size', async () => {
   await expectChromiumParity({
@@ -28,5 +28,5 @@ it('percentage dimensions resolve against containing block size', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});

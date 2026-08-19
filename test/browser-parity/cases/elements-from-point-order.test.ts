@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('elementsFromPoint returns elements in visual stacking order', async () => {
   await expectChromiumParity({
@@ -33,8 +33,8 @@ it('elementsFromPoint returns elements in visual stacking order', async () => {
       <div id="middle"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('keeps a high-z-index child inside its parent stacking context', async () => {
   await expectChromiumParity({
@@ -56,8 +56,8 @@ it('keeps a high-z-index child inside its parent stacking context', async () => 
       <div id="upper"></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});
 
 it('paints positioned descendants above their stacking-context background', async () => {
   await expectChromiumParity({
@@ -70,5 +70,5 @@ it('paints positioned descendants above their stacking-context background', asyn
       <div id="context"><div id="child"></div></div>
     `,
     queries: [{ type: 'point', x: 50, y: 50 }],
-  })
-})
+  });
+});

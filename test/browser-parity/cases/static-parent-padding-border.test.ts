@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('static children are laid out inside parent padding and border', async () => {
   await expectChromiumParity({
@@ -30,5 +30,5 @@ it('static children are laid out inside parent padding and border', async () => 
       { type: 'rect', selector: '#child' },
       { type: 'point', x: 13, y: 13 },
     ],
-  })
-})
+  });
+});

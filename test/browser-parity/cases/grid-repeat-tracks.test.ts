@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid repeat tracks expand fixed counts', async () => {
   await expectChromiumParity({
@@ -32,5 +32,5 @@ it('grid repeat tracks expand fixed counts', async () => {
       { type: 'rect', selector: '#fourth' },
       { type: 'rect', selector: '#fifth' },
     ],
-  })
-})
+  });
+});

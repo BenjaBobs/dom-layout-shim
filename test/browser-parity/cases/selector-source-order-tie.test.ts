@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('source order wins when selector specificity is tied', async () => {
   await expectChromiumParity({
@@ -21,5 +21,5 @@ it('source order wins when selector specificity is tied', async () => {
       <div id="box" class="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});

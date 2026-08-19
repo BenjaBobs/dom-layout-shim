@@ -1,65 +1,79 @@
-import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import opentype from 'opentype.js'
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import opentype from 'opentype.js';
 
-const SystemDate = Date
+const SystemDate = Date;
 globalThis.Date = class extends SystemDate {
   constructor(...args) {
-    super(...(args.length > 0 ? args : [0]))
+    super(...(args.length > 0 ? args : [0]));
   }
 
   static now() {
-    return 0
+    return 0;
   }
-}
+};
 
-const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
-const outputPath = resolve(root, 'test/browser-parity/assets/fonts/deterministic-layout.otf')
-const metadataPath = resolve(root, 'test/browser-parity/assets/fonts/METADATA.json')
-const check = process.argv.includes('--check')
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+const outputPath = resolve(
+  root,
+  'test/browser-parity/assets/fonts/deterministic-layout.otf',
+);
+const metadataPath = resolve(
+  root,
+  'test/browser-parity/assets/fonts/METADATA.json',
+);
+const check = process.argv.includes('--check');
 
-const patterns = getPatterns()
+const patterns = getPatterns();
 
 function addRect(path, x, y, width, height) {
-  path.moveTo(x, y)
-  path.lineTo(x + width, y)
-  path.lineTo(x + width, y + height)
-  path.lineTo(x, y + height)
-  path.close()
+  path.moveTo(x, y);
+  path.lineTo(x + width, y);
+  path.lineTo(x + width, y + height);
+  path.lineTo(x, y + height);
+  path.close();
 }
 
 function glyphPath(character) {
-  const path = new opentype.Path()
-  if (character === ' ') return path
-  const uppercase = character >= 'a' && character <= 'z'
-  const pattern = patterns[uppercase ? character.toUpperCase() : character]
-  if (!pattern) throw new Error(`Missing pattern for ${JSON.stringify(character)}`)
+  const path = new opentype.Path();
+  if (character === ' ') return path;
+  const uppercase = character >= 'a' && character <= 'z';
+  const pattern = patterns[uppercase ? character.toUpperCase() : character];
+  if (!pattern)
+    throw new Error(`Missing pattern for ${JSON.stringify(character)}`);
   for (const [row, cells] of pattern.entries()) {
     for (const [column, cell] of [...cells].entries()) {
-      if (cell === '*') addRect(path, 80 + column * 68, 710 - row * 92, 52, 76)
+      if (cell === '*') addRect(path, 80 + column * 68, 710 - row * 92, 52, 76);
     }
   }
-  if (uppercase) addRect(path, 430, -120, 35, 35)
-  return path
+  if (uppercase) addRect(path, 430, -120, 35, 35);
+  return path;
 }
 
-const notdef = new opentype.Path()
-addRect(notdef, 70, -170, 360, 40)
-addRect(notdef, 70, 730, 360, 40)
-addRect(notdef, 70, -130, 40, 860)
-addRect(notdef, 390, -130, 40, 860)
+const notdef = new opentype.Path();
+addRect(notdef, 70, -170, 360, 40);
+addRect(notdef, 70, 730, 360, 40);
+addRect(notdef, 70, -130, 40, 860);
+addRect(notdef, 390, -130, 40, 860);
 
-const glyphs = [new opentype.Glyph({ name: '.notdef', advanceWidth: 500, path: notdef })]
+const glyphs = [
+  new opentype.Glyph({ name: '.notdef', advanceWidth: 500, path: notdef }),
+];
 for (let codePoint = 0x20; codePoint <= 0x7e; codePoint += 1) {
-  const character = String.fromCodePoint(codePoint)
-  glyphs.push(new opentype.Glyph({
-    name: character === ' ' ? 'space' : `uni${codePoint.toString(16).toUpperCase().padStart(4, '0')}`,
-    unicode: codePoint,
-    advanceWidth: 500,
-    path: glyphPath(character),
-  }))
+  const character = String.fromCodePoint(codePoint);
+  glyphs.push(
+    new opentype.Glyph({
+      name:
+        character === ' '
+          ? 'space'
+          : `uni${codePoint.toString(16).toUpperCase().padStart(4, '0')}`,
+      unicode: codePoint,
+      advanceWidth: 500,
+      path: glyphPath(character),
+    }),
+  );
 }
 
 const font = new opentype.Font({
@@ -71,54 +85,61 @@ const font = new opentype.Font({
   weightClass: 400,
   createdTimestamp: 1,
   glyphs,
-})
+});
 // Chromium consults OS/2 Windows metrics on Windows but typographic metrics on
 // Linux and macOS when sizing inline boxes. opentype.js derives the former from
 // glyph bounds, which made this 20px font expose an 18px inline box only on
 // Windows. Keep both metric families aligned so the repository-owned font is a
 // deterministic geometry oracle on every parity runner.
-font.tables.os2.usWinAscent = 800
-font.tables.os2.usWinDescent = 200
-font.tables.os2.fsSelection |= 1 << 7
-font.tables.os2.usWeightClass = 400
+font.tables.os2.usWinAscent = 800;
+font.tables.os2.usWinDescent = 200;
+font.tables.os2.fsSelection |= 1 << 7;
+font.tables.os2.usWeightClass = 400;
 font.tables.post = {
   isFixedPitch: 1,
   underlinePosition: -100,
   underlineThickness: 50,
-}
-const bytes = Buffer.from(font.toArrayBuffer())
-const checksum = createHash('sha256').update(bytes).digest('hex')
-const metadata = `${JSON.stringify({
-  family: 'DOM Layout Shim Deterministic',
-  version: '1.0.0',
-  license: 'Unlicense',
-  generator: 'scripts/generate-test-font.mjs',
-  generatorDependency: 'opentype.js@2.0.0',
-  unitsPerEm: 1000,
-  advanceWidth: 500,
-  weightClass: 400,
-  fixedPitch: true,
-  ascender: 800,
-  descender: -200,
-  windowsAscent: 800,
-  windowsDescent: 200,
-  useTypographicMetrics: true,
-  underlinePosition: -100,
-  underlineThickness: 50,
-  coverage: 'U+0020-U+007E',
-  sha256: checksum,
-}, null, 2)}\n`
+};
+const bytes = Buffer.from(font.toArrayBuffer());
+const checksum = createHash('sha256').update(bytes).digest('hex');
+const metadata = `${JSON.stringify(
+  {
+    family: 'DOM Layout Shim Deterministic',
+    version: '1.0.0',
+    license: 'Unlicense',
+    generator: 'scripts/generate-test-font.mjs',
+    generatorDependency: 'opentype.js@2.0.0',
+    unitsPerEm: 1000,
+    advanceWidth: 500,
+    weightClass: 400,
+    fixedPitch: true,
+    ascender: 800,
+    descender: -200,
+    windowsAscent: 800,
+    windowsDescent: 200,
+    useTypographicMetrics: true,
+    underlinePosition: -100,
+    underlineThickness: 50,
+    coverage: 'U+0020-U+007E',
+    sha256: checksum,
+  },
+  null,
+  2,
+)}\n`;
 
 if (check) {
-  if (!readFileSync(outputPath).equals(bytes) || readFileSync(metadataPath, 'utf8') !== metadata) {
-    throw new Error('Generated deterministic test font is out of date')
+  if (
+    !readFileSync(outputPath).equals(bytes) ||
+    readFileSync(metadataPath, 'utf8') !== metadata
+  ) {
+    throw new Error('Generated deterministic test font is out of date');
   }
-  console.log(`Deterministic test font is current (${checksum}).`)
+  console.log(`Deterministic test font is current (${checksum}).`);
 } else {
-  mkdirSync(dirname(outputPath), { recursive: true })
-  writeFileSync(outputPath, bytes)
-  writeFileSync(metadataPath, metadata)
-  console.log(`Generated ${outputPath} (${checksum}).`)
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, bytes);
+  writeFileSync(metadataPath, metadata);
+  console.log(`Generated ${outputPath} (${checksum}).`);
 }
 
 function getPatterns() {
@@ -474,7 +495,7 @@ function getPatterns() {
       _*_*_
       _____
     `,
-    '$': glyph`
+    $: glyph`
       __*__
       _****
       *_*__
@@ -681,7 +702,7 @@ function getPatterns() {
       _____
       _____
     `,
-    '_': glyph`
+    _: glyph`
       _____
       _____
       _____
@@ -735,9 +756,12 @@ function getPatterns() {
       _____
       _____
     `,
-  }
+  };
 }
 
 function glyph(strings) {
-  return strings[0].trim().split('\n').map((row) => row.trim())
+  return strings[0]
+    .trim()
+    .split('\n')
+    .map(row => row.trim());
 }

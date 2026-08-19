@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('center clickability is blocked by an overlay', async () => {
   await expectChromiumParity({
@@ -24,5 +24,5 @@ it('center clickability is blocked by an overlay', async () => {
       <div id="overlay"></div>
     `,
     queries: [{ type: 'center-clickability', selector: '#save' }],
-  })
-})
+  });
+});

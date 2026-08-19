@@ -1,18 +1,18 @@
-import type { Box } from '../../api/box.ts'
+import type { Box } from '../../api/box.ts';
 
 type DomRectConstructor = new (
   x?: number,
   y?: number,
   width?: number,
   height?: number,
-) => DOMRect
+) => DOMRect;
 
 export function createDomRect(document: Document, box: Box): DOMRect {
-  const window = document.defaultView
-  const DomRect = window?.DOMRect as DomRectConstructor | undefined
+  const window = document.defaultView;
+  const DomRect = window?.DOMRect as DomRectConstructor | undefined;
 
   if (DomRect) {
-    return new DomRect(box.x, box.y, box.width, box.height)
+    return new DomRect(box.x, box.y, box.width, box.height);
   }
 
   return {
@@ -25,7 +25,7 @@ export function createDomRect(document: Document, box: Box): DOMRect {
     right: box.x + box.width,
     bottom: box.y + box.height,
     toJSON() {
-      return this
+      return this;
     },
-  }
+  };
 }

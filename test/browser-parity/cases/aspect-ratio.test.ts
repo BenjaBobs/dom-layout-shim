@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('aspect ratio resolves auto height from explicit width', async () => {
   await expectChromiumParity({
@@ -18,8 +18,8 @@ it('aspect ratio resolves auto height from explicit width', async () => {
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});
 
 it('aspect ratio resolves auto width from explicit height', async () => {
   await expectChromiumParity({
@@ -39,8 +39,8 @@ it('aspect ratio resolves auto width from explicit height', async () => {
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});
 
 it('aspect ratio follows a max constraint on the explicit axis', async () => {
   await expectChromiumParity({
@@ -60,5 +60,5 @@ it('aspect ratio follows a max constraint on the explicit axis', async () => {
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});

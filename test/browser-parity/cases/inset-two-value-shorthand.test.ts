@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('two-value inset shorthand applies vertical and horizontal offsets', async () => {
   await expectChromiumParity({
@@ -18,8 +18,8 @@ it('two-value inset shorthand applies vertical and horizontal offsets', async ()
       { type: 'point', x: 19, y: 100 },
       { type: 'point', x: 20, y: 100 },
     ],
-  })
-})
+  });
+});
 
 it('percentage insets resolve against the containing block', async () => {
   await expectChromiumParity({
@@ -40,5 +40,5 @@ it('percentage insets resolve against the containing block', async () => {
       { type: 'rect', selector: '#physical' },
       { type: 'rect', selector: '#logical' },
     ],
-  })
-})
+  });
+});

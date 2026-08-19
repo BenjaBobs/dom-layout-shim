@@ -46,6 +46,8 @@
     "README.md"
   ],
   "scripts": {
+    "biome:check": "biome check . --error-on-warnings",
+    "biome:fix": "biome check . --write",
     "build": "pnpm run css:generate && node scripts/clean-build-output.mjs && tsc -p tsconfig.build.json",
     "typecheck": "pnpm run css:generate && tsc -p tsconfig.json --noEmit",
     "test": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
@@ -72,6 +74,7 @@
     "release:version": "changeset version"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.9",
     "@changesets/cli": "^3.0.0",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",

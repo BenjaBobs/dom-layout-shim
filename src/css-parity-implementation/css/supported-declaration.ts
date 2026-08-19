@@ -1,6 +1,5 @@
-export { applyDeclaration } from './apply-declaration.ts'
-export { createDefaultStyle, zeroEdges } from './supported-style.ts'
-export type { DeclarationContext } from './apply-declaration.ts'
+export type { DeclarationContext } from './apply-declaration.ts';
+export { applyDeclaration } from './apply-declaration.ts';
 export type {
   AlignContentValue,
   AlignItemsValue,
@@ -14,4 +13,5 @@ export type {
   OverflowValue,
   SupportedDimension,
   SupportedStyle,
-} from './supported-style.ts'
+} from './supported-style.ts';
+export { createDefaultStyle, zeroEdges } from './supported-style.ts';

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('hidden attribute removes the element from hit testing and layout rects', async () => {
   await expectChromiumParity({
@@ -30,8 +30,8 @@ it('hidden attribute removes the element from hit testing and layout rects', asy
       { type: 'point', x: 50, y: 50 },
       { type: 'rect', selector: '#hidden' },
     ],
-  })
-})
+  });
+});
 
 it('hidden until-found keeps its own box while suppressing descendant hit testing', async () => {
   await expectChromiumParity({
@@ -69,5 +69,5 @@ it('hidden until-found keeps its own box while suppressing descendant hit testin
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 10, y: 25 },
     ],
-  })
-})
+  });
+});

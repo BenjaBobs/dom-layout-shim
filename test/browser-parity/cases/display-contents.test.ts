@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('display contents removes the parent box and lays out children in the parent context', async () => {
   await expectChromiumParity({
@@ -39,8 +39,8 @@ it('display contents removes the parent box and lays out children in the parent 
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 10, y: 15 },
     ],
-  })
-})
+  });
+});
 
 it('display contents flattens flex children into the flex formatting context', async () => {
   await expectChromiumParity({
@@ -79,5 +79,5 @@ it('display contents flattens flex children into the flex formatting context', a
       { type: 'rect', selector: '#two' },
       { type: 'point', x: 45, y: 10 },
     ],
-  })
-})
+  });
+});

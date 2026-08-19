@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('visual-only properties do not change layout or pointer targeting', async () => {
   await expectChromiumParity({
@@ -75,5 +75,5 @@ it('visual-only properties do not change layout or pointer targeting', async () 
       { type: 'rect', selector: '#image' },
       { type: 'point', x: 150, y: 30 },
     ],
-  })
-})
+  });
+});

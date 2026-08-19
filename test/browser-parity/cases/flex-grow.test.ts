@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex grow distributes remaining space', async () => {
   await expectChromiumParity({
@@ -37,8 +37,8 @@ it('flex grow distributes remaining space', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex grow redistributes space after an item reaches its maximum size', async () => {
   await expectChromiumParity({
@@ -74,8 +74,8 @@ it('flex grow redistributes space after an item reaches its maximum size', async
       { type: 'rect', selector: '#limited' },
       { type: 'rect', selector: '#remaining' },
     ],
-  })
-})
+  });
+});
 
 it('flex grow distributes vertical free space in column layout', async () => {
   await expectChromiumParity({
@@ -114,5 +114,5 @@ it('flex grow distributes vertical free space in column layout', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

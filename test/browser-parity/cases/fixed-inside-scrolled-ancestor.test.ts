@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('fixed descendants stay viewport anchored inside scrolled ancestors', async () => {
   await expectChromiumParity({
@@ -42,5 +42,5 @@ it('fixed descendants stay viewport anchored inside scrolled ancestors', async (
       { type: 'rect', selector: '#fixed' },
       { type: 'point', x: 40, y: 50 },
     ],
-  })
-})
+  });
+});

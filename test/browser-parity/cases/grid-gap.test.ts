@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid gap contributes to child placement', async () => {
   await expectChromiumParity({
@@ -30,8 +30,8 @@ it('grid gap contributes to child placement', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});
 
 it('grid percentage column gap resolves against container width', async () => {
   await expectChromiumParity({
@@ -58,8 +58,8 @@ it('grid percentage column gap resolves against container width', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid percentage row gap resolves against container height', async () => {
   await expectChromiumParity({
@@ -88,5 +88,5 @@ it('grid percentage row gap resolves against container height', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

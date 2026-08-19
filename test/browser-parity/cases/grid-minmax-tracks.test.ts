@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid minmax tracks constrain fixed columns', async () => {
   await expectChromiumParity({
@@ -26,8 +26,8 @@ it('grid minmax tracks constrain fixed columns', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid minmax auto tracks size implicit columns', async () => {
   await expectChromiumParity({
@@ -55,8 +55,8 @@ it('grid minmax auto tracks size implicit columns', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid minmax auto tracks size implicit rows', async () => {
   await expectChromiumParity({
@@ -86,5 +86,5 @@ it('grid minmax auto tracks size implicit rows', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

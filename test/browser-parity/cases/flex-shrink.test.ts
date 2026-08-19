@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex shrink distributes negative free space by scaled shrink factors', async () => {
   await expectChromiumParity({
@@ -37,8 +37,8 @@ it('flex shrink distributes negative free space by scaled shrink factors', async
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex shrink zero preserves an inflexible item while siblings shrink', async () => {
   await expectChromiumParity({
@@ -74,8 +74,8 @@ it('flex shrink zero preserves an inflexible item while siblings shrink', async 
       { type: 'rect', selector: '#fixed' },
       { type: 'rect', selector: '#shrinking' },
     ],
-  })
-})
+  });
+});
 
 it('flex shrink freezes an item at its minimum main size', async () => {
   await expectChromiumParity({
@@ -111,8 +111,8 @@ it('flex shrink freezes an item at its minimum main size', async () => {
       { type: 'rect', selector: '#limited' },
       { type: 'rect', selector: '#remaining' },
     ],
-  })
-})
+  });
+});
 
 it('flex shrink distributes vertical overflow in column layout', async () => {
   await expectChromiumParity({
@@ -151,5 +151,5 @@ it('flex shrink distributes vertical overflow in column layout', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

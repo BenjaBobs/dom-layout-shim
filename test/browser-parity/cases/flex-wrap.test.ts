@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex wrap moves overflowing items onto a new line', async () => {
   await expectChromiumParity({
@@ -37,5 +37,5 @@ it('flex wrap moves overflowing items onto a new line', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

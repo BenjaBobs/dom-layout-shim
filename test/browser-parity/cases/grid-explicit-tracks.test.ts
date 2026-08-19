@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid explicit pixel tracks place children by auto placement', async () => {
   await expectChromiumParity({
@@ -27,5 +27,5 @@ it('grid explicit pixel tracks place children by auto placement', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

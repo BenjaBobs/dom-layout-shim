@@ -28,31 +28,19 @@
     {
       "id": "box-sizing",
       "description": "Content-box and border-box sizing determine how authored dimensions include padding and borders.",
-      "properties": [
-        "box-sizing"
-      ],
-      "syntax": [
-        "content-box",
-        "border-box"
-      ],
+      "properties": ["box-sizing"],
+      "syntax": ["content-box", "border-box"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "box-sizing-min-max-size-constraints"
-        ]
+        "fixtures": ["box-sizing-min-max-size-constraints"]
       },
       "notes": []
     },
     {
       "id": "preferred-dimensions",
       "description": "Physical and logical preferred dimensions resolve supported fixed and percentage sizes.",
-      "properties": [
-        "width",
-        "height",
-        "inline-size",
-        "block-size"
-      ],
+      "properties": ["width", "height", "inline-size", "block-size"],
       "syntax": [
         "<px>",
         "<percentage>",
@@ -120,20 +108,12 @@
     {
       "id": "aspect-ratio",
       "description": "Preferred aspect ratios affect either axis and interact with supported size constraints.",
-      "properties": [
-        "aspect-ratio"
-      ],
-      "syntax": [
-        "auto",
-        "<number>",
-        "<ratio>"
-      ],
+      "properties": ["aspect-ratio"],
+      "syntax": ["auto", "<number>", "<ratio>"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "aspect-ratio"
-        ]
+        "fixtures": ["aspect-ratio"]
       },
       "notes": [
         {

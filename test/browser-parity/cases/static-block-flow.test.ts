@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('static block flow stacks blocks vertically', async () => {
   await expectChromiumParity({
@@ -28,8 +28,8 @@ it('static block flow stacks blocks vertically', async () => {
       { type: 'rect', selector: '#two' },
       { type: 'point', x: 10, y: 35 },
     ],
-  })
-})
+  });
+});
 
 it('static positioned blocks ignore inset properties', async () => {
   await expectChromiumParity({
@@ -60,5 +60,5 @@ it('static positioned blocks ignore inset properties', async () => {
       { type: 'rect', selector: '#one' },
       { type: 'rect', selector: '#two' },
     ],
-  })
-})
+  });
+});

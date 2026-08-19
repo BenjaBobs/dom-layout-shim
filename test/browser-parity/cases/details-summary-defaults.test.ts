@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('closed details lays out summary but suppresses remaining content from flow and hit testing', async () => {
   await expectChromiumParity({
@@ -43,5 +43,5 @@ it('closed details lays out summary but suppresses remaining content from flow a
       { type: 'point', x: 10, y: 25 },
       { type: 'point', x: 10, y: 45 },
     ],
-  })
-})
+  });
+});

@@ -61,6 +61,8 @@ automated publication flow.
 
 Use the checks appropriate to the files and behavior changed:
 
+- `pnpm run biome:check`: check formatting, lint rules, and import organization.
+- `pnpm run biome:fix`: apply Biome's safe fixes locally.
 - `pnpm run typecheck`: validate TypeScript.
 - `pnpm test`: run unit tests for engine and package-specific behavior.
 - `pnpm run test:browser-parity`: compare browser-observable CSS, layout,

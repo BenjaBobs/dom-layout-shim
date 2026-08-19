@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('text block elements apply native margins with explicit line metrics', async () => {
   await expectChromiumParity({
@@ -44,8 +44,8 @@ it('text block elements apply native margins with explicit line metrics', async 
       { type: 'rect', selector: '#pre' },
       { type: 'rect', selector: '#address' },
     ],
-  })
-})
+  });
+});
 
 it('author CSS can reset generic text element defaults', async () => {
   await expectChromiumParity({
@@ -66,5 +66,5 @@ it('author CSS can reset generic text element defaults', async () => {
       <p id="paragraph">Hello</p>
     `,
     queries: [{ type: 'rect', selector: '#paragraph' }],
-  })
-})
+  });
+});

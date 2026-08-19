@@ -1,3 +1,3 @@
-import type { CompatibilityScenario } from '../../../scripts/example-compatibility-core.mjs'
+import type { CompatibilityScenario } from '../../../scripts/example-compatibility-core.mjs';
 
-export const scenario: CompatibilityScenario
+export const scenario: CompatibilityScenario;

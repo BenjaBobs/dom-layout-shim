@@ -1,23 +1,28 @@
-import { readFileSync } from 'node:fs'
-import { expect, it } from 'vitest'
+import { readFileSync } from 'node:fs';
+import { expect, it } from 'vitest';
 import {
-  expectChromiumParity,
-  measureBrowserParityFixture,
   type BrowserParityFixture,
   type BrowserParityQuery,
+  expectChromiumParity,
+  measureBrowserParityFixture,
   type QueryResult,
-} from '../parity-harness.ts'
+} from '../parity-harness.ts';
 
-type NativeControlSizes = Record<string, [width: number, height: number]>
+type NativeControlSizes = Record<string, [width: number, height: number]>;
 type NativeControlSnapshots = {
-  chromium: Record<string, { chromiumVersion: string; runnerImage: string; sizes: NativeControlSizes }>
-  profiles: { portable: { sizes: NativeControlSizes } }
-}
+  chromium: Record<
+    string,
+    { chromiumVersion: string; runnerImage: string; sizes: NativeControlSizes }
+  >;
+  profiles: { portable: { sizes: NativeControlSizes } };
+};
 
-const nativeControlSnapshots = JSON.parse(readFileSync(
-  new URL('../snapshots/native-control-sizes.json', import.meta.url),
-  'utf8',
-)) as NativeControlSnapshots
+const nativeControlSnapshots = JSON.parse(
+  readFileSync(
+    new URL('../snapshots/native-control-sizes.json', import.meta.url),
+    'utf8',
+  ),
+) as NativeControlSnapshots;
 
 const nativeControlFixture = {
   viewport: { width: 500, height: 300 },
@@ -76,65 +81,81 @@ const nativeControlFixture = {
       <meter id="meter" value=".5"></meter>
   `,
   queries: [
-      { type: 'rect', selector: '#button' },
-      { type: 'rect', selector: '#text' },
-      { type: 'rect', selector: '#text-sized' },
-      { type: 'rect', selector: '#password-sized' },
-      { type: 'rect', selector: '#search-sized' },
-      { type: 'rect', selector: '#email-sized' },
-      { type: 'rect', selector: '#number-sized' },
-      { type: 'rect', selector: '#input-button' },
-      { type: 'rect', selector: '#input-submit' },
-      { type: 'rect', selector: '#input-reset' },
-      { type: 'rect', selector: '#checkbox' },
-      { type: 'rect', selector: '#radio' },
-      { type: 'rect', selector: '#range' },
-      { type: 'rect', selector: '#color' },
-      { type: 'rect', selector: '#hidden' },
-      { type: 'rect', selector: '#image' },
-      { type: 'rect', selector: '#file' },
-      { type: 'rect', selector: '#select' },
-      { type: 'rect', selector: '#select-long' },
-      { type: 'rect', selector: '#select-sized' },
-      { type: 'rect', selector: '#select-multiple' },
-      { type: 'rect', selector: '#progress' },
-      { type: 'rect', selector: '#meter' },
-      { type: 'rect', selector: '#time' },
-      { type: 'rect', selector: '#textarea' },
-      { type: 'rect', selector: '#textarea-sized' },
+    { type: 'rect', selector: '#button' },
+    { type: 'rect', selector: '#text' },
+    { type: 'rect', selector: '#text-sized' },
+    { type: 'rect', selector: '#password-sized' },
+    { type: 'rect', selector: '#search-sized' },
+    { type: 'rect', selector: '#email-sized' },
+    { type: 'rect', selector: '#number-sized' },
+    { type: 'rect', selector: '#input-button' },
+    { type: 'rect', selector: '#input-submit' },
+    { type: 'rect', selector: '#input-reset' },
+    { type: 'rect', selector: '#checkbox' },
+    { type: 'rect', selector: '#radio' },
+    { type: 'rect', selector: '#range' },
+    { type: 'rect', selector: '#color' },
+    { type: 'rect', selector: '#hidden' },
+    { type: 'rect', selector: '#image' },
+    { type: 'rect', selector: '#file' },
+    { type: 'rect', selector: '#select' },
+    { type: 'rect', selector: '#select-long' },
+    { type: 'rect', selector: '#select-sized' },
+    { type: 'rect', selector: '#select-multiple' },
+    { type: 'rect', selector: '#progress' },
+    { type: 'rect', selector: '#meter' },
+    { type: 'rect', selector: '#time' },
+    { type: 'rect', selector: '#textarea' },
+    { type: 'rect', selector: '#textarea-sized' },
   ],
-} as const satisfies BrowserParityFixture
+} as const satisfies BrowserParityFixture;
 
 it('native control sizes match the Chromium host and portable profile snapshots', async () => {
-  const result = await measureBrowserParityFixture(nativeControlFixture)
-  const platform = `${process.platform}-${process.arch}`
-  const chromiumSnapshot = nativeControlSnapshots.chromium[platform]
+  const result = await measureBrowserParityFixture(nativeControlFixture);
+  const platform = `${process.platform}-${process.arch}`;
+  const chromiumSnapshot = nativeControlSnapshots.chromium[platform];
 
   expect(extractNativeControlSizes(result.queries, result.engine)).toEqual(
     nativeControlSnapshots.profiles.portable.sizes,
-  )
+  );
 
   if (process.env.ImageOS) {
-    expect(chromiumSnapshot, `Missing native-control snapshot for ${platform}`).toBeDefined()
-    expect(chromiumSnapshot?.runnerImage.startsWith(`${process.env.ImageOS}@`)).toBe(true)
-    expect(result.chromiumVersion).toBe(chromiumSnapshot?.chromiumVersion)
-    expect(extractNativeControlSizes(result.queries, result.chromium)).toEqual(chromiumSnapshot?.sizes)
+    expect(
+      chromiumSnapshot,
+      `Missing native-control snapshot for ${platform}`,
+    ).toBeDefined();
+    expect(
+      chromiumSnapshot?.runnerImage.startsWith(`${process.env.ImageOS}@`),
+    ).toBe(true);
+    expect(result.chromiumVersion).toBe(chromiumSnapshot?.chromiumVersion);
+    expect(extractNativeControlSizes(result.queries, result.chromium)).toEqual(
+      chromiumSnapshot?.sizes,
+    );
   }
-})
+});
 
-function extractNativeControlSizes(queries: BrowserParityQuery[], results: QueryResult[]): NativeControlSizes {
-  return Object.fromEntries(queries.map((query, index) => {
-    if (query.type !== 'rect') {
-      throw new Error(`Native-control snapshot query must be a rect query, received ${query.type}`)
-    }
+function extractNativeControlSizes(
+  queries: BrowserParityQuery[],
+  results: QueryResult[],
+): NativeControlSizes {
+  return Object.fromEntries(
+    queries.map((query, index) => {
+      if (query.type !== 'rect') {
+        throw new Error(
+          `Native-control snapshot query must be a rect query, received ${query.type}`,
+        );
+      }
 
-    const rect = results[index]?.rect
-    if (!rect) {
-      throw new Error(`Missing native-control rectangle for ${query.selector}`)
-    }
+      const rect = results[index]?.rect;
+      if (!rect) {
+        throw new Error(
+          `Missing native-control rectangle for ${query.selector}`,
+        );
+      }
 
-    return [query.selector.slice(1), [rect.width, rect.height]]
-  }))
+      return [query.selector.slice(1), [rect.width, rect.height]];
+    }),
+  );
 }
 
 it('author width and height override form control intrinsic sizes', async () => {
@@ -187,8 +208,8 @@ it('author width and height override form control intrinsic sizes', async () => 
       { type: 'dimensions', selector: '#textarea' },
       { type: 'rect', selector: '#select' },
     ],
-  })
-})
+  });
+});
 
 it('styled flex buttons include text, inline icons, gaps, padding, and borders', async () => {
   await expectChromiumParity({
@@ -224,5 +245,5 @@ it('styled flex buttons include text, inline icons, gaps, padding, and borders',
       { type: 'rect', selector: '#text-only' },
       { type: 'rect', selector: '#with-icon' },
     ],
-  })
-})
+  });
+});

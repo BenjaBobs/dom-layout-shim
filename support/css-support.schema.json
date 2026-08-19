@@ -4,7 +4,15 @@
   "title": "DOM Layout Shim CSS support record",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "title", "subjects", "effect", "owner", "claims"],
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "subjects",
+    "effect",
+    "owner",
+    "claims"
+  ],
   "properties": {
     "$schema": {
       "type": "string"
@@ -38,7 +46,13 @@
       }
     },
     "effect": {
-      "enum": ["layout", "hit-testing", "accepted-inert", "visual-ignored", "source"]
+      "enum": [
+        "layout",
+        "hit-testing",
+        "accepted-inert",
+        "visual-ignored",
+        "source"
+      ]
     },
     "owner": {
       "enum": ["css-parser", "taffy-adapter", "hit-testing", "text", "dom-api"]
@@ -83,11 +97,20 @@
             "required": ["status", "fixtures"],
             "properties": {
               "status": {
-                "enum": ["verified", "partially-verified", "unverified", "known-mismatch", "not-applicable"]
+                "enum": [
+                  "verified",
+                  "partially-verified",
+                  "unverified",
+                  "known-mismatch",
+                  "not-applicable"
+                ]
               },
               "fixtures": {
                 "type": "array",
-                "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                },
                 "uniqueItems": true
               }
             }

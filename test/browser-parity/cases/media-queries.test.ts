@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('applies matching media types, ranges, orientation, aspect ratio, lists, and nested rules', async () => {
   await expectChromiumParity({
@@ -28,8 +28,8 @@ it('applies matching media types, ranges, orientation, aspect ratio, lists, and 
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});
 
 it('selects narrow portrait rules from the configured viewport', async () => {
   await expectChromiumParity({
@@ -45,5 +45,5 @@ it('selects narrow portrait rules from the configured viewport', async () => {
       <div id="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});

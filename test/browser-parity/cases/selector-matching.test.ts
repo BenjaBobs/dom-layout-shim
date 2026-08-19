@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('matches selector lists descendant and child combinators', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('matches selector lists descendant and child combinators', async () => {
       { type: 'rect', selector: '#button' },
       { type: 'rect', selector: '#panel' },
     ],
-  })
-})
+  });
+});
 
 it('matches supported attribute and functional pseudo-class selectors', async () => {
   await expectChromiumParity({
@@ -83,8 +83,8 @@ it('matches supported attribute and functional pseudo-class selectors', async ()
       ></button>
     `,
     queries: [{ type: 'rect', selector: '#button' }],
-  })
-})
+  });
+});
 
 it('does not overmatch scoped compound functional selectors', async () => {
   await expectChromiumParity({
@@ -104,8 +104,8 @@ it('does not overmatch scoped compound functional selectors', async () => {
       { type: 'rect', selector: '#workspace' },
       { type: 'rect', selector: '#input' },
     ],
-  })
-})
+  });
+});
 
 it('matches structural and control-state pseudo-class selectors', async () => {
   await expectChromiumParity({
@@ -134,5 +134,5 @@ it('matches structural and control-state pseudo-class selectors', async () => {
       { type: 'rect', selector: '#last' },
       { type: 'rect', selector: '#disabled' },
     ],
-  })
-})
+  });
+});

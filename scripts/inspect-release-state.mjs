@@ -1,10 +1,10 @@
-import { appendFileSync, readFileSync } from 'node:fs'
-import process from 'node:process'
+import { appendFileSync, readFileSync } from 'node:fs';
+import process from 'node:process';
 
-const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
-const packageName = packageJson.name
-const version = packageJson.version
-const tag = `v${version}`
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+const packageName = packageJson.name;
+const version = packageJson.version;
+const tag = `v${version}`;
 
 if (packageJson.private || version === '0.0.0') {
   writeOutputs({
@@ -14,25 +14,27 @@ if (packageJson.private || version === '0.0.0') {
     should_run: false,
     tag,
     version,
-  })
-  process.exit()
+  });
+  process.exit();
 }
 
-const encodedPackage = packageName.replace('/', '%2f')
+const encodedPackage = packageName.replace('/', '%2f');
 const registryResponse = await fetch(
   `https://registry.npmjs.org/${encodedPackage}/${encodeURIComponent(version)}`,
-)
+);
 
 if (registryResponse.status !== 200 && registryResponse.status !== 404) {
-  throw new Error(`Could not inspect npm release state: HTTP ${registryResponse.status}`)
+  throw new Error(
+    `Could not inspect npm release state: HTTP ${registryResponse.status}`,
+  );
 }
 
-const shouldPublish = registryResponse.status === 404
-const repository = process.env.GITHUB_REPOSITORY
-const githubToken = process.env.GITHUB_TOKEN
+const shouldPublish = registryResponse.status === 404;
+const repository = process.env.GITHUB_REPOSITORY;
+const githubToken = process.env.GITHUB_TOKEN;
 
 if (!repository || !githubToken) {
-  throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required')
+  throw new Error('GITHUB_REPOSITORY and GITHUB_TOKEN are required');
 }
 
 const releaseResponse = await fetch(
@@ -44,13 +46,15 @@ const releaseResponse = await fetch(
       'X-GitHub-Api-Version': '2022-11-28',
     },
   },
-)
+);
 
 if (releaseResponse.status !== 200 && releaseResponse.status !== 404) {
-  throw new Error(`Could not inspect GitHub release state: HTTP ${releaseResponse.status}`)
+  throw new Error(
+    `Could not inspect GitHub release state: HTTP ${releaseResponse.status}`,
+  );
 }
 
-const shouldRelease = releaseResponse.status === 404
+const shouldRelease = releaseResponse.status === 404;
 writeOutputs({
   package_name: packageName,
   should_publish: shouldPublish,
@@ -58,16 +62,16 @@ writeOutputs({
   should_run: shouldPublish || shouldRelease,
   tag,
   version,
-})
+});
 
 function writeOutputs(outputs) {
-  const outputPath = process.env.GITHUB_OUTPUT
+  const outputPath = process.env.GITHUB_OUTPUT;
 
   if (!outputPath) {
     for (const [name, value] of Object.entries(outputs)) {
-      console.log(`${name}=${value}`)
+      console.log(`${name}=${value}`);
     }
-    return
+    return;
   }
 
   appendFileSync(
@@ -75,5 +79,5 @@ function writeOutputs(outputs) {
     Object.entries(outputs)
       .map(([name, value]) => `${name}=${value}`)
       .join('\n') + '\n',
-  )
+  );
 }

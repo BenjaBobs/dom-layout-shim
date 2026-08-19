@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('fixed inset zero fills the viewport', async () => {
   await expectChromiumParity({
@@ -17,5 +17,5 @@ it('fixed inset zero fills the viewport', async () => {
       { type: 'rect', selector: '#backdrop' },
       { type: 'point', x: 299, y: 199 },
     ],
-  })
-})
+  });
+});

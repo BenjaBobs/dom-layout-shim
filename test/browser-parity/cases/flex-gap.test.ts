@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex gap contributes to child placement', async () => {
   await expectChromiumParity({
@@ -36,8 +36,8 @@ it('flex gap contributes to child placement', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex percentage column gap resolves against container width', async () => {
   await expectChromiumParity({
@@ -73,8 +73,8 @@ it('flex percentage column gap resolves against container width', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex row gap separates wrapped lines', async () => {
   await expectChromiumParity({
@@ -107,8 +107,8 @@ it('flex row gap separates wrapped lines', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex percentage row gap resolves against a definite cross size', async () => {
   await expectChromiumParity({
@@ -142,5 +142,5 @@ it('flex percentage row gap resolves against a definite cross size', async () =>
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

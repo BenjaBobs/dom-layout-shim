@@ -4,9 +4,7 @@
   "id": "display",
   "title": "Display model",
   "subjects": {
-    "properties": [
-      "display"
-    ],
+    "properties": ["display"],
     "elements": []
   },
   "effect": "layout",
@@ -15,23 +13,12 @@
     {
       "id": "block-and-inline-aliases",
       "description": "Block flow and supported inline display aliases produce deterministic layout boxes.",
-      "properties": [
-        "display"
-      ],
-      "syntax": [
-        "block",
-        "inline",
-        "inline-block",
-        "flow-root",
-        "list-item"
-      ],
+      "properties": ["display"],
+      "syntax": ["block", "inline", "inline-block", "flow-root", "list-item"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "display-aliases",
-          "static-block-flow"
-        ]
+        "fixtures": ["display-aliases", "static-block-flow"]
       },
       "notes": [
         {
@@ -47,22 +34,12 @@
     {
       "id": "flex-and-grid-containers",
       "description": "Flex and grid display values select the corresponding layout model.",
-      "properties": [
-        "display"
-      ],
-      "syntax": [
-        "flex",
-        "inline-flex",
-        "grid",
-        "inline-grid"
-      ],
+      "properties": ["display"],
+      "syntax": ["flex", "inline-flex", "grid", "inline-grid"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-row",
-          "grid-explicit-tracks"
-        ]
+        "fixtures": ["flex-row", "grid-explicit-tracks"]
       },
       "notes": [
         {
@@ -74,20 +51,12 @@
     {
       "id": "box-generation",
       "description": "Box suppression and child flattening follow supported display semantics.",
-      "properties": [
-        "display"
-      ],
-      "syntax": [
-        "contents",
-        "none"
-      ],
+      "properties": ["display"],
+      "syntax": ["contents", "none"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "display-contents",
-          "display-none"
-        ]
+        "fixtures": ["display-contents", "display-none"]
       },
       "notes": [
         {

@@ -26,10 +26,7 @@
     {
       "id": "writing-modes",
       "description": "Non-default writing directions and modes are tracked but unsupported.",
-      "properties": [
-        "direction",
-        "writing-mode"
-      ],
+      "properties": ["direction", "writing-mode"],
       "support": "unsupported",
       "parity": {
         "status": "unverified",
@@ -83,11 +80,7 @@
     {
       "id": "advanced-table-layout",
       "description": "Advanced table border and empty-cell behavior remains incomplete.",
-      "properties": [
-        "border-collapse",
-        "border-spacing",
-        "empty-cells"
-      ],
+      "properties": ["border-collapse", "border-spacing", "empty-cells"],
       "support": "unsupported",
       "parity": {
         "status": "unverified",

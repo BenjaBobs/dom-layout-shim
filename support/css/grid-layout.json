@@ -27,10 +27,7 @@
     {
       "id": "explicit-tracks",
       "description": "Explicit row and column tracks support fixed, percentage, fractional, minimum/maximum, and repeated sizing.",
-      "properties": [
-        "grid-template-columns",
-        "grid-template-rows"
-      ],
+      "properties": ["grid-template-columns", "grid-template-rows"],
       "syntax": [
         "none",
         "<px>",
@@ -72,11 +69,7 @@
     {
       "id": "implicit-tracks-and-auto-flow",
       "description": "Auto-placement creates implicit tracks using configured row and column sizing.",
-      "properties": [
-        "grid-auto-flow",
-        "grid-auto-columns",
-        "grid-auto-rows"
-      ],
+      "properties": ["grid-auto-flow", "grid-auto-columns", "grid-auto-rows"],
       "syntax": [
         "row",
         "column",
@@ -90,10 +83,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "grid-auto-flow",
-          "grid-auto-tracks"
-        ]
+        "fixtures": ["grid-auto-flow", "grid-auto-tracks"]
       },
       "notes": [
         {
@@ -113,18 +103,11 @@
         "grid-row-start",
         "grid-row-end"
       ],
-      "syntax": [
-        "auto",
-        "<integer>",
-        "span <integer>"
-      ],
+      "syntax": ["auto", "<integer>", "span <integer>"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "grid-line-placement",
-          "grid-span-placement"
-        ]
+        "fixtures": ["grid-line-placement", "grid-span-placement"]
       },
       "notes": [
         {
@@ -136,10 +119,7 @@
     {
       "id": "named-area-placement",
       "description": "Grid templates define rectangular named areas that place items through the `grid-area` shorthand.",
-      "properties": [
-        "grid-template-areas",
-        "grid-area"
-      ],
+      "properties": ["grid-template-areas", "grid-area"],
       "syntax": [
         "grid-template-areas: none",
         "grid-template-areas: \"<custom-ident> ...\"",
@@ -153,9 +133,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "grid-template-areas"
-        ]
+        "fixtures": ["grid-template-areas"]
       },
       "notes": [
         {
@@ -171,20 +149,12 @@
     {
       "id": "area-shorthand-placement",
       "description": "The `grid-area` shorthand maps supported numeric row and column placements.",
-      "properties": [
-        "grid-area"
-      ],
-      "syntax": [
-        "auto",
-        "<integer>",
-        "span <integer>"
-      ],
+      "properties": ["grid-area"],
+      "syntax": ["auto", "<integer>", "span <integer>"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "grid-area-placement"
-        ]
+        "fixtures": ["grid-area-placement"]
       },
       "notes": [
         {

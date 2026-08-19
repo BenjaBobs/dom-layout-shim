@@ -5,15 +5,7 @@
   "title": "Replaced element intrinsic sizing",
   "subjects": {
     "properties": [],
-    "elements": [
-      "img",
-      "svg",
-      "canvas",
-      "video",
-      "audio",
-      "iframe",
-      "object"
-    ]
+    "elements": ["img", "svg", "canvas", "video", "audio", "iframe", "object"]
   },
   "effect": "layout",
   "owner": "taffy-adapter",
@@ -24,9 +16,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "replaced-image-attributes"
-        ]
+        "fixtures": ["replaced-image-attributes"]
       },
       "notes": [
         {

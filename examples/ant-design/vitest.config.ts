@@ -1,5 +1,5 @@
 // docs:start vitest-config
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -8,5 +8,5 @@ export default defineConfig({
     include: ['test/**/*.test.tsx'],
     setupFiles: ['./test/setup.ts'],
   },
-})
+});
 // docs:end vitest-config

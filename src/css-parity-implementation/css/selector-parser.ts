@@ -1,24 +1,27 @@
-import { handleUnsupportedCss, type UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts'
+import {
+  handleUnsupportedCss,
+  type UnsupportedCssPolicy,
+} from '../../api/unsupported-css-policy.ts';
 
 export type ParsedSelector = {
-  selector: string
-  specificity: number
-  pseudoElement?: 'before' | 'after'
-}
+  selector: string;
+  specificity: number;
+  pseudoElement?: 'before' | 'after';
+};
 
 export function readSelectorList(
   selectors: unknown,
   policy: UnsupportedCssPolicy | undefined,
 ): ParsedSelector[] {
   if (!Array.isArray(selectors)) {
-    handleUnsupportedSelector(String(selectors), policy)
-    return []
+    handleUnsupportedSelector(String(selectors), policy);
+    return [];
   }
 
-  return selectors.flatMap((selector) => {
-    const result = readSelector(selector, policy)
-    return result ? [result] : []
-  })
+  return selectors.flatMap(selector => {
+    const result = readSelector(selector, policy);
+    return result ? [result] : [];
+  });
 }
 
 function readSelector(
@@ -26,106 +29,113 @@ function readSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): ParsedSelector | undefined {
   if (!Array.isArray(selector)) {
-    handleUnsupportedSelector(String(selector), policy)
-    return undefined
+    handleUnsupportedSelector(String(selector), policy);
+    return undefined;
   }
 
-  let result = ''
-  let specificity = 0
-  let unsupported = false
-  let pseudoElement: 'before' | 'after' | undefined
+  let result = '';
+  let specificity = 0;
+  let unsupported = false;
+  let pseudoElement: 'before' | 'after' | undefined;
 
   for (const component of selector) {
     if (!isSelectorComponent(component)) {
-      handleUnsupportedSelector(JSON.stringify(component), policy)
-      unsupported = true
-      continue
+      handleUnsupportedSelector(JSON.stringify(component), policy);
+      unsupported = true;
+      continue;
     }
 
     switch (component.type) {
       case 'type':
-        result += component.name
-        specificity += 1
-        break
+        result += component.name;
+        specificity += 1;
+        break;
       case 'id':
-        result += `#${component.name}`
-        specificity += 10_000
-        break
+        result += `#${component.name}`;
+        specificity += 10_000;
+        break;
       case 'class':
-        result += `.${component.name}`
-        specificity += 100
-        break
+        result += `.${component.name}`;
+        specificity += 100;
+        break;
       case 'universal':
-        result += '*'
-        break
+        result += '*';
+        break;
       case 'attribute': {
-        const attributeSelector = readAttributeSelector(component, policy)
+        const attributeSelector = readAttributeSelector(component, policy);
 
         if (!attributeSelector) {
-          unsupported = true
-          break
+          unsupported = true;
+          break;
         }
 
-        result += attributeSelector
-        specificity += 100
-        break
+        result += attributeSelector;
+        specificity += 100;
+        break;
       }
       case 'pseudo-class': {
-        const pseudoSelector = readPseudoSelector(component, policy)
+        const pseudoSelector = readPseudoSelector(component, policy);
 
         if (!pseudoSelector) {
-          unsupported = true
-          break
+          unsupported = true;
+          break;
         }
 
-        result += pseudoSelector.selector
-        specificity += pseudoSelector.specificity
-        break
+        result += pseudoSelector.selector;
+        specificity += pseudoSelector.specificity;
+        break;
       }
       case 'pseudo-element':
-        if ((component.kind === 'before' || component.kind === 'after') && !pseudoElement) {
-          pseudoElement = component.kind
-          specificity += 1
-          break
+        if (
+          (component.kind === 'before' || component.kind === 'after') &&
+          !pseudoElement
+        ) {
+          pseudoElement = component.kind;
+          specificity += 1;
+          break;
         }
-        handleUnsupportedSelector(JSON.stringify(component), policy)
-        unsupported = true
-        break
+        handleUnsupportedSelector(JSON.stringify(component), policy);
+        unsupported = true;
+        break;
       case 'combinator':
         if (component.value === 'descendant') {
-          result = `${result.trimEnd()} `
-          break
+          result = `${result.trimEnd()} `;
+          break;
         }
 
         if (component.value === 'child') {
-          result = `${result.trimEnd()} > `
-          break
+          result = `${result.trimEnd()} > `;
+          break;
         }
 
         if (component.value === 'next-sibling') {
-          result = `${result.trimEnd()} + `
-          break
+          result = `${result.trimEnd()} + `;
+          break;
         }
 
         if (component.value === 'later-sibling') {
-          result = `${result.trimEnd()} ~ `
-          break
+          result = `${result.trimEnd()} ~ `;
+          break;
         }
 
-        handleUnsupportedSelector(JSON.stringify(component), policy)
-        unsupported = true
-        break
+        handleUnsupportedSelector(JSON.stringify(component), policy);
+        unsupported = true;
+        break;
       default:
-        handleUnsupportedSelector(JSON.stringify(component), policy)
-        unsupported = true
+        handleUnsupportedSelector(JSON.stringify(component), policy);
+        unsupported = true;
     }
   }
 
   if (unsupported || !result) {
-    return undefined
+    return undefined;
   }
 
-  return { selector: result, specificity, ...(pseudoElement ? { pseudoElement } : {}) }
+  return {
+    selector: result,
+    specificity,
+    ...(pseudoElement ? { pseudoElement } : {}),
+  };
 }
 
 function readPseudoSelector(
@@ -133,27 +143,27 @@ function readPseudoSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): ParsedSelector | undefined {
   if (simplePseudoClasses.has(component.kind ?? '')) {
-    return { selector: `:${component.kind}`, specificity: 100 }
+    return { selector: `:${component.kind}`, specificity: 100 };
   }
 
   if (component.kind === 'nth-child') {
     if (component.of !== null && component.of !== undefined) {
-      handleUnsupportedSelector(JSON.stringify(component), policy)
-      return undefined
+      handleUnsupportedSelector(JSON.stringify(component), policy);
+      return undefined;
     }
 
     if (typeof component.a !== 'number' || typeof component.b !== 'number') {
-      handleUnsupportedSelector(JSON.stringify(component), policy)
-      return undefined
+      handleUnsupportedSelector(JSON.stringify(component), policy);
+      return undefined;
     }
 
     return {
       selector: `:nth-child(${stringifyAnPlusB(component.a, component.b)})`,
       specificity: 100,
-    }
+    };
   }
 
-  return readFunctionalPseudoSelector(component, policy)
+  return readFunctionalPseudoSelector(component, policy);
 }
 
 const simplePseudoClasses = new Set([
@@ -167,20 +177,20 @@ const simplePseudoClasses = new Set([
   'focus-visible',
   'focus-within',
   'placeholder-shown',
-])
+]);
 
 function stringifyAnPlusB(a: number, b: number): string {
   if (a === 0) {
-    return String(b)
+    return String(b);
   }
 
-  const aText = a === 1 ? 'n' : a === -1 ? '-n' : `${a}n`
+  const aText = a === 1 ? 'n' : a === -1 ? '-n' : `${a}n`;
 
   if (b === 0) {
-    return aText
+    return aText;
   }
 
-  return `${aText}${b > 0 ? '+' : ''}${b}`
+  return `${aText}${b > 0 ? '+' : ''}${b}`;
 }
 
 function readFunctionalPseudoSelector(
@@ -193,24 +203,24 @@ function readFunctionalPseudoSelector(
     component.kind !== 'not' &&
     component.kind !== 'has'
   ) {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
-  const selectors = readSelectorList(component.selectors, policy)
+  const selectors = readSelectorList(component.selectors, policy);
 
   if (selectors.length === 0) {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
   return {
-    selector: `:${component.kind}(${selectors.map((selector) => selector.selector).join(', ')})`,
+    selector: `:${component.kind}(${selectors.map(selector => selector.selector).join(', ')})`,
     specificity:
       component.kind === 'where'
         ? 0
-        : Math.max(...selectors.map((selector) => selector.specificity)),
-  }
+        : Math.max(...selectors.map(selector => selector.specificity)),
+  };
 }
 
 function readAttributeSelector(
@@ -218,90 +228,106 @@ function readAttributeSelector(
   policy: UnsupportedCssPolicy | undefined,
 ): string | undefined {
   if (component.namespace !== null && component.namespace !== undefined) {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
   if (!component.name) {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
   if (!component.operation) {
-    return `[${component.name}]`
+    return `[${component.name}]`;
   }
 
-  const operator = stringifyAttributeOperator(component.operation.operator)
+  const operator = stringifyAttributeOperator(component.operation.operator);
 
   if (!operator || typeof component.operation.value !== 'string') {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
-  const caseSensitivity = component.operation.caseSensitivity
-  if (caseSensitivity !== undefined && caseSensitivity !== 'case-sensitive' && caseSensitivity !== 'ascii-case-insensitive' && caseSensitivity !== 'ascii-case-insensitive-if-in-html-element-in-html-document') {
-    handleUnsupportedSelector(JSON.stringify(component), policy)
-    return undefined
+  const caseSensitivity = component.operation.caseSensitivity;
+  if (
+    caseSensitivity !== undefined &&
+    caseSensitivity !== 'case-sensitive' &&
+    caseSensitivity !== 'ascii-case-insensitive' &&
+    caseSensitivity !==
+      'ascii-case-insensitive-if-in-html-element-in-html-document'
+  ) {
+    handleUnsupportedSelector(JSON.stringify(component), policy);
+    return undefined;
   }
 
-  const flag = caseSensitivity === 'ascii-case-insensitive' || caseSensitivity === 'ascii-case-insensitive-if-in-html-element-in-html-document' ? ' i' : ''
-  return `[${component.name}${operator}"${escapeAttributeValue(component.operation.value)}"${flag}]`
+  const flag =
+    caseSensitivity === 'ascii-case-insensitive' ||
+    caseSensitivity ===
+      'ascii-case-insensitive-if-in-html-element-in-html-document'
+      ? ' i'
+      : '';
+  return `[${component.name}${operator}"${escapeAttributeValue(component.operation.value)}"${flag}]`;
 }
 
-function stringifyAttributeOperator(operator: string | undefined): string | undefined {
+function stringifyAttributeOperator(
+  operator: string | undefined,
+): string | undefined {
   switch (operator) {
     case 'equal':
-      return '='
+      return '=';
     case 'includes':
-      return '~='
+      return '~=';
     case 'dash-match':
-      return '|='
+      return '|=';
     case 'prefix':
-      return '^='
+      return '^=';
     case 'suffix':
-      return '$='
+      return '$=';
     case 'substring':
-      return '*='
+      return '*=';
     default:
-      return undefined
+      return undefined;
   }
 }
 
 function escapeAttributeValue(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
-function handleUnsupportedSelector(selector: string, policy: UnsupportedCssPolicy | undefined): void {
+function handleUnsupportedSelector(
+  selector: string,
+  policy: UnsupportedCssPolicy | undefined,
+): void {
   handleUnsupportedCss(policy, {
     property: 'selector',
     value: selector,
     reason: 'unsupported-rule',
     source: 'stylesheet',
     selector,
-  })
+  });
 }
 
 type SelectorComponent = {
-  type: string
-  name?: string
-  value?: string
-  kind?: string
-  a?: number
-  b?: number
-  of?: unknown
-  selectors?: unknown
-  namespace?: unknown
+  type: string;
+  name?: string;
+  value?: string;
+  kind?: string;
+  a?: number;
+  b?: number;
+  of?: unknown;
+  selectors?: unknown;
+  namespace?: unknown;
   operation?: {
-    operator?: string
-    value?: unknown
-    caseSensitivity?: string
-  }
-}
+    operator?: string;
+    value?: unknown;
+    caseSensitivity?: string;
+  };
+};
 
 function isSelectorComponent(value: unknown): value is SelectorComponent {
-  return isRecord(value) && typeof value.type === 'string'
+  return isRecord(value) && typeof value.type === 'string';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+  return typeof value === 'object' && value !== null;
 }

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex justify content supports end and distributed spacing keywords', async () => {
   await expectChromiumParity({
@@ -65,8 +65,8 @@ it('flex justify content supports end and distributed spacing keywords', async (
       { type: 'rect', selector: '#evenly-a' },
       { type: 'rect', selector: '#evenly-b' },
     ],
-  })
-})
+  });
+});
 
 it('flex justify content uses the main axis in column layout', async () => {
   await expectChromiumParity({
@@ -99,5 +99,5 @@ it('flex justify content uses the main axis in column layout', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

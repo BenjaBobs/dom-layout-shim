@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('image width and height attributes provide replaced element dimensions', async () => {
   await expectChromiumParity({
@@ -23,8 +23,8 @@ it('image width and height attributes provide replaced element dimensions', asyn
       { type: 'rect', selector: '#width-only' },
       { type: 'rect', selector: '#height-only' },
     ],
-  })
-})
+  });
+});
 
 it('frame and object elements expose native replaced dimensions', async () => {
   await expectChromiumParity({
@@ -57,8 +57,8 @@ it('frame and object elements expose native replaced dimensions', async () => {
       { type: 'dimensions', selector: '#object-sized' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('object elements without resource hints lay out fallback content', async () => {
   await expectChromiumParity({
@@ -97,8 +97,8 @@ it('object elements without resource hints lay out fallback content', async () =
       { type: 'rect', selector: '#typed-child' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('svg canvas and video elements expose native fallback dimensions', async () => {
   await expectChromiumParity({
@@ -131,8 +131,8 @@ it('svg canvas and video elements expose native fallback dimensions', async () =
       { type: 'dimensions', selector: '#video-sized' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('audio elements expose native control dimensions only when controls are present', async () => {
   await expectChromiumParity({
@@ -166,5 +166,5 @@ it('audio elements expose native control dimensions only when controls are prese
       { type: 'dimensions', selector: '#audio-sized' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});

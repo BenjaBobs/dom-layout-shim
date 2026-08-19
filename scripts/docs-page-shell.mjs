@@ -11,25 +11,32 @@ export function renderDocumentationPage({
 }) {
   const styles = pageStyles
     ? `\n  <style data-page-styles>\n${pageStyles.trim()}\n  </style>`
-    : ''
-  const externalScripts = scripts.length > 0
-    ? `\n  ${scripts.map((source) => `<script type="module" src="${escapeAttribute(source)}"></script>`).join('\n  ')}`
-    : ''
+    : '';
+  const externalScripts =
+    scripts.length > 0
+      ? `\n  ${scripts.map(source => `<script type="module" src="${escapeAttribute(source)}"></script>`).join('\n  ')}`
+      : '';
   const pageScript = inlineModule
     ? `\n  <script type="module" data-page-script>\n${inlineModule.trim()}\n  </script>`
-    : ''
+    : '';
   const internalPages = [
     ['index.html', './'],
     ['examples.html', './examples.html'],
     ['css-support-status.html', './css-support-status.html'],
     ['changelog.html', './changelog.html'],
-  ].filter(([file]) => file !== page)
+  ].filter(([file]) => file !== page);
   const prefetch = internalPages
     .map(([, href]) => `<link rel="prefetch" href="${href}" as="document">`)
-    .join('\n  ')
+    .join('\n  ');
   const speculationRules = JSON.stringify({
-    prerender: [{ source: 'list', urls: internalPages.map(([, href]) => href), eagerness: 'immediate' }],
-  })
+    prerender: [
+      {
+        source: 'list',
+        urls: internalPages.map(([, href]) => href),
+        eagerness: 'immediate',
+      },
+    ],
+  });
 
   return `<!doctype html>
 <html lang="en">
@@ -51,7 +58,7 @@ export function renderDocumentationPage({
   </div>${pageScript}
 </body>
 </html>
-`
+`;
 }
 
 export function renderNavigation({ page, version, upcoming }) {
@@ -60,7 +67,7 @@ export function renderNavigation({ page, version, upcoming }) {
     ['examples.html', './examples.html', 'Examples'],
     ['css-support-status.html', './css-support-status.html', 'CSS support'],
     ['changelog.html', './changelog.html', 'Changelog'],
-  ]
+  ];
 
   return `<nav class="site-nav" data-site-nav aria-label="Main navigation">
     <a class="site-wordmark" href="./">DOM Layout Shim</a>
@@ -73,20 +80,24 @@ export function renderNavigation({ page, version, upcoming }) {
       ${links.map(([file, href, label]) => `<a href="${href}"${page === file ? ' aria-current="page"' : ''}>${label}</a>`).join('\n      ')}
       <a href="https://github.com/BenjaBobs/dom-layout-shim">GitHub</a>
     </div>
-  </nav>`
+  </nav>`;
 }
 
 export async function readDocumentationContext(root) {
-  const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
-  const changesets = await readdir(resolve(root, '.changeset'))
+  const packageJson = JSON.parse(
+    await readFile(resolve(root, 'package.json'), 'utf8'),
+  );
+  const changesets = await readdir(resolve(root, '.changeset'));
   return {
     version: packageJson.version,
-    upcoming: changesets.some((file) => file.endsWith('.md') && file !== 'README.md'),
-  }
+    upcoming: changesets.some(
+      file => file.endsWith('.md') && file !== 'README.md',
+    ),
+  };
 }
 
 function escapeAttribute(value) {
-  return escapeHtml(value).replaceAll('`', '&#096;')
+  return escapeHtml(value).replaceAll('`', '&#096;');
 }
 
 function escapeHtml(value) {
@@ -95,7 +106,8 @@ function escapeHtml(value) {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
+    .replaceAll("'", '&#039;');
 }
-import { readdir, readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+
+import { readdir, readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';

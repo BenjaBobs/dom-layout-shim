@@ -1,10 +1,14 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { attach, expectRect, requiredElement } from './layout-engine-helpers.ts'
+import { afterEach, describe, expect, it } from 'vitest';
+import {
+  attach,
+  expectRect,
+  requiredElement,
+} from './layout-engine-helpers.ts';
 
 afterEach(() => {
-  document.body.innerHTML = ''
-  document.adoptedStyleSheets = []
-})
+  document.body.innerHTML = '';
+  document.adoptedStyleSheets = [];
+});
 
 describe('stylesheet source handling', () => {
   it('does not overmatch scoped functional selectors in the host DOM', async () => {
@@ -17,13 +21,23 @@ describe('stylesheet source handling', () => {
       </style>
       <div id="workspace" class="workspace"></div>
       <input id="input" class="scope ant-input">
-    `
+    `;
 
-    await attach()
+    await attach();
 
-    expectRect(requiredElement('#workspace').getBoundingClientRect(), { left: 10, top: 0, width: 20, height: 20 })
-    expectRect(requiredElement('#input').getBoundingClientRect(), { left: 100, top: 30, width: 20, height: 20 })
-  })
+    expectRect(requiredElement('#workspace').getBoundingClientRect(), {
+      left: 10,
+      top: 0,
+      width: 20,
+      height: 20,
+    });
+    expectRect(requiredElement('#input').getBoundingClientRect(), {
+      left: 100,
+      top: 30,
+      width: 20,
+      height: 20,
+    });
+  });
 
   it('matches case-insensitive HTML attribute selectors', async () => {
     document.body.innerHTML = `
@@ -37,12 +51,17 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <button id="button" data-state="OPEN"></button>
-    `
+    `;
 
-    await attach()
+    await attach();
 
-    expectRect(requiredElement('#button').getBoundingClientRect(), { left: 10, top: 0, width: 50, height: 50 })
-  })
+    expectRect(requiredElement('#button').getBoundingClientRect(), {
+      left: 10,
+      top: 0,
+      width: 50,
+      height: 50,
+    });
+  });
 
   it('applies configured stylesheet CSS before document styles', async () => {
     document.body.innerHTML = `
@@ -52,7 +71,7 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <div id="box" class="box"></div>
-    `
+    `;
 
     await attach({
       stylesheets: [
@@ -66,20 +85,20 @@ describe('stylesheet source handling', () => {
           }
         `,
       ],
-    })
+    });
 
     expectRect(requiredElement('#box').getBoundingClientRect(), {
       left: 40,
       top: 20,
       width: 100,
       height: 50,
-    })
-  })
+    });
+  });
 
   it('lets inline styles override configured stylesheet CSS', async () => {
     document.body.innerHTML = `
       <div id="box" class="box" style="left:60px"></div>
-    `
+    `;
 
     await attach({
       stylesheets: [
@@ -93,18 +112,18 @@ describe('stylesheet source handling', () => {
           }
         `,
       ],
-    })
+    });
 
-    expect(requiredElement('#box').getBoundingClientRect().left).toBe(60)
-  })
+    expect(requiredElement('#box').getBoundingClientRect().left).toBe(60);
+  });
 
   it('reads rules inserted through the stylesheet CSSOM', async () => {
     document.body.innerHTML = `
       <style id="styles"></style>
       <div id="box" class="box"></div>
-    `
+    `;
 
-    const styleElement = requiredElement('#styles') as HTMLStyleElement
+    const styleElement = requiredElement('#styles') as HTMLStyleElement;
     styleElement.sheet?.insertRule(`
       .box {
         position: absolute;
@@ -113,17 +132,17 @@ describe('stylesheet source handling', () => {
         width: 100px;
         height: 50px;
       }
-    `)
+    `);
 
-    await attach()
+    await attach();
 
     expectRect(requiredElement('#box').getBoundingClientRect(), {
       left: 10,
       top: 20,
       width: 100,
       height: 50,
-    })
-  })
+    });
+  });
 
   it('applies accessible external stylesheets in document order', async () => {
     document.body.innerHTML = `
@@ -139,21 +158,21 @@ describe('stylesheet source handling', () => {
       <link id="external" rel="stylesheet">
       <style>.box { left: 30px; }</style>
       <div id="box" class="box"></div>
-    `
+    `;
 
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync('.box { left: 20px; }')
-    setLinkStylesheet(requiredElement('#external'), sheet)
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.box { left: 20px; }');
+    setLinkStylesheet(requiredElement('#external'), sheet);
 
-    await attach()
+    await attach();
 
     expectRect(requiredElement('#box').getBoundingClientRect(), {
       left: 30,
       top: 20,
       width: 100,
       height: 50,
-    })
-  })
+    });
+  });
 
   it('applies adopted stylesheets after document stylesheets', async () => {
     document.body.innerHTML = `
@@ -167,16 +186,16 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <div id="box" class="box"></div>
-    `
+    `;
 
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync('.box { left: 40px; }')
-    document.adoptedStyleSheets = [sheet]
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.box { left: 40px; }');
+    document.adoptedStyleSheets = [sheet];
 
-    await attach()
+    await attach();
 
-    expect(requiredElement('#box').getBoundingClientRect().left).toBe(40)
-  })
+    expect(requiredElement('#box').getBoundingClientRect().left).toBe(40);
+  });
 
   it('invalidates layout when adopted stylesheets change or reorder', async () => {
     document.body.innerHTML = `
@@ -185,25 +204,25 @@ describe('stylesheet source handling', () => {
         class="box"
         style="position:absolute; top:0; width:10px; height:10px"
       ></div>
-    `
+    `;
 
-    const first = new CSSStyleSheet()
-    const second = new CSSStyleSheet()
-    first.replaceSync('.box { left: 10px; }')
-    second.replaceSync('.box { left: 20px; }')
-    document.adoptedStyleSheets = [first, second]
+    const first = new CSSStyleSheet();
+    const second = new CSSStyleSheet();
+    first.replaceSync('.box { left: 10px; }');
+    second.replaceSync('.box { left: 20px; }');
+    document.adoptedStyleSheets = [first, second];
 
-    await attach()
+    await attach();
 
-    const box = requiredElement('#box')
-    expect(box.getBoundingClientRect().left).toBe(20)
+    const box = requiredElement('#box');
+    expect(box.getBoundingClientRect().left).toBe(20);
 
-    document.adoptedStyleSheets = [second, first]
-    expect(box.getBoundingClientRect().left).toBe(10)
+    document.adoptedStyleSheets = [second, first];
+    expect(box.getBoundingClientRect().left).toBe(10);
 
-    document.adoptedStyleSheets = [second]
-    expect(box.getBoundingClientRect().left).toBe(20)
-  })
+    document.adoptedStyleSheets = [second];
+    expect(box.getBoundingClientRect().left).toBe(20);
+  });
 
   it('invalidates layout when adopted CSSOM rules change', async () => {
     document.body.innerHTML = `
@@ -212,26 +231,26 @@ describe('stylesheet source handling', () => {
         class="box"
         style="position:absolute; top:0; width:10px; height:10px"
       ></div>
-    `
+    `;
 
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync('.box { left: 10px; }')
-    document.adoptedStyleSheets = [sheet]
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.box { left: 10px; }');
+    document.adoptedStyleSheets = [sheet];
 
-    await attach()
+    await attach();
 
-    const box = requiredElement('#box')
-    expect(box.getBoundingClientRect().left).toBe(10)
+    const box = requiredElement('#box');
+    expect(box.getBoundingClientRect().left).toBe(10);
 
-    sheet.replaceSync('.box { left: 25px; }')
-    expect(box.getBoundingClientRect().left).toBe(25)
+    sheet.replaceSync('.box { left: 25px; }');
+    expect(box.getBoundingClientRect().left).toBe(25);
 
-    sheet.insertRule('.box { left: 35px; }')
-    expect(box.getBoundingClientRect().left).toBe(35)
+    sheet.insertRule('.box { left: 35px; }');
+    expect(box.getBoundingClientRect().left).toBe(35);
 
-    sheet.deleteRule(1)
-    expect(box.getBoundingClientRect().left).toBe(25)
-  })
+    sheet.deleteRule(1);
+    expect(box.getBoundingClientRect().left).toBe(25);
+  });
 
   it('invalidates layout when accessible external CSSOM rules change', async () => {
     document.body.innerHTML = `
@@ -241,46 +260,49 @@ describe('stylesheet source handling', () => {
         class="box"
         style="position:absolute; top:0; width:10px; height:10px"
       ></div>
-    `
+    `;
 
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync('.box { left: 10px; }')
-    setLinkStylesheet(requiredElement('#external'), sheet)
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.box { left: 10px; }');
+    setLinkStylesheet(requiredElement('#external'), sheet);
 
-    await attach()
+    await attach();
 
-    const box = requiredElement('#box')
-    expect(box.getBoundingClientRect().left).toBe(10)
+    const box = requiredElement('#box');
+    expect(box.getBoundingClientRect().left).toBe(10);
 
-    sheet.replaceSync('.box { left: 30px; }')
-    expect(box.getBoundingClientRect().left).toBe(30)
-  })
+    sheet.replaceSync('.box { left: 30px; }');
+    expect(box.getBoundingClientRect().left).toBe(30);
+  });
 
   it('routes inaccessible external stylesheets through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
       <link id="external" rel="stylesheet">
       <div id="box"></div>
-    `
+    `;
 
     const inaccessibleSheet = {
       disabled: false,
       get cssRules() {
-        throw new DOMException('Blocked by cross-origin policy', 'SecurityError')
+        throw new DOMException(
+          'Blocked by cross-origin policy',
+          'SecurityError',
+        );
       },
-    } as unknown as CSSStyleSheet
-    setLinkStylesheet(requiredElement('#external'), inaccessibleSheet)
+    } as unknown as CSSStyleSheet;
+    setLinkStylesheet(requiredElement('#external'), inaccessibleSheet);
 
-    await attachStrict()
+    await attachStrict();
 
     expect(() => document.body.getBoundingClientRect()).toThrow(
       /external stylesheet .*Blocked by cross-origin policy/,
-    )
-  })
+    );
+  });
 
   it('applies configured media rules against the layout viewport', async () => {
     document.body.innerHTML = `
       <div id="box"></div>
-    `
+    `;
 
     await attach({
       viewport: { width: 320, height: 640 },
@@ -300,10 +322,13 @@ describe('stylesheet source handling', () => {
           }
         `,
       ],
-    })
+    });
 
-    expect(requiredElement('#box').getBoundingClientRect()).toMatchObject({ width: 100, height: 100 })
-  })
+    expect(requiredElement('#box').getBoundingClientRect()).toMatchObject({
+      width: 100,
+      height: 100,
+    });
+  });
 
   it('routes unsupported media features through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
@@ -319,12 +344,14 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <div id="box"></div>
-    `
+    `;
 
-    await attachStrict()
+    await attachStrict();
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule.*@media/)
-  })
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      /Unsupported CSS unsupported-rule.*@media/,
+    );
+  });
 
   it('continues to route non-media at-rules through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
@@ -334,12 +361,14 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <div id="box"></div>
-    `
+    `;
 
-    await attachStrict()
+    await attachStrict();
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule.*@supports/)
-  })
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      /Unsupported CSS unsupported-rule.*@supports/,
+    );
+  });
 
   it('routes unsupported selectors through the unsupported CSS policy', async () => {
     document.body.innerHTML = `
@@ -349,21 +378,23 @@ describe('stylesheet source handling', () => {
         }
       </style>
       <div id="box" class="box"></div>
-    `
+    `;
 
-    await attachStrict()
+    await attachStrict();
 
-    expect(() => document.body.getBoundingClientRect()).toThrow(/Unsupported CSS unsupported-rule/)
-  })
-})
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      /Unsupported CSS unsupported-rule/,
+    );
+  });
+});
 
 async function attachStrict(): Promise<void> {
-  await attach({ unsupportedCss: { default: 'throw' } })
+  await attach({ unsupportedCss: { default: 'throw' } });
 }
 
 function setLinkStylesheet(link: Element, sheet: CSSStyleSheet): void {
   Object.defineProperty(link, 'sheet', {
     configurable: true,
     value: sheet,
-  })
+  });
 }

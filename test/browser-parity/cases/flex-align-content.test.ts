@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex align content positions wrapped lines on the cross axis', async () => {
   await expectChromiumParity({
@@ -38,8 +38,8 @@ it('flex align content positions wrapped lines on the cross axis', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex align content distributes wrapped lines with space between', async () => {
   await expectChromiumParity({
@@ -72,8 +72,8 @@ it('flex align content distributes wrapped lines with space between', async () =
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex align content stretches auto-sized wrapped lines', async () => {
   await expectChromiumParity({
@@ -105,5 +105,5 @@ it('flex align content stretches auto-sized wrapped lines', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

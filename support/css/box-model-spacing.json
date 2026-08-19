@@ -91,10 +91,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "logical-properties",
-          "static-margin-flow"
-        ]
+        "fixtures": ["logical-properties", "static-margin-flow"]
       },
       "notes": [
         {
@@ -159,26 +156,15 @@
     {
       "id": "layout-gaps",
       "description": "Row and column gaps separate supported flex and grid tracks.",
-      "properties": [
-        "gap",
-        "row-gap",
-        "column-gap"
-      ],
-      "syntax": [
-        "<px>",
-        "<percentage>",
-        "normal"
-      ],
+      "properties": ["gap", "row-gap", "column-gap"],
+      "syntax": ["<px>", "<percentage>", "normal"],
       "conditions": [
         "Percentage gaps require a definite container size on the corresponding axis."
       ],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "flex-gap",
-          "grid-gap"
-        ]
+        "fixtures": ["flex-gap", "grid-gap"]
       },
       "notes": [
         {

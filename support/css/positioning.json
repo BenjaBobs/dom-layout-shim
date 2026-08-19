@@ -27,18 +27,12 @@
     {
       "id": "normal-flow-positioning",
       "description": "`position: static` retains normal-flow placement and resets supported positioned behavior.",
-      "properties": [
-        "position"
-      ],
-      "syntax": [
-        "static"
-      ],
+      "properties": ["position"],
+      "syntax": ["static"],
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "static-block-flow"
-        ]
+        "fixtures": ["static-block-flow"]
       },
       "notes": []
     },
@@ -164,24 +158,12 @@
     {
       "id": "sticky-positioning",
       "description": "Sticky boxes remain in flow and are constrained by supported physical insets and scrollports.",
-      "properties": [
-        "position",
-        "left",
-        "right",
-        "top",
-        "bottom"
-      ],
-      "syntax": [
-        "sticky",
-        "<px>",
-        "auto"
-      ],
+      "properties": ["position", "left", "right", "top", "bottom"],
+      "syntax": ["sticky", "<px>", "auto"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "sticky-positioning"
-        ]
+        "fixtures": ["sticky-positioning"]
       },
       "notes": [
         {
@@ -193,20 +175,12 @@
     {
       "id": "stacking-order",
       "description": "Nested positioned stacking contexts, integer `z-index` values, and DOM order determine supported point-query stacking.",
-      "properties": [
-        "z-index"
-      ],
-      "syntax": [
-        "auto",
-        "<integer>"
-      ],
+      "properties": ["z-index"],
+      "syntax": ["auto", "<integer>"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "elements-from-point-order",
-          "z-index-dom-order"
-        ]
+        "fixtures": ["elements-from-point-order", "z-index-dom-order"]
       },
       "notes": [
         {

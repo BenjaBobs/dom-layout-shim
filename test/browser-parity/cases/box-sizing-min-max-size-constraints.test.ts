@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('box sizing changes how min and max constraints are applied', async () => {
   await expectChromiumParity({
@@ -40,5 +40,5 @@ it('box sizing changes how min and max constraints are applied', async () => {
       { type: 'rect', selector: '#content-box' },
       { type: 'rect', selector: '#border-box' },
     ],
-  })
-})
+  });
+});

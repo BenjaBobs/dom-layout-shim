@@ -5,15 +5,7 @@
   "title": "List HTML elements",
   "subjects": {
     "properties": [],
-    "elements": [
-      "ul",
-      "ol",
-      "li",
-      "dl",
-      "dt",
-      "dd",
-      "menu"
-    ]
+    "elements": ["ul", "ol", "li", "dl", "dt", "dd", "menu"]
   },
   "effect": "layout",
   "owner": "taffy-adapter",
@@ -24,9 +16,7 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "list-html-defaults"
-        ]
+        "fixtures": ["list-html-defaults"]
       },
       "notes": [
         {

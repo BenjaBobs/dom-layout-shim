@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('maps logical properties in default horizontal ltr writing mode', async () => {
   await expectChromiumParity({
@@ -35,8 +35,8 @@ it('maps logical properties in default horizontal ltr writing mode', async () =>
       { type: 'point', x: 123, y: 82 },
       { type: 'point', x: 124, y: 82 },
     ],
-  })
-})
+  });
+});
 
 it('maps logical margins and padding in static block flow', async () => {
   await expectChromiumParity({
@@ -69,8 +69,8 @@ it('maps logical margins and padding in static block flow', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});
 
 it('maps logical min and max sizes to physical constraints', async () => {
   await expectChromiumParity({
@@ -102,8 +102,8 @@ it('maps logical min and max sizes to physical constraints', async () => {
       { type: 'rect', selector: '#minimum' },
       { type: 'rect', selector: '#maximum' },
     ],
-  })
-})
+  });
+});
 
 it('logical opposing insets resolve automatic dimensions', async () => {
   await expectChromiumParity({
@@ -134,8 +134,8 @@ it('logical opposing insets resolve automatic dimensions', async () => {
       { type: 'rect', selector: '#parent' },
       { type: 'rect', selector: '#child' },
     ],
-  })
-})
+  });
+});
 
 it('logical end insets position explicitly sized boxes', async () => {
   await expectChromiumParity({
@@ -165,8 +165,8 @@ it('logical end insets position explicitly sized boxes', async () => {
       </div>
     `,
     queries: [{ type: 'rect', selector: '#child' }],
-  })
-})
+  });
+});
 
 it('logical spacing and insets accept calculated relative lengths', async () => {
   await expectChromiumParity({
@@ -200,5 +200,5 @@ it('logical spacing and insets accept calculated relative lengths', async () => 
       { type: 'rect', selector: '#padded' },
       { type: 'rect', selector: '#positioned' },
     ],
-  })
-})
+  });
+});

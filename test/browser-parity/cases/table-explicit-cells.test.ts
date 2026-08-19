@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('simple native tables size explicit cells with default border spacing', async () => {
   await expectChromiumParity({
@@ -61,8 +61,8 @@ it('simple native tables size explicit cells with default border spacing', async
       { type: 'point', x: 5, y: 5 },
       { type: 'point', x: 55, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables position multiple row groups', async () => {
   await expectChromiumParity({
@@ -111,8 +111,8 @@ it('simple native tables position multiple row groups', async () => {
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support direct row children', async () => {
   await expectChromiumParity({
@@ -155,8 +155,8 @@ it('simple native tables support direct row children', async () => {
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support border spacing reset', async () => {
   await expectChromiumParity({
@@ -203,8 +203,8 @@ it('simple native tables support border spacing reset', async () => {
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support separate horizontal and vertical border spacing', async () => {
   await expectChromiumParity({
@@ -268,8 +268,8 @@ it('simple native tables support separate horizontal and vertical border spacing
       { type: 'rect', selector: '#d' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables include explicit cell padding and borders in column sizing', async () => {
   await expectChromiumParity({
@@ -317,8 +317,8 @@ it('simple native tables include explicit cell padding and borders in column siz
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support collapsed borders for explicit cells', async () => {
   await expectChromiumParity({
@@ -368,8 +368,8 @@ it('simple native tables support collapsed borders for explicit cells', async ()
       { type: 'point', x: 1, y: 1 },
       { type: 'point', x: 55, y: 1 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables distribute explicit colspan widths across covered columns', async () => {
   await expectChromiumParity({
@@ -422,8 +422,8 @@ it('simple native tables distribute explicit colspan widths across covered colum
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables distribute explicit rowspan heights across covered rows', async () => {
   await expectChromiumParity({
@@ -476,8 +476,8 @@ it('simple native tables distribute explicit rowspan heights across covered rows
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables use explicit column widths from colgroups', async () => {
   await expectChromiumParity({
@@ -531,8 +531,8 @@ it('simple native tables use explicit column widths from colgroups', async () =>
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 5, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables distribute explicit spanning column widths', async () => {
   await expectChromiumParity({
@@ -579,8 +579,8 @@ it('simple native tables distribute explicit spanning column widths', async () =
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables scale explicit columns to author table width', async () => {
   await expectChromiumParity({
@@ -628,8 +628,8 @@ it('simple native tables scale explicit columns to author table width', async ()
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables scale explicit rows to author table height', async () => {
   await expectChromiumParity({
@@ -680,8 +680,8 @@ it('simple native tables scale explicit rows to author table height', async () =
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support numeric width and height attributes', async () => {
   await expectChromiumParity({
@@ -718,8 +718,8 @@ it('simple native tables support numeric width and height attributes', async () 
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support numeric column width attributes', async () => {
   await expectChromiumParity({
@@ -762,8 +762,8 @@ it('simple native tables support numeric column width attributes', async () => {
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables support cellspacing and cellpadding attributes as defaults', async () => {
   await expectChromiumParity({
@@ -797,8 +797,8 @@ it('simple native tables support cellspacing and cellpadding attributes as defau
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native table cellspacing and cellpadding attributes yield to author CSS', async () => {
   await expectChromiumParity({
@@ -837,8 +837,8 @@ it('simple native table cellspacing and cellpadding attributes yield to author C
       { type: 'rect', selector: '#b' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables collapse table rows with visibility collapse', async () => {
   await expectChromiumParity({
@@ -893,8 +893,8 @@ it('simple native tables collapse table rows with visibility collapse', async ()
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 5, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables collapse table columns with visibility collapse', async () => {
   await expectChromiumParity({
@@ -953,8 +953,8 @@ it('simple native tables collapse table columns with visibility collapse', async
       { type: 'rect', selector: '#after' },
       { type: 'point', x: 5, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables hide empty cells from hit testing with empty-cells hide', async () => {
   await expectChromiumParity({
@@ -1000,8 +1000,8 @@ it('simple native tables hide empty cells from hit testing with empty-cells hide
       { type: 'point', x: 5, y: 5 },
       { type: 'point', x: 60, y: 5 },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables position header and footer row groups in visual order', async () => {
   await expectChromiumParity({
@@ -1067,8 +1067,8 @@ it('simple native tables position header and footer row groups in visual order',
       { type: 'rect', selector: '#foot-cell' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables position default top captions before row groups', async () => {
   await expectChromiumParity({
@@ -1115,8 +1115,8 @@ it('simple native tables position default top captions before row groups', async
       { type: 'rect', selector: '#cell' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables expand columns to wider explicit captions', async () => {
   await expectChromiumParity({
@@ -1164,8 +1164,8 @@ it('simple native tables expand columns to wider explicit captions', async () =>
       { type: 'rect', selector: '#cell' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});
 
 it('simple native tables position bottom captions after row groups', async () => {
   await expectChromiumParity({
@@ -1213,5 +1213,5 @@ it('simple native tables position bottom captions after row groups', async () =>
       { type: 'rect', selector: '#cell' },
       { type: 'rect', selector: '#after' },
     ],
-  })
-})
+  });
+});

@@ -16,10 +16,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "selector-matching",
-          "selector-sibling-combinators"
-        ]
+        "fixtures": ["selector-matching", "selector-sibling-combinators"]
       },
       "notes": [
         {
@@ -34,10 +31,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "selector-matching",
-          "generated-pseudo-elements"
-        ]
+        "fixtures": ["selector-matching", "generated-pseudo-elements"]
       },
       "notes": [
         {
@@ -52,10 +46,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "selector-source-order-tie",
-          "selector-specificity"
-        ]
+        "fixtures": ["selector-source-order-tie", "selector-specificity"]
       },
       "notes": []
     },

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex order changes item layout order', async () => {
   await expectChromiumParity({
@@ -43,5 +43,5 @@ it('flex order changes item layout order', async () => {
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});

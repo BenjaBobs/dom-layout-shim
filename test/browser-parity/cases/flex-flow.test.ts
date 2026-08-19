@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('flex-flow sets direction and wrapping', async () => {
   await expectChromiumParity({
@@ -37,8 +37,8 @@ it('flex-flow sets direction and wrapping', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('flex-flow supports reverse direction and wrap-reverse', async () => {
   await expectChromiumParity({
@@ -71,5 +71,5 @@ it('flex-flow supports reverse direction and wrap-reverse', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

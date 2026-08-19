@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('place-content maps to align-content and justify-content in flex layout', async () => {
   await expectChromiumParity({
@@ -34,8 +34,8 @@ it('place-content maps to align-content and justify-content in flex layout', asy
       { type: 'rect', selector: '#second' },
       { type: 'rect', selector: '#third' },
     ],
-  })
-})
+  });
+});
 
 it('place-items and place-self map to grid item alignment', async () => {
   await expectChromiumParity({
@@ -73,5 +73,5 @@ it('place-items and place-self map to grid item alignment', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

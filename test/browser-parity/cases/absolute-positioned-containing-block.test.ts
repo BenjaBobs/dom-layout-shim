@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('absolute positioned children use the positioned parent containing block', async () => {
   await expectChromiumParity({
@@ -38,5 +38,5 @@ it('absolute positioned children use the positioned parent containing block', as
       { type: 'rect', selector: '#child' },
       { type: 'point', x: 10, y: 16 },
     ],
-  })
-})
+  });
+});

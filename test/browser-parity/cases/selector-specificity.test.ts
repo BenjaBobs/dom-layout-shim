@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('selector specificity wins over later lower-specificity declarations', async () => {
   await expectChromiumParity({
@@ -21,5 +21,5 @@ it('selector specificity wins over later lower-specificity declarations', async 
       <div id="box" class="box"></div>
     `,
     queries: [{ type: 'rect', selector: '#box' }],
-  })
-})
+  });
+});

@@ -1,5 +1,5 @@
-import { it } from 'vitest'
-import { expectChromiumParity } from '../parity-harness.ts'
+import { it } from 'vitest';
+import { expectChromiumParity } from '../parity-harness.ts';
 
 it('grid percentage tracks resolve against grid container size', async () => {
   await expectChromiumParity({
@@ -27,8 +27,8 @@ it('grid percentage tracks resolve against grid container size', async () => {
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});
 
 it('grid percentage row tracks resolve against a definite container height', async () => {
   await expectChromiumParity({
@@ -57,5 +57,5 @@ it('grid percentage row tracks resolve against a definite container height', asy
       { type: 'rect', selector: '#first' },
       { type: 'rect', selector: '#second' },
     ],
-  })
-})
+  });
+});

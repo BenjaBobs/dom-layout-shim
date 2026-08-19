@@ -46,9 +46,7 @@
       "support": "partial",
       "parity": {
         "status": "partially-verified",
-        "fixtures": [
-          "selector-matching"
-        ]
+        "fixtures": ["selector-matching"]
       },
       "notes": [
         {
@@ -63,9 +61,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "adopted-stylesheet-cascade"
-        ]
+        "fixtures": ["adopted-stylesheet-cascade"]
       },
       "notes": [
         {
@@ -77,9 +73,7 @@
     {
       "id": "viewport-media-rules",
       "description": "Viewport media rules select stylesheet branches from the configured layout viewport.",
-      "syntax": [
-        "@media <media-query-list> { <style-rules> }"
-      ],
+      "syntax": ["@media <media-query-list> { <style-rules> }"],
       "conditions": [
         "Supported media types are `screen` and `all`; other media types do not match.",
         "Width, height, orientation, and aspect-ratio features use the configured viewport.",
@@ -88,9 +82,7 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": [
-          "media-queries"
-        ]
+        "fixtures": ["media-queries"]
       },
       "notes": [
         {
