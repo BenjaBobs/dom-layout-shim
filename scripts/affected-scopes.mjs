@@ -68,10 +68,7 @@ const rules = [
     scopes: ['package', 'parity', 'docs'],
   },
   {
-    match: oneOf(
-      '.github/workflows/docs.yml',
-      '.github/workflows/release.yml',
-    ),
+    match: oneOf('.github/workflows/docs.yml', '.github/workflows/release.yml'),
     scopes: ['docs', 'release'],
   },
   { match: prefix('.github/'), scopes: ['release'] },
