@@ -1,4 +1,5 @@
 import type { DocumentAttachment } from './document-attachment.ts';
+import { createResizeObserverConstructor } from './layout-resize-observer.ts';
 
 const attachedDocuments = new WeakMap<Document, DocumentAttachment>();
 const patchedWindows = new WeakSet<object>();
@@ -33,6 +34,12 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   });
 
   patchElementInstanceRects(document);
+
+  Object.defineProperty(view, 'ResizeObserver', {
+    configurable: true,
+    writable: true,
+    value: createResizeObserverConstructor(attachment),
+  });
 
   if (patchedWindows.has(view)) {
     return;

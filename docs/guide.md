@@ -176,6 +176,37 @@ layout.setViewport({ width: 390, height: 844 })
 invalidates cached geometry, updates subsequent `matchMedia()` answers, and
 dispatches `window.resize`.
 
+## Observe element resizing
+
+The attached window provides a layout-backed `ResizeObserver`. The engine
+retains lazy layout while there are no active observation targets, then batches
+observed changes automatically:
+
+```ts
+const observer = new window.ResizeObserver(([entry]) => {
+  console.log(entry.borderBoxSize[0].inlineSize)
+})
+
+observer.observe(panel, { box: 'border-box' })
+```
+
+For tests that need an explicit synchronization point, disable automatic
+observer delivery and flush after making changes:
+
+```ts
+const layout = await attachLayoutEngine({
+  window,
+  observers: { delivery: 'manual' },
+})
+
+panel.style.width = '320px'
+layout.flushLayout()
+```
+
+`flushLayout()` recomputes dirty geometry and synchronously settles pending
+layout-backed observer callbacks. Reading geometry still computes lazily but
+does not implicitly deliver observer callbacks.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

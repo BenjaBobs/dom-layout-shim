@@ -22,6 +22,13 @@ export type UserAgentStyleOptions = {
   overrides?: string;
 };
 
+export type ObserverDelivery = 'auto' | 'manual';
+
+export type ObserverOptions = {
+  /** Controls when layout-backed observer callbacks are delivered. */
+  delivery?: ObserverDelivery;
+};
+
 export type LayoutEngineConfig = {
   /**
    * @deprecated Taffy is the only active backend. This option is accepted as a
@@ -34,6 +41,7 @@ export type LayoutEngineConfig = {
   stylesheets?: readonly string[];
   userAgentStyles?: UserAgentStyleOptions;
   nativeControls?: NativeControlOptions;
+  observers?: ObserverOptions;
 };
 
 export type NormalizedLayoutEngineConfig = {
@@ -43,6 +51,7 @@ export type NormalizedLayoutEngineConfig = {
   stylesheets: readonly string[];
   userAgentStyles: Required<UserAgentStyleOptions>;
   nativeControlMetrics: NativeControlMetrics;
+  observers: Required<ObserverOptions>;
 };
 
 export function normalizeConfig(
@@ -63,5 +72,8 @@ export function normalizeConfig(
       nativeControlProfile,
       config.nativeControls?.overrides,
     ),
+    observers: {
+      delivery: config.observers?.delivery ?? 'auto',
+    },
   };
 }

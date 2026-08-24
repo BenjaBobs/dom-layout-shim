@@ -14,6 +14,13 @@ export async function waitForMutationDelivery(): Promise<void> {
   await Promise.resolve();
 }
 
+export async function waitForObserverDelivery(): Promise<void> {
+  // Let MutationObserver schedule the observer frame before awaiting the next
+  // rendering opportunity. Frame callbacks run in registration order.
+  await Promise.resolve();
+  await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
+}
+
 export function requiredElement(selector: string): Element {
   const element = document.querySelector(selector);
 

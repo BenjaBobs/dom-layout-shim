@@ -7,6 +7,9 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['test/**/*.test.tsx'],
     setupFiles: ['./test/setup.ts'],
+    // Real Ant Design observer and animation phases can exceed Vitest's 5s
+    // default on slower CI runners while still settling normally in auto mode.
+    testTimeout: 10_000,
   },
 });
 // docs:end vitest-config

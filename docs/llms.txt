@@ -134,6 +134,14 @@ shim-backed `window.innerWidth` and `window.innerHeight` values and subsequent
 `matchMedia()` results, and dispatches a window `resize` event. This allows a
 suite to attach once with shared defaults and override only responsive tests.
 
+Attaching also installs a layout-backed `window.ResizeObserver`. It supports
+`content-box`, `border-box`, and `device-pixel-content-box`. Layout remains lazy
+until an observer actively observes a target. Configure deterministic manual
+delivery with `observers: { delivery: 'manual' }`, then call
+`attachment.flushLayout()` after DOM or style changes to recompute layout and
+synchronously deliver pending entries. Geometry reads do not deliver observer
+callbacks.
+
 ## Named grid areas
 
 `grid-template-areas` accepts equal-width quoted rows containing custom

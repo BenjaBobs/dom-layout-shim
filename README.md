@@ -94,6 +94,36 @@ layout.setViewport({ width: 390, height: 844 })
 Changing the viewport invalidates cached geometry and dispatches a `resize`
 event on the attached window.
 
+### Observe element resizing
+
+Attaching the engine installs a layout-backed `window.ResizeObserver`. Layout
+remains lazy until an observer has an active target; observed mutations are
+then batched and delivered automatically:
+
+```ts
+await attachLayoutEngine({ window })
+const observer = new window.ResizeObserver(([entry]) => {
+  console.log(entry.contentRect.width)
+})
+
+observer.observe(window.document.querySelector('.panel'))
+```
+
+Use manual delivery when a test needs an explicit synchronization point:
+
+```ts
+const layout = await attachLayoutEngine({
+  window,
+  observers: { delivery: 'manual' },
+})
+
+panel.style.width = '320px'
+layout.flushLayout() // Recomputes and synchronously delivers pending entries.
+```
+
+`content-box`, `border-box`, and `device-pixel-content-box` observations are
+supported. Geometry reads remain lazy and do not themselves deliver callbacks.
+
 External sheets whose `cssRules` cannot be read, including cross-origin sheets,
 are routed through the unsupported CSS policy. The default policy warns and
 continues; strict mode throws instead of silently computing layout without the

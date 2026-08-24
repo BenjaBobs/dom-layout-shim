@@ -32,6 +32,13 @@ export type DimensionsQuery = {
   selector: string;
 };
 
+export type ResizeObserverQuery = {
+  type: 'resize-observer';
+  selector: string;
+  box?: ResizeObserverBoxOptions;
+  styleAfterInitial?: string;
+};
+
 export type ScrollQuery = {
   type: 'scroll';
   selector?: string;
@@ -43,6 +50,7 @@ export type BrowserParityQuery =
   | RectQuery
   | ClientRectsQuery
   | DimensionsQuery
+  | ResizeObserverQuery
   | ScrollQuery;
 
 export type BrowserParityFixture = {
@@ -82,6 +90,10 @@ export type QueryResult = {
     y: number;
   };
   receivesPointerAtCenter?: boolean;
+  resizeObserver?: {
+    initial: SerializedResizeObserverEntry;
+    afterResize?: SerializedResizeObserverEntry;
+  };
 };
 
 type SerializedRect = {
@@ -100,9 +112,16 @@ type SerializedDimensions = {
   clientHeight: number;
 };
 
+type SerializedResizeObserverEntry = {
+  contentRect: SerializedRect;
+  borderBox: { inlineSize: number; blockSize: number };
+  contentBox: { inlineSize: number; blockSize: number };
+};
+
 type QueryWindow = {
   scrollX: number;
   scrollY: number;
+  ResizeObserver: typeof ResizeObserver;
   document: {
     querySelector(selector: string): Element | null;
     elementFromPoint(x: number, y: number): Element | null;
@@ -267,7 +286,7 @@ async function runInChromium(
         const runQueries = new Function(`return (${runQueriesSource})`)() as (
           windowLike: QueryWindow,
           queries: BrowserParityQuery[],
-        ) => QueryResult[];
+        ) => Promise<QueryResult[]>;
 
         return runQueries(window as unknown as QueryWindow, queries);
       },
@@ -485,7 +504,10 @@ async function runInHappyDom(
     element.scrollIntoView(fixture.scrollIntoView.arg);
   }
 
-  const results = runQueries(window as unknown as QueryWindow, fixture.queries);
+  const results = await runQueries(
+    window as unknown as QueryWindow,
+    fixture.queries,
+  );
   recordParitySample({
     kind: 'memory',
     phase: 'engine',
@@ -527,21 +549,23 @@ function describeQuery(query: BrowserParityQuery): string {
   return JSON.stringify(query);
 }
 
-function runQueries(
+async function runQueries(
   windowLike: QueryWindow,
   queries: BrowserParityQuery[],
-): QueryResult[] {
+): Promise<QueryResult[]> {
   const document = windowLike.document;
+  const results: QueryResult[] = [];
 
-  return queries.map(query => {
+  for (const query of queries) {
     if (query.type === 'scroll') {
       if (!query.selector) {
-        return {
+        results.push({
           scroll: {
             x: windowLike.scrollX,
             y: windowLike.scrollY,
           },
-        };
+        });
+        continue;
       }
 
       const scroller = document.querySelector(query.selector);
@@ -550,16 +574,17 @@ function runQueries(
         throw new Error(`Missing element: ${query.selector}`);
       }
 
-      return {
+      results.push({
         scroll: {
           x: scroller.scrollLeft,
           y: scroller.scrollTop,
         },
-      };
+      });
+      continue;
     }
 
     if (query.type === 'point') {
-      return {
+      results.push({
         elementFromPoint: describeElement(
           document.elementFromPoint(query.x, query.y),
         ),
@@ -567,7 +592,8 @@ function runQueries(
           .elementsFromPoint(query.x, query.y)
           .map(describeElement)
           .filter((value): value is string => value !== null),
-      };
+      });
+      continue;
     }
 
     const element = document.querySelector(query.selector);
@@ -579,21 +605,23 @@ function runQueries(
     const rect = element.getBoundingClientRect();
 
     if (query.type === 'rect') {
-      return {
+      results.push({
         rect: serializeRect(rect),
-      };
+      });
+      continue;
     }
 
     if (query.type === 'client-rects') {
-      return {
+      results.push({
         clientRects: Array.from(element.getClientRects(), serializeRect),
-      };
+      });
+      continue;
     }
 
     if (query.type === 'dimensions') {
       const htmlElement = element as HTMLElement;
 
-      return {
+      results.push({
         dimensions: {
           offsetWidth: htmlElement.offsetWidth,
           offsetHeight: htmlElement.offsetHeight,
@@ -603,7 +631,51 @@ function runQueries(
           clientHeight: htmlElement.clientHeight,
         },
         offsetParent: describeOffsetParent(htmlElement.offsetParent),
-      };
+      });
+      continue;
+    }
+
+    if (query.type === 'resize-observer') {
+      results.push(
+        await new Promise<QueryResult>(resolve => {
+          let initial: SerializedResizeObserverEntry | undefined;
+          const observer = new windowLike.ResizeObserver(entries => {
+            const entry = entries[0];
+            const serialized = {
+              contentRect: serializeRect(entry.contentRect as DOMRect),
+              borderBox: {
+                inlineSize: normalizeNumber(
+                  entry.borderBoxSize[0]?.inlineSize ?? 0,
+                ),
+                blockSize: normalizeNumber(
+                  entry.borderBoxSize[0]?.blockSize ?? 0,
+                ),
+              },
+              contentBox: {
+                inlineSize: normalizeNumber(
+                  entry.contentBoxSize[0]?.inlineSize ?? 0,
+                ),
+                blockSize: normalizeNumber(
+                  entry.contentBoxSize[0]?.blockSize ?? 0,
+                ),
+              },
+            };
+            if (!initial && query.styleAfterInitial !== undefined) {
+              initial = serialized;
+              element.setAttribute('style', query.styleAfterInitial);
+              return;
+            }
+            observer.disconnect();
+            resolve({
+              resizeObserver: initial
+                ? { initial, afterResize: serialized }
+                : { initial: serialized },
+            });
+          });
+          observer.observe(element, { box: query.box });
+        }),
+      );
+      continue;
     }
 
     const top = document.elementFromPoint(
@@ -611,11 +683,13 @@ function runQueries(
       rect.top + rect.height / 2,
     );
 
-    return {
+    results.push({
       receivesPointerAtCenter:
         top === element || Boolean(top && element.contains(top)),
-    };
-  });
+    });
+  }
+
+  return results;
 
   function describeElement(element: Element | null): string | null {
     return element?.id ? `#${element.id}` : null;
