@@ -15,10 +15,12 @@ import {
 } from '../css/inline-style-source.ts';
 import { resolveCalculatedDimension } from '../css/length-value.ts';
 import {
+  applyPseudoElementStyleRules,
   applyStyleRules,
   applyStylesheetCustomProperties,
   readCssTextRules,
   readGeneratedContent,
+  readGeneratedPseudoContent,
   readStyleRules,
 } from '../css/stylesheet-source.ts';
 import {
@@ -61,6 +63,10 @@ type TaffyLayoutState = {
   contentsElements: Set<Element>;
   tableLayouts: Map<Element, SimpleTableLayout>;
   styles: WeakMap<Element, SupportedStyle>;
+  pseudoStyles: WeakMap<
+    Element,
+    Partial<Record<'before' | 'after', SupportedStyle>>
+  >;
   customProperties: WeakMap<Element, CustomProperties>;
   tree: TaffyTree;
   rules: ReturnType<typeof readStyleRules>;
@@ -273,6 +279,7 @@ function buildTaffyLayoutTree(
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     styles: new WeakMap<Element, SupportedStyle>(),
+    pseudoStyles: new WeakMap(),
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
     rules: readStyleRules(document, policy, stylesheets, viewport),
@@ -895,11 +902,25 @@ function buildChildNodes(
   const renderedChildren = new Set(children);
   const parentStyle = resolveSupportedStyle(parent, state);
   if (parentStyle.display === 'flex' || parentStyle.display === 'grid') {
-    return children.flatMap(element => buildNodesForElement(element, state));
+    const items = [
+      generatedPseudoItem(parent, 'before', -1, state),
+      ...children.map((element, index) => ({
+        nodes: buildNodesForElement(element, state),
+        order: resolveSupportedStyle(element, state).order,
+        sequence: index,
+      })),
+      generatedPseudoItem(parent, 'after', children.length, state),
+    ].filter(item => item.nodes.length > 0);
+
+    return items
+      .toSorted((a, b) => a.order - b.order || a.sequence - b.sequence)
+      .flatMap(item => item.nodes);
   }
-  const hasBlockChild = children.some(
-    element => resolveSupportedStyle(element, state).display !== 'inline',
-  );
+  const hasPseudoBox = hasGeneratedPseudoBox(parent, state);
+  const hasBlockChild =
+    children.some(
+      element => resolveSupportedStyle(element, state).display !== 'inline',
+    ) || hasPseudoBox;
 
   if (!hasBlockChild) {
     return children.flatMap(element => buildNodesForElement(element, state));
@@ -917,7 +938,7 @@ function buildChildNodes(
         ? inlineText.trim()
         : inlineText;
     inlineText = '';
-    if (!text || inlineElements.length === 0) {
+    if (!text || (inlineElements.length === 0 && !hasPseudoBox)) {
       inlineElements = [];
       return;
     }
@@ -957,6 +978,8 @@ function buildChildNodes(
     inlineElements = [];
   };
 
+  nodes.push(...buildGeneratedPseudoNodes(parent, 'before', state));
+
   for (const node of Array.from(parent.childNodes)) {
     if (node.nodeType === 3) {
       inlineText += node.textContent ?? '';
@@ -986,6 +1009,7 @@ function buildChildNodes(
     nodes.push(...buildNodesForElement(element, state));
   }
   flushInlineText();
+  nodes.push(...buildGeneratedPseudoNodes(parent, 'after', state));
   return nodes;
 }
 
@@ -1041,15 +1065,30 @@ function buildNodesForElement(
     return [node];
   }
 
+  const generatedContent = readGeneratedContent(
+    element,
+    state.rules,
+    state.policy,
+  );
+  for (const pseudoElement of ['before', 'after'] as const) {
+    if (
+      generatedContent[pseudoElement] &&
+      resolvePseudoElementStyle(element, pseudoElement, state).display !==
+        'inline'
+    ) {
+      generatedContent[pseudoElement] = '';
+    }
+  }
   const context = createMeasureContext(
     element,
     style,
     state.textMeasurer,
     state.nativeControlMetrics,
-    readGeneratedContent(element, state.rules, state.policy),
+    generatedContent,
   );
+  const hasPseudoBox = hasGeneratedPseudoBox(element, state);
   const children =
-    context?.replacedSize || canMeasureTextLeaf(element)
+    context?.replacedSize || (canMeasureTextLeaf(element) && !hasPseudoBox)
       ? []
       : buildChildNodes(element, state);
   const taffyStyle = toTaffyStyle(style, {
@@ -1063,6 +1102,80 @@ function buildNodesForElement(
 
   state.elementNodes.set(element, node);
   return [node];
+}
+
+function generatedPseudoItem(
+  element: Element,
+  pseudoElement: 'before' | 'after',
+  sequence: number,
+  state: TaffyLayoutState,
+): { nodes: bigint[]; order: number; sequence: number } {
+  const style = resolvePseudoElementStyle(element, pseudoElement, state);
+  return {
+    nodes: buildGeneratedPseudoNodes(element, pseudoElement, state),
+    order: style.order,
+    sequence,
+  };
+}
+
+function hasGeneratedPseudoBox(
+  element: Element,
+  state: TaffyLayoutState,
+): boolean {
+  return (['before', 'after'] as const).some(pseudoElement => {
+    const content = readGeneratedPseudoContent(
+      element,
+      pseudoElement,
+      state.rules,
+      state.policy,
+    );
+    if (content === undefined) return false;
+    const display = resolvePseudoElementStyle(
+      element,
+      pseudoElement,
+      state,
+    ).display;
+    return display !== 'inline' && display !== 'none' && display !== 'contents';
+  });
+}
+
+function buildGeneratedPseudoNodes(
+  element: Element,
+  pseudoElement: 'before' | 'after',
+  state: TaffyLayoutState,
+): bigint[] {
+  const content = readGeneratedPseudoContent(
+    element,
+    pseudoElement,
+    state.rules,
+    state.policy,
+  );
+  if (content === undefined) return [];
+
+  const style = resolvePseudoElementStyle(element, pseudoElement, state);
+  if (
+    style.display === 'inline' ||
+    style.display === 'none' ||
+    style.display === 'contents'
+  ) {
+    return [];
+  }
+
+  // Generated boxes have no DOM node to attach to. Keep them as anonymous
+  // Taffy leaves: they affect their originating element's formatting context,
+  // while DOM geometry and hit testing continue to expose real elements only.
+  const context: MeasureContext = {
+    text: content,
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    letterSpacing: style.letterSpacing,
+    lineHeight: style.lineHeight,
+    whiteSpace: style.whiteSpace,
+    textTransform: style.textTransform,
+    textMeasurer: state.textMeasurer,
+  };
+  return [state.tree.newLeafWithContext(toTaffyStyle(style, context), context)];
 }
 
 function percentageBasisFor(
@@ -1916,6 +2029,69 @@ function resolveSupportedStyle(
   resolveNamedGridPlacements(style, element, state);
   applyPostAuthorStructuralDefaults(style, element);
   state.styles.set(element, style);
+  return style;
+}
+
+function resolvePseudoElementStyle(
+  element: Element,
+  pseudoElement: 'before' | 'after',
+  state: TaffyLayoutState,
+): SupportedStyle {
+  const cached = state.pseudoStyles.get(element)?.[pseudoElement];
+  if (cached) return cached;
+
+  const style = createDefaultStyle();
+  const originatingStyle = resolveSupportedStyle(element, state);
+  // `::before` and `::after` have an initial inline display and inherit from
+  // their originating element. They are not DOM children, so this inheritance
+  // must be copied explicitly before their own cascade is applied.
+  style.display = 'inline';
+  style.fontFamily = originatingStyle.fontFamily;
+  style.fontSize = originatingStyle.fontSize;
+  style.fontWeight = originatingStyle.fontWeight;
+  style.letterSpacing = originatingStyle.letterSpacing;
+  style.lineHeight = originatingStyle.lineHeight;
+  style.whiteSpace = originatingStyle.whiteSpace;
+  style.textTransform = originatingStyle.textTransform;
+  style.pointerEvents = originatingStyle.pointerEvents;
+  style.visibility = originatingStyle.visibility;
+
+  const rootFontSize = resolveRootFontSize(element, state);
+  const customProperties = resolveElementCustomProperties(element, state);
+  applyPseudoElementStyleRules(
+    style,
+    element,
+    pseudoElement,
+    state.userAgentRules,
+    state.policy,
+    rootFontSize,
+    customProperties,
+    state.viewport,
+  );
+  applyPseudoElementStyleRules(
+    style,
+    element,
+    pseudoElement,
+    state.rules,
+    state.policy,
+    rootFontSize,
+    customProperties,
+    state.viewport,
+  );
+
+  // Inline-level generated boxes become blockified when they are flex or grid
+  // items, matching the browser's computed outer display before Taffy sees the
+  // originating element's children.
+  if (
+    style.display === 'inline' &&
+    (originatingStyle.display === 'flex' || originatingStyle.display === 'grid')
+  ) {
+    style.display = 'block';
+  }
+
+  const styles = state.pseudoStyles.get(element) ?? {};
+  styles[pseudoElement] = style;
+  state.pseudoStyles.set(element, styles);
   return style;
 }
 
