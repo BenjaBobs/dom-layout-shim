@@ -207,6 +207,28 @@ layout.flushLayout()
 layout-backed observer callbacks. Reading geometry still computes lazily but
 does not implicitly deliver observer callbacks.
 
+## Observe intersections
+
+The attached window also provides a layout-backed `IntersectionObserver`.
+Viewport and element roots, `rootMargin` values in pixels or percentages, and
+threshold arrays are supported:
+
+```ts
+const observer = new window.IntersectionObserver(([entry]) => {
+  console.log(entry.isIntersecting, entry.intersectionRatio)
+}, {
+  root: scroller,
+  rootMargin: '0px 16px',
+  threshold: [0, 0.5, 1],
+})
+
+observer.observe(card)
+```
+
+Automatic delivery reacts to layout mutations, viewport changes, and scrolling.
+With `observers.delivery: 'manual'`, `flushLayout()` settles resize observations
+first and then reports intersections against the resulting geometry.
+
 ## Configure native controls
 
 Unstyled controls use the cross-host `portable` profile by default. Select it

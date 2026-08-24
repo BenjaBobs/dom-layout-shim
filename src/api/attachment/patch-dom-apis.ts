@@ -1,4 +1,5 @@
 import type { DocumentAttachment } from './document-attachment.ts';
+import { createIntersectionObserverConstructor } from './layout-intersection-observer.ts';
 import { createResizeObserverConstructor } from './layout-resize-observer.ts';
 
 const attachedDocuments = new WeakMap<Document, DocumentAttachment>();
@@ -39,6 +40,11 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     configurable: true,
     writable: true,
     value: createResizeObserverConstructor(attachment),
+  });
+  Object.defineProperty(view, 'IntersectionObserver', {
+    configurable: true,
+    writable: true,
+    value: createIntersectionObserverConstructor(attachment),
   });
 
   if (patchedWindows.has(view)) {
