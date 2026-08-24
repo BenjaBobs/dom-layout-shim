@@ -87,15 +87,15 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
-      - name: Set up Taffy WebAssembly
-        uses: ./.github/actions/setup-taffy-wasm
-
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+
+      - name: Set up Taffy WebAssembly
+        uses: ./.github/actions/setup-taffy-wasm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -167,14 +167,14 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
-      - name: Set up Taffy WebAssembly
-        uses: ./.github/actions/setup-taffy-wasm
-
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: pnpm
+
+      - name: Set up Taffy WebAssembly
+        uses: ./.github/actions/setup-taffy-wasm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
