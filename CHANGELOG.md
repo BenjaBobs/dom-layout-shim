@@ -1,5 +1,43 @@
 # dom-layout-shim
 
+## 0.7.0
+
+### Minor Changes
+
+- 6ea1902: Lay out non-inline `::before` and `::after` generated content as independent anonymous boxes
+  
+  Generated boxes now contribute their own dimensions and spacing in normal flow
+  and participate as flex or grid items instead of being flattened into the
+  originating element's text measurement.
+  
+  ```css
+  /* Before: these box dimensions and spacing were ignored. */
+  .card::before {
+    content: '';
+    display: block;
+    height: 12px;
+    margin-bottom: 3px;
+  }
+  
+  /* After: ordinary .card content begins 15px after the box starts. */
+  ```
+
+### Patch Changes
+
+- 939d08f: Replace the third-party Taffy 0.9.2 WebAssembly package with a repository-owned binding to Taffy 0.14.0
+  
+  The upgrade removes obsolete compatibility handling:
+  
+  - Percentage-track pre-scaling for the old JavaScript wrapper.
+  - Rewriting named grid areas to numeric line bounds.
+  - Blockifying `display: flow-root`.
+  - Excluding explicit and empty implicit `minmax()` row cases from verified
+    Chromium parity.
+  
+  For example, `display: flow-root` now establishes its independent formatting
+  context through Taffy, and `grid-area: header` reaches Taffy's named-area model
+  directly.
+
 ## 0.6.0
 
 ### Minor Changes
