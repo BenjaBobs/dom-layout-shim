@@ -24,6 +24,8 @@ window.document.head.append(style);
 export const unsupportedCssReporter = createUnsupportedCssReporter();
 export const layoutEngine = await attachLayoutEngine({
   window,
+  // Exercise the default automatic observer delivery used by consumers. Parsed
+  // stylesheet rules are reused across Ant Design's observer-driven DOM phases.
   unsupportedCss: {
     default: 'warn',
     onWarning: unsupportedCssReporter.onWarning,

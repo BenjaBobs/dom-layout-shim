@@ -14,5 +14,6 @@ export function attachToDocument(
     stylesheets: config.stylesheets,
     userAgentStyles: config.userAgentStyles,
     nativeControlMetrics: config.nativeControlMetrics,
+    observerDelivery: config.observers.delivery,
   });
 }

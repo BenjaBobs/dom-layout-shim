@@ -15,6 +15,8 @@ export type AttachLayoutEngineOptions = LayoutEngineConfig & {
 
 export type LayoutEngineAttachment = {
   setViewport(viewport: Viewport): void;
+  /** Recomputes dirty layout and synchronously settles layout-backed observers. */
+  flushLayout(): void;
 };
 
 export async function attachLayoutEngine(
@@ -34,6 +36,9 @@ export async function attachLayoutEngine(
 
   const attachment = attachToDocument(window.document, normalizedConfig);
   return {
+    flushLayout() {
+      attachment.flushLayout();
+    },
     setViewport(viewport) {
       attachment.setViewport(viewport);
     },

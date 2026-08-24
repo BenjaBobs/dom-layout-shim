@@ -21,6 +21,7 @@ import {
   readGeneratedContent,
   readGeneratedPseudoContent,
   readStyleRules,
+  type StyleRule,
 } from '../css/stylesheet-source.ts';
 import {
   createDefaultStyle,
@@ -59,6 +60,7 @@ type TaffyLayoutState = {
   layoutRects: Map<Element, Box>;
   normalRects: Map<Element, Box>;
   clientRects: Map<Element, Box>;
+  contentRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
   elementNodes: Map<Element, bigint>;
   anonymousInlineRuns: Map<
@@ -88,6 +90,13 @@ type TaffyLayoutState = {
 type TaffyLayoutTree = {
   root: bigint;
   state: TaffyLayoutState;
+};
+
+export type LayoutStylesheetCache = {
+  documentKey?: string;
+  documentRules?: StyleRule[];
+  userAgentKey?: string;
+  userAgentRules?: StyleRule[];
 };
 
 type ClipBounds = {
@@ -235,6 +244,8 @@ export function computeTaffyDocumentLayout(
   stylesheets: readonly string[],
   userAgentStyles: Required<UserAgentStyleOptions>,
   nativeControlMetrics: NativeControlMetrics,
+  stylesheetCache?: LayoutStylesheetCache,
+  stylesheetFingerprint = '',
 ): LayoutSnapshot {
   const layoutTree = buildTaffyLayoutTree(
     document,
@@ -244,6 +255,8 @@ export function computeTaffyDocumentLayout(
     stylesheets,
     userAgentStyles,
     nativeControlMetrics,
+    stylesheetCache,
+    stylesheetFingerprint,
   );
   computeTaffyLayout(layoutTree, viewport);
   if (resolveDeferredCalculatedDimensions(layoutTree)) {
@@ -265,6 +278,8 @@ function buildTaffyLayoutTree(
   stylesheets: readonly string[],
   userAgentStyles: Required<UserAgentStyleOptions>,
   nativeControlMetrics: NativeControlMetrics,
+  stylesheetCache: LayoutStylesheetCache | undefined,
+  stylesheetFingerprint: string,
 ): TaffyLayoutTree {
   const tree = new TaffyTree();
   // Taffy's JS wrapper enables whole-pixel rounding by default, while DOM
@@ -278,6 +293,7 @@ function buildTaffyLayoutTree(
     layoutRects: new Map<Element, Box>(),
     normalRects: new Map<Element, Box>(),
     clientRects: new Map<Element, Box>(),
+    contentRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
     anonymousInlineRuns: new Map(),
@@ -287,15 +303,20 @@ function buildTaffyLayoutTree(
     pseudoStyles: new WeakMap(),
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
-    rules: readStyleRules(document, policy, stylesheets, viewport),
-    userAgentRules: userAgentStyles.overrides
-      ? readCssTextRules(
-          userAgentStyles.overrides,
-          'user-agent-overrides.css',
-          policy,
-          viewport,
-        )
-      : [],
+    rules: cachedDocumentRules(
+      document,
+      policy,
+      stylesheets,
+      viewport,
+      stylesheetFingerprint,
+      stylesheetCache,
+    ),
+    userAgentRules: cachedUserAgentRules(
+      userAgentStyles.overrides,
+      policy,
+      viewport,
+      stylesheetCache,
+    ),
     userAgentStyleProfile: userAgentStyles.profile,
     policy,
     textMeasurer,
@@ -315,6 +336,53 @@ function buildTaffyLayoutTree(
   );
 
   return { root, state };
+}
+
+function cachedDocumentRules(
+  document: Document,
+  policy: UnsupportedCssPolicy | undefined,
+  stylesheets: readonly string[],
+  viewport: Viewport,
+  stylesheetFingerprint: string,
+  cache: LayoutStylesheetCache | undefined,
+): StyleRule[] {
+  const key = `${viewport.width}:${viewport.height}:${stylesheetFingerprint}`;
+  if (cache?.documentKey === key && cache.documentRules) {
+    return cache.documentRules;
+  }
+
+  const rules = readStyleRules(document, policy, stylesheets, viewport);
+  if (cache) {
+    cache.documentKey = key;
+    cache.documentRules = rules;
+  }
+  return rules;
+}
+
+function cachedUserAgentRules(
+  overrides: string | undefined,
+  policy: UnsupportedCssPolicy | undefined,
+  viewport: Viewport,
+  cache: LayoutStylesheetCache | undefined,
+): StyleRule[] {
+  if (!overrides) return [];
+
+  const key = `${viewport.width}:${viewport.height}`;
+  if (cache?.userAgentKey === key && cache.userAgentRules) {
+    return cache.userAgentRules;
+  }
+
+  const rules = readCssTextRules(
+    overrides,
+    'user-agent-overrides.css',
+    policy,
+    viewport,
+  );
+  if (cache) {
+    cache.userAgentKey = key;
+    cache.userAgentRules = rules;
+  }
+  return rules;
 }
 
 function computeTaffyLayout(
@@ -470,6 +538,7 @@ function collectTaffyLayoutSnapshot(
     fragmentRects: state.fragmentRects,
     layoutRects: state.layoutRects,
     clientRects: state.clientRects,
+    contentRects: state.contentRects,
     elementScrolls: state.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
@@ -1541,6 +1610,7 @@ function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   state.layoutRects.set(element, box);
   state.normalRects.set(element, box);
   state.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
+  state.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
   state.elementScrolls.set(element, readElementScrollOffset(element));
 }
 
@@ -1836,6 +1906,7 @@ function recordBox(
   state.layoutRects.set(element, layoutBox);
   state.normalRects.set(element, normalBox);
   state.clientRects.set(element, computeClientBox(box, style));
+  state.contentRects.set(element, computeContentBox(box, style));
 
   if (!includeHitBox) {
     return;
@@ -1986,6 +2057,27 @@ function computeClientBox(box: Box, style: SupportedStyle): Box {
     y: box.y + border.top,
     width: Math.max(0, box.width - horizontal(border)),
     height: Math.max(0, box.height - vertical(border)),
+  };
+}
+
+function computeContentBox(box: Box, style: SupportedStyle): Box {
+  const client = computeClientBox(box, style);
+  // Percentage padding is resolved by Taffy against the containing block. The
+  // observer surface currently mirrors the engine's fixed-length box model;
+  // unresolved percentage edges contribute zero until that model exposes its
+  // resolved padding values.
+  const left = typeof style.padding.left === 'number' ? style.padding.left : 0;
+  const right =
+    typeof style.padding.right === 'number' ? style.padding.right : 0;
+  const top = typeof style.padding.top === 'number' ? style.padding.top : 0;
+  const bottom =
+    typeof style.padding.bottom === 'number' ? style.padding.bottom : 0;
+
+  return {
+    x: client.x + left,
+    y: client.y + top,
+    width: Math.max(0, client.width - left - right),
+    height: Math.max(0, client.height - top - bottom),
   };
 }
 

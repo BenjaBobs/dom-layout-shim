@@ -16,6 +16,7 @@ describe('Ant Design task workspace consumer', () => {
     if (!container) throw new Error('Missing example application root');
     await act(async () => {
       root = mountTaskWorkspace(container);
+      await nextAnimationFrame();
     });
     // docs:end mount-react
   });
@@ -47,14 +48,20 @@ describe('Ant Design task workspace consumer', () => {
     expectReceivesPointer(addTask);
     // docs:end pointer-receives
 
-    await act(async () => clickWhereElementIs(firstMenu));
+    await act(async () => {
+      clickWhereElementIs(firstMenu);
+      await nextAnimationFrame();
+    });
     const deleteAction = requiredElement<HTMLElement>(
       '.ant-dropdown-menu-item-danger',
     );
     // Ant Design's popup alignment currently places this portalled menu offscreen
     // in happy-dom. Invoke its handler directly so the modal portion of the shared
     // scenario remains testable; the README records menu anchoring as a limitation.
-    await act(async () => deleteAction.click());
+    await act(async () => {
+      deleteAction.click();
+      await nextAnimationFrame();
+    });
 
     const dialog = requiredElement<HTMLElement>(
       '[data-layout-key="delete-dialog"] .ant-modal',
@@ -76,7 +83,10 @@ describe('Ant Design task workspace consumer', () => {
     // The shim's flat stacking model currently places Ant Design's mask above
     // the dialog buttons as well as the application. Invoke the real handler
     // directly after separately proving that the application is blocked.
-    await act(async () => confirmDelete.click());
+    await act(async () => {
+      confirmDelete.click();
+      await nextAnimationFrame();
+    });
 
     expect(document.querySelector('[data-layout-key="task-1"]')).toBeNull();
     expect(document.querySelector('.ant-modal-mask')).toBeNull();
@@ -104,18 +114,21 @@ describe('Ant Design task workspace consumer', () => {
       document.querySelector('[aria-pressed="true"]')?.textContent,
     ).toContain('All tasks');
 
-    await act(async () =>
+    await act(async () => {
       requiredElement<HTMLElement>(
         '[data-layout-key="task-1-menu-trigger"]',
-      ).click(),
-    );
-    await act(async () =>
-      requiredElement<HTMLElement>('.ant-dropdown-menu-item-danger').click(),
-    );
+      ).click();
+      await nextAnimationFrame();
+    });
+    await act(async () => {
+      requiredElement<HTMLElement>('.ant-dropdown-menu-item-danger').click();
+      await nextAnimationFrame();
+    });
     const maskRegion = requiredElement<HTMLElement>('.ant-modal-wrap');
     await act(async () => {
       maskRegion.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
       maskRegion.click();
+      await nextAnimationFrame();
     });
     expect(document.querySelector('.ant-modal-mask')).toBeNull();
     expect(document.querySelector('[data-layout-key="task-1"]')).not.toBeNull();
@@ -128,7 +141,10 @@ async function clickButton(label: string, last = false): Promise<void> {
   );
   const button = last ? buttons.at(-1) : buttons[0];
   if (!button) throw new Error(`Missing button: ${label}`);
-  await act(async () => button.click());
+  await act(async () => {
+    button.click();
+    await nextAnimationFrame();
+  });
 }
 
 async function enterText(
@@ -144,7 +160,12 @@ async function enterText(
   await act(async () => {
     setter?.call(element, value);
     element.dispatchEvent(new Event('input', { bubbles: true }));
+    await nextAnimationFrame();
   });
+}
+
+function nextAnimationFrame(): Promise<void> {
+  return new Promise(resolve => requestAnimationFrame(() => resolve()));
 }
 
 function requiredElement<T extends Element>(selector: string): T {

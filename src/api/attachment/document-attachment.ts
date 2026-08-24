@@ -8,15 +8,24 @@ import type {
   LayoutSnapshot,
   ScrollOffset,
 } from '../../css-parity-implementation/layout/layout-source.ts';
-import { computeTaffyDocumentLayout } from '../../css-parity-implementation/layout/taffy-layout-source.ts';
+import {
+  computeTaffyDocumentLayout,
+  type LayoutStylesheetCache,
+} from '../../css-parity-implementation/layout/taffy-layout-source.ts';
 import { zeroBox } from '../box.ts';
 import type {
+  ObserverDelivery,
   UserAgentStyleOptions,
   Viewport,
 } from '../layout-engine-config.ts';
 import type { NativeControlMetrics } from '../native-control-profile.ts';
 import type { TextMeasurer } from '../text-measurer.ts';
 import type { UnsupportedCssPolicy } from '../unsupported-css-policy.ts';
+import {
+  type LayoutResizeObserver,
+  observedSize,
+  sameResizeSize,
+} from './layout-resize-observer.ts';
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts';
 import { matchesViewportMediaQuery } from './viewport-media-query.ts';
 
@@ -28,6 +37,7 @@ export type DocumentAttachmentOptions = {
   stylesheets: readonly string[];
   userAgentStyles: Required<UserAgentStyleOptions>;
   nativeControlMetrics: NativeControlMetrics;
+  observerDelivery: ObserverDelivery;
 };
 
 export class DocumentAttachment {
@@ -46,7 +56,13 @@ export class DocumentAttachment {
   private snapshotActiveElement: Element | null | undefined;
   private snapshotHoveredElements: Element[] = [];
   private stylesheetFingerprint: string | undefined;
+  private readonly stylesheetCache: LayoutStylesheetCache = {};
   private mutationObserver: MutationObserver | undefined;
+  private readonly observerDelivery: ObserverDelivery;
+  private readonly resizeObservers = new Set<LayoutResizeObserver>();
+  private observerDeliveryScheduled = false;
+  private observerDeliveryFrame: number | undefined;
+  private flushingObservers = false;
 
   constructor(options: DocumentAttachmentOptions) {
     this.document = options.document;
@@ -56,9 +72,11 @@ export class DocumentAttachment {
     this.stylesheets = options.stylesheets;
     this.userAgentStyles = options.userAgentStyles;
     this.nativeControlMetrics = options.nativeControlMetrics;
+    this.observerDelivery = options.observerDelivery;
     patchDomApis(this);
     this.mutationObserver = observeMutations(this.document, () => {
       this.dirty = true;
+      this.scheduleObserverDelivery();
     });
   }
 
@@ -69,6 +87,7 @@ export class DocumentAttachment {
 
     this.mutationObserver?.disconnect();
     this.mutationObserver = undefined;
+    this.cancelScheduledObserverDelivery();
     unpatchDomApis(this);
     this.detached = true;
   }
@@ -76,12 +95,14 @@ export class DocumentAttachment {
   markDirty(): void {
     this.assertAttached();
     this.dirty = true;
+    this.scheduleObserverDelivery();
   }
 
   setViewport(viewport: Viewport): void {
     this.assertAttached();
     this.viewport = { ...viewport };
     this.dirty = true;
+    this.scheduleObserverDelivery();
     this.document.defaultView?.dispatchEvent(
       new this.document.defaultView.Event('resize'),
     );
@@ -95,6 +116,7 @@ export class DocumentAttachment {
   recompute(): void {
     this.assertAttached();
     const scroll = readScrollOffset(this.document);
+    const stylesheetFingerprint = documentStylesheetFingerprint(this.document);
 
     this.snapshot = computeTaffyDocumentLayout(
       this.document,
@@ -105,12 +127,70 @@ export class DocumentAttachment {
       this.stylesheets,
       this.userAgentStyles,
       this.nativeControlMetrics,
+      this.stylesheetCache,
+      stylesheetFingerprint,
     );
     this.snapshotScroll = scroll;
     this.snapshotActiveElement = this.document.activeElement;
     this.snapshotHoveredElements = matchingElements(this.document, ':hover');
-    this.stylesheetFingerprint = documentStylesheetFingerprint(this.document);
+    this.stylesheetFingerprint = stylesheetFingerprint;
     this.dirty = false;
+  }
+
+  flushLayout(): void {
+    this.assertAttached();
+    if (this.flushingObservers) {
+      return;
+    }
+
+    if (this.mutationObserver?.takeRecords().length) {
+      this.dirty = true;
+    }
+
+    this.cancelScheduledObserverDelivery();
+    this.flushingObservers = true;
+    try {
+      for (let iteration = 0; iteration < 10; iteration += 1) {
+        const delivered = this.deliverResizeObservers();
+        if (this.mutationObserver?.takeRecords().length) {
+          this.dirty = true;
+        }
+        if (!delivered || !this.dirty) {
+          return;
+        }
+      }
+
+      const view = this.document.defaultView;
+      view?.dispatchEvent(
+        new view.ErrorEvent('error', {
+          message:
+            'ResizeObserver loop completed with undelivered notifications.',
+        }),
+      );
+    } finally {
+      this.flushingObservers = false;
+    }
+  }
+
+  addResizeObserver(observer: LayoutResizeObserver): void {
+    this.assertAttached();
+    this.resizeObservers.add(observer);
+  }
+
+  resizeObservationsChanged(): void {
+    this.assertAttached();
+    this.scheduleObserverDelivery();
+  }
+
+  assertObservationTarget(target: Element, api: string): void {
+    this.assertAttached();
+    const view = this.document.defaultView;
+    if (!view || !(target instanceof view.Element)) {
+      throw new TypeError(`${api} target must be an Element`);
+    }
+    if (target.ownerDocument !== this.document) {
+      throw new TypeError(`${api} target belongs to a different document`);
+    }
   }
 
   getBoundingClientRect(element: Element): DOMRect {
@@ -333,6 +413,94 @@ export class DocumentAttachment {
     }
 
     return snapshot;
+  }
+
+  private hasResizeObservations(): boolean {
+    for (const observer of this.resizeObservers) {
+      if (observer.observations.size > 0) return true;
+    }
+    return false;
+  }
+
+  private scheduleObserverDelivery(): void {
+    if (
+      this.observerDelivery !== 'auto' ||
+      this.observerDeliveryScheduled ||
+      !this.hasResizeObservations()
+    ) {
+      return;
+    }
+
+    this.observerDeliveryScheduled = true;
+    const view = this.document.defaultView;
+    if (!view) return;
+    // Native layout observers are delivered during the rendering update. A
+    // frame callback is the closest scheduling boundary exposed by DOM-like
+    // test environments, and coalesces framework work across task phases.
+    this.observerDeliveryFrame = view.requestAnimationFrame(() => {
+      this.observerDeliveryFrame = undefined;
+      if (!this.detached && this.observerDeliveryScheduled) {
+        this.flushLayout();
+      }
+    });
+  }
+
+  private cancelScheduledObserverDelivery(): void {
+    if (this.observerDeliveryFrame !== undefined) {
+      this.document.defaultView?.cancelAnimationFrame(
+        this.observerDeliveryFrame,
+      );
+      this.observerDeliveryFrame = undefined;
+    }
+    this.observerDeliveryScheduled = false;
+  }
+
+  private deliverResizeObservers(): boolean {
+    if (!this.hasResizeObservations()) return false;
+    const snapshot = this.getSnapshot();
+    const view = this.document.defaultView;
+    const ratio = view?.devicePixelRatio ?? 1;
+    let delivered = false;
+
+    for (const observer of this.resizeObservers) {
+      const entries: ResizeObserverEntry[] = [];
+      for (const [target, observation] of observer.observations) {
+        const border = snapshot.layoutRects.get(target) ?? zeroBox();
+        const content = snapshot.contentRects.get(target) ?? zeroBox();
+        const size = observedSize(observation.box, content, border, ratio);
+        if (
+          sameResizeSize(observation.lastSize, size) ||
+          (!observation.lastSize &&
+            size.inlineSize === 0 &&
+            size.blockSize === 0)
+        ) {
+          continue;
+        }
+
+        observation.lastSize = size;
+        const contentRect = createDomRect(this.document, {
+          x: content.x - (snapshot.clientRects.get(target)?.x ?? content.x),
+          y: content.y - (snapshot.clientRects.get(target)?.y ?? content.y),
+          width: content.width,
+          height: content.height,
+        });
+        entries.push({
+          target,
+          contentRect,
+          borderBoxSize: [observedSize('border-box', content, border, ratio)],
+          contentBoxSize: [observedSize('content-box', content, border, ratio)],
+          devicePixelContentBoxSize: [
+            observedSize('device-pixel-content-box', content, border, ratio),
+          ],
+        });
+      }
+
+      if (entries.length > 0) {
+        delivered = true;
+        observer.callback(entries, observer);
+      }
+    }
+    return delivered;
   }
 
   private offsetPosition(element: Element, axis: 'x' | 'y'): number {

@@ -23,6 +23,8 @@ export { debugLayout } from './api/debug-layout.ts';
 export type { HitBox } from './api/hit-box.ts';
 export type {
   LayoutEngineConfig,
+  ObserverDelivery,
+  ObserverOptions,
   UserAgentStyleOptions,
   UserAgentStyleProfile,
   Viewport,
