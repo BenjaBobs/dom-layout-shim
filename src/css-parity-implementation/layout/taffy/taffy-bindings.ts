@@ -206,13 +206,24 @@ async function loadWasm(): Promise<unknown> {
   }
 
   const wasmUrl = new URL('./generated/taffy_wasm_bg.wasm', import.meta.url);
-  const wasmPath =
-    wasmUrl.protocol === 'file:'
-      ? wasmUrl
-      : path.resolve(
-          process.cwd(),
-          'src/css-parity-implementation/layout/taffy/generated/taffy_wasm_bg.wasm',
-        );
+  let wasmPath: URL | string = wasmUrl;
+  if (wasmUrl.protocol !== 'file:' || !fs.existsSync(wasmUrl)) {
+    let directory = process.cwd();
+    while (true) {
+      const candidate = path.resolve(
+        directory,
+        'src/css-parity-implementation/layout/taffy/generated/taffy_wasm_bg.wasm',
+      );
+      if (fs.existsSync(candidate)) {
+        wasmPath = candidate;
+        break;
+      }
+
+      const parent = path.dirname(directory);
+      if (parent === directory) break;
+      directory = parent;
+    }
+  }
   return initSync({ module: fs.readFileSync(wasmPath) });
 }
 
