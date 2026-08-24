@@ -293,6 +293,38 @@ export function applyStyleRules(
   }
 }
 
+export function applyPseudoElementStyleRules(
+  style: SupportedStyle,
+  element: Element,
+  pseudoElement: 'before' | 'after',
+  rules: readonly StyleRule[],
+  policy: UnsupportedCssPolicy | undefined,
+  rootFontSize?: number,
+  customProperties?: CustomProperties,
+  viewport?: Viewport,
+): void {
+  for (const rule of rules
+    .filter(
+      rule =>
+        rule.pseudoElement === pseudoElement &&
+        matchesSelector(element, rule.selector, policy),
+    )
+    .toSorted(compareStyleRuleCascadeOrder)) {
+    for (const declaration of rule.declarations) {
+      if (declaration.property === 'content') continue;
+      applyDeclaration(style, declaration.property, declaration.value, {
+        policy,
+        source: 'stylesheet',
+        selector: `${rule.selector}::${pseudoElement}`,
+        element,
+        rootFontSize,
+        viewport,
+        customProperties,
+      });
+    }
+  }
+}
+
 export function applyStylesheetCustomProperties(
   properties: Map<string, string>,
   inherited: CustomProperties,
@@ -343,11 +375,39 @@ export function readGeneratedContent(
   return result;
 }
 
+export function readGeneratedPseudoContent(
+  element: Element,
+  pseudoElement: 'before' | 'after',
+  rules: readonly StyleRule[],
+  policy: UnsupportedCssPolicy | undefined,
+): string | undefined {
+  const declarations = rules
+    .filter(
+      rule =>
+        rule.pseudoElement === pseudoElement &&
+        matchesSelector(element, rule.selector, policy),
+    )
+    .toSorted(compareStyleRuleCascadeOrder)
+    .flatMap(rule => rule.declarations);
+  const content = declarations
+    .filter(declaration => declaration.property === 'content')
+    .at(-1)?.value;
+
+  return resolveGeneratedContentValue(content, element);
+}
+
 function resolveGeneratedContent(
   value: string | undefined,
   element: Element,
 ): string {
-  if (!value || value === 'none' || value === 'normal') return '';
+  return resolveGeneratedContentValue(value, element) ?? '';
+}
+
+function resolveGeneratedContentValue(
+  value: string | undefined,
+  element: Element,
+): string | undefined {
+  if (!value || value === 'none' || value === 'normal') return undefined;
   if (value.startsWith('attr(') && value.endsWith(')')) {
     return element.getAttribute(value.slice(5, -1).trim()) ?? '';
   }
@@ -355,10 +415,10 @@ function resolveGeneratedContent(
     try {
       return JSON.parse(value) as string;
     } catch {
-      return '';
+      return undefined;
     }
   }
-  return '';
+  return undefined;
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {

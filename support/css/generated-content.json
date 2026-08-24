@@ -31,22 +31,27 @@
         },
         {
           "kind": "limitation",
-          "text": "Generated content contributes to its originating element's text measurement; independently styled pseudo boxes, counters, images, and pseudo-element hit targets are not modeled."
+          "text": "Inline generated content contributes to its originating element's text measurement; non-inline generated content uses an independent anonymous layout box."
         }
       ]
     },
     {
       "id": "independent-pseudo-boxes",
-      "description": "Generated pseudo-elements with independent box styles remain outside the modeled layout tree.",
-      "support": "unsupported",
+      "description": "Non-inline generated pseudo-elements contribute independently styled anonymous boxes to normal, flex, and grid layout.",
+      "properties": ["content"],
+      "support": "partial",
       "parity": {
-        "status": "unverified",
-        "fixtures": []
+        "status": "verified",
+        "fixtures": ["generated-pseudo-elements"]
       },
       "notes": [
         {
+          "kind": "browser-parity",
+          "text": "Parity covers independent dimensions and spacing in block flow and generated items participating in flex and grid placement."
+        },
+        {
           "kind": "limitation",
-          "text": "Display, positioning, independent typography, counters, images, and hit targets on generated pseudo-elements are not modeled."
+          "text": "Counters, images, positioned generated boxes, pseudo-element geometry APIs, and pseudo-element hit targets are not modeled."
         }
       ]
     }

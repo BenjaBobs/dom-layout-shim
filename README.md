@@ -172,7 +172,11 @@ changing the element's authored `textContent`.
 Inline phrasing runs alongside block children contribute anonymous line boxes
 to their shared container instead of disappearing from its intrinsic height.
 Generated strings and `attr()` values from `::before` and `::after` contribute
-to intrinsic text measurement. Supported state, functional, and
+to intrinsic text measurement. Non-inline generated content also creates an
+anonymous layout box with its own dimensions and spacing, including when the
+originating element is a flex or grid container. For example, a block
+`::before` with `height: 12px` and `margin-bottom: 3px` contributes 15px before
+the originating element's ordinary content. Supported state, functional, and
 case-insensitive attribute selectors participate in stylesheet matching.
 
 Use a callback to display or collect warnings in the test runner:
