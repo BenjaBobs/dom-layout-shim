@@ -39,6 +39,15 @@ export type ResizeObserverQuery = {
   styleAfterInitial?: string;
 };
 
+export type IntersectionObserverQuery = {
+  type: 'intersection-observer';
+  selector: string;
+  root?: string;
+  rootMargin?: string;
+  threshold?: number | number[];
+  styleAfterInitial?: string;
+};
+
 export type ScrollQuery = {
   type: 'scroll';
   selector?: string;
@@ -51,6 +60,7 @@ export type BrowserParityQuery =
   | ClientRectsQuery
   | DimensionsQuery
   | ResizeObserverQuery
+  | IntersectionObserverQuery
   | ScrollQuery;
 
 export type BrowserParityFixture = {
@@ -94,6 +104,18 @@ export type QueryResult = {
     initial: SerializedResizeObserverEntry;
     afterResize?: SerializedResizeObserverEntry;
   };
+  intersectionObserver?: {
+    initial: SerializedIntersectionObserverEntry;
+    afterChange?: SerializedIntersectionObserverEntry;
+  };
+};
+
+type SerializedIntersectionObserverEntry = {
+  boundingClientRect: SerializedRect;
+  intersectionRect: SerializedRect;
+  rootBounds: SerializedRect | null;
+  isIntersecting: boolean;
+  intersectionRatio: number;
 };
 
 type SerializedRect = {
@@ -122,6 +144,7 @@ type QueryWindow = {
   scrollX: number;
   scrollY: number;
   ResizeObserver: typeof ResizeObserver;
+  IntersectionObserver: typeof IntersectionObserver;
   document: {
     querySelector(selector: string): Element | null;
     elementFromPoint(x: number, y: number): Element | null;
@@ -673,6 +696,54 @@ async function runQueries(
             });
           });
           observer.observe(element, { box: query.box });
+        }),
+      );
+      continue;
+    }
+
+    if (query.type === 'intersection-observer') {
+      const root = query.root ? document.querySelector(query.root) : null;
+      if (query.root && !root) {
+        throw new Error(`Missing root element: ${query.root}`);
+      }
+      results.push(
+        await new Promise<QueryResult>(resolve => {
+          let initial: SerializedIntersectionObserverEntry | undefined;
+          const observer = new windowLike.IntersectionObserver(
+            entries => {
+              const entry = entries[0];
+              const serialized = {
+                boundingClientRect: serializeRect(
+                  entry.boundingClientRect as DOMRect,
+                ),
+                intersectionRect: serializeRect(
+                  entry.intersectionRect as DOMRect,
+                ),
+                rootBounds: entry.rootBounds
+                  ? serializeRect(entry.rootBounds as DOMRect)
+                  : null,
+                isIntersecting: entry.isIntersecting,
+                intersectionRatio: normalizeNumber(entry.intersectionRatio),
+              };
+              if (!initial && query.styleAfterInitial !== undefined) {
+                initial = serialized;
+                element.setAttribute('style', query.styleAfterInitial);
+                return;
+              }
+              observer.disconnect();
+              resolve({
+                intersectionObserver: initial
+                  ? { initial, afterChange: serialized }
+                  : { initial: serialized },
+              });
+            },
+            {
+              root,
+              rootMargin: query.rootMargin,
+              threshold: query.threshold,
+            },
+          );
+          observer.observe(element);
         }),
       );
       continue;

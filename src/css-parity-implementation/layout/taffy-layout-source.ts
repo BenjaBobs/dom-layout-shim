@@ -61,6 +61,7 @@ type TaffyLayoutState = {
   normalRects: Map<Element, Box>;
   clientRects: Map<Element, Box>;
   contentRects: Map<Element, Box>;
+  intersectionRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
   elementNodes: Map<Element, bigint>;
   anonymousInlineRuns: Map<
@@ -294,6 +295,7 @@ function buildTaffyLayoutTree(
     normalRects: new Map<Element, Box>(),
     clientRects: new Map<Element, Box>(),
     contentRects: new Map<Element, Box>(),
+    intersectionRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
     anonymousInlineRuns: new Map(),
@@ -539,6 +541,7 @@ function collectTaffyLayoutSnapshot(
     layoutRects: state.layoutRects,
     clientRects: state.clientRects,
     contentRects: state.contentRects,
+    intersectionRects: state.intersectionRects,
     elementScrolls: state.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
@@ -1611,6 +1614,12 @@ function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   state.normalRects.set(element, box);
   state.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
   state.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
+  state.intersectionRects.set(element, {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
   state.elementScrolls.set(element, readElementScrollOffset(element));
 }
 
@@ -1907,6 +1916,10 @@ function recordBox(
   state.normalRects.set(element, normalBox);
   state.clientRects.set(element, computeClientBox(box, style));
   state.contentRects.set(element, computeContentBox(box, style));
+  state.intersectionRects.set(
+    element,
+    clipBox(box, clipBounds) ?? { x: 0, y: 0, width: 0, height: 0 },
+  );
 
   if (!includeHitBox) {
     return;

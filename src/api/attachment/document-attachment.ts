@@ -12,7 +12,7 @@ import {
   computeTaffyDocumentLayout,
   type LayoutStylesheetCache,
 } from '../../css-parity-implementation/layout/taffy-layout-source.ts';
-import { zeroBox } from '../box.ts';
+import { type Box, zeroBox } from '../box.ts';
 import type {
   ObserverDelivery,
   UserAgentStyleOptions,
@@ -21,6 +21,12 @@ import type {
 import type { NativeControlMetrics } from '../native-control-profile.ts';
 import type { TextMeasurer } from '../text-measurer.ts';
 import type { UnsupportedCssPolicy } from '../unsupported-css-policy.ts';
+import {
+  intersectBoxes,
+  type LayoutIntersectionObserver,
+  rootIntersectionBox,
+  thresholdIndex,
+} from './layout-intersection-observer.ts';
 import {
   type LayoutResizeObserver,
   observedSize,
@@ -60,9 +66,14 @@ export class DocumentAttachment {
   private mutationObserver: MutationObserver | undefined;
   private readonly observerDelivery: ObserverDelivery;
   private readonly resizeObservers = new Set<LayoutResizeObserver>();
+  private readonly intersectionObservers =
+    new Set<LayoutIntersectionObserver>();
   private observerDeliveryScheduled = false;
   private observerDeliveryFrame: number | undefined;
   private flushingObservers = false;
+  private readonly handleScroll = (): void => {
+    this.scheduleObserverDelivery();
+  };
 
   constructor(options: DocumentAttachmentOptions) {
     this.document = options.document;
@@ -78,6 +89,8 @@ export class DocumentAttachment {
       this.dirty = true;
       this.scheduleObserverDelivery();
     });
+    this.document.addEventListener('scroll', this.handleScroll, true);
+    this.document.defaultView?.addEventListener('scroll', this.handleScroll);
   }
 
   detach(): void {
@@ -87,6 +100,8 @@ export class DocumentAttachment {
 
     this.mutationObserver?.disconnect();
     this.mutationObserver = undefined;
+    this.document.removeEventListener('scroll', this.handleScroll, true);
+    this.document.defaultView?.removeEventListener('scroll', this.handleScroll);
     this.cancelScheduledObserverDelivery();
     unpatchDomApis(this);
     this.detached = true;
@@ -150,23 +165,28 @@ export class DocumentAttachment {
     this.cancelScheduledObserverDelivery();
     this.flushingObservers = true;
     try {
+      let resizeLoopSettled = false;
       for (let iteration = 0; iteration < 10; iteration += 1) {
         const delivered = this.deliverResizeObservers();
         if (this.mutationObserver?.takeRecords().length) {
           this.dirty = true;
         }
         if (!delivered || !this.dirty) {
-          return;
+          resizeLoopSettled = true;
+          break;
         }
       }
 
-      const view = this.document.defaultView;
-      view?.dispatchEvent(
-        new view.ErrorEvent('error', {
-          message:
-            'ResizeObserver loop completed with undelivered notifications.',
-        }),
-      );
+      if (!resizeLoopSettled) {
+        const view = this.document.defaultView;
+        view?.dispatchEvent(
+          new view.ErrorEvent('error', {
+            message:
+              'ResizeObserver loop completed with undelivered notifications.',
+          }),
+        );
+      }
+      this.deliverIntersectionObservers();
     } finally {
       this.flushingObservers = false;
     }
@@ -175,6 +195,16 @@ export class DocumentAttachment {
   addResizeObserver(observer: LayoutResizeObserver): void {
     this.assertAttached();
     this.resizeObservers.add(observer);
+  }
+
+  addIntersectionObserver(observer: LayoutIntersectionObserver): void {
+    this.assertAttached();
+    this.intersectionObservers.add(observer);
+  }
+
+  intersectionObservationsChanged(): void {
+    this.assertAttached();
+    this.scheduleObserverDelivery();
   }
 
   resizeObservationsChanged(): void {
@@ -422,11 +452,18 @@ export class DocumentAttachment {
     return false;
   }
 
+  private hasIntersectionObservations(): boolean {
+    for (const observer of this.intersectionObservers) {
+      if (observer.observations.size > 0) return true;
+    }
+    return false;
+  }
+
   private scheduleObserverDelivery(): void {
     if (
       this.observerDelivery !== 'auto' ||
       this.observerDeliveryScheduled ||
-      !this.hasResizeObservations()
+      (!this.hasResizeObservations() && !this.hasIntersectionObservations())
     ) {
       return;
     }
@@ -501,6 +538,85 @@ export class DocumentAttachment {
       }
     }
     return delivered;
+  }
+
+  private deliverIntersectionObservers(): void {
+    if (!this.hasIntersectionObservations()) return;
+    const snapshot = this.getSnapshot();
+    const viewport = {
+      x: 0,
+      y: 0,
+      width: this.viewport.width,
+      height: this.viewport.height,
+    };
+    const now = this.document.defaultView?.performance.now() ?? 0;
+
+    for (const observer of this.intersectionObservers) {
+      const rootElement =
+        observer.root && observer.root !== this.document
+          ? (observer.root as Element)
+          : undefined;
+      const rootBounds = rootIntersectionBox(
+        observer,
+        viewport,
+        rootElement ? snapshot.clientRects.get(rootElement) : undefined,
+      );
+
+      for (const [target, observation] of observer.observations) {
+        const targetRect = snapshot.rects.get(target) ?? zeroBox();
+        const clippedTargetRect =
+          observer.root || observer.rootMargin === '0px 0px 0px 0px'
+            ? (snapshot.intersectionRects.get(target) ?? zeroBox())
+            : targetRect;
+        const rendered = (snapshot.fragmentRects.get(target)?.length ?? 0) > 0;
+        const targetInRoot =
+          !rootElement ||
+          (rootElement !== target && rootElement.contains(target));
+        const intersectionRect =
+          rootBounds && targetInRoot && rendered
+            ? intersectBoxes(clippedTargetRect, rootBounds)
+            : zeroBox();
+        const isIntersecting = Boolean(
+          rootBounds &&
+            targetInRoot &&
+            rendered &&
+            boxesTouchOrOverlap(clippedTargetRect, rootBounds),
+        );
+        const targetArea = targetRect.width * targetRect.height;
+        const intersectionArea =
+          intersectionRect.width * intersectionRect.height;
+        const ratio =
+          targetArea === 0
+            ? isIntersecting
+              ? 1
+              : 0
+            : intersectionArea / targetArea;
+        const nextThresholdIndex = thresholdIndex(observer.thresholds, ratio);
+        if (
+          observation.lastThresholdIndex === nextThresholdIndex &&
+          observation.lastIsIntersecting === isIntersecting
+        ) {
+          continue;
+        }
+
+        observation.lastThresholdIndex = nextThresholdIndex;
+        observation.lastIsIntersecting = isIntersecting;
+        observer.queuedEntries.push({
+          time: now,
+          target,
+          rootBounds: rootBounds
+            ? createDomRect(this.document, rootBounds)
+            : null,
+          boundingClientRect: createDomRect(this.document, targetRect),
+          intersectionRect: createDomRect(this.document, intersectionRect),
+          isIntersecting,
+          intersectionRatio: ratio,
+        });
+      }
+
+      const entries = observer.takeRecords();
+      if (entries.length > 0) observer.callback(entries, observer);
+    }
   }
 
   private offsetPosition(element: Element, axis: 'x' | 'y'): number {
@@ -693,6 +809,15 @@ function sameScrollOffset(
   b: ScrollOffset,
 ): boolean {
   return Boolean(a && a.x === b.x && a.y === b.y);
+}
+
+function boxesTouchOrOverlap(left: Box, right: Box): boolean {
+  return (
+    left.x <= right.x + right.width &&
+    left.x + left.width >= right.x &&
+    left.y <= right.y + right.height &&
+    left.y + left.height >= right.y
+  );
 }
 
 function hasElementScrollChanged(

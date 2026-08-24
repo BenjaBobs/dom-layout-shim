@@ -8,6 +8,7 @@ export type LayoutSnapshot = {
   layoutRects: Map<Element, Box>;
   clientRects: Map<Element, Box>;
   contentRects: Map<Element, Box>;
+  intersectionRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
   offsetParents: Map<Element, Element | null>;
   scrollContainers: Map<Element, { x: boolean; y: boolean }>;

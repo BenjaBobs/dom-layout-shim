@@ -124,6 +124,18 @@ layout.flushLayout() // Recomputes and synchronously delivers pending entries.
 `content-box`, `border-box`, and `device-pixel-content-box` observations are
 supported. Geometry reads remain lazy and do not themselves deliver callbacks.
 
+The same delivery controls apply to the layout-backed
+`window.IntersectionObserver`. Viewport and element roots, pixel/percentage
+`rootMargin` values, and threshold arrays use the shim's deterministic geometry:
+
+```ts
+const observer = new window.IntersectionObserver(([entry]) => {
+  console.log(entry.isIntersecting, entry.intersectionRatio)
+}, { threshold: [0, 0.5, 1] })
+
+observer.observe(window.document.querySelector('.card'))
+```
+
 External sheets whose `cssRules` cannot be read, including cross-origin sheets,
 are routed through the unsupported CSS policy. The default policy warns and
 continues; strict mode throws instead of silently computing layout without the
