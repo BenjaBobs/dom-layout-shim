@@ -19,9 +19,9 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "dom-layout-shim": "workspace:*",
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "typescript": "~7.0.2",
-    "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }
