@@ -4,16 +4,29 @@
 
 ### Minor Changes
 
-- b3b7b77: Automatically discover initial `@font-face` rules and measure matching text from static TTF, OTF, or WOFF font data. For example, a data-URL font with custom glyph advances now determines an auto-sized button's width identically across happy-dom and Chromium, while unavailable families continue through deterministic fallback measurement. The obsolete `createPretextTextMeasurer()` export and Canvas-only Pretext dependency are removed.
-- 90ceb56: Include inline phrasing runs in containers that also have block children. For example, `<div><h2>Title</h2><span>Details</span></div>` now includes the `Details` line in the container's intrinsic height and exposes the span's client geometry instead of dropping that inline run from layout.
-- c340b87: Apply inherited `text-transform` values during intrinsic text measurement. For example, a button styled with `text-transform: uppercase` now sizes from `ADD TASK` while its authored `textContent` remains `Add task`; custom text measurers receive the transformed string too.
+- b3b7b77: Automatically discover initial `@font-face` rules and measure matching text from static TTF, OTF, or WOFF font data.
+
+  For example, a data-URL font with custom glyph advances now determines an auto-sized button's width identically across happy-dom and Chromium, while unavailable families continue through deterministic fallback measurement. The obsolete `createPretextTextMeasurer()` export and Canvas-only Pretext dependency are removed.
+
+- 90ceb56: Include inline phrasing runs in containers that also have block children.
+
+  For example, `<div><h2>Title</h2><span>Details</span></div>` now includes the `Details` line in the container's intrinsic height and exposes the span's client geometry instead of dropping that inline run from layout.
+
+- c340b87: Apply inherited `text-transform` values during intrinsic text measurement.
+
+  For example, a button styled with `text-transform: uppercase` now sizes from `ADD TASK` while its authored `textContent` remains `Add task`; custom text measurers receive the transformed string too.
 
 ## 0.5.0
 
 ### Minor Changes
 
-- 04f23ec: Apply `rotate()`, `skew()`, and `matrix()` transforms to client geometry and precise polygonal hit testing. For example, `elementFromPoint()` no longer selects a rotated element through an empty corner of its bounding rectangle.
-- 3b40fe5: Expand `createUnsupportedCssReporter()` summaries with occurrence counts, selectors, affected elements, and observed computed values. Consumers can now tell whether an unsupported declaration is repeatedly affecting a tracked element or is likely a superseded fallback:
+- 04f23ec: Apply `rotate()`, `skew()`, and `matrix()` transforms to client geometry and precise polygonal hit testing.
+
+  For example, `elementFromPoint()` no longer selects a rotated element through an empty corner of its bounding rectangle.
+
+- 3b40fe5: Expand `createUnsupportedCssReporter()` summaries with occurrence counts, selectors, affected elements, and observed computed values.
+
+  Consumers can now tell whether an unsupported declaration is repeatedly affecting a tracked element or is likely a superseded fallback:
 
   ```ts
   const declaration = reporter.getSummary().declarations[0];
@@ -24,8 +37,13 @@
   );
   ```
 
-- 830552c: Match structural and state pseudo-class styles and expose wrapped inline fragments through `getClientRects()`. After upgrading, `span.getClientRects()` returns one rectangle per wrapped line instead of an empty list, and rules such as `li:nth-child(2) { width: 40px }` affect deterministic layout.
-- eae94fb: Add configurable user-agent presentation styles below author CSS. Tests can now keep the deterministic portable baseline, disable it, or override selected defaults without duplicating reset CSS in every document.
+- 830552c: Match structural and state pseudo-class styles and expose wrapped inline fragments through `getClientRects()`.
+
+  After upgrading, `span.getClientRects()` returns one rectangle per wrapped line instead of an empty list, and rules such as `li:nth-child(2) { width: 40px }` affect deterministic layout.
+
+- eae94fb: Add configurable user-agent presentation styles below author CSS.
+
+  Tests can now keep the deterministic portable baseline, disable it, or override selected defaults without duplicating reset CSS in every document.
 
   ```ts
   // Before: the portable presentation defaults were always active.
@@ -43,11 +61,25 @@
 
   User-agent overrides remain lower priority than document and inline styles. Structural HTML behavior and native-control intrinsic metrics remain independent.
 
-- c64ab06: Expand selector matching and include `::before`/`::after` string and `attr()` content in intrinsic text layout. Generated labels now change their originating element's measured size and following block placement instead of being ignored.
-- a87bab3: Improve component-library geometry and hit testing by measuring flex-styled button icons and gaps, resolving percentage insets, and containing descendant `z-index` values within nested positioned stacking contexts. For example, an icon button now includes the icon and `gap` in its intrinsic width, while a `z-index: 999` child no longer escapes a parent below a `z-index: 2` sibling.
-- a5c7885: Resolve `em`, `rem`, viewport units, custom properties, reducible `calc()` expressions, and mixed percentage-and-pixel dimensions with a definite containing block across supported layout declarations. For example, `width: calc(100% - 32px)` now contributes its computed pixel width instead of being ignored as unsupported CSS.
-- 5444417: Include inherited `font-weight` and `letter-spacing` in intrinsic and custom text measurement. A custom `textMeasurer` can now read `input.fontWeight` and `input.letterSpacing`, while the default measurer includes letter spacing in rendered widths.
-- e7d74ff: Return a layout attachment from `attachLayoutEngine()` with runtime viewport control. Tests can now attach once in shared setup and resize deterministic layout without rebuilding the DOM:
+- c64ab06: Expand selector matching and include `::before`/`::after` string and `attr()` content in intrinsic text layout.
+
+  Generated labels now change their originating element's measured size and following block placement instead of being ignored.
+
+- a87bab3: Improve component-library geometry and hit testing by measuring flex-styled button icons and gaps, resolving percentage insets, and containing descendant `z-index` values within nested positioned stacking contexts.
+
+  For example, an icon button now includes the icon and `gap` in its intrinsic width, while a `z-index: 999` child no longer escapes a parent below a `z-index: 2` sibling.
+
+- a5c7885: Resolve `em`, `rem`, viewport units, custom properties, reducible `calc()` expressions, and mixed percentage-and-pixel dimensions with a definite containing block across supported layout declarations.
+
+  For example, `width: calc(100% - 32px)` now contributes its computed pixel width instead of being ignored as unsupported CSS.
+
+- 5444417: Include inherited `font-weight` and `letter-spacing` in intrinsic and custom text measurement.
+
+  A custom `textMeasurer` can now read `input.fontWeight` and `input.letterSpacing`, while the default measurer includes letter spacing in rendered widths.
+
+- e7d74ff: Return a layout attachment from `attachLayoutEngine()` with runtime viewport control.
+
+  Tests can now attach once in shared setup and resize deterministic layout without rebuilding the DOM:
 
   ```ts
   const layout = await attachLayoutEngine({ window });
@@ -58,7 +90,9 @@
 
 ### Patch Changes
 
-- 501d313: Prevent scoped compound `:where()` and `:is()` selectors from matching unrelated elements when the host DOM implements functional selector matching incorrectly. CSS-in-JS rules now remain scoped to their intended components instead of corrupting surrounding layout.
+- 501d313: Prevent scoped compound `:where()` and `:is()` selectors from matching unrelated elements when the host DOM implements functional selector matching incorrectly.
+
+  CSS-in-JS rules now remain scoped to their intended components instead of corrupting surrounding layout.
 
   ```css
   /* Before: some DOM harnesses incorrectly applied this rule to unrelated elements. */
@@ -74,8 +108,8 @@
 ### Minor Changes
 
 - 1a58c8d: Include accessible linked stylesheets and constructable stylesheets in layout.
-  The engine now follows document and adoption order and automatically recomputes
-  geometry after CSSOM edits or changes to `document.adoptedStyleSheets`.
+
+  The engine now follows document and adoption order and automatically recomputes geometry after CSSOM edits or changes to `document.adoptedStyleSheets`.
 
   ```ts
   const sheet = new window.CSSStyleSheet();
@@ -88,9 +122,9 @@
   dialog.getBoundingClientRect();
   ```
 
-- 5189aa2: Apply responsive stylesheet `@media` rules against the viewport configured for
-  the layout engine. Media types, dimensions, orientation, aspect ratio, query
-  lists, conjunctions, and nested rules now select the same branches as Chromium.
+- 5189aa2: Apply responsive stylesheet `@media` rules against the viewport configured for the layout engine.
+
+  Media types, dimensions, orientation, aspect ratio, query lists, conjunctions, and nested rules now select the same branches as Chromium.
 
   Previously, media rules were rejected by the unsupported CSS policy. After
   upgrading, matching rules contribute layout:
@@ -105,9 +139,9 @@
   document.querySelector("#panel").offsetWidth; // 100
   ```
 
-- 2b49074: Support rectangular named grid templates through `grid-template-areas` and
-  single-name `grid-area` placement. Named areas can span rows and columns and may
-  be arranged around unnamed `.` cells.
+- 2b49074: Support rectangular named grid templates through `grid-template-areas` and single-name `grid-area` placement.
+
+  Named areas can span rows and columns and may be arranged around unnamed `.` cells.
 
   Previously, named templates were rejected as unsupported CSS. After upgrading,
   items use the declared area bounds:
@@ -125,9 +159,8 @@
   ```
 
 - c86fc03: Resolve CSS custom properties before parsing supported layout declarations.
-  Inherited values, local overrides, forward references, nested fallbacks, and
-  cyclic references now follow their CSS variable semantics, while values that
-  remain unresolved route through `unsupportedCss`.
+
+  Inherited values, local overrides, forward references, nested fallbacks, and cyclic references now follow their CSS variable semantics, while values that remain unresolved route through `unsupportedCss`.
 
   Previously, a supported declaration such as `width: var(--card-width)` was
   ignored as an unsupported value. After upgrading, it contributes layout:
@@ -143,8 +176,7 @@
   document.querySelector("#card").offsetWidth; // 240
   ```
 
-- 97a9a85: Support `position: sticky` for physical insets, scrolling ancestors, viewport
-  scrolling, containing-block limits, hit testing, and simple table headers.
+- 97a9a85: Support `position: sticky` for physical insets, scrolling ancestors, viewport scrolling, containing-block limits, hit testing, and simple table headers.
 
   ```ts
   scroller.scrollTop = 50;
@@ -155,10 +187,9 @@
 
 ### Patch Changes
 
-- fa4068f: Make CSS support evidence explain the independently supported behaviors within
-  each topic. The exported inventory now provides descriptive, behavior-specific
-  claims instead of broad `current-supported-scope` entries, and its prose marks
-  CSS syntax and API names as inline code for documentation renderers.
+- fa4068f: Make CSS support evidence explain the independently supported behaviors within each topic.
+
+  The exported inventory now provides descriptive, behavior-specific claims instead of broad `current-supported-scope` entries, and its prose marks CSS syntax and API names as inline code for documentation renderers.
 
   ```ts
   const grid = cssSupportInventory.find((topic) => topic.id === "grid-layout");
@@ -173,10 +204,8 @@
   and previews parity test sources without leaving the page.
 
 - a8f464c: Make documentation navigation respond immediately after the initial page load.
-  The shared shell now swaps internal page content and styles without reloading
-  the document, while direct URLs, refreshes, Back and Forward navigation, scroll
-  restoration, page-specific behavior, and no-JavaScript fallback navigation
-  continue to work normally.
+
+  The shared shell now swaps internal page content and styles without reloading the document, while direct URLs, refreshes, Back and Forward navigation, scroll restoration, page-specific behavior, and no-JavaScript fallback navigation continue to work normally.
 
   For example, following the `CSS support` navigation link updates the URL and
   support explorer in place instead of triggering another document load.
@@ -185,11 +214,9 @@
 
 ### Minor Changes
 
-- a2963e2: Add explicit deterministic native-control profile selection and per-control
-  metric overrides. The initial `portable` profile names and preserves the
-  package's existing intrinsic control geometry instead of deriving it from the
-  runtime host. Overrides can specialize one metric or replace the complete
-  profile.
+- a2963e2: Add explicit deterministic native-control profile selection and per-control metric overrides.
+
+  The initial `portable` profile names and preserves the package's existing intrinsic control geometry instead of deriving it from the runtime host. Overrides can specialize one metric or replace the complete profile.
 
   ```ts
   await attachLayoutEngine({
@@ -205,10 +232,9 @@
   document.querySelector("input")?.getBoundingClientRect();
   ```
 
-- d61c212: Support two-dimensional translation and scaling through both `transform`
-  functions and the individual `translate` and `scale` properties. Percentage
-  values, transform origins, ordered function lists, transformed descendants,
-  client rectangles, and point queries are included.
+- d61c212: Support two-dimensional translation and scaling through both `transform` functions and the individual `translate` and `scale` properties.
+
+  Percentage values, transform origins, ordered function lists, transformed descendants, client rectangles, and point queries are included.
 
   ```css
   /* Transform functions are now reflected in geometry and hit testing. */
@@ -229,15 +255,9 @@
 
 ### Patch Changes
 
-- ee791b0: Update the documentation site with a complete usage guide, syntax-highlighted
-  code examples, highlighted CSS support search matches, automatic light and dark
-  themes, and a package changelog that separates pending Changesets under
-  `Upcoming` from versions confirmed by release tags. Navigation is consistent
-  and marks the current page, bracket pairs are depth-colored, CSS support results
-  are relevance-ranked in a denser layout, and changelog commit references link
-  to their source. Shared styles, flash-free generated navigation, responsive
-  menus, visible release context, keyboard focus treatment, and reduced-motion
-  support keep the experience consistent across pages and devices.
+- ee791b0: Update the documentation site with a complete usage guide, syntax-highlighted code examples, highlighted CSS support search matches, automatic light and dark themes, and a package changelog that separates pending Changesets under `Upcoming` from versions confirmed by release tags.
+
+  Navigation is consistent and marks the current page, bracket pairs are depth-colored, CSS support results are relevance-ranked in a denser layout, and changelog commit references link to their source. Shared styles, flash-free generated navigation, responsive menus, visible release context, keyboard focus treatment, and reduced-motion support keep the experience consistent across pages and devices.
 
   For example, after a feature merges but before its package release, its entry is
   shown as:
@@ -277,11 +297,9 @@
   documentation navigation responds immediately without an artificial transition
   delay.
 
-- 4d6d9f3: Improve browser-compatible wrapping in canvas-capable runtimes by updating
-  Pretext to 0.0.8. Text such as `foo!bar`, `foo/bar`, and `foo♂bar` now keeps
-  symbols that browsers treat as part of the word within the same breakable run.
-  When wrapping at a soft hyphen, the line now ends at the rendered hyphen instead
-  of incorrectly pulling letters from after the break onto the preceding line.
+- 4d6d9f3: Improve browser-compatible wrapping in canvas-capable runtimes by updating Pretext to 0.0.8.
+
+  Text such as `foo!bar`, `foo/bar`, and `foo♂bar` now keeps symbols that browsers treat as part of the word within the same breakable run. When wrapping at a soft hyphen, the line now ends at the rendered hyphen instead of incorrectly pulling letters from after the break onto the preceding line.
 
   For example, at a constrained width, a soft-hyphen break changes from:
 
@@ -316,15 +334,14 @@
   They now describe the element relative to its layout-backed CSS offset parent,
   including positioned ancestors, borders, margins, and scrolling.
 
-- a6bdc8b: Implement `Element.scrollIntoView()` against the layout snapshot so calls
-  consistently affect layout-backed geometry instead of relying on the host DOM
-  implementation.
+- a6bdc8b: Implement `Element.scrollIntoView()` against the layout snapshot so calls consistently affect layout-backed geometry instead of relying on the host DOM implementation.
 
   The method scrolls nested containers and the configured viewport using boolean
   or `block`/`inline` alignment options. Smooth behavior is applied immediately
   to keep test layout deterministic.
 
 - 8be6e4f: Support adjacent (`+`) and general (`~`) sibling combinators in stylesheet selectors.
+
 - 68fc5d9: Answer `window.matchMedia()` queries from the configured layout viewport.
 
   Previously, `matchMedia()` used the DOM environment's viewport, which could
@@ -348,8 +365,8 @@
   ```
 
 - 3724069: Recompute layout after style elements are added or changed and after existing CSSOM rules are edited or deleted.
-- b26f8ce: Add an unsupported CSS reporter that reduces warning streams to a stable
-  adoption-cost summary across a test suite.
+
+- b26f8ce: Add an unsupported CSS reporter that reduces warning streams to a stable adoption-cost summary across a test suite.
 
   Previously, consumers had to build their own aggregation around `onWarning`:
 
@@ -382,17 +399,14 @@
 
 ### Minor Changes
 
-- 9d8958b: Release the package into the public domain under the Unlicense, permitting use,
-  copying, modification, publishing, compilation, sale, and distribution for any
-  commercial or non-commercial purpose.
-- 0bb1dbe: Establish the package as DOM Layout Shim, published as `dom-layout-shim`, with
-  repository, issue tracker, and documentation metadata for the renamed project.
+- 9d8958b: Release the package into the public domain under the Unlicense, permitting use, copying, modification, publishing, compilation, sale, and distribution for any commercial or non-commercial purpose.
+
+- 0bb1dbe: Establish the package as DOM Layout Shim, published as `dom-layout-shim`, with repository, issue tracker, and documentation metadata for the renamed project.
+
 - 7334dfa: Continue layout with deduplicated, actionable warnings when CSS is unsupported.
-  Strict failures and deliberate suppression remain available through
-  `unsupportedCss: { default: 'throw' }` and `{ default: 'ignore' }`.
+
+  Strict failures and deliberate suppression remain available through `unsupportedCss: { default: 'throw' }` and `{ default: 'ignore' }`.
 
 ### Patch Changes
 
-- 100c77b: Clarify Chromium parity evidence for native text and form-control metrics that
-  vary across host platforms while retaining exact checks for stable dimensions
-  and author-sized time inputs and textareas.
+- 100c77b: Clarify Chromium parity evidence for native text and form-control metrics that vary across host platforms while retaining exact checks for stable dimensions and author-sized time inputs and textareas.

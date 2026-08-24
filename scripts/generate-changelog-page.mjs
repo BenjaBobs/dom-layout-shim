@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { releaseId, renderChangelogMarkdown } from './changelog-renderer.mjs';
 import {
   insertUpcoming,
   markUntaggedReleaseUpcoming,
@@ -19,7 +20,7 @@ const markdown =
     ? insertUpcoming(changelog, pendingChangesets)
     : markUntaggedReleaseUpcoming(changelog, tagExists);
 const releases = [...markdown.matchAll(/^##\s+(.+)$/gm)].map(match => match[1]);
-const content = renderMarkdown(markdown, releases);
+const content = renderChangelogMarkdown(markdown, releases);
 const outputPath = resolve(root, '.site/changelog.html');
 await mkdir(resolve(root, '.site'), { recursive: true });
 
@@ -47,7 +48,7 @@ const output = renderDocumentationPage({
     .changelog-tools { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line); } .release-toc { display:flex; flex-wrap:wrap; gap:12px; align-items:center; } .release-toc a { color:var(--muted); } .change-filters { display:flex; gap:6px; } .change-filters button { padding:6px 10px; border:1px solid var(--line); border-radius:7px; background:var(--panel); color:var(--text); } .change-filters button[aria-pressed="true"] { border-color:var(--brand); color:var(--brand); }
     .current-release { position:sticky; top:var(--site-nav-height); z-index:9; display:flex; gap:8px; margin:0 -12px; padding:9px 12px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 95%,transparent); color:var(--muted); backdrop-filter:blur(10px); } .current-release a,.current-release strong { color:var(--text); font-weight:700; } .current-release a { text-decoration-color:var(--brand); text-underline-offset:3px; }
     .release-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; } .release-anchor { color:var(--text); text-decoration-color:transparent; text-underline-offset:4px; } .release-anchor:hover { text-decoration-color:var(--brand); } .release-links { display:flex; gap:10px; font-size:13px; font-weight:400; }
-    .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); box-shadow:var(--shadow-panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child { margin-bottom:0; } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
+    .change { margin:0 0 14px; padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--panel); box-shadow:var(--shadow-panel); } .change h4 { margin:0 0 10px; font-size:17px; line-height:1.4; } .change p:last-child,.change ul:last-child,.change ol:last-child,.change table:last-child { margin-bottom:0; } .change ul,.change ol { padding-left:24px; } .change table { width:100%; margin:14px 0; border-collapse:collapse; } .change th,.change td { padding:8px 10px; border:1px solid var(--line); text-align:left; vertical-align:top; } .change th { background:var(--bg); } .change-link { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; }
     @media (max-width:700px) { .changelog-tools { align-items:flex-start; flex-direction:column; } .release-toc { max-height:80px; overflow:auto; } .release-heading { align-items:flex-start; flex-direction:column; } }
   `,
   inlineModule: `
@@ -126,135 +127,6 @@ function tagExists(tag) {
   } catch {
     return false;
   }
-}
-
-function renderMarkdown(source, releases) {
-  const output = [];
-  const lines = source.split('\n');
-  let paragraph = [];
-  let inChange = false;
-  let changeOpen = false;
-  let changeTitle = [];
-  let codeLanguage;
-  let code = [];
-  let changeType = '';
-  let releaseIndex = 0;
-
-  const flushParagraph = () => {
-    if (paragraph.length > 0)
-      output.push(`<p>${inline(paragraph.join(' '))}</p>`);
-    paragraph = [];
-  };
-  const openChange = () => {
-    if (!inChange || changeOpen) return;
-    output.push(
-      `<article class="change" data-change-type="${escapeHtml(changeType)}"><h4>${inline(changeTitle.join(' '))}</h4>`,
-    );
-    changeOpen = true;
-  };
-  const closeChange = () => {
-    openChange();
-    flushParagraph();
-    if (changeOpen) output.push('</article>');
-    inChange = false;
-    changeOpen = false;
-    changeTitle = [];
-  };
-
-  for (const line of lines) {
-    const fence = /^```(\w*)$/.exec(line.trim());
-    if (fence) {
-      if (codeLanguage !== undefined) {
-        output.push(
-          `<pre><code data-language="${escapeHtml(codeLanguage)}">${escapeHtml(code.join('\n'))}</code></pre>`,
-        );
-        codeLanguage = undefined;
-        code = [];
-      } else {
-        openChange();
-        flushParagraph();
-        codeLanguage = fence[1] || 'text';
-      }
-      continue;
-    }
-    if (codeLanguage !== undefined) {
-      code.push(line);
-      continue;
-    }
-
-    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
-    if (heading) {
-      closeChange();
-      const level = heading[1].length;
-      if (level === 2) {
-        const release = heading[2];
-        const previous = releases[releaseIndex + 1];
-        const links =
-          release === 'Upcoming'
-            ? '<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v' +
-              escapeHtml(releases[1] || '') +
-              '...main">Compare with main</a>'
-            : `<a href="https://www.npmjs.com/package/dom-layout-shim/v/${escapeHtml(release)}">npm</a><a href="https://github.com/BenjaBobs/dom-layout-shim/releases/tag/v${escapeHtml(release)}">GitHub</a>${previous && previous !== 'Upcoming' ? `<a href="https://github.com/BenjaBobs/dom-layout-shim/compare/v${escapeHtml(previous)}...v${escapeHtml(release)}">Compare</a>` : ''}`;
-        output.push(
-          `<div class="release-heading"><h2 id="${releaseId(release)}" data-release="${escapeHtml(release)}"><a class="release-anchor" href="#${releaseId(release)}">${inline(release)}</a></h2><span class="release-links">${links}</span></div>`,
-        );
-        releaseIndex += 1;
-      } else if (level !== 1) {
-        if (level === 3)
-          changeType = heading[2].toLowerCase().startsWith('major')
-            ? 'major'
-            : heading[2].toLowerCase().startsWith('minor')
-              ? 'minor'
-              : heading[2].toLowerCase().startsWith('patch')
-                ? 'patch'
-                : '';
-        output.push(
-          `<h${level}${level === 3 ? ` data-change-section="${escapeHtml(heading[2])}"` : ''}>${inline(heading[2])}</h${level}>`,
-        );
-      }
-      continue;
-    }
-    const item = /^-\s+(.+)$/.exec(line);
-    if (item) {
-      closeChange();
-      inChange = true;
-      changeTitle = [item[1]];
-      continue;
-    }
-    if (line.trim() === '') {
-      openChange();
-      flushParagraph();
-      continue;
-    }
-    if (inChange && !changeOpen) {
-      changeTitle.push(line.trim());
-      continue;
-    }
-    paragraph.push(line.trim());
-  }
-  closeChange();
-  return output.join('\n');
-}
-
-function releaseId(release) {
-  if (release === 'Upcoming') return 'upcoming';
-  return `version-${release
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')}`;
-}
-
-function inline(value) {
-  return escapeHtml(value)
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(
-      /\b([0-9a-f]{7,40}):/g,
-      '<a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/commit/$1">$1</a>:',
-    )
-    .replace(
-      /(^|\s)#(\d+)\b/g,
-      '$1<a class="change-link" href="https://github.com/BenjaBobs/dom-layout-shim/pull/$2">#$2</a>',
-    );
 }
 
 function escapeHtml(value) {

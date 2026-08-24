@@ -60,6 +60,7 @@ const rules = [
   {
     match: oneOf(
       'scripts/changelog-source.mjs',
+      'scripts/changelog-renderer.mjs',
       'scripts/docs-page-shell.mjs',
       'scripts/generate-changelog-page.mjs',
       'scripts/generate-docs-pages.mjs',

@@ -21,5 +21,23 @@ that matters after upgrading, and include a concise public-facing example that
 demonstrates the observable effect. Prefer a before-and-after comparison when
 behavior changes.
 
+Use the first paragraph as a concise card title, followed by a blank line and
+the detailed release note. The detail is ordinary Markdown and may contain
+paragraphs, lists, tables, links, and fenced code blocks:
+
+````md
+Add deterministic widget sizing
+
+Widget dimensions now follow the configured profile:
+
+| Profile | Width |
+| --- | ---: |
+| `compact` | `80px` |
+
+```ts
+widget.offsetWidth // 80
+```
+````
+
 See `CONTRIBUTING.md` and `docs/releasing.md` for the contribution, release, and
 versioning policies.

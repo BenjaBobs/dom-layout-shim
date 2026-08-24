@@ -32,6 +32,11 @@ the user-visible outcome, include constraints or migration guidance where
 needed, and include a concise example that demonstrates the observable effect
 of upgrading.
 
+The first paragraph of every Changeset is its changelog card title. It must be
+followed by a blank line and a detailed Markdown body. The body may use normal
+paragraphs, lists, tables, links, and fenced code blocks. Keep the title concise
+and put examples, qualifications, and migration detail in the body.
+
 Prefer:
 
 ```text
