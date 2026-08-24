@@ -218,9 +218,9 @@ describe('generated documentation experience', () => {
   });
 
   it('renders anchored, filterable changelog releases with sticky context', async () => {
-    const page = await readDocumentationSource(
+    const page = `${await readDocumentationSource(
       'scripts/generate-changelog-page.mjs',
-    );
+    )}\n${await readDocumentationSource('scripts/changelog-renderer.mjs')}`;
 
     expect(page).toContain('class="current-release" aria-live="polite"');
     expect(page).toContain('data-current-section');

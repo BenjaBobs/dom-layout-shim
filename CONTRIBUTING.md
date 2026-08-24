@@ -56,6 +56,10 @@ comparison when behavior changes. Keep examples focused on public usage or
 output rather than tests or internal implementation details. See
 [docs/releasing.md](docs/releasing.md#code-examples) for an example.
 
+The first paragraph is the changelog card title. Follow it with a blank line,
+then write the details using ordinary Markdown. Lists, tables, links, and code
+blocks are supported in the rendered changelog.
+
 Changesets accumulate until the next release. A follow-up pull request may
 update an existing pending Changeset when it refines the same unreleased
 consumer-facing change. Prefer a new Changeset for an independent change so
