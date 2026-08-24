@@ -18,7 +18,10 @@ const pendingChangesets = await readPendingChangesets();
 const markdown =
   pendingChangesets.length > 0
     ? insertUpcoming(changelog, pendingChangesets)
-    : markUntaggedReleaseUpcoming(changelog, tagExists);
+    : markUntaggedReleaseUpcoming(changelog, {
+        publishedTag: process.env.CHANGELOG_PUBLISHED_TAG,
+        tagExists,
+      });
 const releases = [...markdown.matchAll(/^##\s+(.+)$/gm)].map(match => match[1]);
 const content = renderChangelogMarkdown(markdown, releases);
 const outputPath = resolve(root, '.site/changelog.html');
@@ -117,16 +120,16 @@ async function readPendingChangesets() {
 }
 
 function tagExists(tag) {
-  try {
-    return (
-      execFileSync('git', ['tag', '--list', tag], {
+  return (
+    execFileSync(
+      'git',
+      ['-c', `safe.directory=${root}`, 'tag', '--list', tag],
+      {
         cwd: root,
         encoding: 'utf8',
-      }).trim() === tag
-    );
-  } catch {
-    return false;
-  }
+      },
+    ).trim() === tag
+  );
 }
 
 function escapeHtml(value) {

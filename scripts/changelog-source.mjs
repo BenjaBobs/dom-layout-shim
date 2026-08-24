@@ -60,9 +60,17 @@ function formatChange(body) {
   ];
 }
 
-export function markUntaggedReleaseUpcoming(changelog, tagExists) {
+export function markUntaggedReleaseUpcoming(
+  changelog,
+  { publishedTag, tagExists },
+) {
   const version = /^## (\d+\.\d+\.\d+)$/m.exec(changelog)?.[1];
-  if (!version || tagExists(`v${version}`)) return changelog;
+  if (!version) return changelog;
+
+  const tag = `v${version}`;
+  const isPublished =
+    publishedTag === undefined ? tagExists(tag) : publishedTag === tag;
+  if (isPublished) return changelog;
 
   return changelog.replace(
     `## ${version}`,

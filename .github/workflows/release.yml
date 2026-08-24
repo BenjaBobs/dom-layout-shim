@@ -187,6 +187,7 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
     env:
+      CHANGELOG_PUBLISHED_TAG: ${{ needs.inspect.outputs.tag }}
       TAFFY_WASM_PREBUILT: 1
     steps:
       - name: Check out repository history

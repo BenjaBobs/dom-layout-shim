@@ -75,11 +75,35 @@ describe('documentation changelog source', () => {
     const changelog =
       '# Package\n\n## 1.1.0\n\nPrepared changes.\n\n## 1.0.0\n\nReleased.';
 
-    expect(markUntaggedReleaseUpcoming(changelog, () => false)).toContain(
-      '## Upcoming\n\nPrepared as 1.1.0, but not published yet.',
-    );
     expect(
-      markUntaggedReleaseUpcoming(changelog, tag => tag === 'v1.1.0'),
+      markUntaggedReleaseUpcoming(changelog, {
+        tagExists: () => false,
+      }),
+    ).toContain('## Upcoming\n\nPrepared as 1.1.0, but not published yet.');
+    expect(
+      markUntaggedReleaseUpcoming(changelog, {
+        tagExists: tag => tag === 'v1.1.0',
+      }),
     ).toBe(changelog);
+  });
+
+  it('uses authoritative workflow release state instead of local tags', () => {
+    const changelog = '# Package\n\n## 1.1.0\n\nReleased.';
+    const unavailableGitProbe = () => {
+      throw new Error('local tags are unavailable');
+    };
+
+    expect(
+      markUntaggedReleaseUpcoming(changelog, {
+        publishedTag: 'v1.1.0',
+        tagExists: unavailableGitProbe,
+      }),
+    ).toBe(changelog);
+    expect(
+      markUntaggedReleaseUpcoming(changelog, {
+        publishedTag: 'v1.0.0',
+        tagExists: unavailableGitProbe,
+      }),
+    ).toContain('## Upcoming\n\nPrepared as 1.1.0, but not published yet.');
   });
 });
