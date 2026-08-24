@@ -63,9 +63,17 @@ const rules = [
   },
   { match: exact('scripts/check-pr-history.mjs'), scopes: ['release'] },
   { match: exact('scripts/affected-scopes.mjs'), scopes: ['package', 'docs'] },
-  { match: exact('.github/workflows/ci.yml'), scopes: ['package', 'parity'] },
-  { match: exact('.github/workflows/docs.yml'), scopes: ['docs'] },
-  { match: exact('.github/workflows/release.yml'), scopes: ['release'] },
+  {
+    match: exact('.github/workflows/ci.yml'),
+    scopes: ['package', 'parity', 'docs'],
+  },
+  {
+    match: oneOf(
+      '.github/workflows/docs.yml',
+      '.github/workflows/release.yml',
+    ),
+    scopes: ['docs', 'release'],
+  },
   { match: prefix('.github/'), scopes: ['release'] },
   { match: prefix('.changeset/'), scopes: ['docs', 'release'] },
   { match: exact('CHANGELOG.md'), scopes: ['docs', 'release'] },

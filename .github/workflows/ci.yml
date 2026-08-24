@@ -1,9 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
   workflow_dispatch:
 
@@ -41,6 +38,7 @@ jobs:
     name: Affected scopes
     runs-on: ubuntu-latest
     outputs:
+      docs: ${{ steps.scopes.outputs.docs }}
       package: ${{ steps.scopes.outputs.package }}
       parity: ${{ steps.scopes.outputs.parity }}
     steps:
@@ -128,6 +126,85 @@ jobs:
       - name: Test packed package
         if: needs.affected.result == 'success' && needs.affected.outputs.package == 'true'
         run: pnpm run test:package
+
+  documentation-validation:
+    name: Documentation validation
+    needs:
+      - affected
+      - biome
+    if: >-
+      always() &&
+      needs.biome.result == 'success' &&
+      (needs.affected.result != 'success' || needs.affected.outputs.docs == 'true')
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - name: Require successful classification
+        if: needs.affected.result != 'success'
+        run: |
+          echo "::error title=Affected scope classification failed::Documentation validation cannot be skipped safely."
+          exit 1
+
+      - name: Check out repository history
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+
+      - name: Set up Node.js
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate UI-library compatibility reports
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        run: pnpm run examples:compatibility
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+
+      - name: Validate and generate documentation
+        if: needs.affected.result == 'success' && needs.affected.outputs.docs == 'true'
+        run: pnpm run docs:generate
+
+  documentation-status:
+    name: Documentation
+    needs:
+      - affected
+      - documentation-validation
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful documentation validation
+        if: >-
+          needs.affected.result != 'success' ||
+          (
+            needs.affected.outputs.docs == 'true' &&
+            needs.documentation-validation.result != 'success'
+          )
+        run: |
+          echo "::error title=Documentation validation failed::The documentation site could not be generated."
+          exit 1
+
+      - name: Report successful documentation validation
+        if: needs.documentation-validation.result == 'success'
+        run: echo "Documentation generation succeeded."
+
+      - name: Report unaffected documentation
+        if: >-
+          needs.affected.result == 'success' &&
+          needs.affected.outputs.docs != 'true'
+        run: echo "Documentation is not affected by this change."
 
   browser-parity-linux:
     name: Chromium parity (ubuntu-24.04)

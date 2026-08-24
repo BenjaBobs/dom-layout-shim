@@ -90,20 +90,23 @@ change.
 ## Release flow
 
 1. User-facing changes land on `main` with Changeset files.
-2. The release workflow creates or updates a `Version Packages` pull request.
-   It explicitly dispatches the required checks because GitHub does not
+2. The main integration workflow creates or updates a `Version Packages` pull
+   request. It explicitly dispatches pull request CI because GitHub does not
    recursively trigger workflows for pull requests created by `GITHUB_TOKEN`.
-3. Package CI validates the inventory, types, unit tests, Chromium parity,
-   build output, and packed file list.
+3. Pull request CI validates the inventory, types, unit tests, Chromium parity,
+   build output, packed file list, and documentation generation. It does not
+   upload or deploy artifacts.
 4. Maintainers review and edit the proposed version and `CHANGELOG.md`.
 5. Merging that pull request starts a protected `npm` environment deployment.
 6. After approval, the deployment repeats the complete validation suite,
    publishes through npm trusted publishing, creates the version tag, and
    creates a GitHub Release from the human-authored changelog section.
-7. After creating the tag, the release workflow redeploys documentation from
-   `main`. The full-history checkout observes the new tag, so the changelog
-   replaces its `Upcoming` heading with the released version while the Pages
-   deployment continues to satisfy the environment's `main` protection rule.
+7. After any required publication finishes, the same main integration run
+   generates and deploys documentation exactly once. Its full-history checkout
+   observes a newly created tag, so the changelog replaces its `Upcoming`
+   heading with the released version while the Pages deployment continues to
+   satisfy the environment's `main` protection rule. Ordinary merges follow
+   the same path without entering the protected `npm` environment.
 
 The documentation changelog renders pending `.changeset/*.md` files under an
 `Upcoming` heading. After the Version Packages pull request consumes those
@@ -119,10 +122,11 @@ branches and pull requests cannot enter the protected `npm` environment.
 The `0.0.0` version is an explicit publication guard. The workflow does not
 publish until Changesets prepares the first real version.
 
-The documentation workflow validates and generates the site while the
-repository is private. Pages setup, artifact upload, and deployment begin
-automatically once the repository is public. Enable Pages with GitHub Actions
-as its source in the repository settings before the first public deployment.
+Pull request CI validates site generation while the repository is private. The
+main integration workflow generates the deployable site after every push to
+`main`; Pages setup, artifact upload, and deployment begin automatically once
+the repository is public. Enable Pages with GitHub Actions as its source in the
+repository settings before the first public deployment.
 
 Run `pnpm run release:status` to inspect pending changesets and
 `pnpm run release:version` to preview the versioning step locally. The version
@@ -199,8 +203,8 @@ For the first release:
    - environment: `npm`
    - allowed action: `npm publish`
 4. Disable token-based package publication on npm.
-5. Re-run the release workflow so it can create any missing tag or GitHub
-   Release.
+5. Re-run the main integration workflow so it can create any missing tag or
+   GitHub Release.
 
 ## Repository security settings
 
