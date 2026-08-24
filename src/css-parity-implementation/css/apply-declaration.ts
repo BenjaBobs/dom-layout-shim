@@ -1813,9 +1813,11 @@ function applyDisplay(
 ): void {
   switch (value) {
     case 'block':
+    case 'flow-root':
+      style.display = value;
+      return;
     case 'inline':
     case 'inline-block':
-    case 'flow-root':
     case 'list-item':
       style.display = 'block';
       return;
@@ -4437,6 +4439,8 @@ function applyGridTemplateAreas(
     value.toLowerCase() === 'unset'
   ) {
     style.gridTemplateAreas = undefined;
+    style.gridTemplateAreaRowCount = undefined;
+    style.gridTemplateAreaColumnCount = undefined;
     return;
   }
 
@@ -4502,6 +4506,8 @@ function applyGridTemplateAreas(
   }
 
   style.gridTemplateAreas = areas;
+  style.gridTemplateAreaRowCount = rows.length;
+  style.gridTemplateAreaColumnCount = rows[0]?.length;
 }
 
 function reportUnsupportedDeclaration(

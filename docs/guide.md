@@ -41,6 +41,10 @@ Node.js 22 and newer.
 pnpm add -D dom-layout-shim happy-dom
 ```
 
+The published package includes its Taffy WebAssembly module. Package consumers
+do not need Rust or `wasm-pack`; those tools are required only when building
+DOM Layout Shim from source.
+
 ## Attach the engine
 
 Create the window normally, populate the document, then attach once. Set an
@@ -216,7 +220,8 @@ save.scrollIntoView({ block: 'center', inline: 'nearest' })
 
 Rectangular `grid-template-areas` definitions place children whose `grid-area`
 names match the template. Areas may span rows and columns, and `.` leaves an
-unnamed cell:
+unnamed cell. These templates and placements are passed directly to Taffy's
+native named-area model:
 
 ```ts
 window.document.body.innerHTML = `

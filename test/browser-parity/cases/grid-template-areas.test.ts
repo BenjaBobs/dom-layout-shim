@@ -68,3 +68,28 @@ it('supports named areas that span multiple rows', async () => {
     ],
   });
 });
+
+it('uses the full named-area template to size implicit tracks', async () => {
+  await expectChromiumParity({
+    viewport: { width: 800, height: 600 },
+    html: `
+      <style>
+        #grid {
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: grid;
+          grid-template-areas: "named ." ". .";
+          grid-auto-columns: 20px;
+          grid-auto-rows: 15px;
+        }
+        #named { grid-area: named; }
+      </style>
+      <div id="grid"><div id="named"></div></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#grid' },
+      { type: 'rect', selector: '#named' },
+    ],
+  });
+});

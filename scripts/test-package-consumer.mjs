@@ -115,6 +115,18 @@ function assertGeneratedAssetsExcluded() {
     }),
   );
   const packedFiles = packManifest.files.map(file => file.path);
+  const wasmFiles = packedFiles.filter(path => path.endsWith('.wasm'));
+
+  if (
+    wasmFiles.length !== 1 ||
+    wasmFiles[0] !==
+      'dist/css-parity-implementation/layout/taffy/generated/taffy_wasm_bg.wasm'
+  ) {
+    throw new Error(
+      `Packed package must contain exactly the generated Taffy WebAssembly module: ${wasmFiles.join(', ')}`,
+    );
+  }
+
   const testFontFiles = packedFiles.filter(
     path =>
       path.startsWith('test/browser-parity/assets/fonts/') ||

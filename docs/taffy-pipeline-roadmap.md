@@ -5,6 +5,38 @@ Taffy as the primary geometry solver internally. Taffy owns layout geometry
 where it can model the browser behavior. This package owns DOM traversal, CSS
 normalization, measurement inputs, DOM API semantics, and hit testing.
 
+The repository owns a narrow WebAssembly binding pinned to Taffy 0.14.0. Its
+Rust source defines only the operations and style values this pipeline uses;
+generated JavaScript and WebAssembly are build output rather than source.
+
+## Taffy 0.14 Upgrade Audit
+
+The upgrade from the third-party Taffy 0.9.2 package removed compatibility
+behavior that the current engine now owns natively:
+
+- Percentage grid tracks are passed as CSS percentages; the Rust boundary
+  performs the unit conversion instead of pre-scaling values for the old
+  JavaScript wrapper.
+- `flow-root` reaches `Display::FlowRoot` instead of being blockified.
+- Named grid templates and named item placements reach Taffy's grid-area model
+  instead of being rewritten to numeric line bounds in TypeScript.
+- Explicit `minmax()` row caps and empty implicit `minmax()` rows in auto-height
+  grids now have direct Chromium parity coverage; their 0.9.2 limitation notes
+  were removed.
+
+The remaining adapter behavior is not made obsolete by Taffy 0.14:
+
+- Mixed `calc()` values retain the two-pass resolution path because
+  `TaffyTree`'s high-level implementation does not resolve opaque calc handles;
+  native resolution requires a custom low-level tree.
+- Flex and grid children remain sorted before tree construction because Taffy
+  style has no CSS `order` field.
+- Fixed, sticky, transform, inline formatting, table, and DOM measurement logic
+  remains in the adapter because those browser and DOM semantics are not Taffy
+  layout primitives.
+- Fractional tracks remain represented as a zero minimum plus an `fr` maximum,
+  which is Taffy's native track-sizing representation rather than a correction.
+
 ## Target Pipeline
 
 ```text

@@ -17,6 +17,8 @@ node_modules/
 /build
 /.site/
 /src/api/css-support-inventory.generated.ts
+/src/css-parity-implementation/layout/taffy/generated/
+/crates/taffy-wasm/target/
 
 # misc
 .DS_Store

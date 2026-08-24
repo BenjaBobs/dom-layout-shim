@@ -14,9 +14,6 @@ importers:
       opentype.js:
         specifier: 2.0.0
         version: 2.0.0
-      taffy-layout:
-        specifier: ^2.0.3
-        version: 2.0.3
     devDependencies:
       '@biomejs/biome':
         specifier: 2.5.10
@@ -1543,10 +1540,6 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
-
-  taffy-layout@2.0.3:
-    resolution: {integrity: sha512-gKR7T3GvdI1itN8ZvMACk739aVXS3bWdNVYfDcKJej02Fl448+hjd8TszlMzV942BtsgHYiGcjSpVjZafeXs8g==}
-    engines: {node: '>=12'}
 
   throttle-debounce@5.0.2:
     resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}
@@ -3115,8 +3108,6 @@ snapshots:
   stylis@4.4.0: {}
 
   supports-preserve-symlinks-flag@1.0.0: {}
-
-  taffy-layout@2.0.3: {}
 
   throttle-debounce@5.0.2: {}
 

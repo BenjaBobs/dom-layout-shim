@@ -48,17 +48,19 @@
   "scripts": {
     "biome:check": "biome check . --error-on-warnings",
     "biome:fix": "biome check . --write",
-    "build": "pnpm run css:generate && node scripts/clean-build-output.mjs && tsc -p tsconfig.build.json",
-    "typecheck": "pnpm run css:generate && tsc -p tsconfig.json --noEmit",
-    "test": "pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
+    "wasm:build": "node scripts/build-taffy-wasm.mjs",
+    "wasm:check": "cargo fmt --manifest-path crates/taffy-wasm/Cargo.toml -- --check && cargo check --locked --manifest-path crates/taffy-wasm/Cargo.toml && pnpm run wasm:build",
+    "build": "pnpm run wasm:build && pnpm run css:generate && node scripts/clean-build-output.mjs && tsc -p tsconfig.build.json && node scripts/build-taffy-wasm.mjs --copy",
+    "typecheck": "pnpm run wasm:build && pnpm run css:generate && tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run wasm:build && pnpm run css:generate && mkdir -p .tmp .cache && TMPDIR=.tmp XDG_CACHE_HOME=.cache vitest run --config vitest.config.ts",
     "examples:build": "pnpm --recursive --filter './examples/*' --if-present run build",
     "examples:typecheck": "pnpm --recursive --filter './examples/*' --if-present run typecheck",
     "examples:test": "pnpm --recursive --filter './examples/*' --if-present run test",
     "examples:check": "pnpm run build && pnpm run examples:typecheck && pnpm run examples:test && pnpm run examples:build",
     "examples:compatibility": "pnpm run build && pnpm run examples:build && node scripts/report-example-compatibility.mjs",
     "test:package": "pnpm run build && node scripts/test-package-consumer.mjs",
-    "test:browser-parity": "pnpm run css:generate && pnpm run font:check && node scripts/run-browser-parity.mjs",
-    "bench": "pnpm run css:generate && node --expose-gc test/bench/hit-testing.bench.ts",
+    "test:browser-parity": "pnpm run wasm:build && pnpm run css:generate && pnpm run font:check && node scripts/run-browser-parity.mjs",
+    "bench": "pnpm run wasm:build && pnpm run css:generate && node --expose-gc test/bench/hit-testing.bench.ts",
     "docs:generate": "pnpm run build && pnpm run examples:build && node scripts/generate-docs-pages.mjs && node scripts/generate-changelog-page.mjs",
     "docs:check": "pnpm run build && pnpm run examples:build && pnpm run css:check && node scripts/generate-docs-pages.mjs --check && node scripts/generate-changelog-page.mjs --check",
     "docs:serve": "pnpm run docs:generate && node scripts/serve-css-support-status.mjs",
@@ -87,7 +89,6 @@
   },
   "dependencies": {
     "lightningcss": "^1.33.0",
-    "opentype.js": "2.0.0",
-    "taffy-layout": "^2.0.3"
+    "opentype.js": "2.0.0"
   }
 }

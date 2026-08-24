@@ -1,3 +1,14 @@
+import { resolveCalculatedDimension } from '../../css/length-value.ts';
+import type {
+  Edges,
+  GridMaxTrackBreadth,
+  GridMinTrackBreadth,
+  GridTemplateTrack,
+  GridTrack,
+  MarginValue,
+  SupportedDimension,
+  SupportedStyle,
+} from '../../css/supported-style.ts';
 import {
   AlignContent,
   AlignItems,
@@ -15,18 +26,7 @@ import {
   type Size,
   Style,
   type TrackSizingFunction,
-} from 'taffy-layout';
-import { resolveCalculatedDimension } from '../../css/length-value.ts';
-import type {
-  Edges,
-  GridMaxTrackBreadth,
-  GridMinTrackBreadth,
-  GridTemplateTrack,
-  GridTrack,
-  MarginValue,
-  SupportedDimension,
-  SupportedStyle,
-} from '../../css/supported-style.ts';
+} from './taffy-bindings.ts';
 
 export type TaffyStyleContext = {
   replacedSize?: Size<number>;
@@ -66,6 +66,16 @@ export function toTaffyStyle(
   taffyStyle.gridTemplateRows = toTaffyGridTracks(style.gridTemplateRows);
   taffyStyle.gridAutoColumns = toTaffyAutoGridTracks(style.gridAutoColumns);
   taffyStyle.gridAutoRows = toTaffyAutoGridTracks(style.gridAutoRows);
+  taffyStyle.gridTemplateAreas = style.gridTemplateAreas
+    ? {
+        areas: [...style.gridTemplateAreas].map(([name, area]) => ({
+          name,
+          ...area,
+        })),
+        rowCount: style.gridTemplateAreaRowCount ?? 0,
+        columnCount: style.gridTemplateAreaColumnCount ?? 0,
+      }
+    : undefined;
   taffyStyle.gridColumn = {
     start: toTaffyGridPlacement(style.gridColumnStart),
     end: toTaffyGridPlacement(style.gridColumnEnd),
@@ -180,8 +190,8 @@ function resolveMarginRect(
 
 function toTaffyGridPlacement(
   value: SupportedStyle['gridColumnStart'],
-): 'auto' | number | { span: number } {
-  return typeof value === 'object' && 'area' in value ? 'auto' : value;
+): 'auto' | number | { span: number } | { area: string } {
+  return value;
 }
 
 export function effectiveBorderWidth(style: SupportedStyle): Edges {
@@ -209,6 +219,8 @@ function borderStyleHasGeometry(
 
 function toTaffyDisplay(value: SupportedStyle['display']): Display {
   switch (value) {
+    case 'flow-root':
+      return Display.FlowRoot;
     case 'flex':
       return Display.Flex;
     case 'grid':
@@ -266,7 +278,7 @@ function toTaffyGridTrackSizing(track: GridTrack): TrackSizingFunction {
     };
   }
 
-  if (typeof track === 'string' && track.endsWith('fr')) {
+  if (isFractionTrack(track)) {
     return { min: 0, max: track };
   }
 
@@ -275,10 +287,7 @@ function toTaffyGridTrackSizing(track: GridTrack): TrackSizingFunction {
 }
 
 function toTaffyGridTrack(
-  track: Exclude<
-    GridTrack,
-    { min: GridMinTrackBreadth; max: GridMaxTrackBreadth }
-  >,
+  track: GridMinTrackBreadth,
 ): number | `${number}%` | 'auto' | 'min-content' | 'max-content' {
   if (typeof track !== 'string') {
     return track;
@@ -288,8 +297,10 @@ function toTaffyGridTrack(
     return track;
   }
 
-  const percentage = Number(track.slice(0, -1));
-  return `${percentage / 100}%`;
+  // The previous third-party binding interpreted percentage track strings as
+  // fractional values. The repository binding accepts CSS percentages and
+  // performs the fraction conversion at the Rust boundary.
+  return track;
 }
 
 function toTaffyGridMinTrackBreadth(
@@ -301,11 +312,17 @@ function toTaffyGridMinTrackBreadth(
 function toTaffyGridMaxTrackBreadth(
   track: GridMaxTrackBreadth,
 ): MaxTrackSizingFunction {
-  if (typeof track === 'string' && track.endsWith('fr')) {
+  if (isFractionTrack(track)) {
     return track;
   }
 
   return toTaffyGridTrack(track);
+}
+
+function isFractionTrack(
+  track: GridMinTrackBreadth | GridMaxTrackBreadth,
+): track is `${number}fr` {
+  return typeof track === 'string' && track.endsWith('fr');
 }
 
 function isGridRepeat(

@@ -1,7 +1,7 @@
-import type { MeasureFunction, Size } from 'taffy-layout';
 import type { NativeControlMetrics } from '../../../api/native-control-profile.ts';
 import type { TextMeasurer } from '../../../api/text-measurer.ts';
 import type { SupportedStyle } from '../../css/supported-style.ts';
+import type { MeasureFunction, Size } from './taffy-bindings.ts';
 
 const elementNodeType = 1;
 const textNodeType = 3;

@@ -141,9 +141,9 @@ The current implementation uses Lightning CSS for `<style>` parsing and supports
 a small CSS subset for proof-of-concept block, flex, absolute, fixed, and sticky
 positioned fixtures. Sticky boxes honor physical insets against the nearest
 supported scrolling ancestor or the viewport, including sticky table headers,
-and stop at their containing block. Grid layouts support rectangular named
-templates through `grid-template-areas` and `grid-area`, including areas that
-span rows or columns and templates with unnamed `.` cells. Unsupported declarations are ignored with deduplicated
+and stop at their containing block. Grid layouts pass rectangular named
+templates through Taffy's native `grid-template-areas` and `grid-area` model,
+including areas that span rows or columns and templates with unnamed `.` cells. Unsupported declarations are ignored with deduplicated
 warnings so applications can continue using the supported subset. Each warning
 identifies the declaration and links to its compatibility entry.
 
@@ -286,6 +286,35 @@ recorded for inspection; only an execution or capture error fails the command.
 Run `pnpm run test:package` to build and pack the exact npm artifact, install it
 into an isolated consumer project, typecheck its public API, and exercise layout
 and hit testing through the packaged output.
+
+### Development prerequisites
+
+Building from source requires Node.js 22 or newer, pnpm 10, Rust 1.98, the
+`wasm32-unknown-unknown` Rust target, and wasm-pack 0.15. The published package
+already contains the generated WebAssembly module; consumers do not need Rust
+or wasm-pack.
+
+With Rust managed by mise, install the remaining tools once:
+
+```sh
+mise use rust@1.98
+rustup target add wasm32-unknown-unknown
+cargo install wasm-pack --version 0.15.0 --locked
+```
+
+Verify the toolchain and build the ignored generated binding:
+
+```sh
+rustc --version
+rustup target list --installed
+wasm-pack --version
+pnpm run wasm:check
+```
+
+`pnpm run build`, `pnpm test`, browser parity, documentation, and package tests
+rebuild the binding automatically. Rust source and `Cargo.lock` are committed;
+the generated JavaScript glue and `.wasm` stay ignored in the source tree and
+are copied into `dist/` only when producing the package.
 
 See [docs/implementation-phases.md](docs/implementation-phases.md) for the
 case-based implementation plan.

@@ -108,6 +108,7 @@ export type TransformOrigin = {
 export type SupportedStyle = {
   display:
     | 'block'
+    | 'flow-root'
     | 'inline'
     | 'flex'
     | 'grid'
@@ -141,6 +142,8 @@ export type SupportedStyle = {
   gridTemplateColumns: GridTemplateTrack[];
   gridTemplateRows: GridTemplateTrack[];
   gridTemplateAreas?: Map<string, GridTemplateArea>;
+  gridTemplateAreaRowCount?: number;
+  gridTemplateAreaColumnCount?: number;
   gridAutoColumns: GridTrack[];
   gridAutoRows: GridTrack[];
   gridColumnStart: GridPlacementValue;
