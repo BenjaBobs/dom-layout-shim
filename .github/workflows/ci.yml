@@ -182,6 +182,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
+    env:
+      TAFFY_WASM_PREBUILT: 1
     steps:
       - name: Require successful classification
         if: needs.affected.result != 'success'
@@ -269,6 +271,8 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
+    env:
+      TAFFY_WASM_PREBUILT: 1
     steps:
       - name: Require successful classification
         if: needs.affected.result != 'success'
