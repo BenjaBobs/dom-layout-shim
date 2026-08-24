@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cp, mkdir, rm } from 'node:fs/promises';
+import { access, cp, mkdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
@@ -21,6 +21,19 @@ if (process.argv.includes('--copy')) {
       cp(resolve(generated, file), resolve(destination, file)),
     ),
   );
+  process.exit();
+}
+
+if (process.env.TAFFY_WASM_PREBUILT === '1') {
+  await Promise.all(
+    [
+      'taffy_wasm.js',
+      'taffy_wasm.d.ts',
+      'taffy_wasm_bg.wasm',
+      'taffy_wasm_bg.wasm.d.ts',
+    ].map(file => access(resolve(generated, file))),
+  );
+  console.log('Using the prebuilt Taffy WebAssembly binding.');
   process.exit();
 }
 
