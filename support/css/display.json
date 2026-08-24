@@ -23,7 +23,7 @@
       "notes": [
         {
           "kind": "taffy-compat",
-          "text": "Authored `inline`, `inline-block`, `flow-root`, and `list-item` values are blockified."
+          "text": "Authored `inline`, `inline-block`, and `list-item` values are blockified. `flow-root` is passed to Taffy 0.14 and establishes an independent block formatting context."
         },
         {
           "kind": "limitation",

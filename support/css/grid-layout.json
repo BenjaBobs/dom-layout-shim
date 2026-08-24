@@ -58,10 +58,6 @@
         },
         {
           "kind": "taffy-compat",
-          "text": "Explicit `minmax()` row caps can diverge from Chromium in Taffy 0.9.2."
-        },
-        {
-          "kind": "taffy-compat",
           "text": "Flexible `fr` tracks are mapped to Taffy min/max tracks with minimum zero and maximum `Nfr` because Taffy accepts `fr` only as a maximum track sizing function."
         }
       ]
@@ -85,12 +81,7 @@
         "status": "verified",
         "fixtures": ["grid-auto-flow", "grid-auto-tracks"]
       },
-      "notes": [
-        {
-          "kind": "taffy-compat",
-          "text": "Auto-height grids with empty implicit `minmax()` rows can diverge from Chromium in Taffy 0.9.2; parity coverage therefore uses a definite grid height."
-        }
-      ]
+      "notes": []
     },
     {
       "id": "line-and-span-placement",
@@ -138,7 +129,7 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Parity covers named areas spanning rows and columns, empty cells, gaps, and source-order-independent placement."
+          "text": "Parity covers Taffy-native named-area placement, areas spanning rows and columns, empty cells that contribute implicit tracks, gaps, and source-order-independent placement."
         },
         {
           "kind": "limitation",

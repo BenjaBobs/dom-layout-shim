@@ -1,4 +1,3 @@
-import { Display, loadTaffy, Style, TaffyTree } from 'taffy-layout';
 import type { Box } from '../../api/box.ts';
 import type { HitBox } from '../../api/hit-box.ts';
 import type {
@@ -38,6 +37,12 @@ import {
   transformBoxPoints,
 } from '../geometry/transform.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
+import {
+  Display,
+  loadTaffy,
+  Style,
+  TaffyTree,
+} from './taffy/taffy-bindings.ts';
 import {
   canMeasureTextLeaf,
   createMeasureContext,
@@ -334,8 +339,9 @@ function resolveDeferredCalculatedDimensions(
     const basis = computedPercentageBasis(element, style, layoutTree.state);
     if (basis.width === undefined && basis.height === undefined) continue;
 
-    // Taffy 0.9, exposed by the current JS binding, cannot retain CSS calc
-    // expressions. A first layout establishes definite auto inline sizes and
+    // The repository-owned Taffy 0.14 binding intentionally accepts resolved
+    // scalar and percentage values rather than carrying CSS calc expression
+    // trees. A first layout establishes definite auto inline sizes and
     // positioned padding boxes; update only calc-bearing nodes and recompute.
     layoutTree.state.tree.setStyle(
       node,
@@ -1183,10 +1189,11 @@ function percentageBasisFor(
   style: SupportedStyle,
   state: TaffyLayoutState,
 ): { width?: number; height?: number } {
-  // The current Taffy binding cannot carry CSS calc trees. Resolve affine
-  // percentage-plus-length values before conversion only when CSS gives us a
-  // definite containing-block axis; leave an indefinite axis unresolved rather
-  // than substituting an observed first-pass size and making layout circular.
+  // The repository-owned Taffy 0.14 binding does not carry CSS calc trees.
+  // Resolve affine percentage-plus-length values before conversion only when
+  // CSS gives us a definite containing-block axis; leave an indefinite axis
+  // unresolved rather than substituting an observed first-pass size and making
+  // layout circular.
   if (style.position === 'fixed') return state.viewport;
 
   const containingBlock = containingBlockFor(element, style, state);
@@ -2026,7 +2033,6 @@ function resolveSupportedStyle(
     customProperties,
     state.viewport,
   );
-  resolveNamedGridPlacements(style, element, state);
   applyPostAuthorStructuralDefaults(style, element);
   state.styles.set(element, style);
   return style;
@@ -2093,60 +2099,6 @@ function resolvePseudoElementStyle(
   styles[pseudoElement] = style;
   state.pseudoStyles.set(element, styles);
   return style;
-}
-
-function resolveNamedGridPlacements(
-  style: SupportedStyle,
-  element: Element,
-  state: TaffyLayoutState,
-): void {
-  const parent = element.parentElement;
-
-  if (!parent) {
-    return;
-  }
-
-  const areas = resolveSupportedStyle(parent, state).gridTemplateAreas;
-
-  if (!areas) {
-    return;
-  }
-
-  // Taffy accepts numeric grid lines but does not model CSS named areas.
-  // Translate the browser-facing names to the template's one-based line bounds
-  // after the parent cascade resolves, preserving Taffy's placement algorithm.
-  style.gridRowStart = resolveNamedGridPlacement(
-    style.gridRowStart,
-    areas,
-    'rowStart',
-  );
-  style.gridRowEnd = resolveNamedGridPlacement(
-    style.gridRowEnd,
-    areas,
-    'rowEnd',
-  );
-  style.gridColumnStart = resolveNamedGridPlacement(
-    style.gridColumnStart,
-    areas,
-    'columnStart',
-  );
-  style.gridColumnEnd = resolveNamedGridPlacement(
-    style.gridColumnEnd,
-    areas,
-    'columnEnd',
-  );
-}
-
-function resolveNamedGridPlacement(
-  placement: SupportedStyle['gridColumnStart'],
-  areas: NonNullable<SupportedStyle['gridTemplateAreas']>,
-  edge: 'rowStart' | 'rowEnd' | 'columnStart' | 'columnEnd',
-): SupportedStyle['gridColumnStart'] {
-  if (typeof placement !== 'object' || !('area' in placement)) {
-    return placement;
-  }
-
-  return areas.get(placement.area)?.[edge] ?? 'auto';
 }
 
 function resolveElementCustomProperties(

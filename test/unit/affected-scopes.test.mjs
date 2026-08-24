@@ -42,6 +42,26 @@ describe('affected scope classification', () => {
     });
   });
 
+  it('runs every consuming pipeline for Taffy binding changes', () => {
+    expect(
+      classifyAffectedScopes(['crates/taffy-wasm/src/lib.rs']),
+    ).toMatchObject({
+      package: true,
+      parity: true,
+      docs: true,
+      release: true,
+    });
+
+    expect(
+      classifyAffectedScopes(['scripts/build-taffy-wasm.mjs']),
+    ).toMatchObject({
+      package: true,
+      parity: true,
+      docs: true,
+      release: true,
+    });
+  });
+
   it('runs package and documentation checks for hosted example changes', () => {
     expect(
       classifyAffectedScopes(['examples/basic/test/app.test.ts']),

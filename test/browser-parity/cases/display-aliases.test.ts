@@ -109,3 +109,37 @@ it('maps inline flex and grid aliases to their layout modes', async () => {
     ],
   });
 });
+
+it('flow-root establishes an independent block formatting context', async () => {
+  await expectChromiumParity({
+    viewport: { width: 360, height: 220 },
+    html: `
+      <style>
+        body {
+          margin: 0;
+        }
+
+        #flow-root {
+          display: flow-root;
+          width: 100px;
+        }
+
+        #child {
+          height: 20px;
+          margin-top: 30px;
+        }
+
+        #after {
+          height: 10px;
+        }
+      </style>
+      <div id="flow-root"><div id="child"></div></div>
+      <div id="after"></div>
+    `,
+    queries: [
+      { type: 'rect', selector: '#flow-root' },
+      { type: 'rect', selector: '#child' },
+      { type: 'rect', selector: '#after' },
+    ],
+  });
+});

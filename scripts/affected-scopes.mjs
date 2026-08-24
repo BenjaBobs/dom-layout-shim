@@ -36,9 +36,14 @@ const rules = [
   {
     match: oneOf(
       'scripts/clean-build-output.mjs',
+      'scripts/build-taffy-wasm.mjs',
       'scripts/test-package-consumer.mjs',
     ),
-    scopes: ['package'],
+    scopes: ['package', 'parity', 'docs', 'release'],
+  },
+  {
+    match: prefix('crates/taffy-wasm/'),
+    scopes: ['package', 'parity', 'docs', 'release'],
   },
   {
     match: oneOf(

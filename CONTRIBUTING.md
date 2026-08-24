@@ -8,12 +8,22 @@ Participation is governed by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Use
 
 ## Set up the repository
 
-Use Node.js 22 or newer and `pnpm`.
+Use Node.js 22 or newer, `pnpm` 10, Rust 1.98, and `wasm-pack` 0.15. The Rust
+toolchain must include the `wasm32-unknown-unknown` target. With mise and rustup:
 
 ```sh
+mise use node@22
+mise use pnpm@10
+mise use rust@1.98
+rustup target add wasm32-unknown-unknown
+cargo install wasm-pack --version 0.15.0 --locked
 pnpm install
 pnpm test
 ```
+
+The Rust source and lockfile for the repository-owned Taffy 0.14 binding are
+committed. Generated JavaScript glue and WebAssembly are ignored in the source
+tree and rebuilt automatically by package commands.
 
 The repository is a pnpm workspace. Packages under `examples/` are private
 consumers that depend on the root package with the `workspace:*` protocol. Run
