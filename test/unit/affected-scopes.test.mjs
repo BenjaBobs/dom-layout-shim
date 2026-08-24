@@ -53,24 +53,24 @@ describe('affected scope classification', () => {
     });
   });
 
-  it('limits Pages action updates to documentation checks', () => {
+  it('validates removal of the old documentation workflow', () => {
     expect(
       classifyAffectedScopes(['.github/workflows/docs.yml']),
     ).toMatchObject({
       package: false,
       parity: false,
       docs: true,
-      release: false,
+      release: true,
     });
   });
 
-  it('does not run package tests for release automation changes', () => {
+  it('validates documentation for main integration changes', () => {
     expect(
       classifyAffectedScopes(['.github/workflows/release.yml']),
     ).toMatchObject({
       package: false,
       parity: false,
-      docs: false,
+      docs: true,
       release: true,
     });
   });
