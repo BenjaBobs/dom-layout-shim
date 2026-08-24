@@ -9,6 +9,7 @@ runs:
       with:
         toolchain: 1.98.0
         targets: wasm32-unknown-unknown
+        components: rustfmt
 
     - name: Install wasm-pack
       uses: taiki-e/install-action@e6be025a8b1320b83b144a9d72ce7409b69a7fe3 # wasm-pack
