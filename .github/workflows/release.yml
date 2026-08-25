@@ -230,6 +230,7 @@ jobs:
           path: .site
 
   deploy-documentation:
+    if: always() && needs.generate-documentation.result == 'success'
     needs: generate-documentation
     runs-on: ubuntu-latest
     permissions:
