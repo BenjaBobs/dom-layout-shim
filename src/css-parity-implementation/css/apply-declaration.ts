@@ -1638,8 +1638,9 @@ export function applyDeclaration(
         context,
       );
       return;
+    case 'word-spacing':
     case 'letter-spacing':
-      applyLetterSpacing(
+      applyTextSpacing(
         style,
         normalizedValue,
         normalizedProperty,
@@ -1962,7 +1963,7 @@ function applyFontWeight(
   });
 }
 
-function applyLetterSpacing(
+function applyTextSpacing(
   style: SupportedStyle,
   value: string,
   property: string,
@@ -1971,12 +1972,13 @@ function applyLetterSpacing(
 ): void {
   if (value === 'inherit' || value === 'unset') return;
   if (value === 'initial' || value === 'normal') {
-    style.letterSpacing = 0;
+    style[property === 'word-spacing' ? 'wordSpacing' : 'letterSpacing'] = 0;
     return;
   }
   const length = parseDimension(value, context);
   if (typeof length === 'number') {
-    style.letterSpacing = length;
+    style[property === 'word-spacing' ? 'wordSpacing' : 'letterSpacing'] =
+      length;
     return;
   }
   handleUnsupportedCss(context.policy, {

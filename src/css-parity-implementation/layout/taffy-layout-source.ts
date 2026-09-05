@@ -766,6 +766,7 @@ function measureInlineWidth(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     maxWidth: undefined,
     whiteSpace: 'nowrap',
@@ -1027,6 +1028,7 @@ function buildChildNodes(
     anonymousStyle.fontSize = parentStyle.fontSize;
     anonymousStyle.fontWeight = parentStyle.fontWeight;
     anonymousStyle.letterSpacing = parentStyle.letterSpacing;
+    anonymousStyle.wordSpacing = parentStyle.wordSpacing;
     anonymousStyle.lineHeight = parentStyle.lineHeight;
     anonymousStyle.whiteSpace = parentStyle.whiteSpace;
     anonymousStyle.textTransform = parentStyle.textTransform;
@@ -1036,6 +1038,7 @@ function buildChildNodes(
       fontSize: parentStyle.fontSize,
       fontWeight: parentStyle.fontWeight,
       letterSpacing: parentStyle.letterSpacing,
+      wordSpacing: parentStyle.wordSpacing,
       lineHeight: parentStyle.lineHeight,
       whiteSpace: parentStyle.whiteSpace,
       textTransform: parentStyle.textTransform,
@@ -1248,6 +1251,7 @@ function buildGeneratedPseudoNodes(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textTransform: style.textTransform,
@@ -2161,6 +2165,7 @@ function resolvePseudoElementStyle(
   style.fontSize = originatingStyle.fontSize;
   style.fontWeight = originatingStyle.fontWeight;
   style.letterSpacing = originatingStyle.letterSpacing;
+  style.wordSpacing = originatingStyle.wordSpacing;
   style.lineHeight = originatingStyle.lineHeight;
   style.whiteSpace = originatingStyle.whiteSpace;
   style.textTransform = originatingStyle.textTransform;
@@ -2268,6 +2273,7 @@ function applyInheritedTextDefaults(
   style.fontSize = parentStyle.fontSize;
   style.fontWeight = parentStyle.fontWeight;
   style.letterSpacing = parentStyle.letterSpacing;
+  style.wordSpacing = parentStyle.wordSpacing;
   style.lineHeight = parentStyle.lineHeight;
   style.whiteSpace = parentStyle.whiteSpace;
   style.textTransform = parentStyle.textTransform;
@@ -3200,6 +3206,7 @@ function createReplacedMeasureContext(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textTransform: style.textTransform,

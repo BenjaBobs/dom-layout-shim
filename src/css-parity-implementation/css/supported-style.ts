@@ -180,6 +180,7 @@ export type SupportedStyle = {
   fontSize: number;
   fontWeight: number;
   letterSpacing: number;
+  wordSpacing: number;
   lineHeight: number;
   whiteSpace: WhiteSpace;
   textTransform: TextTransform;
@@ -236,6 +237,7 @@ export function createDefaultStyle(): SupportedStyle {
     fontSize: 16,
     fontWeight: 400,
     letterSpacing: 0,
+    wordSpacing: 0,
     lineHeight: 19.2,
     whiteSpace: 'normal',
     textTransform: 'none',

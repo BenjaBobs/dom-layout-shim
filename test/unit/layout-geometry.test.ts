@@ -210,9 +210,10 @@ describe('layout DOM API and package contracts', () => {
       maxWidth: number | undefined;
       fontWeight?: number;
       letterSpacing?: number;
+      wordSpacing?: number;
     }> = [];
     document.body.innerHTML =
-      '<div id="text" style="max-width:50px;font-weight:700;letter-spacing:2px">Hello world</div>';
+      '<div id="text" style="max-width:50px;font-weight:700;letter-spacing:2px;word-spacing:3px">Hello world</div>';
 
     await attach({
       viewport: { width: 300, height: 200 },
@@ -222,6 +223,7 @@ describe('layout DOM API and package contracts', () => {
             maxWidth: input.maxWidth,
             fontWeight: input.fontWeight,
             letterSpacing: input.letterSpacing,
+            wordSpacing: input.wordSpacing,
           });
           return input.maxWidth === 50
             ? { width: 50, height: 40 }
@@ -235,6 +237,7 @@ describe('layout DOM API and package contracts', () => {
       maxWidth: 50,
       fontWeight: 700,
       letterSpacing: 2,
+      wordSpacing: 3,
     });
   });
 

@@ -13,6 +13,7 @@ export type MeasureContext = {
   fontSize: number;
   fontWeight: number;
   letterSpacing: number;
+  wordSpacing: number;
   lineHeight: number;
   whiteSpace: SupportedStyle['whiteSpace'];
   textTransform: SupportedStyle['textTransform'];
@@ -46,6 +47,7 @@ export function createMeasureContext(
       fontSize: style.fontSize,
       fontWeight: style.fontWeight,
       letterSpacing: style.letterSpacing,
+      wordSpacing: style.wordSpacing,
       lineHeight: style.lineHeight,
       whiteSpace: style.whiteSpace,
       textTransform: style.textTransform,
@@ -71,6 +73,7 @@ export function createMeasureContext(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     whiteSpace: style.whiteSpace,
     textTransform: style.textTransform,
@@ -149,6 +152,7 @@ export const measureTaffyNode: MeasureFunction = (
     fontSize: measureContext.fontSize,
     fontWeight: measureContext.fontWeight,
     letterSpacing: measureContext.letterSpacing,
+    wordSpacing: measureContext.wordSpacing,
     lineHeight: measureContext.lineHeight,
     maxWidth,
     whiteSpace: measureContext.whiteSpace,
@@ -325,6 +329,7 @@ function styledFlexButtonIntrinsicSize(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     maxWidth: Number.MAX_SAFE_INTEGER,
     whiteSpace: 'nowrap',
@@ -465,6 +470,7 @@ function widestOptionTextWidth(
       fontSize: style.fontSize,
       fontWeight: style.fontWeight,
       letterSpacing: style.letterSpacing,
+      wordSpacing: style.wordSpacing,
       lineHeight: style.lineHeight,
       maxWidth: Number.MAX_SAFE_INTEGER,
       whiteSpace: 'nowrap',
@@ -495,6 +501,7 @@ function buttonLikeIntrinsicSize(
     fontSize: style.fontSize,
     fontWeight: style.fontWeight,
     letterSpacing: style.letterSpacing,
+    wordSpacing: style.wordSpacing,
     lineHeight: style.lineHeight,
     maxWidth: Number.MAX_SAFE_INTEGER,
     whiteSpace: 'nowrap',

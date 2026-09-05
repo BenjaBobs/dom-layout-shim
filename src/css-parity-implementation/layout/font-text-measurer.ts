@@ -8,6 +8,7 @@ import type {
   TextMeasurer,
 } from '../../api/text-measurer.ts';
 import { readFontFaceRules } from '../css/stylesheet-source.ts';
+import { wordSpacingWidth } from './word-spacing.ts';
 
 type LoadedFontFace = {
   family: string;
@@ -121,7 +122,8 @@ function measuredWidth(
 ): number {
   return (
     font.getAdvanceWidth(text, input.fontSize, { kerning: true }) +
-    text.length * (input.letterSpacing ?? 0)
+    text.length * (input.letterSpacing ?? 0) +
+    wordSpacingWidth(text, input.wordSpacing ?? 0)
   );
 }
 

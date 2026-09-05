@@ -346,8 +346,13 @@ Two-dimensional translation, scaling, rotation, skew, and matrix transforms
 project client rectangles and hit-test regions. Rotated and skewed elements use
 their transformed quadrilateral for point queries.
 
-Custom text measurers receive the resolved numeric font weight and letter
-spacing so component typography can influence intrinsic geometry.
+Custom text measurers receive resolved numeric `fontWeight`, `letterSpacing`,
+and `wordSpacing` values so component typography can influence intrinsic
+geometry. Inherited `word-spacing` accepts `normal` and supported lengths,
+including negative values. For example, `word-spacing: 4px` adds four pixels
+to each remaining space in measured text, increasing intrinsic width and
+potentially moving words onto another line. Spaces and no-break spaces are
+covered; script-specific word separators are not modeled.
 They also receive text after inherited `none`, `uppercase`, `lowercase`, or
 `capitalize` transformation. The DOM's authored `textContent` is unchanged.
 

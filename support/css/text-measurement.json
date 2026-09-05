@@ -11,7 +11,8 @@
       "letter-spacing",
       "line-height",
       "text-transform",
-      "white-space"
+      "white-space",
+      "word-spacing"
     ],
     "elements": []
   },
@@ -64,6 +65,27 @@
         {
           "kind": "limitation",
           "text": "Relative `bolder` and `lighter` weights and the full browser font-selection algorithm are not modeled."
+        }
+      ]
+    },
+    {
+      "id": "word-spacing",
+      "description": "Inherited word spacing contributes to intrinsic text widths and normal wrapping.",
+      "properties": ["word-spacing"],
+      "syntax": ["normal", "<length>"],
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": ["word-spacing"]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Parity covers positive and negative lengths, em units, inheritance and CSS-wide resets, collapsed and preserved spaces, preserved no-break spaces, and normal wrapping."
+        },
+        {
+          "kind": "limitation",
+          "text": "Script-specific word separators and the full inline formatting and whitespace model are not implemented."
         }
       ]
     },
