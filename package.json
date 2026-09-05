@@ -1,6 +1,6 @@
 {
   "name": "dom-layout-shim",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Patch deterministic layout and hit testing into DOM-like test environments.",
   "license": "Unlicense",
   "packageManager": "pnpm@10.33.2",
