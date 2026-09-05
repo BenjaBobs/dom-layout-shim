@@ -100,9 +100,14 @@ Two-dimensional translate, scale, rotate, skew, and matrix transforms project
 client geometry after Taffy layout. Hit boxes retain the transformed polygon so
 point queries exclude empty corners of an axis-aligned bounding rectangle.
 
-`TextMeasureInput` includes resolved `fontWeight` and `letterSpacing` values.
-Both inherit through the supported text cascade and feed default intrinsic text
-measurement.
+`TextMeasureInput` includes resolved `fontWeight`, `letterSpacing`, and optional
+`wordSpacing` values. These inherit through the supported text cascade and feed
+default intrinsic text measurement. `word-spacing` accepts `normal` and supported
+lengths, including negative values. For example, `word-spacing: 4px` adds four
+pixels to each remaining space and can cause normal text to wrap earlier.
+Spaces and no-break spaces are covered; script-specific word separators are
+not modeled. Direct text-measurer calls that omit `wordSpacing` retain zero
+additional word spacing.
 Inherited `text-transform` values `none`, `uppercase`, `lowercase`, and
 `capitalize` are applied to the string passed into default or custom text
 measurement. They do not mutate authored `textContent`.

@@ -93,6 +93,7 @@ function stringifyCssValue(property: string, value: unknown): string {
     case 'max-block-size':
     case 'font-size':
     case 'line-height':
+    case 'word-spacing':
     case 'letter-spacing':
     case 'flex-grow':
     case 'flex-shrink':

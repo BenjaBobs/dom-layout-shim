@@ -1,3 +1,5 @@
+import { wordSpacingWidth } from '../css-parity-implementation/layout/word-spacing.ts';
+
 export type WhiteSpace = 'normal' | 'pre' | 'pre-line' | 'pre-wrap' | 'nowrap';
 
 export type TextMeasureInput = {
@@ -6,6 +8,7 @@ export type TextMeasureInput = {
   fontSize: number;
   fontWeight?: number;
   letterSpacing?: number;
+  wordSpacing?: number;
   maxWidth: number | undefined;
   lineHeight: number;
   whiteSpace: WhiteSpace;
@@ -37,6 +40,7 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
               input.fontFamily,
               input.fontSize,
               input.letterSpacing ?? 0,
+              input.wordSpacing ?? 0,
             ),
           ),
         0,
@@ -71,6 +75,7 @@ function breakTextIntoLines(input: TextMeasureInput): string[] {
     input.fontFamily,
     input.fontSize,
     input.letterSpacing ?? 0,
+    input.wordSpacing ?? 0,
   );
 }
 
@@ -79,6 +84,7 @@ function measuredLineWidth(
   fontFamily: string,
   fontSize: number,
   letterSpacing: number,
+  wordSpacing: number,
 ): number {
   // Approximate the wider capitals in the common proportional sans-serif stack
   // while preserving the long-standing fixed-width fallback for unknown fonts.
@@ -89,7 +95,11 @@ function measuredLineWidth(
       fontSize * (hasWiderCapitals && /[A-Z]/.test(character) ? 0.6 : 0.5),
     0,
   );
-  return glyphWidth + letterSpacingWidth(text, letterSpacing);
+  return (
+    glyphWidth +
+    letterSpacingWidth(text, letterSpacing) +
+    wordSpacingWidth(text, wordSpacing)
+  );
 }
 
 function letterSpacingWidth(text: string, letterSpacing: number): number {
@@ -128,6 +138,7 @@ function wrapNormalText(
   fontFamily: string,
   fontSize: number,
   letterSpacing: number,
+  wordSpacing: number,
 ): string[] {
   const words = text.split(' ');
   const lines: string[] = [];
@@ -137,7 +148,13 @@ function wrapNormalText(
     const next = current ? `${current} ${word}` : word;
 
     if (
-      measuredLineWidth(next, fontFamily, fontSize, letterSpacing) <= maxWidth
+      measuredLineWidth(
+        next,
+        fontFamily,
+        fontSize,
+        letterSpacing,
+        wordSpacing,
+      ) <= maxWidth
     ) {
       current = next;
       continue;

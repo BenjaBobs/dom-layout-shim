@@ -203,7 +203,11 @@ Two-dimensional rotation, skew, and matrix transforms affect client geometry
 and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
 Text measurement receives inherited numeric `font-weight` and resolved
-`letter-spacing` in addition to family, size, line height, and white-space.
+`letter-spacing` and `word-spacing` in addition to family, size, line height,
+and white-space. For example, `word-spacing: 4px` adds four pixels to each
+remaining space when measuring text and deciding where normal text wraps.
+Word spacing accepts `normal` and supported lengths, including negative values;
+script-specific word separators are not modeled.
 Static TTF, OTF, and WOFF sources declared through `@font-face` are loaded at
 attachment time and their glyph advances and kerning drive text measurement.
 Data URLs and resolvable URL sources are supported; `local()` and WOFF2 sources
