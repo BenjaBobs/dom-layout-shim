@@ -38,6 +38,7 @@ import {
   transformBoxPoints,
 } from '../geometry/transform.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
+import { applyReplacedDimensionAttributes } from './taffy/replaced-intrinsic-size.ts';
 import {
   Display,
   loadTaffy,
@@ -64,6 +65,7 @@ type TaffyLayoutState = {
   intersectionRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
   elementNodes: Map<Element, bigint>;
+  measureContexts: Map<Element, MeasureContext>;
   anonymousInlineRuns: Map<
     Element,
     { node: bigint; parent: Element; beforeText: string }
@@ -298,6 +300,7 @@ function buildTaffyLayoutTree(
     intersectionRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
+    measureContexts: new Map(),
     anonymousInlineRuns: new Map(),
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
@@ -415,7 +418,10 @@ function resolveDeferredCalculatedDimensions(
     // positioned padding boxes; update only calc-bearing nodes and recompute.
     layoutTree.state.tree.setStyle(
       node,
-      toTaffyStyle(style, { percentageBasis: basis }),
+      toTaffyStyle(style, {
+        ...layoutTree.state.measureContexts.get(element),
+        percentageBasis: basis,
+      }),
     );
     changed = true;
   }
@@ -1167,6 +1173,20 @@ function buildNodesForElement(
     state.nativeControlMetrics,
     generatedContent,
   );
+  if (context) {
+    let parent = element.parentElement;
+    while (
+      parent &&
+      resolveSupportedStyle(parent, state).display === 'contents'
+    )
+      parent = parent.parentElement;
+    context.isFlexItem =
+      !!parent &&
+      resolveSupportedStyle(parent, state).display === 'flex' &&
+      style.position !== 'absolute' &&
+      style.position !== 'fixed';
+    state.measureContexts.set(element, context);
+  }
   const hasPseudoBox = hasGeneratedPseudoBox(element, state);
   const children =
     context?.replacedSize || (canMeasureTextLeaf(element) && !hasPseudoBox)
@@ -3224,6 +3244,8 @@ function applyStructuralHtmlDefaults(
   if (inlinePhrasingHtmlElements.has(tagName)) {
     style.display = 'inline';
   }
+
+  applyReplacedDimensionAttributes(style, element);
 
   // HTML presentational attributes are author-origin hints, not browser-theme
   // styling. Keep them active when the portable presentation profile is off.

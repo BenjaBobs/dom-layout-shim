@@ -75,6 +75,11 @@ export class DocumentAttachment {
     this.scheduleObserverDelivery();
   };
 
+  private readonly handleImageResource = (event: Event): void => {
+    const target = event.target as Element | null;
+    if (target?.tagName?.toLowerCase() === 'img') this.markDirty();
+  };
+
   constructor(options: DocumentAttachmentOptions) {
     this.document = options.document;
     this.viewport = options.viewport;
@@ -90,6 +95,9 @@ export class DocumentAttachment {
       this.scheduleObserverDelivery();
     });
     this.document.addEventListener('scroll', this.handleScroll, true);
+    // Image decoding changes natural dimensions without a DOM mutation.
+    this.document.addEventListener('load', this.handleImageResource, true);
+    this.document.addEventListener('error', this.handleImageResource, true);
     this.document.defaultView?.addEventListener('scroll', this.handleScroll);
   }
 
@@ -101,6 +109,8 @@ export class DocumentAttachment {
     this.mutationObserver?.disconnect();
     this.mutationObserver = undefined;
     this.document.removeEventListener('scroll', this.handleScroll, true);
+    this.document.removeEventListener('load', this.handleImageResource, true);
+    this.document.removeEventListener('error', this.handleImageResource, true);
     this.document.defaultView?.removeEventListener('scroll', this.handleScroll);
     this.cancelScheduledObserverDelivery();
     unpatchDomApis(this);

@@ -346,6 +346,27 @@ Two-dimensional translation, scaling, rotation, skew, and matrix transforms
 project client rectangles and hit-test regions. Rotated and skewed elements use
 their transformed quadrilateral for point queries.
 
+Images use host-provided `naturalWidth` and `naturalHeight` when available.
+Image width/height attributes provide sizing hints and a fallback ratio; loaded
+image dimensions take precedence for the natural ratio. SVG uses numeric
+width/height attributes or a valid `viewBox` for its intrinsic ratio. Canvas
+uses its width/height attributes, defaulting to 300×150.
+
+These ratios determine the automatic dimension when CSS specifies only one
+axis, including supported min/max constraints and flex/grid placement:
+
+```html
+<svg viewBox="0 0 200 100" style="width: 100px; height: auto"></svg>
+<!-- getBoundingClientRect() reports 100 × 50 after attachment. -->
+```
+
+An authored numeric `aspect-ratio` overrides the natural ratio. Image `load` and
+`error` events invalidate cached geometry. Resource loading and decoding remain
+with the DOM host; the shim does not fetch images. SVG child shapes and canvas
+pixels are not rendered or given shape-specific hit regions. SVG attribute
+lengths beyond unitless numbers and pixels, and natural-ratio border-box sizing
+with unresolved percentage constraints, remain outside this supported subset.
+
 Custom text measurers receive resolved numeric `fontWeight`, `letterSpacing`,
 and `wordSpacing` values so component typography can influence intrinsic
 geometry. Inherited `word-spacing` accepts `normal` and supported lengths,

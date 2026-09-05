@@ -33,7 +33,10 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": ["box-sizing-min-max-size-constraints"]
+        "fixtures": [
+          "box-sizing-min-max-size-constraints",
+          "replaced-intrinsic-ratio"
+        ]
       },
       "notes": []
     },
@@ -113,12 +116,16 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["aspect-ratio"]
+        "fixtures": ["aspect-ratio", "replaced-intrinsic-ratio"]
       },
       "notes": [
         {
           "kind": "limitation",
           "text": "Complex intrinsic sizing interactions outside the supported dimension subset are not modeled."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "An authored numeric ratio overrides image, SVG, and canvas natural ratios. Image attribute ratio hints yield to the loaded natural ratio; SVG viewBox and canvas bitmap dimensions supply intrinsic ratios for auto sizing."
         }
       ]
     }

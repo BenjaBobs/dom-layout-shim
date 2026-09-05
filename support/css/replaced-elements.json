@@ -16,12 +16,35 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["replaced-image-attributes"]
+        "fixtures": ["replaced-image-attributes", "replaced-intrinsic-ratio"]
       },
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "`img` can use `width` and `height` attributes, with missing dimensions treated as zero for images without a resource."
+          "text": "Image width and height attributes are presentational hints. Their ratio supplies the pre-load fallback; loaded natural dimensions supply the intrinsic size and preferred natural ratio. Missing dimensions remain zero for images without a resource."
+        }
+      ]
+    },
+    {
+      "id": "intrinsic-ratios",
+      "description": "Images, SVG, and canvas derive automatic dimensions from intrinsic ratios before Taffy layout.",
+      "support": "partial",
+      "parity": {
+        "status": "verified",
+        "fixtures": ["replaced-intrinsic-ratio", "flex-replaced-intrinsic"]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Coverage includes loaded PNG natural sizes, image attribute ratio hints, SVG viewBox and numeric dimensions, canvas bitmap dimensions, one-axis CSS sizing, min/max constraints, flex/grid placement, calculated dimensions, authored ratio overrides, and definite border-box dimensions."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Taffy 0.14 has no separate natural content-box ratio. Definite border-box constraints are translated to content-box constraints before layout. Image resource load/error events invalidate geometry without requiring an attribute mutation."
+        },
+        {
+          "kind": "limitation",
+          "text": "The host must supply decoded image dimensions; the shim does not fetch resources. SVG shapes and canvas pixels have no separate geometry/hit-testing model. SVG attribute lengths beyond numeric/px values and natural-ratio border-box sizing with unresolved percentage constraints are not modeled."
         }
       ]
     },
@@ -30,13 +53,13 @@
       "description": "`svg`, `canvas`, `video`, `iframe`, and empty `object` elements use deterministic fallback dimensions.",
       "support": "partial",
       "parity": {
-        "status": "unverified",
-        "fixtures": []
+        "status": "verified",
+        "fixtures": ["replaced-image-attributes"]
       },
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "`svg`, `canvas`, `video`, `iframe`, and empty `object` elements use native `300x150` fallback dimensions with `width` and `height` attribute overrides."
+          "text": "SVG without intrinsic dimensions or a valid viewBox, canvas without dimensions, video, iframe, and empty object elements use 300x150 fallback dimensions with supported attribute overrides."
         },
         {
           "kind": "implementation-quirk",
@@ -49,8 +72,8 @@
       "description": "`audio` elements distinguish non-rendered media from controls with deterministic fallback geometry.",
       "support": "partial",
       "parity": {
-        "status": "unverified",
-        "fixtures": []
+        "status": "verified",
+        "fixtures": ["replaced-image-attributes"]
       },
       "notes": [
         {
