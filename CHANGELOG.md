@@ -1,5 +1,93 @@
 # dom-layout-shim
 
+## 0.8.0
+
+### Minor Changes
+
+- 256f122: Add a deterministic, layout-backed IntersectionObserver
+  
+  Attached windows now report viewport and element-root intersections using the
+  shim's geometry, including root margins and threshold crossings. It shares the
+  automatic or manual delivery mode used by other layout observers:
+  
+  ```ts
+  const layout = await attachLayoutEngine({
+    window,
+    observers: { delivery: 'manual' },
+  })
+  const observer = new window.IntersectionObserver(entries => {
+    console.log(entries[0].intersectionRatio)
+  }, { threshold: [0, 0.5, 1] })
+  observer.observe(element)
+  
+  layout.flushLayout()
+  ```
+- b6e836e: Add a deterministic, layout-backed ResizeObserver
+  
+  Attached windows now report element size changes through the standard
+  `ResizeObserver` API. Delivery is automatic by default and remains lazy when
+  there are no active observations. Tests can opt into explicit delivery:
+  
+  ```ts
+  const layout = await attachLayoutEngine({
+    window,
+    observers: { delivery: 'manual' },
+  })
+  const observer = new window.ResizeObserver(entries => {
+    console.log(entries[0].contentRect.width)
+  })
+  observer.observe(element)
+  
+  element.style.width = '320px'
+  layout.flushLayout() // callback reports 320
+  ```
+- 1adf41e: Size images, SVG, and canvas using intrinsic aspect ratios
+  
+  Images now use natural dimensions supplied by the DOM host, SVG can derive its
+  ratio from a valid `viewBox`, and canvas uses its bitmap dimensions. A single CSS
+  width or height resolves the automatic axis from that ratio, including supported
+  min/max constraints and flex/grid placement. Image `load` and `error` events
+  invalidate cached geometry when resource dimensions change.
+  
+  For example, a viewBox-only SVG with a CSS width previously retained the generic
+  150-pixel fallback height. It now has the expected 2:1 layout box:
+  
+  ```html
+  <svg id="icon" viewBox="0 0 200 100" style="width:100px;height:auto"></svg>
+  ```
+  
+  ```ts
+  await attachLayoutEngine({ window })
+  const rect = window.document.querySelector('#icon').getBoundingClientRect()
+  console.log(rect.width, rect.height) // 100, 50 (previously 100, 150)
+  ```
+  
+  Image loading and decoding remain the DOM host's responsibility. SVG child
+  shapes and canvas pixels do not receive separate rendering or hit-test geometry.
+- ec49f81: Measure inherited CSS word spacing
+  
+  `word-spacing` now affects intrinsic text widths and normal line wrapping instead
+  of being reported as unsupported. Positive and negative supported lengths,
+  `normal`, and inherited values feed both font-backed and fallback measurement.
+  Custom text measurers receive the resolved value as `input.wordSpacing`.
+  
+  For example, after attaching the engine, changing a text leaf from
+  `word-spacing: normal` to `word-spacing: 4px` adds four pixels per remaining space:
+  
+  ```ts
+  const layout = await attachLayoutEngine({ window })
+  element.textContent = 'one two'
+  element.style.cssText = 'display:flex;position:absolute;white-space:nowrap'
+  const before = element.getBoundingClientRect().width
+  
+  element.style.wordSpacing = '4px'
+  layout.flushLayout()
+  console.log(element.getBoundingClientRect().width - before) // 4
+  ```
+  
+  Space and no-break-space advances are supported within the existing whitespace
+  model; script-specific word separators remain outside the supported subset.
+
 ## 0.7.0
 
 ### Minor Changes
