@@ -4308,6 +4308,7 @@ function applyAspectRatio(
 ): void {
   if (value === 'auto') {
     style.aspectRatio = undefined;
+    style.aspectRatioIsHint = false;
     return;
   }
 
@@ -4326,6 +4327,7 @@ function applyAspectRatio(
   }
 
   style.aspectRatio = ratio;
+  style.aspectRatioIsHint = false;
 }
 
 function applyGridTemplate(

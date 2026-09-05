@@ -9,6 +9,7 @@ import type {
   SupportedDimension,
   SupportedStyle,
 } from '../../css/supported-style.ts';
+import type { ReplacedIntrinsicSize } from './replaced-intrinsic-size.ts';
 import {
   AlignContent,
   AlignItems,
@@ -29,6 +30,8 @@ import {
 } from './taffy-bindings.ts';
 
 export type TaffyStyleContext = {
+  intrinsicReplaced?: ReplacedIntrinsicSize;
+  isFlexItem?: boolean;
   replacedSize?: Size<number>;
   percentageBasis?: { width?: number; height?: number };
 };
@@ -60,7 +63,7 @@ export function toTaffyStyle(
   taffyStyle.flexBasis =
     resolvedDimension(style.flexBasis, context?.percentageBasis?.width) ??
     'auto';
-  taffyStyle.aspectRatio = style.aspectRatio;
+  taffyStyle.aspectRatio = replacedAspectRatio(style, context);
   taffyStyle.gridAutoFlow = toTaffyGridAutoFlow(style.gridAutoFlow);
   taffyStyle.gridTemplateColumns = toTaffyGridTracks(style.gridTemplateColumns);
   taffyStyle.gridTemplateRows = toTaffyGridTracks(style.gridTemplateRows);
@@ -87,11 +90,13 @@ export function toTaffyStyle(
   taffyStyle.size = {
     width:
       resolvedDimension(style.width, context?.percentageBasis?.width) ??
-      context?.replacedSize?.width ??
+      intrinsicFallbackWidth(style, context) ??
       'auto',
     height:
       resolvedDimension(style.height, context?.percentageBasis?.height) ??
-      context?.replacedSize?.height ??
+      (context?.intrinsicReplaced && taffyStyle.aspectRatio
+        ? undefined
+        : context?.replacedSize?.height) ??
       'auto',
   };
   taffyStyle.minSize = {
@@ -150,6 +155,7 @@ export function toTaffyStyle(
           'auto'),
   };
 
+  normalizeIntrinsicBoxSizing(taffyStyle, style, context);
   return taffyStyle;
 }
 
@@ -458,4 +464,105 @@ function toTaffyRect<Value extends number | `${number}%` | 'auto'>(
     top: edges.top,
     bottom: edges.bottom,
   };
+}
+
+function intrinsicFallbackWidth(
+  style: SupportedStyle,
+  context: TaffyStyleContext | undefined,
+): number | undefined {
+  if (!context?.intrinsicReplaced) return context?.replacedSize?.width;
+  // A natural width must remain a measured flex basis. Promoting it to a
+  // specified width makes Taffy retain the pre-shrink ratio-derived height.
+  if (context.intrinsicReplaced.ratioOnly || context.isFlexItem)
+    return undefined;
+  const ratio = replacedAspectRatio(style, context);
+  return style.height !== undefined && ratio
+    ? undefined
+    : context.intrinsicReplaced.size.width;
+}
+
+function replacedAspectRatio(
+  style: SupportedStyle,
+  context: TaffyStyleContext | undefined,
+): number | undefined {
+  const intrinsic = context?.intrinsicReplaced?.aspectRatio;
+  return style.aspectRatioIsHint
+    ? (intrinsic ?? style.aspectRatio)
+    : (style.aspectRatio ?? intrinsic);
+}
+
+function normalizeIntrinsicBoxSizing(
+  taffy: Style,
+  style: SupportedStyle,
+  context: TaffyStyleContext | undefined,
+): void {
+  if (
+    !context?.intrinsicReplaced ||
+    !taffy.aspectRatio ||
+    style.boxSizing !== 'border-box' ||
+    (style.aspectRatio !== undefined && !style.aspectRatioIsHint)
+  )
+    return;
+  const resolve = (
+    value: number | `${number}%` | 'auto',
+    basis: number | undefined,
+  ): number | undefined =>
+    typeof value === 'number'
+      ? value
+      : value !== 'auto' && basis !== undefined
+        ? (Number.parseFloat(value) * basis) / 100
+        : undefined;
+  const padding = Object.values(taffy.padding).map(value =>
+    resolve(value, context.percentageBasis?.width),
+  );
+  if (padding.some(value => value === undefined)) return;
+  const horizontal =
+    (resolve(taffy.padding.left, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.padding.right, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.border.left, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.border.right, context.percentageBasis?.width) ?? 0);
+  const vertical =
+    (resolve(taffy.padding.top, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.padding.bottom, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.border.top, context.percentageBasis?.width) ?? 0) +
+    (resolve(taffy.border.bottom, context.percentageBasis?.width) ?? 0);
+  const converted = [taffy.size, taffy.minSize, taffy.maxSize].map(
+    (size, index) => {
+      const width = resolve(size.width, context.percentageBasis?.width);
+      const height = resolve(size.height, context.percentageBasis?.height);
+      if (
+        (size.width !== 'auto' && width === undefined) ||
+        (size.height !== 'auto' && height === undefined)
+      )
+        return undefined;
+      return {
+        width:
+          width === undefined
+            ? ('auto' as const)
+            : Math.max(
+                0,
+                width -
+                  (index === 0 && style.width === undefined ? 0 : horizontal),
+              ),
+        height:
+          height === undefined
+            ? ('auto' as const)
+            : Math.max(
+                0,
+                height -
+                  (index === 0 && style.height === undefined ? 0 : vertical),
+              ),
+      };
+    },
+  );
+  const [size, minSize, maxSize] = converted;
+  if (!size || !minSize || !maxSize) return;
+  // Natural replaced ratios always describe the content box. Taffy 0.14 has
+  // only a CSS preferred ratio and applies it to the selected box-sizing box.
+  // Translate definite border-box constraints before layout so native ratio
+  // transfer operates on content dimensions, with padding/borders added once.
+  taffy.boxSizing = BoxSizing.ContentBox;
+  taffy.size = size;
+  taffy.minSize = minSize;
+  taffy.maxSize = maxSize;
 }

@@ -138,6 +138,7 @@ export type SupportedStyle = {
   flexBasis?: SupportedDimension;
   order: number;
   aspectRatio?: number;
+  aspectRatioIsHint?: boolean;
   gridAutoFlow: GridAutoFlowValue;
   gridTemplateColumns: GridTemplateTrack[];
   gridTemplateRows: GridTemplateTrack[];

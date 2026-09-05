@@ -14,6 +14,29 @@ afterEach(() => {
 });
 
 describe('layout invalidation and isolation', () => {
+  it('invalidates cached intrinsic image sizes on resource load and error', async () => {
+    document.body.innerHTML =
+      '<img id="image" style="display:block;width:100px;height:auto" alt="">';
+    const image = requiredElement('#image') as HTMLImageElement;
+    let naturalWidth = 0;
+    let naturalHeight = 0;
+    Object.defineProperties(image, {
+      naturalWidth: { get: () => naturalWidth },
+      naturalHeight: { get: () => naturalHeight },
+    });
+    await attach();
+    expect(image.getBoundingClientRect().height).toBe(0);
+    naturalWidth = 200;
+    naturalHeight = 100;
+    // No attribute or style changes: only the host's resource state changed.
+    image.dispatchEvent(new Event('load'));
+    expect(image.getBoundingClientRect().height).toBe(50);
+    naturalWidth = 0;
+    naturalHeight = 0;
+    image.dispatchEvent(new Event('error'));
+    expect(image.getBoundingClientRect().height).toBe(0);
+  });
+
   it('marks layout dirty when inline styles change', async () => {
     document.body.innerHTML = `
       <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px"></div>

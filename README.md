@@ -202,6 +202,14 @@ paint key used to compare nested contexts.
 Two-dimensional rotation, skew, and matrix transforms affect client geometry
 and use polygonal hit regions rather than treating the empty corners of a
 transformed bounding rectangle as clickable.
+Images, SVG, and canvas use intrinsic aspect ratios when one CSS dimension is
+`auto`. For example, `<svg viewBox="0 0 200 100" style="width:100px;height:auto">`
+has a 100×50 layout box. Images use host-provided natural dimensions, with
+width/height attributes as sizing hints; canvas uses its bitmap dimensions.
+Supported min/max constraints and flex/grid layout preserve these ratios, and
+image `load`/`error` events invalidate cached geometry. Image loading stays with
+the DOM host; SVG shapes and canvas pixels are not rendered. See the guide for
+attribute-length and percentage-constraint limitations.
 Text measurement receives inherited numeric `font-weight` and resolved
 `letter-spacing` and `word-spacing` in addition to family, size, line height,
 and white-space. For example, `word-spacing: 4px` adds four pixels to each

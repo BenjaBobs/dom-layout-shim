@@ -1,6 +1,10 @@
 import type { NativeControlMetrics } from '../../../api/native-control-profile.ts';
 import type { TextMeasurer } from '../../../api/text-measurer.ts';
 import type { SupportedStyle } from '../../css/supported-style.ts';
+import {
+  type ReplacedIntrinsicSize,
+  readReplacedIntrinsicSize,
+} from './replaced-intrinsic-size.ts';
 import type { MeasureFunction, Size } from './taffy-bindings.ts';
 
 const elementNodeType = 1;
@@ -19,6 +23,8 @@ export type MeasureContext = {
   textTransform: SupportedStyle['textTransform'];
   textMeasurer: TextMeasurer;
   replacedSize?: Size<number>;
+  intrinsicReplaced?: ReplacedIntrinsicSize;
+  isFlexItem?: boolean;
   inlineAdvance?: number;
 };
 
@@ -41,7 +47,9 @@ export function createMeasureContext(
       nativeControlMetrics,
     );
 
-  if (replacedSize) {
+  const intrinsicReplaced = readReplacedIntrinsicSize(element);
+
+  if (replacedSize || intrinsicReplaced) {
     return {
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
@@ -52,7 +60,8 @@ export function createMeasureContext(
       whiteSpace: style.whiteSpace,
       textTransform: style.textTransform,
       textMeasurer,
-      replacedSize,
+      replacedSize: intrinsicReplaced?.size ?? replacedSize,
+      intrinsicReplaced,
     };
   }
 
@@ -130,6 +139,33 @@ export const measureTaffyNode: MeasureFunction = (
     };
   }
 
+  if (measureContext.intrinsicReplaced) {
+    const intrinsic = measureContext.intrinsicReplaced;
+    const ratio = intrinsic.aspectRatio;
+    const width = knownDimensions.width;
+    const height = knownDimensions.height;
+    if (ratio && width !== undefined)
+      return { width, height: height ?? width / ratio };
+    if (ratio && height !== undefined) return { width: height * ratio, height };
+    // Ratio-only SVGs fill the available inline size in normal block flow.
+    // During intrinsic probes Taffy supplies min/max-content instead of a size;
+    // retain a deterministic 300px fallback for those probes.
+    if (
+      intrinsic.ratioOnly &&
+      ratio &&
+      typeof availableSpace.width === 'number'
+    ) {
+      return {
+        width: availableSpace.width,
+        height: availableSpace.width / ratio,
+      };
+    }
+    return {
+      width: width ?? intrinsic.size.width,
+      height: height ?? intrinsic.size.height,
+    };
+  }
+
   if (measureContext.replacedSize) {
     return {
       width: knownDimensions.width ?? measureContext.replacedSize.width,
@@ -193,25 +229,14 @@ function replacedElementSize(element: Element): Size<number> | undefined {
     };
   }
 
-  if (tagName === 'svg' || tagName === 'canvas' || tagName === 'video') {
+  if (tagName === 'video') {
     return {
       width: readNumberAttribute(element, 'width') ?? 300,
       height: readNumberAttribute(element, 'height') ?? 150,
     };
   }
 
-  if (tagName !== 'img') {
-    return undefined;
-  }
-
-  const width = readNumberAttribute(element, 'width');
-  const height = readNumberAttribute(element, 'height');
-
-  if (width === undefined && height === undefined) {
-    return undefined;
-  }
-
-  return { width: width ?? 0, height: height ?? 0 };
+  return undefined;
 }
 
 function formControlIntrinsicSize(
