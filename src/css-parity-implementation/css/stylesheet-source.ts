@@ -1,4 +1,4 @@
-import { transform } from 'lightningcss';
+import { Features, transform } from 'lightningcss';
 import { matchesViewportMediaQuery } from '../../api/attachment/viewport-media-query.ts';
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import {
@@ -642,12 +642,33 @@ function readCssRules(
   viewport: Viewport | undefined,
 ): void {
   try {
-    transform({
+    // Lower nesting before collection: collecting a parent removes its subtree.
+    // Lightning CSS preserves the parent-list specificity with :is(), expands
+    // nested media rules, and retains declarations authored after nested rules.
+    // Keep this separate from the visitor to avoid round-tripping its unparsed
+    // var() token objects through the Node binding.
+    const declarations: unknown[] = [];
+    const flattened = transform({
       filename,
       code: Buffer.from(cssText),
+      include: Features.Nesting,
+      errorRecovery: true,
+      visitor: {
+        Declaration(declaration) {
+          // Protect declarations from the lowering pass's shorthand merging
+          // and value simplification; collection needs the original AST.
+          const index = declarations.push(declaration) - 1;
+          return { property: `--layout-nesting-${index}`, raw: '0' };
+        },
+      },
+    });
+    transform({
+      filename,
+      code: flattened.code,
       errorRecovery: true,
       visitor: {
         Rule(rule) {
+          restoreNestingDeclarations(rule, declarations);
           if (rule.type === 'style') {
             collectStyleRule(rule.value, policy, rules);
             // This transform is collection-only. Returning a rule containing
@@ -682,6 +703,34 @@ function readCssRules(
       reason: 'unsupported-rule',
       source: 'stylesheet',
     });
+  }
+}
+
+function restoreNestingDeclarations(
+  value: unknown,
+  declarations: unknown[],
+): void {
+  if (!isRecord(value)) return;
+  for (const [key, child] of Object.entries(value)) {
+    if (Array.isArray(child)) {
+      value[key] = child.map(item => {
+        if (
+          isRecord(item) &&
+          item.property === 'custom' &&
+          isRecord(item.value) &&
+          typeof item.value.name === 'string' &&
+          item.value.name.startsWith('--layout-nesting-')
+        ) {
+          return declarations[
+            Number(item.value.name.slice('--layout-nesting-'.length))
+          ];
+        }
+        restoreNestingDeclarations(item, declarations);
+        return item;
+      });
+    } else {
+      restoreNestingDeclarations(child, declarations);
+    }
   }
 }
 
