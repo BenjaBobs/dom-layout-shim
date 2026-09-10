@@ -31,12 +31,16 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": ["selector-matching", "generated-pseudo-elements"]
+        "fixtures": [
+          "selector-matching",
+          "selector-root",
+          "generated-pseudo-elements"
+        ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Matching includes case-insensitive terminal HTML attribute selectors, scoped compound `:where()` and `:is()` selectors normalized independently of host matcher quirks, `:not()`, `:has()`, structural selectors, and supported state pseudo-classes. `::before` and `::after` are routed to generated-content measurement rather than matched as ordinary elements."
+          "text": "Matching includes case-insensitive terminal HTML attribute selectors, scoped compound `:where()` and `:is()` selectors normalized independently of host matcher quirks, `:not()`, `:has()`, `:root` document-element matching and inherited tokens, structural selectors, and supported state pseudo-classes. `::before` and `::after` are routed to generated-content measurement rather than matched as ordinary elements."
         }
       ]
     },
@@ -46,7 +50,11 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": ["selector-source-order-tie", "selector-specificity"]
+        "fixtures": [
+          "selector-source-order-tie",
+          "selector-specificity",
+          "selector-root"
+        ]
       },
       "notes": []
     },
