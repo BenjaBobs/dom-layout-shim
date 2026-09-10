@@ -167,6 +167,7 @@ function readPseudoSelector(
 }
 
 const simplePseudoClasses = new Set([
+  'root',
   'first-child',
   'last-child',
   'hover',

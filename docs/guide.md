@@ -28,8 +28,12 @@ returns one rectangle for each line fragment and `getBoundingClientRect()`
 returns the union of those fragments. Inline phrasing content that follows a
 block child also contributes its line box to the shared container's height.
 Stylesheets may target structural and
-state pseudo-classes including `:first-child`, `:nth-child()`, `:last-child`,
+state pseudo-classes including `:root`, `:first-child`, `:nth-child()`, `:last-child`,
 `:hover`, `:focus`, and `:disabled`.
+
+For example, `:root { --panel-width: 80px; } .panel { width: var(--panel-width); }`
+gives `.panel` elements an 80px width. `:root` matches the document element
+and has pseudo-class specificity, so it takes precedence over `html`.
 
 ## Install
 

@@ -40,8 +40,12 @@ testing.
 
 Wrapped inline phrasing elements expose one `DOMRect` per line through
 `getClientRects()`, while `getBoundingClientRect()` returns their union. Stylesheet
-matching supports `:first-child`, `:nth-child()`, `:last-child`, `:hover`,
+matching supports `:root`, `:first-child`, `:nth-child()`, `:last-child`, `:hover`,
 `:focus`, and `:disabled` in addition to the existing selector forms.
+
+For example, `:root { --panel-width: 80px; } .panel { width: var(--panel-width); }`
+gives `.panel` elements an 80px width. `:root` matches the document element
+and has pseudo-class specificity, so it takes precedence over `html`.
 
 The default viewport is 1280×720. Inline styles and document `<style>` elements
 are discovered automatically. Accessible `<link rel="stylesheet">` sheets and
