@@ -147,6 +147,13 @@ content creates an independently styled anonymous box in normal flow and as a
 flex or grid item. Counters, images, positioned generated boxes, pseudo-element
 geometry APIs, and pseudo-element hit targets are not modeled.
 
+Native CSS nesting is supported for supported selectors and declarations,
+including `&`, implicit descendants, child combinators, and nested viewport
+`@media` rules. Parent selector lists retain their highest specificity and
+mixed declarations retain source order. For example,
+`.card { .item { width: 60px; } }` gives an `.item` inside `.card` a
+60px width through `getBoundingClientRect()`.
+
 Stylesheet `@media` rules evaluate against the configured layout viewport.
 Supported queries include screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media

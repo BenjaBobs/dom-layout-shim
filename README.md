@@ -233,6 +233,13 @@ originating element is a flex or grid container. For example, a block
 the originating element's ordinary content. Supported state, functional, and
 case-insensitive attribute selectors participate in stylesheet matching.
 
+Native CSS nesting is supported for supported selectors and declarations,
+including `&`, implicit descendants, child combinators, and nested viewport
+`@media` rules. Parent selector lists retain their highest specificity and
+mixed declarations retain source order. For example,
+`.card { .item { width: 60px; } }` gives an `.item` inside `.card` a
+60px width through `getBoundingClientRect()`.
+
 Use a callback to display or collect warnings in the test runner:
 
 ```ts

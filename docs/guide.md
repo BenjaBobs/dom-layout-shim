@@ -392,6 +392,13 @@ and flex or grid item placement. For example, `::before { content: "";
 display: block; height: 12px; margin-bottom: 3px }` reserves 15px before the
 originating element's ordinary content.
 
+Native CSS nesting is supported for supported selectors and declarations,
+including `&`, implicit descendants, child combinators, and nested viewport
+`@media` rules. Parent selector lists retain their highest specificity and
+mixed declarations retain source order. For example,
+`.card { .item { width: 60px; } }` gives an `.item` inside `.card` a
+60px width through `getBoundingClientRect()`.
+
 The default policy warns and continues. Use strict mode when a silent difference
 would make a test misleading.
 

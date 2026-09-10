@@ -64,6 +64,21 @@
           "text": "Unsupported CSS and selectors are ignored with one actionable warning per distinct input by default; strict throw and silent ignore policies remain configurable."
         }
       ]
+    },
+    {
+      "id": "native-css-nesting",
+      "description": "Native CSS nesting expands supported selectors and declarations with parent-list specificity and source order.",
+      "support": "supported",
+      "parity": {
+        "status": "verified",
+        "fixtures": ["css-nesting"]
+      },
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "Covers explicit &, implicit descendants, child combinators, multi-level nesting, custom properties, parent selector-list specificity, mixed declarations, and nested viewport media rules. Nested rules remain subject to the supported selector, declaration, and at-rule subsets."
+        }
+      ]
     }
   ]
 }
