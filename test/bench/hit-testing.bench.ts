@@ -70,6 +70,7 @@ for (const size of sizes) {
 const memoryGrowthBytes = await measureMemoryGrowth(sizes[1]);
 printResults(scenarios, memoryGrowthBytes);
 assertBudgets(scenarios, memoryGrowthBytes);
+await benchmarkStylesheetVolume();
 
 async function runScenario(size: (typeof sizes)[number]): Promise<Scenario> {
   const window = createDocument(size);
@@ -296,4 +297,43 @@ function assertBudgets(
 
 function format(value: number): string {
   return value.toFixed(3);
+}
+
+// Keep CSS volume independent of DOM size: this catches expensive stylesheet
+// validity checks even when the layout snapshot itself is correctly cached.
+async function benchmarkStylesheetVolume(): Promise<void> {
+  const results: Array<{ cssBytes: number; cachedReadMs: number }> = [];
+  for (const cssBytes of [0, 5_000, 100_000, 300_000]) {
+    const window = new Window();
+    try {
+      const rules: string[] = [];
+      let length = 0;
+      while (length < cssBytes) {
+        const rule = `.c${rules.length} { color: rgb(1,2,3); padding-left: ${rules.length % 40}px }`;
+        rules.push(rule);
+        length += rule.length;
+      }
+      window.document.head.innerHTML = `<style>${rules.join('\n')}</style>`;
+      window.document.body.innerHTML =
+        '<div id="target" style="width:100px;height:20px"></div>';
+      await attachLayoutEngine({
+        window,
+        unsupportedCss: { default: 'ignore' },
+      });
+      const target = requiredElement(window.document, '#target');
+      target.getBoundingClientRect();
+      const start = performance.now();
+      for (let index = 0; index < 200; index += 1)
+        target.getBoundingClientRect();
+      const cachedReadMs = (performance.now() - start) / 200;
+      results.push({ cssBytes, cachedReadMs });
+      if (cachedReadMs > 0.5)
+        throw new Error(
+          `Cached reads with ${cssBytes} CSS bytes exceeded 0.5 ms/read: ${cachedReadMs}`,
+        );
+    } finally {
+      window.close();
+    }
+  }
+  console.table(results);
 }

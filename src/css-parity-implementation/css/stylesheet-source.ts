@@ -11,6 +11,7 @@ import {
 } from './custom-properties.ts';
 import { readDeclaration } from './lightningcss-value-stringifier.ts';
 import { readSelectorList } from './selector-parser.ts';
+import { stylesheetRevision } from './stylesheet-revision.ts';
 import {
   applyDeclaration,
   type SupportedStyle,
@@ -231,37 +232,63 @@ export function readCssTextRules(
 }
 
 export function documentStylesheetFingerprint(document: Document): string {
-  // MutationObserver cannot see CSSOM edits or adoptedStyleSheets assignment.
-  // Include sheet identity as well as serialized rules so replacement and
-  // reordering invalidate layout even when two sheets have identical content.
-  const documentSources = documentStylesheetSources(document).map(source => {
-    const identity = source.sheet ? stylesheetIdentity(source.sheet) : 'none';
-    const disabled = source.sheet?.disabled ? 'disabled' : 'enabled';
-    const cssText = readDocumentStylesheetCssText(source, undefined, false);
-    return fingerprintPart(
-      source.type,
-      identity,
-      disabled,
-      cssText ?? 'inaccessible',
-    );
-  });
-  const adoptedSources = adoptedStylesheets(document).map(sheet => {
-    const disabled = sheet.disabled ? 'disabled' : 'enabled';
-    const cssText = readCssomRules(
-      sheet,
-      'adopted stylesheet',
-      undefined,
-      false,
-    );
-    return fingerprintPart(
-      'adopted',
-      stylesheetIdentity(sheet),
-      disabled,
-      cssText ?? 'inaccessible',
-    );
-  });
-
+  // Compare small per-sheet tokens, preserving membership and cascade order.
+  const documentSources = documentStylesheetSources(document).map(source =>
+    stylesheetToken(
+      source.sheet,
+      source.type === 'style' ? (source.element.textContent ?? '') : '',
+      () => readDocumentStylesheetCssText(source, undefined, false),
+      source.element,
+    ),
+  );
+  const adoptedSources = adoptedStylesheets(document).map(sheet =>
+    stylesheetToken(sheet, '', () =>
+      readCssomRules(sheet, 'adopted stylesheet', undefined, false),
+    ),
+  );
   return [...documentSources, ...adoptedSources].join('|');
+}
+
+const sheetTokens = new WeakMap<
+  object,
+  {
+    revision: number;
+    count: number;
+    authored: string;
+    token: number;
+  }
+>();
+let nextSheetToken = 1;
+
+function stylesheetToken(
+  sheet: CSSStyleSheet | null,
+  authored: string,
+  fallback: () => string | undefined,
+  source?: Element,
+): string {
+  if (!sheet) return fingerprintPart('missing', 'none', 'enabled', authored);
+  const revision = stylesheetRevision(sheet);
+  if (revision === undefined) {
+    return fingerprintPart(
+      'fallback',
+      stylesheetIdentity(sheet),
+      String(sheet.disabled),
+      fallback() ?? 'inaccessible',
+    );
+  }
+  const count = sheet.cssRules.length;
+  const key = source ?? sheet;
+  let cached = sheetTokens.get(key);
+  if (
+    !cached ||
+    cached.revision !== revision ||
+    cached.count !== count ||
+    cached.authored !== authored
+  ) {
+    cached = { revision, count, authored, token: nextSheetToken++ };
+    sheetTokens.set(key, cached);
+  }
+  return `${stylesheetIdentity(sheet)}:${Boolean(sheet.disabled)}:${cached.token}`;
 }
 
 export function applyStyleRules(

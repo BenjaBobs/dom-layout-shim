@@ -50,7 +50,8 @@ and has pseudo-class specificity, so it takes precedence over `html`.
 The default viewport is 1280×720. Inline styles and document `<style>` elements
 are discovered automatically. Accessible `<link rel="stylesheet">` sheets and
 constructable sheets in `document.adoptedStyleSheets` also participate in their
-CSS cascade order. Changes to their rules, membership, or ordering invalidate
+CSS cascade order. Cached geometry reads track CSSOM revisions without
+re-serializing unchanged stylesheet rules. Changes to their rules, membership, or ordering invalidate
 the cached layout automatically. Configuration is only needed to override a
 default or supply additional stylesheet text:
 
