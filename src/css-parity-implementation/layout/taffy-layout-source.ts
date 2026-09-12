@@ -61,6 +61,7 @@ type TaffyLayoutState = {
   layoutRects: Map<Element, Box>;
   normalRects: Map<Element, Box>;
   clientRects: Map<Element, Box>;
+  scrollSizes: Map<Element, { width: number; height: number }>;
   contentRects: Map<Element, Box>;
   intersectionRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
@@ -296,6 +297,7 @@ function buildTaffyLayoutTree(
     layoutRects: new Map<Element, Box>(),
     normalRects: new Map<Element, Box>(),
     clientRects: new Map<Element, Box>(),
+    scrollSizes: new Map(),
     contentRects: new Map<Element, Box>(),
     intersectionRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
@@ -520,6 +522,124 @@ function containingBlockFor(
   return element.ownerDocument.documentElement;
 }
 
+function collectScrollSizes(
+  document: Document,
+  viewport: Viewport,
+  scroll: ScrollOffset,
+  state: TaffyLayoutState,
+): void {
+  // Accumulate local overflow once per snapshot. A clipped child's own scroll
+  // area must not enlarge its parent's area, and scroll offsets must not make
+  // the content shrink as it is scrolled out of view.
+  const ends = new Map<Element, { width: number; height: number }>();
+  let documentWidth = viewport.width;
+  let documentHeight = 0;
+  for (const [element, box] of [...state.normalRects].reverse()) {
+    const style = resolveSupportedStyle(element, state);
+    if (!hasPrincipalBox(element, state) || style.display === 'inline')
+      continue;
+    const border = effectiveBorderWidth(style);
+    const clientWidth = Math.max(0, box.width - border.left - border.right);
+    const clientHeight = Math.max(0, box.height - border.top - border.bottom);
+    const end = ends.get(element) ?? { width: 0, height: 0 };
+    const node = state.elementNodes.get(element);
+    // Text and generated boxes have no DOM element to visit. Taffy's overflow
+    // coordinates already start at the padding edge (not the border edge).
+    if (
+      node &&
+      (canMeasureTextLeaf(element) || hasGeneratedPseudoBox(element, state))
+    ) {
+      const layout = state.tree.getLayout(node);
+      end.width = Math.max(end.width, layout.contentWidth);
+      end.height = Math.max(end.height, layout.contentHeight);
+    }
+    const paddingBasis = element.parentElement
+      ? (state.contentRects.get(element.parentElement)?.width ?? viewport.width)
+      : viewport.width;
+    const size = {
+      width: Math.max(
+        clientWidth,
+        end.width +
+          (isProgrammaticallyScrollable(style.overflowX)
+            ? (definiteDimension(style.padding.right, paddingBasis) ?? 0)
+            : 0),
+      ),
+      height: Math.max(
+        clientHeight,
+        end.height +
+          (isProgrammaticallyScrollable(style.overflowY)
+            ? (definiteDimension(style.padding.bottom, paddingBasis) ?? 0)
+            : 0),
+      ),
+    };
+    state.scrollSizes.set(element, size);
+    if (style.position === 'fixed') continue;
+    let parent = containingBlockFor(element, style, state);
+    while (parent && state.contentsElements.has(parent))
+      parent = parent.parentElement;
+    const parentBox = parent ? state.normalRects.get(parent) : undefined;
+    const parentBorder = parent
+      ? effectiveBorderWidth(resolveSupportedStyle(parent, state))
+      : { left: 0, top: 0 };
+    const parentScroll = parent ? state.elementScrolls.get(parent) : undefined;
+    const width = Math.max(
+      box.width,
+      style.overflowX === 'visible' ? border.left + size.width : 0,
+    );
+    const height = Math.max(
+      box.height,
+      style.overflowY === 'visible' ? border.top + size.height : 0,
+    );
+    const overflowBox = { ...box, width, height };
+    const transformed = transformBox(
+      overflowBox,
+      elementTransform(box, style.transform, style.transformOrigin),
+    );
+    const marginRight =
+      style.margin.right === 'auto'
+        ? 0
+        : (definiteDimension(style.margin.right, paddingBasis) ?? 0);
+    const marginBottom =
+      style.margin.bottom === 'auto'
+        ? 0
+        : (definiteDimension(style.margin.bottom, paddingBasis) ?? 0);
+    const right =
+      Math.max(box.x + width, transformed.x + transformed.width) +
+      Math.max(0, marginRight);
+    const bottom =
+      Math.max(box.y + height, transformed.y + transformed.height) +
+      Math.max(0, marginBottom);
+    if (parentBox && parent) {
+      const parentEnd = ends.get(parent) ?? { width: 0, height: 0 };
+      parentEnd.width = Math.max(
+        parentEnd.width,
+        right - parentBox.x - parentBorder.left + (parentScroll?.x ?? 0),
+      );
+      parentEnd.height = Math.max(
+        parentEnd.height,
+        bottom - parentBox.y - parentBorder.top + (parentScroll?.y ?? 0),
+      );
+      ends.set(parent, parentEnd);
+    } else {
+      documentWidth = Math.max(documentWidth, right + scroll.x);
+      documentHeight = Math.max(documentHeight, bottom + scroll.y);
+    }
+  }
+  // html/body are synthetic viewport wrappers in this engine, rather than
+  // ordinary Taffy boxes. Standards-mode root scrolling includes the viewport.
+  state.scrollSizes.set(document.documentElement, {
+    width: documentWidth,
+    height: Math.max(viewport.height, documentHeight),
+  });
+  state.scrollSizes.set(document.body, {
+    width: documentWidth,
+    height:
+      document.compatMode === 'BackCompat'
+        ? Math.max(viewport.height, documentHeight)
+        : documentHeight,
+  });
+}
+
 function collectTaffyLayoutSnapshot(
   document: Document,
   viewport: Viewport,
@@ -539,6 +659,7 @@ function collectTaffyLayoutSnapshot(
   );
   recordInlineFragments(document, state);
   applyVisualTransforms(document, state);
+  collectScrollSizes(document, viewport, scroll, state);
 
   return {
     boxes: state.boxes,
@@ -546,6 +667,7 @@ function collectTaffyLayoutSnapshot(
     fragmentRects: state.fragmentRects,
     layoutRects: state.layoutRects,
     clientRects: state.clientRects,
+    scrollSizes: state.scrollSizes,
     contentRects: state.contentRects,
     intersectionRects: state.intersectionRects,
     elementScrolls: state.elementScrolls,

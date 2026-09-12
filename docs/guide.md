@@ -265,8 +265,8 @@ operating-system painting or internal widget behavior.
 
 ## Read layout-backed geometry
 
-Bounding rectangles, offsets, client dimensions, offset parents, scrolling,
-and supported transforms come from one snapshot.
+Bounding rectangles, offsets, client and scroll dimensions, offset parents,
+scrolling, and supported transforms come from one snapshot.
 
 ```ts
 // All of these values come from the same cached layout snapshot.
@@ -277,6 +277,14 @@ console.log(rect.left, rect.top, rect.width, rect.height)
 console.log(save.offsetTop, save.offsetLeft, save.offsetParent)
 save.scrollIntoView({ block: 'center', inline: 'nearest' })
 ```
+
+`scrollWidth` and `scrollHeight` report the padding-box size or its scrollable
+content extent, whichever is larger, rounded to integer CSS pixels. For example,
+a 100×60 container with `overflow:auto` and a 240×180 child reports scroll sizes
+of 240×180 instead of zero. Borders are excluded; nested clipped overflow does
+not enlarge the outer container, and scrolling does not shrink the reported
+size. The engine's existing synthetic `html`/`body`, inline-display, native-control,
+and transform-containing-block limitations still apply.
 
 ## Place named grid areas
 

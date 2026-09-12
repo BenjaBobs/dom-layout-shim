@@ -48,6 +48,11 @@ export type IntersectionObserverQuery = {
   styleAfterInitial?: string;
 };
 
+export type ScrollSizeQuery = {
+  type: 'scroll-size';
+  selector: string;
+};
+
 export type ScrollQuery = {
   type: 'scroll';
   selector?: string;
@@ -61,7 +66,8 @@ export type BrowserParityQuery =
   | DimensionsQuery
   | ResizeObserverQuery
   | IntersectionObserverQuery
-  | ScrollQuery;
+  | ScrollQuery
+  | ScrollSizeQuery;
 
 export type BrowserParityFixture = {
   viewport: {
@@ -99,6 +105,7 @@ export type QueryResult = {
     x: number;
     y: number;
   };
+  scrollSize?: { width: number; height: number };
   receivesPointerAtCenter?: boolean;
   resizeObserver?: {
     initial: SerializedResizeObserverEntry;
@@ -637,6 +644,16 @@ async function runQueries(
     if (query.type === 'client-rects') {
       results.push({
         clientRects: Array.from(element.getClientRects(), serializeRect),
+      });
+      continue;
+    }
+
+    if (query.type === 'scroll-size') {
+      results.push({
+        scrollSize: {
+          width: element.scrollWidth,
+          height: element.scrollHeight,
+        },
       });
       continue;
     }

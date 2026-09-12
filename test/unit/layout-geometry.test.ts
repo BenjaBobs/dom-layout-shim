@@ -118,6 +118,35 @@ describe('layout DOM API and package contracts', () => {
     expect(box.clientHeight).toBe(60);
   });
 
+  it('invalidates cached scroll sizes after descendant mutations and reattachment', async () => {
+    document.body.innerHTML =
+      '<div id="scroller" style="width:100px;height:50px;overflow:auto"><div id="content" style="width:200px;height:150px"></div></div>';
+    await attach();
+    const scroller = requiredElement('#scroller');
+    const content = requiredElement('#content');
+    const initial = {
+      width: scroller.scrollWidth,
+      height: scroller.scrollHeight,
+    };
+    content.setAttribute('style', 'width:300px;height:250px');
+    await Promise.resolve();
+    expect(scroller.scrollWidth).toBeGreaterThan(initial.width);
+    expect(scroller.scrollHeight).toBeGreaterThan(initial.height);
+    const updated = {
+      width: scroller.scrollWidth,
+      height: scroller.scrollHeight,
+    };
+    await attach();
+    expect({
+      width: scroller.scrollWidth,
+      height: scroller.scrollHeight,
+    }).toEqual(updated);
+    scroller.remove();
+    await Promise.resolve();
+    expect(scroller.scrollWidth).toBe(0);
+    expect(scroller.scrollHeight).toBe(0);
+  });
+
   it('checks whether an element receives pointer events at its center', async () => {
     document.body.innerHTML = `
       <button id="save" style="position:absolute; left:10px; top:10px; width:100px; height:40px"></button>

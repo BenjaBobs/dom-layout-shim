@@ -112,6 +112,23 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     },
   });
 
+  for (const prototype of [elementPrototype, htmlElementPrototype]) {
+    Object.defineProperties(prototype, {
+      scrollWidth: {
+        configurable: true,
+        get(this: Element) {
+          return attachmentForElement(this).scrollWidth(this);
+        },
+      },
+      scrollHeight: {
+        configurable: true,
+        get(this: Element) {
+          return attachmentForElement(this).scrollHeight(this);
+        },
+      },
+    });
+  }
+
   Object.defineProperty(htmlElementPrototype, 'clientWidth', {
     configurable: true,
     get(this: Element) {
