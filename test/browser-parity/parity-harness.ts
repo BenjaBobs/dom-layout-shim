@@ -283,6 +283,11 @@ async function runInChromium(
         }
       }, deterministicFontFamily);
     }
+    if (fixture.scroll || fixture.elementScrolls || fixture.scrollIntoView) {
+      await page.evaluate(() => {
+        document.body.getBoundingClientRect();
+      });
+    }
     if (fixture.scroll) {
       await page.evaluate(({ x, y }) => window.scrollTo(x, y), fixture.scroll);
     }
@@ -504,6 +509,15 @@ async function runInHappyDom(
       return sheet;
     });
   }
+  await attachLayoutEngine({
+    window,
+    viewport: fixture.viewport,
+    nativeControls: { profile: fixture.nativeControlProfile ?? 'portable' },
+  });
+  // Warm a snapshot first so scroll fixtures also verify reuse of computed
+  // layout, including sticky positioning, clipping, transforms and observers.
+  if (fixture.scroll || fixture.elementScrolls || fixture.scrollIntoView)
+    document.body.getBoundingClientRect();
   if (fixture.scroll) {
     window.scrollTo(fixture.scroll.x, fixture.scroll.y);
   }
@@ -519,11 +533,6 @@ async function runInHappyDom(
     }
   }
 
-  await attachLayoutEngine({
-    window,
-    viewport: fixture.viewport,
-    nativeControls: { profile: fixture.nativeControlProfile ?? 'portable' },
-  });
   if (fixture.scrollIntoView) {
     const element = document.querySelector(fixture.scrollIntoView.selector);
 

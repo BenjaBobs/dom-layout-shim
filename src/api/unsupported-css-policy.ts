@@ -34,13 +34,21 @@ export function handleUnsupportedCss(
   context: Omit<UnsupportedCssContext, 'defaultDecision'>,
 ): void {
   const defaultDecision = policy?.default ?? 'warn';
+  const propertyDecision = policy?.properties?.[context.property];
+  if (
+    propertyDecision === 'ignore' ||
+    (propertyDecision === undefined &&
+      !policy?.property &&
+      defaultDecision === 'ignore')
+  )
+    return;
   const fullContext: UnsupportedCssContext = {
     ...context,
     defaultDecision,
   };
 
   const decision =
-    policy?.properties?.[context.property] ??
+    propertyDecision ??
     policy?.property?.(context.property, fullContext) ??
     defaultDecision;
 

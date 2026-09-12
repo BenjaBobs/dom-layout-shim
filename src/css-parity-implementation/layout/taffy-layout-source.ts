@@ -17,11 +17,14 @@ import {
   applyPseudoElementStyleRules,
   applyStyleRules,
   applyStylesheetCustomProperties,
+  createRuleMatchingSession,
+  type ParsedStylesheet,
   readCssTextRules,
   readGeneratedContent,
   readGeneratedPseudoContent,
   readStyleRules,
   type StyleRule,
+  type StylesheetParseCache,
 } from '../css/stylesheet-source.ts';
 import {
   createDefaultStyle,
@@ -37,6 +40,7 @@ import {
   transformBox,
   transformBoxPoints,
 } from '../geometry/transform.ts';
+import { prepareHitTesting } from '../hit-testing/point-query.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
 import { applyReplacedDimensionAttributes } from './taffy/replaced-intrinsic-size.ts';
 import {
@@ -89,6 +93,8 @@ type TaffyLayoutState = {
   viewport: Viewport;
   domOrder: number;
   paintOrders: WeakMap<Element, number>;
+  noBoxElements: Set<Element>;
+  inlineFragments?: Map<Element, { host: Element; fragments: Box[] }>;
 };
 
 type TaffyLayoutTree = {
@@ -97,6 +103,9 @@ type TaffyLayoutTree = {
 };
 
 export type LayoutStylesheetCache = {
+  layoutTree?: TaffyLayoutTree;
+  parsedSources?: StylesheetParseCache;
+  parsedUserAgent?: ParsedStylesheet;
   documentKey?: string;
   documentRules?: StyleRule[];
   userAgentKey?: string;
@@ -266,12 +275,41 @@ export function computeTaffyDocumentLayout(
   if (resolveDeferredCalculatedDimensions(layoutTree)) {
     computeTaffyLayout(layoutTree, viewport);
   }
+  layoutTree.state.noBoxElements = new Set(layoutTree.state.rects.keys());
+  if (stylesheetCache) stylesheetCache.layoutTree = layoutTree;
   return collectTaffyLayoutSnapshot(
     document,
     viewport,
     scroll,
     layoutTree.state,
   );
+}
+
+export function reprojectTaffyDocumentLayout(
+  document: Document,
+  viewport: Viewport,
+  scroll: ScrollOffset,
+  cache: LayoutStylesheetCache,
+): LayoutSnapshot | undefined {
+  const state = cache.layoutTree?.state;
+  if (!state) return undefined;
+  // Scroll changes visual geometry, clipping and sticky placement, but not
+  // resolved styles, text measurements or Taffy's computed flow layout. Use
+  // fresh output maps so a previous observer snapshot stays immutable.
+  state.boxes = [];
+  state.rects = new Map();
+  state.fragmentRects = new Map();
+  state.layoutRects = new Map();
+  state.normalRects = new Map();
+  state.clientRects = new Map();
+  state.contentRects = new Map();
+  state.intersectionRects = new Map();
+  state.elementScrolls = new Map();
+  state.scrollSizes = new Map();
+  state.domOrder = 0;
+  state.paintOrders = new WeakMap();
+  for (const element of state.noBoxElements) markElementNoBox(element, state);
+  return collectTaffyLayoutSnapshot(document, viewport, scroll, state);
 }
 
 function buildTaffyLayoutTree(
@@ -310,19 +348,23 @@ function buildTaffyLayoutTree(
     pseudoStyles: new WeakMap(),
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
-    rules: cachedDocumentRules(
-      document,
-      policy,
-      stylesheets,
-      viewport,
-      stylesheetFingerprint,
-      stylesheetCache,
+    rules: createRuleMatchingSession(
+      cachedDocumentRules(
+        document,
+        policy,
+        stylesheets,
+        viewport,
+        stylesheetFingerprint,
+        stylesheetCache,
+      ),
     ),
-    userAgentRules: cachedUserAgentRules(
-      userAgentStyles.overrides,
-      policy,
-      viewport,
-      stylesheetCache,
+    userAgentRules: createRuleMatchingSession(
+      cachedUserAgentRules(
+        userAgentStyles.overrides,
+        policy,
+        viewport,
+        stylesheetCache,
+      ),
     ),
     userAgentStyleProfile: userAgentStyles.profile,
     policy,
@@ -331,6 +373,7 @@ function buildTaffyLayoutTree(
     viewport,
     domOrder: 0,
     paintOrders: new WeakMap<Element, number>(),
+    noBoxElements: new Set(),
   };
 
   const rootStyle = new Style();
@@ -358,7 +401,15 @@ function cachedDocumentRules(
     return cache.documentRules;
   }
 
-  const rules = readStyleRules(document, policy, stylesheets, viewport);
+  if (cache && !cache.parsedSources)
+    cache.parsedSources = { sources: new WeakMap(), configured: new Map() };
+  const rules = readStyleRules(
+    document,
+    policy,
+    stylesheets,
+    viewport,
+    cache?.parsedSources,
+  );
   if (cache) {
     cache.documentKey = key;
     cache.documentRules = rules;
@@ -379,11 +430,13 @@ function cachedUserAgentRules(
     return cache.userAgentRules;
   }
 
+  if (cache && !cache.parsedUserAgent) cache.parsedUserAgent = {};
   const rules = readCssTextRules(
     overrides,
     'user-agent-overrides.css',
     policy,
     viewport,
+    cache?.parsedUserAgent,
   );
   if (cache) {
     cache.userAgentKey = key;
@@ -657,9 +710,41 @@ function collectTaffyLayoutSnapshot(
     false,
     state,
   );
-  recordInlineFragments(document, state);
+  if (state.inlineFragments) {
+    for (const [element, cached] of state.inlineFragments) {
+      const hostBox = state.clientRects.get(cached.host);
+      if (!hostBox) continue;
+      const fragments = cached.fragments.map(box => ({
+        ...box,
+        x: box.x + hostBox.x,
+        y: box.y + hostBox.y,
+      }));
+      state.fragmentRects.set(element, fragments);
+      state.rects.set(element, unionBoxes(fragments));
+    }
+  } else {
+    recordInlineFragments(document, state);
+    state.inlineFragments = new Map();
+    for (const [element, fragments] of state.fragmentRects) {
+      if (state.styles.get(element)?.display !== 'inline') continue;
+      const host =
+        state.anonymousInlineRuns.get(element)?.parent ??
+        nearestMeasuredAncestor(element, state);
+      const hostBox = host ? state.clientRects.get(host) : undefined;
+      if (host && hostBox)
+        state.inlineFragments.set(element, {
+          host,
+          fragments: fragments.map(box => ({
+            ...box,
+            x: box.x - hostBox.x,
+            y: box.y - hostBox.y,
+          })),
+        });
+    }
+  }
   applyVisualTransforms(document, state);
   collectScrollSizes(document, viewport, scroll, state);
+  prepareHitTesting(state.boxes);
 
   return {
     boxes: state.boxes,

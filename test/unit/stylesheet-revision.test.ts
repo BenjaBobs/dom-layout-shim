@@ -75,6 +75,23 @@ describe('stylesheet revision tracking', () => {
     expect(documentStylesheetFingerprint(document)).toBe(after);
   });
 
+  it('does not walk unchanged rule objects after a declaration-only edit', () => {
+    const document = window.document.implementation.createHTMLDocument();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.a { width:10px } .b { height:20px }');
+    document.adoptedStyleSheets = [sheet];
+    documentStylesheetFingerprint(document);
+    const untouchedStyle = vi.spyOn(
+      sheet.cssRules[1] as CSSStyleRule,
+      'style',
+      'get',
+    );
+    (sheet.cssRules[0] as CSSStyleRule).style.width = '30px';
+    documentStylesheetFingerprint(document);
+    expect(untouchedStyle).not.toHaveBeenCalled();
+    untouchedStyle.mockRestore();
+  });
+
   it('falls back to serialization when a mutation method cannot be patched', () => {
     const document = window.document.implementation.createHTMLDocument();
     const sheet = new CSSStyleSheet();

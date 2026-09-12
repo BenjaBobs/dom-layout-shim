@@ -5,6 +5,7 @@ import {
   handleUnsupportedCss,
   type UnsupportedCssPolicy,
 } from '../../api/unsupported-css-policy.ts';
+import { BoundedCache } from '../bounded-cache.ts';
 import {
   applyCustomPropertyDeclaration,
   type CustomProperties,
@@ -39,63 +40,89 @@ type DocumentStylesheetSource = {
   sheet: CSSStyleSheet | null;
   type: 'style' | 'external';
   filename: string;
+  authored?: string;
 };
 
 const stylesheetIds = new WeakMap<StyleSheet, number>();
 let nextStylesheetId = 1;
+
+export type ParsedStylesheet = {
+  token?: string;
+  ast?: Array<{ type: string; value: unknown }>;
+  viewportKey?: string;
+  rules?: StyleRule[];
+};
+export type StylesheetParseCache = {
+  sources: WeakMap<object, ParsedStylesheet>;
+  configured: Map<string, ParsedStylesheet>;
+};
 
 export function readStyleRules(
   document: Document,
   policy: UnsupportedCssPolicy | undefined,
   configuredStylesheets: readonly string[] = [],
   viewport?: Viewport,
+  cache?: StylesheetParseCache,
 ): StyleRule[] {
   const rules: StyleRule[] = [];
-
-  for (const [index, cssText] of configuredStylesheets.entries()) {
-    readCssRules(
-      cssText,
-      `configured-style-${index}.css`,
-      policy,
-      rules,
-      viewport,
-    );
+  const append = (
+    parsed: ParsedStylesheet | undefined,
+    load: () => string | undefined,
+    filename: string,
+  ) => {
+    const viewportKey = `${viewport?.width}:${viewport?.height}`;
+    if (!parsed?.rules || parsed.viewportKey !== viewportKey) {
+      const collected: StyleRule[] = [];
+      const cssText = parsed?.ast ? '' : load();
+      if (cssText !== undefined)
+        readCssRules(cssText, filename, policy, collected, viewport, parsed);
+      if (parsed) {
+        parsed.rules = collected;
+        parsed.viewportKey = viewportKey;
+      }
+      for (const rule of collected)
+        rules.push({ ...rule, order: rules.length });
+    } else {
+      for (const rule of parsed.rules)
+        rules.push({ ...rule, order: rules.length });
+    }
+  };
+  for (const [index, text] of configuredStylesheets.entries()) {
+    let parsed = cache?.configured.get(text);
+    if (cache && !parsed) {
+      parsed = {};
+      cache.configured.set(text, parsed);
+    }
+    append(parsed, () => text, `configured-style-${index}.css`);
   }
-
   for (const source of documentStylesheetSources(document)) {
-    if (source.sheet?.disabled) {
-      continue;
-    }
-
-    const cssText = readDocumentStylesheetCssText(source, policy);
-
-    if (cssText !== undefined) {
-      readCssRules(cssText, source.filename, policy, rules, viewport);
-    }
-  }
-
-  for (const [index, sheet] of adoptedStylesheets(document).entries()) {
-    if (sheet.disabled) {
-      continue;
-    }
-
-    const cssText = readCssomRules(
-      sheet,
-      `adopted stylesheet ${index}`,
-      policy,
+    if (source.sheet?.disabled) continue;
+    const load = () => readDocumentStylesheetCssText(source, policy);
+    const token = stylesheetToken(
+      source.sheet,
+      source.authored ?? '',
+      load,
+      source.element,
     );
-
-    if (cssText !== undefined) {
-      readCssRules(
-        cssText,
-        `adopted-style-${index}.css`,
-        policy,
-        rules,
-        viewport,
-      );
+    let parsed = cache?.sources.get(source.element);
+    if (cache && parsed?.token !== token) {
+      parsed = { token };
+      cache.sources.set(source.element, parsed);
     }
+    append(parsed, load, source.filename);
   }
-
+  for (const [index, sheet] of adoptedStylesheets(document).entries()) {
+    if (sheet.disabled) continue;
+    const load = () =>
+      readCssomRules(sheet, `adopted stylesheet ${index}`, policy);
+    const token = stylesheetToken(sheet, '', load);
+    let parsed = cache?.sources.get(sheet);
+    if (cache && parsed?.token !== token) {
+      parsed = { token };
+      cache.sources.set(sheet, parsed);
+    }
+    append(parsed, load, `adopted-style-${index}.css`);
+  }
   return rules;
 }
 
@@ -225,9 +252,10 @@ export function readCssTextRules(
   filename: string,
   policy: UnsupportedCssPolicy | undefined,
   viewport?: Viewport,
+  cache?: ParsedStylesheet,
 ): StyleRule[] {
   const rules: StyleRule[] = [];
-  readCssRules(cssText, filename, policy, rules, viewport);
+  readCssRules(cssText, filename, policy, rules, viewport, cache);
   return rules;
 }
 
@@ -236,7 +264,7 @@ export function documentStylesheetFingerprint(document: Document): string {
   const documentSources = documentStylesheetSources(document).map(source =>
     stylesheetToken(
       source.sheet,
-      source.type === 'style' ? (source.element.textContent ?? '') : '',
+      source.authored ?? '',
       () => readDocumentStylesheetCssText(source, undefined, false),
       source.element,
     ),
@@ -291,6 +319,82 @@ function stylesheetToken(
   return `${stylesheetIdentity(sheet)}:${Boolean(sheet.disabled)}:${cached.token}`;
 }
 
+type RuleSession = {
+  general: StyleRule[];
+  indexed: Map<string, StyleRule[]>;
+  matches: WeakMap<Element, StyleRule[]>;
+  rank: Map<StyleRule, number>;
+};
+const ruleSessions = new WeakMap<readonly StyleRule[], RuleSession>();
+
+export function createRuleMatchingSession(
+  rules: readonly StyleRule[],
+): StyleRule[] {
+  const ordered = rules.toSorted(compareStyleRuleCascadeOrder);
+  const session: RuleSession = {
+    general: [],
+    indexed: new Map(),
+    matches: new WeakMap(),
+    rank: new Map(),
+  };
+  ordered.forEach((rule, index) => {
+    session.rank.set(rule, index);
+    // Index only simple, unescaped terminal compounds. Complex selectors keep
+    // the full native matching path, so this is a conservative candidate filter.
+    const terminal = rule.selector.match(
+      /(?:^|[ >+~])([.#]?[a-zA-Z_][\w-]*(?:[.#][a-zA-Z_][\w-]*)*)$/,
+    )?.[1];
+    const first = terminal?.match(/^([.#]?)([\w-]+)/);
+    const key = first
+      ? `${first[1] === '.' ? 'class' : first[1] === '#' ? 'id' : 'tag'}:${first[1] ? first[2] : first[2]?.toLowerCase()}`
+      : undefined;
+    if (!key) session.general.push(rule);
+    else {
+      const group = session.indexed.get(key) ?? [];
+      group.push(rule);
+      session.indexed.set(key, group);
+    }
+  });
+  ruleSessions.set(ordered, session);
+  return ordered;
+}
+
+function matchingRules(
+  rules: readonly StyleRule[],
+  element: Element,
+  policy: UnsupportedCssPolicy | undefined,
+): StyleRule[] {
+  const session = ruleSessions.get(rules);
+  if (!session)
+    return rules
+      .filter(rule => matchesSelector(element, rule.selector, policy))
+      .toSorted(compareStyleRuleCascadeOrder);
+  const cached = session.matches.get(element);
+  if (cached) return cached;
+  const keys = [
+    `tag:${element.localName.toLowerCase()}`,
+    `id:${element.id}`,
+    ...Array.from(element.classList, name => `class:${name}`),
+  ];
+  const candidates = [
+    ...session.general,
+    ...keys.flatMap(key => session.indexed.get(key) ?? []),
+  ];
+  const selectorMatches = new Map<string, boolean>();
+  const matched = candidates
+    .filter(rule => {
+      let matches = selectorMatches.get(rule.selector);
+      if (matches === undefined) {
+        matches = matchesSelector(element, rule.selector, policy);
+        selectorMatches.set(rule.selector, matches);
+      }
+      return matches;
+    })
+    .sort((a, b) => (session.rank.get(a) ?? 0) - (session.rank.get(b) ?? 0));
+  session.matches.set(element, matched);
+  return matched;
+}
+
 export function applyStyleRules(
   style: SupportedStyle,
   element: Element,
@@ -300,12 +404,9 @@ export function applyStyleRules(
   customProperties?: CustomProperties,
   viewport?: Viewport,
 ): void {
-  for (const rule of rules
-    .filter(
-      rule =>
-        !rule.pseudoElement && matchesSelector(element, rule.selector, policy),
-    )
-    .toSorted(compareStyleRuleCascadeOrder)) {
+  for (const rule of matchingRules(rules, element, policy).filter(
+    rule => !rule.pseudoElement,
+  )) {
     for (const declaration of rule.declarations) {
       applyDeclaration(style, declaration.property, declaration.value, {
         policy,
@@ -330,13 +431,9 @@ export function applyPseudoElementStyleRules(
   customProperties?: CustomProperties,
   viewport?: Viewport,
 ): void {
-  for (const rule of rules
-    .filter(
-      rule =>
-        rule.pseudoElement === pseudoElement &&
-        matchesSelector(element, rule.selector, policy),
-    )
-    .toSorted(compareStyleRuleCascadeOrder)) {
+  for (const rule of matchingRules(rules, element, policy).filter(
+    rule => rule.pseudoElement === pseudoElement,
+  )) {
     for (const declaration of rule.declarations) {
       if (declaration.property === 'content') continue;
       applyDeclaration(style, declaration.property, declaration.value, {
@@ -359,13 +456,9 @@ export function applyStylesheetCustomProperties(
   rules: readonly StyleRule[],
   policy: UnsupportedCssPolicy | undefined,
 ): void {
-  for (const rule of rules
-    .filter(
-      candidate =>
-        !candidate.pseudoElement &&
-        matchesSelector(element, candidate.selector, policy),
-    )
-    .toSorted(compareStyleRuleCascadeOrder)) {
+  for (const rule of matchingRules(rules, element, policy).filter(
+    rule => !rule.pseudoElement,
+  )) {
     for (const declaration of rule.declarations) {
       applyCustomPropertyDeclaration(
         properties,
@@ -385,13 +478,8 @@ export function readGeneratedContent(
   const result = { before: '', after: '' };
 
   for (const pseudoElement of ['before', 'after'] as const) {
-    const declarations = rules
-      .filter(
-        rule =>
-          rule.pseudoElement === pseudoElement &&
-          matchesSelector(element, rule.selector, policy),
-      )
-      .toSorted(compareStyleRuleCascadeOrder)
+    const declarations = matchingRules(rules, element, policy)
+      .filter(rule => rule.pseudoElement === pseudoElement)
       .flatMap(rule => rule.declarations);
     const content = declarations
       .filter(declaration => declaration.property === 'content')
@@ -408,13 +496,8 @@ export function readGeneratedPseudoContent(
   rules: readonly StyleRule[],
   policy: UnsupportedCssPolicy | undefined,
 ): string | undefined {
-  const declarations = rules
-    .filter(
-      rule =>
-        rule.pseudoElement === pseudoElement &&
-        matchesSelector(element, rule.selector, policy),
-    )
-    .toSorted(compareStyleRuleCascadeOrder)
+  const declarations = matchingRules(rules, element, policy)
+    .filter(rule => rule.pseudoElement === pseudoElement)
     .flatMap(rule => rule.declarations);
   const content = declarations
     .filter(declaration => declaration.property === 'content')
@@ -510,7 +593,7 @@ function expandTopLevelSelectorFunctions(selector: string): string[] {
   return result;
 }
 
-const expandedSelectorCache = new Map<string, string[]>();
+const expandedSelectorCache = new BoundedCache<string[]>();
 
 function findTopLevelSelectorFunction(
   selector: string,
@@ -667,62 +750,67 @@ function readCssRules(
   policy: UnsupportedCssPolicy | undefined,
   rules: StyleRule[],
   viewport: Viewport | undefined,
+  cache?: ParsedStylesheet,
 ): void {
   try {
-    // Lower nesting before collection: collecting a parent removes its subtree.
-    // Lightning CSS preserves the parent-list specificity with :is(), expands
-    // nested media rules, and retains declarations authored after nested rules.
-    // Keep this separate from the visitor to avoid round-tripping its unparsed
-    // var() token objects through the Node binding.
-    const declarations: unknown[] = [];
-    const flattened = transform({
-      filename,
-      code: Buffer.from(cssText),
-      include: Features.Nesting,
-      errorRecovery: true,
-      visitor: {
-        Declaration(declaration) {
-          // Protect declarations from the lowering pass's shorthand merging
-          // and value simplification; collection needs the original AST.
-          const index = declarations.push(declaration) - 1;
-          return { property: `--layout-nesting-${index}`, raw: '0' };
+    let ast = cache?.ast;
+    if (!ast) {
+      const collectedAst: Array<{ type: string; value: unknown }> = [];
+      ast = collectedAst;
+      // Lower nesting before collection: collecting a parent removes its subtree.
+      // Lightning CSS preserves the parent-list specificity with :is(), expands
+      // nested media rules, and retains declarations authored after nested rules.
+      // Keep this separate from the visitor to avoid round-tripping its unparsed
+      // var() token objects through the Node binding.
+      const declarations: unknown[] = [];
+      const flattened = transform({
+        filename,
+        code: Buffer.from(cssText),
+        include: Features.Nesting,
+        errorRecovery: true,
+        visitor: {
+          Declaration(declaration) {
+            // Protect declarations from the lowering pass's shorthand merging
+            // and value simplification; collection needs the original AST.
+            const index = declarations.push(declaration) - 1;
+            return { property: `--layout-nesting-${index}`, raw: '0' };
+          },
         },
-      },
-    });
-    transform({
-      filename,
-      code: flattened.code,
-      errorRecovery: true,
-      visitor: {
-        Rule(rule) {
-          restoreNestingDeclarations(rule, declarations);
-          if (rule.type === 'style') {
-            collectStyleRule(rule.value, policy, rules);
-            // This transform is collection-only. Returning a rule containing
-            // unresolved var() tokens makes Lightning CSS serialize its internal
-            // unparsed-token representation, which its Node binding cannot round-trip.
+      });
+      transform({
+        filename,
+        code: flattened.code,
+        errorRecovery: true,
+        visitor: {
+          Rule(rule) {
+            restoreNestingDeclarations(rule, declarations);
+            collectedAst.push({
+              type: rule.type,
+              value: 'value' in rule ? rule.value : undefined,
+            });
             return [];
-          }
-
-          if (rule.type === 'media') {
-            collectMediaRule(rule.value, policy, rules, viewport);
-            return [];
-          }
-
-          if (rule.type === 'font-face') {
-            return [];
-          }
-
-          handleUnsupportedCss(policy, {
-            property: `@${rule.type}`,
-            value: rule.type,
-            reason: 'unsupported-rule',
-            source: 'stylesheet',
-          });
-          return [];
+          },
         },
-      },
-    });
+      });
+      if (cache) cache.ast = ast;
+    }
+    for (const rule of ast) {
+      if (rule.type === 'style')
+        collectStyleRule(
+          rule.value as Parameters<typeof collectStyleRule>[0],
+          policy,
+          rules,
+        );
+      else if (rule.type === 'media')
+        collectMediaRule(rule.value, policy, rules, viewport);
+      else if (rule.type !== 'font-face')
+        handleUnsupportedCss(policy, {
+          property: `@${rule.type}`,
+          value: rule.type,
+          reason: 'unsupported-rule',
+          source: 'stylesheet',
+        });
+    }
   } catch (error) {
     handleUnsupportedCss(policy, {
       property: 'stylesheet',
@@ -1018,19 +1106,48 @@ function readStyleElementCssText(styleElement: Element): string {
   }
 }
 
+const documentSourceCaches = new WeakMap<
+  Document,
+  { sources?: DocumentStylesheetSource[]; observer: MutationObserver }
+>();
+
 function documentStylesheetSources(
   document: Document,
 ): DocumentStylesheetSource[] {
+  let cache = documentSourceCaches.get(document);
+  if (!cache && document.defaultView?.MutationObserver) {
+    const entry: {
+      sources?: DocumentStylesheetSource[];
+      observer: MutationObserver;
+    } = {
+      observer: new document.defaultView.MutationObserver(() => {
+        entry.sources = undefined;
+      }),
+    };
+    entry.observer.observe(document, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+    });
+    documentSourceCaches.set(document, entry);
+    cache = entry;
+  }
+  if (cache?.observer.takeRecords().length) cache.sources = undefined;
+  if (cache?.sources) return cache.sources;
   let styleIndex = 0;
   let externalIndex = 0;
 
-  return Array.from(document.querySelectorAll('style, link')).flatMap(
+  const sources = Array.from(document.querySelectorAll('style, link')).flatMap(
     (element): DocumentStylesheetSource[] => {
       if (element.localName === 'style') {
         return [
           {
             element,
-            sheet: (element as HTMLStyleElement).sheet,
+            get sheet() {
+              return (element as HTMLStyleElement).sheet;
+            },
+            authored: element.textContent ?? '',
             type: 'style',
             filename: `style-${styleIndex++}.css`,
           },
@@ -1047,13 +1164,17 @@ function documentStylesheetSources(
       return [
         {
           element,
-          sheet: link.sheet,
+          get sheet() {
+            return link.sheet;
+          },
           type: 'external',
           filename: `external-style-${externalIndex++}.css`,
         },
       ];
     },
   );
+  if (cache) cache.sources = sources;
+  return sources;
 }
 
 function adoptedStylesheets(document: Document): CSSStyleSheet[] {

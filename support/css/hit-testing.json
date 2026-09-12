@@ -27,7 +27,12 @@
           "elements-from-point-order"
         ]
       },
-      "notes": []
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Eligible boxes are sorted once per immutable snapshot. elementFromPoint stops at the first matching box; elementsFromPoint preserves the same complete front-to-back order."
+        }
+      ]
     },
     {
       "id": "pointer-event-participation",
@@ -84,10 +89,16 @@
         "fixtures": [
           "element-scroll-offsets",
           "scroll-into-view",
-          "window-scroll-offsets"
+          "window-scroll-offsets",
+          "inline-scroll-cache"
         ]
       },
-      "notes": []
+      "notes": [
+        {
+          "kind": "implementation-quirk",
+          "text": "Scroll-only changes reuse resolved styles and the computed Taffy tree, rebuilding viewport rectangles, sticky placement, clipping, and hit-test ordering without rerunning flow layout. Scroll parity fixtures warm the cache before scrolling. Hosts with own/non-patchable scroll properties retain offset polling."
+        }
+      ]
     }
   ]
 }

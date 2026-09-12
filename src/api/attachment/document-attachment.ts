@@ -11,6 +11,7 @@ import type {
 import {
   computeTaffyDocumentLayout,
   type LayoutStylesheetCache,
+  reprojectTaffyDocumentLayout,
 } from '../../css-parity-implementation/layout/taffy-layout-source.ts';
 import { type Box, zeroBox } from '../box.ts';
 import type {
@@ -56,6 +57,15 @@ export class DocumentAttachment {
   private readonly userAgentStyles: Required<UserAgentStyleOptions>;
   private readonly nativeControlMetrics: NativeControlMetrics;
   private dirty = true;
+  private scrollDirty = false;
+  private scrollTracking = false;
+  private untrackedScrolls = new Map<Element, ScrollOffset>();
+  private hoverDirty = true;
+  private hasHoverRules = false;
+  private readonly handleHover = (): void => {
+    this.hoverDirty = true;
+    this.scheduleObserverDelivery();
+  };
   private detached = false;
   private snapshot: LayoutSnapshot | undefined;
   private snapshotScroll: ScrollOffset | undefined;
@@ -72,7 +82,7 @@ export class DocumentAttachment {
   private observerDeliveryFrame: number | undefined;
   private flushingObservers = false;
   private readonly handleScroll = (): void => {
-    this.scheduleObserverDelivery();
+    this.markScrollDirty();
   };
 
   private readonly handleImageResource = (event: Event): void => {
@@ -95,6 +105,8 @@ export class DocumentAttachment {
       this.scheduleObserverDelivery();
     });
     this.document.addEventListener('scroll', this.handleScroll, true);
+    for (const event of hoverEvents)
+      this.document.addEventListener(event, this.handleHover, true);
     // Image decoding changes natural dimensions without a DOM mutation.
     this.document.addEventListener('load', this.handleImageResource, true);
     this.document.addEventListener('error', this.handleImageResource, true);
@@ -109,12 +121,40 @@ export class DocumentAttachment {
     this.mutationObserver?.disconnect();
     this.mutationObserver = undefined;
     this.document.removeEventListener('scroll', this.handleScroll, true);
+    for (const event of hoverEvents)
+      this.document.removeEventListener(event, this.handleHover, true);
+    this.stylesheetCache.layoutTree = undefined;
     this.document.removeEventListener('load', this.handleImageResource, true);
     this.document.removeEventListener('error', this.handleImageResource, true);
     this.document.defaultView?.removeEventListener('scroll', this.handleScroll);
     this.cancelScheduledObserverDelivery();
     unpatchDomApis(this);
     this.detached = true;
+  }
+
+  setScrollTracking(reliable: boolean): void {
+    this.scrollTracking = reliable;
+  }
+
+  markScrollDirty(): void {
+    if (this.detached) return;
+    this.scrollDirty = true;
+    this.hoverDirty = true;
+    this.scheduleObserverDelivery();
+  }
+
+  private recordScrollTracking(): void {
+    this.scrollDirty = false;
+    this.untrackedScrolls = new Map();
+    for (const [element, offset] of this.snapshot?.elementScrolls ?? []) {
+      // Hosts with own scroll properties bypass prototype mutation hooks.
+      if (
+        !this.scrollTracking ||
+        Object.hasOwn(element, 'scrollTop') ||
+        Object.hasOwn(element, 'scrollLeft')
+      )
+        this.untrackedScrolls.set(element, offset);
+    }
   }
 
   markDirty(): void {
@@ -157,7 +197,15 @@ export class DocumentAttachment {
     );
     this.snapshotScroll = scroll;
     this.snapshotActiveElement = this.document.activeElement;
-    this.snapshotHoveredElements = matchingElements(this.document, ':hover');
+    this.hasHoverRules = [
+      ...(this.stylesheetCache.documentRules ?? []),
+      ...(this.stylesheetCache.userAgentRules ?? []),
+    ].some(rule => rule.selector.includes(':hover'));
+    this.snapshotHoveredElements = this.hasHoverRules
+      ? matchingElements(this.document, ':hover')
+      : [];
+    this.hoverDirty = false;
+    this.recordScrollTracking();
     this.stylesheetFingerprint = stylesheetFingerprint;
     this.dirty = false;
   }
@@ -442,20 +490,39 @@ export class DocumentAttachment {
   private getSnapshot(): LayoutSnapshot {
     this.assertAttached();
 
+    if (this.mutationObserver?.takeRecords().length) this.dirty = true;
+    const scroll = readScrollOffset(this.document);
+    const stylesheetFingerprint = documentStylesheetFingerprint(this.document);
+    let hoverChanged = false;
+    if (this.hasHoverRules && this.hoverDirty) {
+      hoverChanged = !sameElements(
+        this.snapshotHoveredElements,
+        matchingElements(this.document, ':hover'),
+      );
+      this.hoverDirty = false;
+    }
     if (
       this.dirty ||
       !this.snapshot ||
-      this.stylesheetFingerprint !==
-        documentStylesheetFingerprint(this.document) ||
-      !sameScrollOffset(this.snapshotScroll, readScrollOffset(this.document)) ||
+      this.stylesheetFingerprint !== stylesheetFingerprint ||
       this.snapshotActiveElement !== this.document.activeElement ||
-      !sameElements(
-        this.snapshotHoveredElements,
-        matchingElements(this.document, ':hover'),
-      ) ||
-      hasElementScrollChanged(this.snapshot.elementScrolls)
+      hoverChanged
     ) {
       this.recompute();
+    } else if (
+      this.scrollDirty ||
+      !sameScrollOffset(this.snapshotScroll, scroll) ||
+      hasElementScrollChanged(this.untrackedScrolls)
+    ) {
+      this.snapshot = reprojectTaffyDocumentLayout(
+        this.document,
+        this.viewport,
+        scroll,
+        this.stylesheetCache,
+      );
+      if (!this.snapshot) this.recompute();
+      this.snapshotScroll = scroll;
+      this.recordScrollTracking();
     }
 
     const snapshot = this.snapshot;
@@ -905,7 +972,7 @@ function observeMutations(
 
   const observer = new MutationObserver(markDirty);
 
-  observer.observe(root, {
+  observer.observe(document, {
     attributes: true,
     characterData: true,
     childList: true,
@@ -914,3 +981,12 @@ function observeMutations(
 
   return observer;
 }
+
+const hoverEvents = [
+  'pointerover',
+  'pointerout',
+  'pointermove',
+  'mouseover',
+  'mouseout',
+  'mousemove',
+];
