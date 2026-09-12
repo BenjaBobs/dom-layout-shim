@@ -3,6 +3,14 @@
 DOM Layout Shim provides deterministic layout and hit testing for DOM-like test
 harnesses.
 
+`scrollWidth` and `scrollHeight` report the padding-box size or its scrollable
+content extent, whichever is larger, rounded to integer CSS pixels. For example,
+a 100×60 container with `overflow:auto` and a 240×180 child reports scroll sizes
+of 240×180 instead of zero. Borders are excluded; nested clipped overflow does
+not enlarge the outer container, and scrolling does not shrink the reported
+size. The engine's existing synthetic `html`/`body`, inline-display, native-control,
+and transform-containing-block limitations still apply.
+
 ## CSS support data
 
 - Compatibility explorer: ./css-support-status.html

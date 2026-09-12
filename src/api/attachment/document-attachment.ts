@@ -290,6 +290,18 @@ export class DocumentAttachment {
     );
   }
 
+  scrollWidth(element: Element): number {
+    return roundCssPixel(
+      this.getSnapshot().scrollSizes.get(element)?.width ?? 0,
+    );
+  }
+
+  scrollHeight(element: Element): number {
+    return roundCssPixel(
+      this.getSnapshot().scrollSizes.get(element)?.height ?? 0,
+    );
+  }
+
   scrollIntoView(
     element: Element,
     arg?: boolean | ScrollIntoViewOptions,

@@ -34,9 +34,17 @@ const target = document.elementFromPoint(
 ```
 
 The attachment patches `getBoundingClientRect()`, `getClientRects()`, `offsetWidth`,
-`offsetHeight`, `offsetTop`, `offsetLeft`, `offsetParent`, `clientWidth`, and
-`clientHeight` from the same layout snapshot, so geometry APIs agree with hit
-testing.
+`offsetHeight`, `offsetTop`, `offsetLeft`, `offsetParent`, `clientWidth`,
+`clientHeight`, `scrollWidth`, and `scrollHeight` from the same layout snapshot,
+so geometry APIs agree with hit testing.
+
+`scrollWidth` and `scrollHeight` report the padding-box size or its scrollable
+content extent, whichever is larger, rounded to integer CSS pixels. For example,
+a 100×60 container with `overflow:auto` and a 240×180 child reports scroll sizes
+of 240×180 instead of zero. Borders are excluded; nested clipped overflow does
+not enlarge the outer container, and scrolling does not shrink the reported
+size. The engine's existing synthetic `html`/`body`, inline-display, native-control,
+and transform-containing-block limitations still apply.
 
 Wrapped inline phrasing elements expose one `DOMRect` per line through
 `getClientRects()`, while `getBoundingClientRect()` returns their union. Stylesheet
@@ -51,9 +59,9 @@ The default viewport is 1280×720. Inline styles and document `<style>` elements
 are discovered automatically. Accessible `<link rel="stylesheet">` sheets and
 constructable sheets in `document.adoptedStyleSheets` also participate in their
 CSS cascade order. Cached geometry reads track CSSOM revisions without
-re-serializing unchanged stylesheet rules. Changes to their rules, membership, or ordering invalidate
-the cached layout automatically. Configuration is only needed to override a
-default or supply additional stylesheet text:
+re-serializing unchanged stylesheet rules. Changes to their rules, membership,
+or ordering invalidate the cached layout automatically. Configuration is only
+needed to override a default or supply additional stylesheet text:
 
 ```ts
 await attachLayoutEngine({
