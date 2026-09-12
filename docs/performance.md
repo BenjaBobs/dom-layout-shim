@@ -66,3 +66,26 @@ pnpm exec node test/bench/cache-scenarios.ts > .tmp/cache-after.json
 The direct comparison runner emits JSON without enforcing current performance
 budgets on the old implementation. Generated artifacts are needed to execute
 both source trees; they are not committed.
+
+## Ant Design interaction workload
+
+The Ant Design consumer tests exposed selector-cache churn with more active
+selectors than the shared 512-entry cache. A CPU profile attributed most of the
+runtime to repeated selector expansion and cache eviction. Layout sessions now
+retain their active expansions, with lifetime tied to the session rather than
+an unbounded global cache.
+
+On the same local checkout and host, `pnpm --dir examples/ant-design test`
+reported 14.09 seconds for the two tests before this correction and 2.18 seconds
+afterward (about 6.5× faster). The 10-second per-test timeout is unchanged.
+These are single-run consumer timings, not the medians in the synthetic tables
+above; CI timing depends on runner load. Build the package before reproducing
+because the example consumes `dist/`.
+
+The shared caches also adapt to reuse of recently evicted keys. They start at
+512 entries and double after enough such reuse, up to 4,096 entries. A bounded
+history retains only evicted keys, not their values; unique-input streams do
+not trigger growth. Capacity stays at its high-water mark for the cache's
+lifetime. This is an entry limit, not a byte limit. Inputs longer than 16,384
+characters remain uncached. Working sets beyond the ceiling or the recent-key
+history can still churn, so active selector sessions retain their own entries.

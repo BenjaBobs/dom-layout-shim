@@ -16,7 +16,11 @@ changes reuse computed layout and update viewport geometry, sticky positioning,
 and clipping. Editing one stylesheet preserves the parsed data for other sheets;
 viewport changes re-evaluate media queries without reparsing unchanged CSS.
 Inline declaration parsing, selector expansion, and built-in text measurements
-use bounded caches. Injected `textMeasurer` implementations are not memoized;
+use adaptive bounded caches: recently evicted inputs being reused trigger growth
+from 512 up to 4,096 entries; unique inputs alone do not. Active layout passes
+retain their selector expansions even
+when a stylesheet exceeds the shared cache, avoiding repeated parsing for
+large CSS-in-JS stylesheets. Injected `textMeasurer` implementations are not memoized;
 scroll-only reads reuse the layout already computed from their measurements.
 DOM mutations are checked synchronously when geometry is read. Hosts with
 non-patchable CSSOM or scroll APIs retain conservative validation paths.
