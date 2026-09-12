@@ -41,6 +41,10 @@
         {
           "kind": "browser-parity",
           "text": "Nested text inherits parent font metrics; `inherit`, `unset`, and `initial` are accepted where supported. Percentage and `em` sizes resolve against the inherited parent size, while `rem` resolves against the computed root size."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Built-in measurers use bounded per-measurer caches keyed by text, complete font/spacing inputs, wrapping width, line height, and white-space mode. Consumer-injected measurers remain uncached. Scroll-only geometry updates reuse the already computed layout."
         }
       ]
     },

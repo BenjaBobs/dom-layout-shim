@@ -8,6 +8,7 @@ import type {
   TextMeasurer,
 } from '../../api/text-measurer.ts';
 import { readFontFaceRules } from '../css/stylesheet-source.ts';
+import { cacheTextMeasurer } from './cached-text-measurer.ts';
 import { wordSpacingWidth } from './word-spacing.ts';
 
 type LoadedFontFace = {
@@ -54,7 +55,7 @@ export async function createDocumentFontTextMeasurer(
   }
 
   if (faces.length === 0) return fallback;
-  return createFontTextMeasurer(faces, fallback);
+  return cacheTextMeasurer(createFontTextMeasurer(faces, fallback));
 }
 
 function createFontTextMeasurer(

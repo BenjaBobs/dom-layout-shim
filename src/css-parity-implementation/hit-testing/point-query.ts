@@ -7,16 +7,35 @@ export function elementsFromPointInBoxes(
   x: number,
   y: number,
 ): Element[] {
+  const elements: Element[] = [];
+  for (const box of orderedHitBoxes(boxes)) {
+    if (hitContainsPoint(box, x, y)) elements.push(box.element);
+  }
+  return elements;
+}
+
+const snapshotHitBoxes = new WeakMap<readonly HitBox[], readonly HitBox[]>();
+
+export function prepareHitTesting(boxes: readonly HitBox[]): void {
+  snapshotHitBoxes.set(boxes, sortHitBoxes(boxes));
+}
+
+function sortHitBoxes(boxes: readonly HitBox[]): HitBox[] {
   return boxes
-    .filter(box => box.visibility === 'visible')
-    .filter(box => box.pointerEvents !== 'none')
-    .filter(box =>
-      box.polygon
-        ? containsPointInPolygon(box.polygon, x, y)
-        : containsPoint(box, x, y),
-    )
-    .toSorted(compareHitOrder)
-    .map(box => box.element);
+    .filter(box => box.visibility === 'visible' && box.pointerEvents !== 'none')
+    .toSorted(compareHitOrder);
+}
+
+function orderedHitBoxes(boxes: readonly HitBox[]): readonly HitBox[] {
+  // Only prepared snapshot arrays are immutable. Keep standalone algorithm
+  // callers correct when they mutate their own arrays between queries.
+  return snapshotHitBoxes.get(boxes) ?? sortHitBoxes(boxes);
+}
+
+function hitContainsPoint(box: HitBox, x: number, y: number): boolean {
+  return box.polygon
+    ? containsPointInPolygon(box.polygon, x, y)
+    : containsPoint(box, x, y);
 }
 
 function containsPointInPolygon(
@@ -51,5 +70,8 @@ export function elementFromPointInBoxes(
   x: number,
   y: number,
 ): Element | null {
-  return elementsFromPointInBoxes(boxes, x, y)[0] ?? null;
+  for (const box of orderedHitBoxes(boxes)) {
+    if (hitContainsPoint(box, x, y)) return box.element;
+  }
+  return null;
 }

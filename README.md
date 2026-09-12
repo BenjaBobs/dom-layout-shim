@@ -46,6 +46,17 @@ not enlarge the outer container, and scrolling does not shrink the reported
 size. The engine's existing synthetic `html`/`body`, inline-display, native-control,
 and transform-containing-block limitations still apply.
 
+Repeated reads reuse the layout snapshot and its hit-test ordering. Scroll-only
+changes reuse computed layout and update viewport geometry, sticky positioning,
+and clipping. Editing one stylesheet preserves the parsed data for other sheets;
+viewport changes re-evaluate media queries without reparsing unchanged CSS.
+Inline declaration parsing, selector expansion, and built-in text measurements
+use bounded caches. Injected `textMeasurer` implementations are not memoized;
+scroll-only reads reuse the layout already computed from their measurements.
+DOM mutations are checked synchronously when geometry is read. Hosts with
+non-patchable CSSOM or scroll APIs retain conservative validation paths.
+See [cache benchmarks](docs/performance.md) for measured results and reproduction commands.
+
 Wrapped inline phrasing elements expose one `DOMRect` per line through
 `getClientRects()`, while `getBoundingClientRect()` returns their union. Stylesheet
 matching supports `:root`, `:first-child`, `:nth-child()`, `:last-child`, `:hover`,

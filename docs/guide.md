@@ -72,7 +72,8 @@ await attachLayoutEngine({
 ```
 
 > Geometry is recomputed after DOM, class, inline-style, stylesheet, CSSOM, and
-> scroll changes. Repeated reads use the cached snapshot.
+> scroll changes. Repeated reads use the cached snapshot; scroll-only changes
+> reuse computed layout.
 
 ## Use document stylesheets
 
@@ -285,6 +286,28 @@ of 240×180 instead of zero. Borders are excluded; nested clipped overflow does
 not enlarge the outer container, and scrolling does not shrink the reported
 size. The engine's existing synthetic `html`/`body`, inline-display, native-control,
 and transform-containing-block limitations still apply.
+
+Repeated reads reuse the layout snapshot and its hit-test ordering. Scroll-only
+changes reuse computed layout and update viewport geometry, sticky positioning,
+and clipping. Editing one stylesheet preserves the parsed data for other sheets;
+viewport changes re-evaluate media queries without reparsing unchanged CSS.
+Inline declaration parsing, selector expansion, and built-in text measurements
+use bounded caches. Injected `textMeasurer` implementations are not memoized;
+scroll-only reads reuse the layout already computed from their measurements.
+DOM mutations are checked synchronously when geometry is read. Hosts with
+non-patchable CSSOM or scroll APIs retain conservative validation paths.
+
+For example, a cached read after scrolling updates the rectangle without
+repeating text measurement or flow layout:
+
+```ts
+const panel = window.document.querySelector<HTMLElement>('#panel')!
+const row = panel.querySelector('.row')!
+const before = row.getBoundingClientRect()
+panel.scrollTop += 20
+const after = row.getBoundingClientRect()
+// An ordinary row moves up by the actual scroll delta; its size stays the same.
+```
 
 ## Place named grid areas
 

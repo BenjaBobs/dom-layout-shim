@@ -1,3 +1,4 @@
+import { cacheTextMeasurer } from '../css-parity-implementation/layout/cached-text-measurer.ts';
 import { wordSpacingWidth } from '../css-parity-implementation/layout/word-spacing.ts';
 
 export type WhiteSpace = 'normal' | 'pre' | 'pre-line' | 'pre-wrap' | 'nowrap';
@@ -28,7 +29,7 @@ export function createDefaultTextMeasurer(): TextMeasurer {
 }
 
 export function createDeterministicTextMeasurer(): TextMeasurer {
-  return {
+  return cacheTextMeasurer({
     measure(input) {
       const lines = breakTextIntoLines(input);
       const width = lines.reduce(
@@ -51,7 +52,7 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
         height: lines.length * input.lineHeight,
       };
     },
-  };
+  });
 }
 
 function breakTextIntoLines(input: TextMeasureInput): string[] {

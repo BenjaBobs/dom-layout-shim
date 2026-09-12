@@ -1,6 +1,7 @@
 import { Window } from 'happy-dom';
 import { Bench } from 'tinybench';
 import { attachLayoutEngine } from '../../src/index.ts';
+import { runCacheScenarios } from './cache-scenarios.ts';
 
 type Scenario = {
   size: number;
@@ -71,6 +72,7 @@ const memoryGrowthBytes = await measureMemoryGrowth(sizes[1]);
 printResults(scenarios, memoryGrowthBytes);
 assertBudgets(scenarios, memoryGrowthBytes);
 await benchmarkStylesheetVolume();
+await benchmarkCacheInvalidation();
 
 async function runScenario(size: (typeof sizes)[number]): Promise<Scenario> {
   const window = createDocument(size);
@@ -336,4 +338,23 @@ async function benchmarkStylesheetVolume(): Promise<void> {
     }
   }
   console.table(results);
+}
+
+async function benchmarkCacheInvalidation(): Promise<void> {
+  const results = await runCacheScenarios(attachLayoutEngine);
+  console.table(results);
+  const limits: Record<string, number> = {
+    'cached read': 0.1,
+    'point hit': 0.1,
+    scroll: 25,
+    'DOM edit': 100,
+    'one sheet edit': 100,
+  };
+  for (const result of results) {
+    const limit = limits[result.name];
+    if (limit !== undefined && result.ms > limit)
+      throw new Error(
+        `Cache benchmark ${result.name} exceeded ${limit} ms for ${result.count} elements: ${result.ms}`,
+      );
+  }
 }

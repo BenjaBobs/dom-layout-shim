@@ -22,6 +22,10 @@
         {
           "kind": "implementation-quirk",
           "text": "Configured stylesheet text and document `style` elements are combined with other supported stylesheet sources in cascade order."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Parsed source trees and collected rules are cached per attachment and source revision. Changing one sheet preserves other parsed sheets. Selector candidate indexes and matching results are scoped to each layout computation, while pure declaration/selector string caches have bounded capacity."
         }
       ]
     },
@@ -88,6 +92,10 @@
         {
           "kind": "browser-parity",
           "text": "Wide landscape and narrow portrait fixtures verify matching and non-matching responsive branches against Chromium."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Viewport changes reuse parsed stylesheet source trees and re-evaluate media conditions. Inactive branches retain lazy unsupported-CSS policy routing."
         }
       ]
     },

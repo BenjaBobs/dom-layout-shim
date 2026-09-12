@@ -4,6 +4,8 @@ import { createResizeObserverConstructor } from './layout-resize-observer.ts';
 
 const attachedDocuments = new WeakMap<Document, DocumentAttachment>();
 const patchedWindows = new WeakSet<object>();
+const trackedScrollWindows = new WeakMap<object, boolean>();
+const patchedScrollOwners = new WeakMap<object, Set<string>>();
 
 export function patchDomApis(attachment: DocumentAttachment): void {
   const document = attachment.document;
@@ -46,6 +48,13 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     writable: true,
     value: createIntersectionObserverConstructor(attachment),
   });
+
+  let trackedScroll = trackedScrollWindows.get(view);
+  if (trackedScroll === undefined) {
+    trackedScroll = patchScrollOffsets(view.Element.prototype);
+    trackedScrollWindows.set(view, trackedScroll);
+  }
+  attachment.setScrollTracking(trackedScroll);
 
   if (patchedWindows.has(view)) {
     return;
@@ -263,4 +272,71 @@ function patchMatchMedia(view: Window): void {
       return eventTarget;
     },
   });
+}
+
+function patchScrollOffsets(prototype: object): boolean {
+  let reliable = true;
+  for (const key of ['scrollLeft', 'scrollTop'] as const) {
+    let owner: object | null = prototype;
+    while (owner && !Object.getOwnPropertyDescriptor(owner, key))
+      owner = Object.getPrototypeOf(owner);
+    const descriptor = owner
+      ? Object.getOwnPropertyDescriptor(owner, key)
+      : undefined;
+    if (
+      !owner ||
+      !descriptor?.set ||
+      !descriptor.get ||
+      !descriptor.configurable
+    ) {
+      reliable = false;
+      continue;
+    }
+    if (patchedScrollOwners.get(owner)?.has(key)) continue;
+    const keys = patchedScrollOwners.get(owner) ?? new Set<string>();
+    keys.add(key);
+    patchedScrollOwners.set(owner, keys);
+    const setter = descriptor.set;
+    const getter = descriptor.get;
+    Object.defineProperty(owner, key, {
+      ...descriptor,
+      set(this: Element, value: number) {
+        const before = getter.call(this);
+        setter.call(this, value);
+        if (getter.call(this) !== before)
+          attachedDocuments.get(this.ownerDocument)?.markScrollDirty();
+      },
+    });
+  }
+  for (const key of ['scroll', 'scrollTo', 'scrollBy']) {
+    let owner: object | null = prototype;
+    while (owner && !Object.getOwnPropertyDescriptor(owner, key))
+      owner = Object.getPrototypeOf(owner);
+    const descriptor = owner
+      ? Object.getOwnPropertyDescriptor(owner, key)
+      : undefined;
+    if (!descriptor) continue;
+    if (
+      !owner ||
+      !descriptor.configurable ||
+      typeof descriptor.value !== 'function'
+    ) {
+      reliable = false;
+      continue;
+    }
+    if (patchedScrollOwners.get(owner)?.has(key)) continue;
+    const keys = patchedScrollOwners.get(owner) ?? new Set<string>();
+    keys.add(key);
+    patchedScrollOwners.set(owner, keys);
+    const method = descriptor.value;
+    Object.defineProperty(owner, key, {
+      ...descriptor,
+      value(this: Element, ...args: unknown[]) {
+        const result: unknown = Reflect.apply(method, this, args);
+        attachedDocuments.get(this.ownerDocument)?.markScrollDirty();
+        return result;
+      },
+    });
+  }
+  return reliable;
 }

@@ -1,9 +1,23 @@
 // CSSOM edits do not emit MutationObserver records. Track the public mutation
 // methods and setters once, then check a revision without serializing rules.
 // Weak keys avoid retaining sheets, rules, or detached documents.
-type Revision = { value: number; tracked: number; reliable: boolean };
+type Revision = {
+  value: number;
+  structure: number;
+  tracked: number;
+  reliable: boolean;
+};
 const revisions = new WeakMap<object, Revision>();
 const patched = new WeakMap<object, boolean>();
+const structuralMutators = new Set([
+  'insertRule',
+  'deleteRule',
+  'addRule',
+  'removeRule',
+  'replace',
+  'replaceSync',
+  'appendRule',
+]);
 const mutators = new Set([
   'insertRule',
   'deleteRule',
@@ -25,13 +39,13 @@ const mutators = new Set([
 export function stylesheetRevision(sheet: CSSStyleSheet): number | undefined {
   let revision = revisions.get(sheet);
   if (!revision) {
-    revision = { value: 0, tracked: -1, reliable: true };
+    revision = { value: 0, structure: 0, tracked: -1, reliable: true };
     trackObject(sheet, revision);
   }
-  if (revision.tracked !== revision.value) {
+  if (revision.tracked !== revision.structure) {
     try {
       trackRules(sheet.cssRules, revision);
-      revision.tracked = revision.value;
+      revision.tracked = revision.structure;
     } catch {
       // Inaccessible or non-patchable host objects retain the fingerprint path.
       return undefined;
@@ -86,7 +100,11 @@ function trackObject(object: object, revision: Revision): void {
                 set(this: object, value: unknown) {
                   setter.call(this, value);
                   const state = revisions.get(this);
-                  if (state) state.value += 1;
+                  if (state) {
+                    state.value += 1;
+                    if (key === 'cssText' && 'cssRules' in this)
+                      state.structure += 1;
+                  }
                 },
               }
             : {
@@ -95,6 +113,7 @@ function trackObject(object: object, revision: Revision): void {
                   const state = revisions.get(this);
                   if (state) {
                     state.value += 1;
+                    if (structuralMutators.has(key)) state.structure += 1;
                     if (
                       key === 'replace' &&
                       result &&
@@ -103,6 +122,7 @@ function trackObject(object: object, revision: Revision): void {
                       void (result as Promise<unknown>).then(
                         () => {
                           state.value += 1;
+                          state.structure += 1;
                         },
                         () => {},
                       );

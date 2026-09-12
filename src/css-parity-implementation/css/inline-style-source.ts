@@ -1,5 +1,6 @@
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
+import { BoundedCache } from '../bounded-cache.ts';
 import {
   applyCustomPropertyDeclaration,
   type CustomProperties,
@@ -56,10 +57,16 @@ export function applyInlineCustomProperties(
   }
 }
 
+const declarationCache = new BoundedCache<
+  ReadonlyArray<{ property: string; value: string }>
+>();
+
 export function parseDeclarationBlock(
   block: string,
-): Array<{ property: string; value: string }> {
-  return block
+): ReadonlyArray<{ property: string; value: string }> {
+  const cached = declarationCache.get(block);
+  if (cached) return cached;
+  const declarations = block
     .split(';')
     .map(declaration => declaration.trim())
     .filter(Boolean)
@@ -75,4 +82,6 @@ export function parseDeclarationBlock(
         value: declaration.slice(colonIndex + 1).trim(),
       };
     });
+  declarationCache.set(block, declarations);
+  return declarations;
 }
