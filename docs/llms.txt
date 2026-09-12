@@ -69,6 +69,11 @@ For example, `:root { --panel-width: 80px; } .panel { width: var(--panel-width);
 gives `.panel` elements an 80px width. `:root` matches the document element
 and has pseudo-class specificity, so it takes precedence over `html`.
 
+Cached geometry reads do not re-serialize unchanged stylesheet rules. CSSOM
+methods and declaration setters (for example, `rule.style.width = "120px"`)
+invalidate the affected sheet even when its rule count stays the same. Hosts
+whose CSSOM cannot be patched retain content fingerprinting.
+
 The engine reads configured stylesheet strings first, followed by document
 `<style>` and accessible `<link rel="stylesheet">` sheets in DOM order, then
 constructable sheets in `document.adoptedStyleSheets` adoption order. CSSOM

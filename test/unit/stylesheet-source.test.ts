@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   attach,
   expectRect,
@@ -250,6 +250,46 @@ describe('stylesheet source handling', () => {
 
     sheet.deleteRule(1);
     expect(box.getBoundingClientRect().left).toBe(25);
+  });
+
+  it('does not serialize unchanged CSS rules on cached geometry reads', async () => {
+    document.body.innerHTML =
+      '<style>.box { left: 10px; }</style><div id="box" class="box" style="position:absolute;width:10px;height:10px"></div>';
+    await attach();
+    const box = requiredElement('#box');
+    box.getBoundingClientRect();
+    const sheet = document.querySelector('style')?.sheet;
+    const rule = sheet?.cssRules[0] as CSSStyleRule;
+    const serialize = vi.spyOn(rule, 'cssText', 'get');
+    for (let i = 0; i < 200; i += 1) box.getBoundingClientRect();
+    expect(serialize).not.toHaveBeenCalled();
+    serialize.mockRestore();
+  });
+
+  it('invalidates same-count declaration edits and asynchronous replacements', async () => {
+    document.body.innerHTML =
+      '<div id="box" class="box" style="position:absolute;width:10px;height:10px"></div>';
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.box { left: 10px; }');
+    document.adoptedStyleSheets = [sheet];
+    await attach();
+    const box = requiredElement('#box');
+    expect(box.getBoundingClientRect().left).toBe(10);
+    const rule = sheet.cssRules[0] as CSSStyleRule;
+    rule.style.left = '20px';
+    expect(box.getBoundingClientRect().left).toBe(20);
+    rule.style.setProperty('left', '30px');
+    expect(box.getBoundingClientRect().left).toBe(30);
+    rule.style.cssText = 'left: 40px';
+    expect(box.getBoundingClientRect().left).toBe(40);
+    rule.style.removeProperty('left');
+    expect(box.getBoundingClientRect().left).toBe(0);
+    await sheet.replace('.box { left: 50px; }');
+    expect(box.getBoundingClientRect().left).toBe(50);
+    sheet.disabled = true;
+    expect(box.getBoundingClientRect().left).toBe(0);
+    sheet.disabled = false;
+    expect(box.getBoundingClientRect().left).toBe(50);
   });
 
   it('invalidates layout when accessible external CSSOM rules change', async () => {

@@ -76,6 +76,11 @@ await attachLayoutEngine({
 
 ## Use document stylesheets
 
+Repeated geometry reads reuse cached layout without re-serializing unchanged
+stylesheet rules. CSSOM methods and declaration setters invalidate the affected
+sheet, including edits such as `rule.style.width = "120px"` that keep the same
+rule count. Hosts whose CSSOM cannot be patched retain content fingerprinting.
+
 The engine reads document `<style>` elements, accessible linked stylesheets,
 and constructable stylesheets in `document.adoptedStyleSheets`. Document sheets
 follow DOM order, and adopted sheets follow them in adoption order, matching

@@ -36,7 +36,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "The engine fingerprints live style-element CSSOM state before cached snapshot reads because CSSOM rule mutations do not emit `MutationObserver` records."
+          "text": "The engine tracks per-sheet CSSOM revisions through mutation methods and declaration setters because CSSOM edits do not emit `MutationObserver` records. Cached reads compare sheet identity, revision, rule count, authored text, and disabled state without serializing unchanged rules; non-patchable or inaccessible CSSOM falls back to content fingerprinting."
         }
       ]
     }
