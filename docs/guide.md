@@ -6,6 +6,8 @@ eyebrow: Deterministic browser geometry
 
 # Layout and hit testing for DOM test harnesses.
 
+For agents, start with the [agent guide and text documentation index](https://benjabobs.github.io/dom-layout-shim/llms.txt). Every documentation page links to a static Markdown alternative; CSS support has a compact index with separate topic files.
+
 Attach a deterministic layout engine to happy-dom, then use familiar DOM
 geometry and point-query APIs without launching a browser.
 

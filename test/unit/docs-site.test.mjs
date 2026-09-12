@@ -11,6 +11,7 @@ import {
 afterEach(() => {
   document.body.innerHTML = '';
   document.head.querySelector('[data-page-styles]')?.remove();
+  document.head.querySelector('[data-agent-alternate]')?.remove();
   history.replaceState({}, '', '/');
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -135,7 +136,7 @@ describe('documentation site behavior', () => {
   it('navigates by replacing page content, styles, title, and history', async () => {
     document.head.insertAdjacentHTML(
       'beforeend',
-      '<style data-page-styles>.old { color: red }</style>',
+      '<link rel="alternate" type="text/markdown" href="./index.md" data-agent-alternate><style data-page-styles>.old { color: red }</style>',
     );
     document.body.innerHTML =
       '<nav class="site-nav-links"><a href="./">Guide</a><a href="./changelog.html">Changelog</a></nav><div data-page-content><main id="main-content">Guide</main></div>';
@@ -144,7 +145,7 @@ describe('documentation site behavior', () => {
       vi.fn(
         async () =>
           new Response(
-            `<!doctype html><html><head><title>Changelog</title><style data-page-styles>.new { color: green }</style></head><body><div data-page-content><main id="main-content">Release notes</main></div></body></html>`,
+            `<!doctype html><html><head><title>Changelog</title><link rel="alternate" type="text/markdown" href="./changelog.md" data-agent-alternate><style data-page-styles>.new { color: green }</style></head><body><div data-page-content><main id="main-content">Release notes</main></div></body></html>`,
           ),
       ),
     );
@@ -152,6 +153,9 @@ describe('documentation site behavior', () => {
     await navigate(new URL('/changelog.html', location.href));
 
     expect(document.title).toBe('Changelog');
+    expect(
+      document.querySelector('[data-agent-alternate]').getAttribute('href'),
+    ).toBe('./changelog.md');
     expect(document.querySelector('[data-page-content]').textContent).toContain(
       'Release notes',
     );

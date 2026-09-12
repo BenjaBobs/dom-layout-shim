@@ -27,6 +27,8 @@ const content = renderChangelogMarkdown(markdown, releases);
 const outputPath = resolve(root, '.site/changelog.html');
 await mkdir(resolve(root, '.site'), { recursive: true });
 
+await writeFile(resolve(root, '.site/changelog.md'), markdown);
+
 const output = renderDocumentationPage({
   ...context,
   page: 'changelog.html',
