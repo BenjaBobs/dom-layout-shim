@@ -1,5 +1,42 @@
 # dom-layout-shim
 
+## 0.9.0
+
+### Minor Changes
+
+- 2df86f3: Support intrinsic grid tracks and box sizes.
+  
+  For example, `grid-auto-flow: column; grid-auto-columns: max-content` now gives implicit columns their individual content widths instead of falling back to evenly split tracks. Explicit and implicit tracks also accept `auto`, `min-content`, and `fit-content(90px)` (including percentage limits).
+  
+  `width: max-content` now sizes a box to its unwrapped content; `width: fit-content` clamps its width to the available space between its minimum and maximum content sizes. These keywords also work for height and logical preferred sizes. Intrinsic min/max dimension constraints remain unsupported.
+- a04d69d: Support the :root pseudo-class in stylesheets.
+  
+  Rules targeting :root now match the document element with pseudo-class specificity and supply inherited custom properties. For example, `:root { --panel-width: 80px; } .panel { width: var(--panel-width, 10px); }` now gives `.panel` elements an 80px width instead of the previous 10px fallback.
+
+### Patch Changes
+
+- 2df86f3: Honor important inline declarations.
+  
+  Inline `style="display: none !important; display: block"` now produces a zero-sized rectangle and removes the element and its descendants from hit testing instead of leaving a visible layout box.
+- e45580a: Expose scrollWidth and scrollHeight from cached layout.
+  
+  A 100×60 container with overflow:auto and a 240×180 child now reports scrollWidth of 240 and scrollHeight of 180, instead of zero. The getters include padding and supported content overflow, exclude borders, respect nested clipping, and remain stable after scrolling. Descendant mutations update both values through the layout cache.
+- 52ce15c: Apply native CSS nesting in stylesheets.
+  
+  Nested declarations now affect layout instead of being discarded. For example, `.card { .item { width: 60px; } }` now gives a matching child a `getBoundingClientRect().width` of 60, where previously the nested width was ignored. Parent selector-list specificity, declarations after nested rules, and nested viewport media queries are preserved.
+- 2d734fd: Reuse layout and parsing work across geometry reads, scrolling, and stylesheet edits.
+  
+  Repeated geometry and point queries now reuse cached validation state and hit-test ordering. For example, reading a row rectangle, setting its container scrollTop to 20, and reading again updates the row position without rebuilding flow layout or measuring its text again. Editing one stylesheet preserves parsed data for other sheets, and viewport changes reuse parsed CSS while selecting the applicable media rules.
+  
+  Bounded caches reuse inline declaration parsing, selector expansion, and built-in text measurements. Injected textMeasurer implementations remain uncached. Synchronous DOM edits still invalidate geometry on the next read, and hosts whose CSSOM or scroll APIs cannot be intercepted retain conservative validation.
+  
+  Active layout passes retain expanded selectors even when a stylesheet exceeds the shared cache. For example, opening and closing an Ant Design modal no longer repeatedly expands its scoped selectors for every element; the example interaction tests complete substantially faster without increasing their timeout. These entries are released with the layout session.
+  
+  Shared parsing and built-in text measurement caches now grow from 512 up to 4,096 entries when recently evicted inputs are reused. For example, repeatedly laying out 600 distinct labels can retain their built-in measurements after the cache grows, instead of continually evicting and recomputing them. Unique inputs alone do not grow the cache; oversized inputs remain uncached.
+- cae4faa: Avoid serializing unchanged stylesheets on cached geometry reads.
+  
+  Repeated calls such as `element.getBoundingClientRect()` now reuse per-sheet CSSOM revisions instead of serializing all document CSS on every read. For example, 200 reads after mounting a 300 KB stylesheet no longer repeat stylesheet serialization 200 times. Declaration edits such as `rule.style.width = "120px"`, rule insertion and replacement, and adopted-sheet reordering still invalidate cached geometry. Hosts with non-patchable CSSOM retain content fingerprinting.
+
 ## 0.8.0
 
 ### Minor Changes
