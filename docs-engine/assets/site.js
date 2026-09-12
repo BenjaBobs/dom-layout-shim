@@ -75,6 +75,9 @@ export async function navigate(
   window.__docsPageAbort?.abort();
   document.title = next.title;
   replacePageStyles(next);
+  document.querySelector('[data-agent-alternate]')?.remove();
+  const alternate = next.querySelector('[data-agent-alternate]');
+  if (alternate) document.head.append(alternate);
   document.querySelector('[data-page-content]').replaceWith(nextContent);
   updateCurrentNavigation(url);
   enhanceCode(nextContent);

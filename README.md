@@ -1,5 +1,7 @@
 # DOM Layout Shim
 
+For agents, start with the [agent guide and text documentation index](https://benjabobs.github.io/dom-layout-shim/llms.txt). Every documentation page links to a static Markdown alternative; CSS support has a compact index with separate topic files.
+
 Deterministic layout and hit testing for fast DOM test harnesses.
 
 This package is an early proof of concept. The core is framework agnostic and

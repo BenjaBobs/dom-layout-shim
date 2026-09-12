@@ -1,5 +1,17 @@
 # DOM Layout Shim documentation
 
+## Agent navigation
+
+Prefer these static text resources over the interactive HTML pages. All links
+are relative to this file on the documentation site.
+
+- [Agent guide](./index.md): concise API usage and limitations (this content).
+- [Full guide](./guide.md): the complete authored guide.
+- [Examples](./examples.md): compatibility summaries, setup code, and JSON reports.
+- [CSS support](./css-support-status.md): compact property/topic index; follow a
+  topic link for its exact support claims, conditions, limitations, and parity.
+- [Changelog](./changelog.md): released changes and pending Upcoming entries.
+
 DOM Layout Shim provides deterministic layout and hit testing for DOM-like test
 harnesses.
 

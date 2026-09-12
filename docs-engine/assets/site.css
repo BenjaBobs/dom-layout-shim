@@ -341,3 +341,10 @@ pre code {
     border-bottom-width: 1px;
   }
 }
+
+.agent-docs {
+  margin: 1rem auto;
+  width: min(1180px, calc(100% - 40px));
+  color: var(--muted);
+  font-size: 0.8rem;
+}

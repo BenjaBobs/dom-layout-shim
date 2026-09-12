@@ -9,6 +9,7 @@ export function renderDocumentationPage({
   inlineModule = '',
   scripts = [],
 }) {
+  const markdownHref = `./${page.replace(/\.html$/, '.md')}`;
   const styles = pageStyles
     ? `\n  <style data-page-styles>\n${pageStyles.trim()}\n  </style>`
     : '';
@@ -45,6 +46,7 @@ export function renderDocumentationPage({
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeAttribute(description)}">
   <title>${escapeHtml(title)}</title>
+  <link rel="alternate" type="text/markdown" href="${escapeAttribute(markdownHref)}" data-agent-alternate>
   ${prefetch}
   <script type="speculationrules">${speculationRules}</script>
   <link rel="stylesheet" href="./site.css">${styles}
@@ -54,6 +56,7 @@ export function renderDocumentationPage({
   <a class="skip-link" href="#main-content">Skip to content</a>
   ${renderNavigation({ page, version, upcoming })}
   <div data-page-content>
+    <p class="agent-docs">Agents: read <a href="${escapeAttribute(markdownHref)}">this page as Markdown</a> or the <a href="./llms.txt">agent guide and documentation index</a>.</p>
     ${body.trim().replace(/<(main)(\s|>)/, '<$1 id="main-content" tabindex="-1"$2')}
   </div>${pageScript}
 </body>

@@ -18,6 +18,7 @@ import {
   readDocumentationContext,
   renderDocumentationPage,
 } from './docs-page-shell.mjs';
+import { generateAgentDocs } from './generate-agent-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const context = await readDocumentationContext(root);
@@ -39,9 +40,11 @@ const exampleCompatibility = await Promise.all(
       ),
     ),
     setup: renderMarkdownFragment(await hydrateSetupMarkdown(example)),
+    setupMarkdown: await hydrateSetupMarkdown(example),
   })),
 );
 await mkdir(siteRoot, { recursive: true });
+await generateAgentDocs(root, siteRoot, exampleCompatibility);
 
 for (const asset of ['site.css', 'site.js', 'css-support-search.js']) {
   await copyFile(
