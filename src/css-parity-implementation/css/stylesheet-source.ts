@@ -324,6 +324,7 @@ type RuleSession = {
   indexed: Map<string, StyleRule[]>;
   matches: WeakMap<Element, StyleRule[]>;
   rank: Map<StyleRule, number>;
+  expandedSelectors: Map<string, string[]>;
 };
 const ruleSessions = new WeakMap<readonly StyleRule[], RuleSession>();
 
@@ -336,6 +337,7 @@ export function createRuleMatchingSession(
     indexed: new Map(),
     matches: new WeakMap(),
     rank: new Map(),
+    expandedSelectors: new Map(),
   };
   ordered.forEach((rule, index) => {
     session.rank.set(rule, index);
@@ -385,7 +387,12 @@ function matchingRules(
     .filter(rule => {
       let matches = selectorMatches.get(rule.selector);
       if (matches === undefined) {
-        matches = matchesSelector(element, rule.selector, policy);
+        matches = matchesSelector(
+          element,
+          rule.selector,
+          policy,
+          session.expandedSelectors,
+        );
         selectorMatches.set(rule.selector, matches);
       }
       return matches;
@@ -543,9 +550,18 @@ function matchesSelector(
   element: Element,
   selector: string,
   policy: UnsupportedCssPolicy | undefined,
+  expandedSelectors?: Map<string, string[]>,
 ): boolean {
   try {
-    return expandTopLevelSelectorFunctions(selector).some(candidate => {
+    // A stylesheet can exceed the shared bounded cache. Keep its active
+    // selectors for this pass so each element does not evict the selectors
+    // needed by the next (notably Ant Design's scoped CSS-in-JS rules).
+    let expanded = expandedSelectors?.get(selector);
+    if (!expanded) {
+      expanded = expandTopLevelSelectorFunctions(selector);
+      expandedSelectors?.set(selector, expanded);
+    }
+    return expanded.some(candidate => {
       if (candidate.includes(' i]')) {
         return matchesAsciiInsensitiveAttributes(element, candidate);
       }
