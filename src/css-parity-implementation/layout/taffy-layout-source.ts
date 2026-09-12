@@ -1520,7 +1520,13 @@ function definiteDimension(
   value: SupportedStyle['width'],
   viewportBasis: number,
 ): number | undefined {
-  if (value === undefined) return undefined;
+  if (
+    value === undefined ||
+    value === 'min-content' ||
+    value === 'max-content' ||
+    value === 'fit-content'
+  )
+    return undefined;
   const resolved = resolveCalculatedDimension(value, viewportBasis);
   if (resolved === undefined) return undefined;
   if (typeof resolved === 'number') return resolved;

@@ -539,6 +539,8 @@ function stringifyGridTemplateItem(item: unknown): string {
   }
 
   const trackSize = item.value;
+  if (trackSize.type === 'fit-content')
+    return stringifyGridTrackSize(trackSize);
 
   if (trackSize.type === 'min-max') {
     return stringifyGridMinMax(trackSize);
@@ -573,6 +575,8 @@ function stringifyGridTrackRepeat(value: Record<string, unknown>): string {
 }
 
 function stringifyGridTrackSize(value: Record<string, unknown>): string {
+  if (value.type === 'fit-content')
+    return `fit-content(${stringifyDimensionPercentage(value.value)})`;
   if (value.type === 'min-max') {
     return stringifyGridMinMax(value);
   }
@@ -613,6 +617,8 @@ function stringifyGridMinMax(value: Record<string, unknown>): string {
 }
 
 function stringifyGridAutoTracks(value: unknown): string {
+  // Lightning CSS represents the initial single auto track as an empty list.
+  if (Array.isArray(value) && value.length === 0) return 'auto';
   if (!Array.isArray(value)) {
     return isRecord(value)
       ? stringifyGridTrackBreadth(value)
@@ -699,8 +705,13 @@ function stringifyLengthLike(value: Record<string, unknown>): string {
     return stringifyVariable(value);
   }
 
-  if (value.type === 'auto') {
-    return 'auto';
+  if (
+    value.type === 'auto' ||
+    value.type === 'min-content' ||
+    value.type === 'max-content' ||
+    value.type === 'fit-content'
+  ) {
+    return value.type;
   }
 
   if (value.type === 'none' || value.type === 'normal') {

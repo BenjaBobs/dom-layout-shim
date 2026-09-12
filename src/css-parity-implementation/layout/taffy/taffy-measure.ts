@@ -178,8 +178,12 @@ export const measureTaffyNode: MeasureFunction = (
       ? availableSpace.width
       : typeof knownDimensions.width === 'number'
         ? knownDimensions.width
-        : Number.MAX_SAFE_INTEGER;
-  const measured = measureContext.textMeasurer.measure({
+        : // Measurers treat zero as unconstrained. A positive subpixel limit
+          // requests every soft wrap opportunity for Taffy's min-content probe.
+          availableSpace.width === 'min-content'
+          ? Number.MIN_VALUE
+          : Number.MAX_SAFE_INTEGER;
+  const measurementInput = {
     text: transformMeasuredText(
       measureContext.text ?? '',
       measureContext.textTransform,
@@ -192,7 +196,35 @@ export const measureTaffyNode: MeasureFunction = (
     lineHeight: measureContext.lineHeight,
     maxWidth,
     whiteSpace: measureContext.whiteSpace,
-  });
+  };
+  let measured = measureContext.textMeasurer.measure(measurementInput);
+  if (
+    typeof availableSpace.width === 'number' &&
+    knownDimensions.width === undefined &&
+    measured.width !== availableSpace.width
+  ) {
+    // Taffy 0.14 resolves fit-content leaves by measuring at the available
+    // width. A wrapped line's advance can be narrower than that width; CSS
+    // instead clamps the available width between min-content and max-content.
+    const minimum = measureContext.textMeasurer.measure({
+      ...measurementInput,
+      maxWidth: Number.MIN_VALUE,
+    }).width;
+    const maximum = measureContext.textMeasurer.measure({
+      ...measurementInput,
+      maxWidth: Number.MAX_SAFE_INTEGER,
+    }).width;
+    const width = Math.max(minimum, Math.min(maximum, availableSpace.width));
+    measured = {
+      ...(width === maxWidth
+        ? measured
+        : measureContext.textMeasurer.measure({
+            ...measurementInput,
+            maxWidth: width,
+          })),
+      width,
+    };
+  }
 
   return {
     width:

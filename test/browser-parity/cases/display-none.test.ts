@@ -33,3 +33,30 @@ it('display none removes the element from hit testing and layout rects', async (
     ],
   });
 });
+
+for (const declaration of [
+  'display: none !important',
+  'display: none !IMPORTANT; display: block',
+  'display: block !important; display: none !important',
+]) {
+  it(`inline ${declaration} removes boxes and hit targets`, async () => {
+    await expectChromiumParity({
+      viewport: { width: 300, height: 200 },
+      html: `
+        <style>
+          body { margin: 0; }
+          #hidden { display: block; width: 100px; height: 100px; }
+          #target { width: 100px; height: 100px; }
+        </style>
+        <div id="hidden" style="${declaration}"><div id="child">Hidden</div></div>
+        <div id="target"></div>
+      `,
+      queries: [
+        { type: 'rect', selector: '#hidden' },
+        { type: 'rect', selector: '#child' },
+        { type: 'rect', selector: '#target' },
+        { type: 'point', x: 50, y: 50 },
+      ],
+    });
+  });
+}

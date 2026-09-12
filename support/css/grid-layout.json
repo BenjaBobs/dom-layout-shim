@@ -26,7 +26,7 @@
   "claims": [
     {
       "id": "explicit-tracks",
-      "description": "Explicit row and column tracks support fixed, percentage, fractional, minimum/maximum, and repeated sizing.",
+      "description": "Explicit row and column tracks support fixed, percentage, fractional, intrinsic, minimum/maximum, and repeated sizing.",
       "properties": ["grid-template-columns", "grid-template-rows"],
       "syntax": [
         "none",
@@ -34,7 +34,11 @@
         "<percentage>",
         "<fr>",
         "minmax(<track-breadth>, <track-breadth>)",
-        "repeat(<integer>, <track-list>)"
+        "repeat(<integer>, <track-list>)",
+        "min-content",
+        "max-content",
+        "fit-content(<length-percentage>)",
+        "auto"
       ],
       "support": "partial",
       "parity": {
@@ -44,13 +48,14 @@
           "grid-fr-tracks",
           "grid-minmax-tracks",
           "grid-percentage-tracks",
-          "grid-repeat-tracks"
+          "grid-repeat-tracks",
+          "intrinsic-sizing"
         ]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "`auto-fill` and `auto-fit` repeat counts, named lines, and `fit-content()` are not implemented."
+          "text": "`auto-fill` and `auto-fit` repeat counts and named lines are not implemented."
         },
         {
           "kind": "limitation",
@@ -74,12 +79,15 @@
         "<px>",
         "<percentage>",
         "<fr>",
-        "minmax(<track-breadth>, <track-breadth>)"
+        "minmax(<track-breadth>, <track-breadth>)",
+        "min-content",
+        "max-content",
+        "fit-content(<length-percentage>)"
       ],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["grid-auto-flow", "grid-auto-tracks"]
+        "fixtures": ["grid-auto-flow", "grid-auto-tracks", "intrinsic-sizing"]
       },
       "notes": []
     },

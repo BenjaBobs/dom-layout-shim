@@ -77,6 +77,11 @@ await attachLayoutEngine({
 > scroll changes. Repeated reads use the cached snapshot; scroll-only changes
 > reuse computed layout.
 
+Inline declarations strip the `!important` priority marker before interpreting
+values and apply important declarations after normal declarations in the same
+attribute. For example, `style="display: none !important; display: block"`
+produces a zero-sized rectangle and removes the element from point queries.
+
 ## Use document stylesheets
 
 Repeated geometry reads reuse cached layout without re-serializing unchanged
@@ -314,6 +319,19 @@ panel.scrollTop += 20
 const after = row.getBoundingClientRect()
 // An ordinary row moves up by the actual scroll delta; its size stays the same.
 ```
+
+Intrinsic sizing accepts `min-content`, `max-content`, and `fit-content` for
+`width`, `height`, `inline-size`, and `block-size`. For example,
+`style="width: max-content"` sizes a text box to its unwrapped content instead
+of filling the parent; `width: fit-content` clamps the available width between
+the minimum and maximum content widths. Intrinsic keywords in min/max dimension
+constraints remain unsupported.
+
+Grid rows and columns accept `auto`, `min-content`, `max-content`, and
+`fit-content(<px-or-percentage>)` in explicit, implicit, and integer-repeat
+tracks. For example, `style="display: grid; grid-auto-flow: column;
+grid-auto-columns: max-content"` gives each implicit column its own content
+width instead of splitting the container evenly.
 
 ## Place named grid areas
 

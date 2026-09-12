@@ -355,6 +355,18 @@ fn min_track(value: &JsValue) -> JsResult<MinTrackSizingFunction> {
 }
 
 fn max_track(value: &JsValue) -> JsResult<MaxTrackSizingFunction> {
+    if value.is_object() {
+        let limit = property(value, "fitContent")?;
+        if let Some(number) = limit.as_f64() {
+            return Ok(MaxTrackSizingFunction::fit_content_px(number as f32));
+        }
+        if let Some(text) = limit.as_string().filter(|text| text.ends_with('%')) {
+            return Ok(MaxTrackSizingFunction::fit_content_percent(percent_number(
+                &text,
+            )?));
+        }
+        return Err(JsValue::from_str("Invalid fit-content grid limit"));
+    }
     if let Some(number) = value.as_f64() {
         return Ok(MaxTrackSizingFunction::length(number as f32));
     }
@@ -460,6 +472,9 @@ fn dimension_property(object: &JsValue, key: &str) -> JsResult<Option<Dimension>
     }
     match value.as_string().as_deref() {
         Some("auto") => Ok(Some(Dimension::auto())),
+        Some("min-content") => Ok(Some(Dimension::min_content())),
+        Some("max-content") => Ok(Some(Dimension::max_content())),
+        Some("fit-content") => Ok(Some(Dimension::fit_content())),
         Some(value) if value.ends_with('%') => Ok(Some(Dimension::percent(percent_number(value)?))),
         _ => Err(JsValue::from_str(&format!("Invalid dimension for {key}"))),
     }

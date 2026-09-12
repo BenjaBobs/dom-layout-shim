@@ -35,7 +35,11 @@
       "support": "partial",
       "parity": {
         "status": "partially-verified",
-        "fixtures": ["static-text-line-height", "calculated-relative-lengths"]
+        "fixtures": [
+          "static-text-line-height",
+          "calculated-relative-lengths",
+          "intrinsic-sizing"
+        ]
       },
       "notes": [
         {
@@ -45,6 +49,10 @@
         {
           "kind": "implementation-quirk",
           "text": "Built-in measurers use bounded per-measurer caches keyed by text, complete font/spacing inputs, wrapping width, line height, and white-space mode. Consumer-injected measurers remain uncached. Scroll-only geometry updates reuse the already computed layout."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "Min-content probes request all soft wrapping opportunities using a positive subpixel maximum width because the text-measurer contract treats zero as unconstrained. Definite intrinsic probes clamp available width between minimum and maximum content widths."
         }
       ]
     },

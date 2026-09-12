@@ -7,6 +7,7 @@ import type {
   GridTrack,
   MarginValue,
   SupportedDimension,
+  SupportedSize,
   SupportedStyle,
 } from '../../css/supported-style.ts';
 import type { ReplacedIntrinsicSize } from './replaced-intrinsic-size.ts';
@@ -15,6 +16,7 @@ import {
   AlignItems,
   AlignSelf,
   BoxSizing,
+  type Dimension,
   Display,
   FlexDirection,
   FlexWrap,
@@ -89,11 +91,11 @@ export function toTaffyStyle(
   };
   taffyStyle.size = {
     width:
-      resolvedDimension(style.width, context?.percentageBasis?.width) ??
+      resolvedSize(style.width, context?.percentageBasis?.width) ??
       intrinsicFallbackWidth(style, context) ??
       'auto',
     height:
-      resolvedDimension(style.height, context?.percentageBasis?.height) ??
+      resolvedSize(style.height, context?.percentageBasis?.height) ??
       (context?.intrinsicReplaced && taffyStyle.aspectRatio
         ? undefined
         : context?.replacedSize?.height) ??
@@ -157,6 +159,19 @@ export function toTaffyStyle(
 
   normalizeIntrinsicBoxSizing(taffyStyle, style, context);
   return taffyStyle;
+}
+
+function resolvedSize(
+  value: SupportedSize | undefined,
+  basis: number | undefined,
+): Dimension | undefined {
+  if (
+    value === 'min-content' ||
+    value === 'max-content' ||
+    value === 'fit-content'
+  )
+    return value;
+  return resolvedDimension(value, basis);
 }
 
 function resolvedDimension(
@@ -277,6 +292,8 @@ function toTaffyAutoGridTracks(
 }
 
 function toTaffyGridTrackSizing(track: GridTrack): TrackSizingFunction {
+  if (typeof track === 'object' && 'fitContent' in track)
+    return { min: 'auto', max: track };
   if (typeof track === 'object') {
     return {
       min: toTaffyGridMinTrackBreadth(track.min),
@@ -504,12 +521,12 @@ function normalizeIntrinsicBoxSizing(
   )
     return;
   const resolve = (
-    value: number | `${number}%` | 'auto',
+    value: Dimension,
     basis: number | undefined,
   ): number | undefined =>
     typeof value === 'number'
       ? value
-      : value !== 'auto' && basis !== undefined
+      : value.endsWith('%') && basis !== undefined
         ? (Number.parseFloat(value) * basis) / 100
         : undefined;
   const padding = Object.values(taffy.padding).map(value =>

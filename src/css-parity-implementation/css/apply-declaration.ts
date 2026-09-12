@@ -4090,6 +4090,16 @@ function applyLength(
   }
 
   if (
+    (key === 'width' || key === 'height') &&
+    (value === 'min-content' ||
+      value === 'max-content' ||
+      value === 'fit-content')
+  ) {
+    style[key] = value;
+    return;
+  }
+
+  if (
     value === 'auto' &&
     (key === 'width' ||
       key === 'height' ||
@@ -4702,6 +4712,18 @@ function applyGridAutoFlow(
 }
 
 function parseGridTrack(value: string): GridTrack | undefined {
+  if (value === 'auto' || value === 'min-content' || value === 'max-content') {
+    return value;
+  }
+
+  const fit = /^fit-content\((.*)\)$/.exec(value);
+  if (fit) {
+    const limit = parseNonNegativeDimension(fit[1]?.trim() ?? '');
+    return limit !== undefined && typeof limit !== 'object'
+      ? { fitContent: limit }
+      : undefined;
+  }
+
   const minMax = parseGridMinMax(value);
 
   if (minMax) {
