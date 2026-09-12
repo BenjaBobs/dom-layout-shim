@@ -62,6 +62,10 @@
         {
           "kind": "browser-parity",
           "text": "`display: contents` has parity coverage for parent box removal plus block and flex child flattening."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Inline `display: none !important` suppresses the element and descendants in geometry and hit testing; important inline declarations take precedence over later normal inline declarations."
         }
       ]
     }

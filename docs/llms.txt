@@ -91,6 +91,11 @@ The engine currently treats `html` and `body` as its synthetic viewport
 containing block, so their own margins, padding, and geometry are not modeled
 by user-agent overrides.
 
+Inline declarations strip the `!important` priority marker before interpreting
+values and apply important declarations after normal declarations in the same
+attribute. For example, `style="display: none !important; display: block"`
+produces a zero-sized rectangle and removes the element from point queries.
+
 ## Stylesheet sources
 
 Supported selector matching includes `:root`, `:first-child`, `:nth-child()`,
@@ -223,6 +228,19 @@ viewport or element roots, pixel/percentage `rootMargin`, threshold arrays,
 `observe`, `unobserve`, `disconnect`, and `takeRecords`. Automatic delivery
 reacts to layout invalidation and scrolling. Manual `flushLayout()` settles
 ResizeObserver callbacks before calculating intersection entries.
+
+Intrinsic sizing accepts `min-content`, `max-content`, and `fit-content` for
+`width`, `height`, `inline-size`, and `block-size`. For example,
+`style="width: max-content"` sizes a text box to its unwrapped content instead
+of filling the parent; `width: fit-content` clamps the available width between
+the minimum and maximum content widths. Intrinsic keywords in min/max dimension
+constraints remain unsupported.
+
+Grid rows and columns accept `auto`, `min-content`, `max-content`, and
+`fit-content(<px-or-percentage>)` in explicit, implicit, and integer-repeat
+tracks. For example, `style="display: grid; grid-auto-flow: column;
+grid-auto-columns: max-content"` gives each implicit column its own content
+width instead of splitting the container evenly.
 
 ## Named grid areas
 

@@ -50,6 +50,8 @@ export type FlexWrapValue = 'nowrap' | 'wrap' | 'wrap-reverse';
 export type OverflowValue = 'visible' | 'hidden' | 'clip' | 'auto' | 'scroll';
 export type CalculatedDimension = { percentage: number; length: number };
 export type SupportedDimension = number | `${number}%` | CalculatedDimension;
+export type IntrinsicSize = 'min-content' | 'max-content' | 'fit-content';
+export type SupportedSize = SupportedDimension | IntrinsicSize;
 export type MarginValue = SupportedDimension | 'auto';
 export type GridMinTrackBreadth =
   | number
@@ -59,6 +61,7 @@ export type GridMinTrackBreadth =
   | 'max-content';
 export type GridMaxTrackBreadth = GridMinTrackBreadth | `${number}fr`;
 export type GridTrack =
+  | { fitContent: number | `${number}%` }
   | GridMinTrackBreadth
   | `${number}fr`
   | { min: GridMinTrackBreadth; max: GridMaxTrackBreadth };
@@ -155,8 +158,8 @@ export type SupportedStyle = {
   borderCollapse: BorderCollapseValue;
   emptyCells?: EmptyCellsValue;
   tableBorderSpacing: TableBorderSpacing;
-  width?: SupportedDimension;
-  height?: SupportedDimension;
+  width?: SupportedSize;
+  height?: SupportedSize;
   minWidth?: SupportedDimension;
   minHeight?: SupportedDimension;
   maxWidth?: SupportedDimension;

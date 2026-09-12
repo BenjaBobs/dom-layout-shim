@@ -6,7 +6,13 @@ import init, {
 export type Size<T> = { width: T; height: T };
 export type Rect<T> = { top: T; right: T; bottom: T; left: T };
 export type AvailableSpace = number | 'min-content' | 'max-content';
-export type Dimension = number | `${number}%` | 'auto';
+export type Dimension =
+  | number
+  | `${number}%`
+  | 'auto'
+  | 'min-content'
+  | 'max-content'
+  | 'fit-content';
 export type LengthPercentage = number | `${number}%`;
 export type LengthPercentageAuto = LengthPercentage | 'auto';
 export type MinTrackSizingFunction =
@@ -14,7 +20,10 @@ export type MinTrackSizingFunction =
   | 'auto'
   | 'min-content'
   | 'max-content';
-export type MaxTrackSizingFunction = MinTrackSizingFunction | `${number}fr`;
+export type MaxTrackSizingFunction =
+  | MinTrackSizingFunction
+  | `${number}fr`
+  | { fitContent: LengthPercentage };
 export type TrackSizingFunction = {
   min: MinTrackSizingFunction;
   max: MaxTrackSizingFunction;

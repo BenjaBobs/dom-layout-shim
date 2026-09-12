@@ -74,14 +74,23 @@ export function parseDeclarationBlock(
       const colonIndex = declaration.indexOf(':');
 
       if (colonIndex === -1) {
-        return { property: declaration, value: '' };
+        return { property: declaration, value: '', important: false };
       }
 
+      const value = declaration.slice(colonIndex + 1).trim();
+      const important = /!\s*important\s*$/i.test(value);
+
       return {
+        important,
         property: declaration.slice(0, colonIndex).trim(),
-        value: declaration.slice(colonIndex + 1).trim(),
+        value: important
+          ? value.replace(/!\s*important\s*$/i, '').trim()
+          : value,
       };
-    });
+    })
+    // Importance is declaration metadata, never part of the property value.
+    // Apply important declarations last, preserving source order within each tier.
+    .sort((a, b) => Number(a.important) - Number(b.important));
   declarationCache.set(block, declarations);
   return declarations;
 }
