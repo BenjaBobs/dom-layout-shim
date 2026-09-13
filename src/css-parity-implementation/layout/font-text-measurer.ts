@@ -9,6 +9,7 @@ import type {
 } from '../../api/text-measurer.ts';
 import { readFontFaceRules } from '../css/stylesheet-source.ts';
 import { cacheTextMeasurer } from './cached-text-measurer.ts';
+import { breakTextLines } from './text-lines.ts';
 import { wordSpacingWidth } from './word-spacing.ts';
 
 type LoadedFontFace = {
@@ -132,59 +133,5 @@ function breakLines(
   input: TextMeasureInput,
   widthOf: (text: string) => number,
 ): string[] {
-  const text = normalizeWhitespace(input.text, input.whiteSpace);
-  if (!text) return [];
-  if (
-    input.whiteSpace === 'pre' ||
-    input.whiteSpace === 'pre-wrap' ||
-    input.whiteSpace === 'pre-line'
-  ) {
-    return text
-      .split('\n')
-      .flatMap(line =>
-        input.whiteSpace === 'pre-wrap'
-          ? wrapLine(line, input.maxWidth, widthOf)
-          : [line],
-      );
-  }
-  if (input.whiteSpace === 'nowrap' || !input.maxWidth || input.maxWidth <= 0)
-    return [text];
-  return wrapLine(text, input.maxWidth, widthOf);
-}
-
-function wrapLine(
-  text: string,
-  maxWidth: number | undefined,
-  widthOf: (text: string) => number,
-): string[] {
-  if (!maxWidth || maxWidth <= 0) return [text];
-  const lines: string[] = [];
-  let current = '';
-  for (const word of text.split(' ')) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (!current || widthOf(candidate) <= maxWidth) {
-      current = candidate;
-    } else {
-      lines.push(current);
-      current = word;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-function normalizeWhitespace(
-  text: string,
-  whiteSpace: TextMeasureInput['whiteSpace'],
-): string {
-  const normalizedNewlines = text.replace(/\r\n?/g, '\n');
-  if (whiteSpace === 'pre' || whiteSpace === 'pre-wrap')
-    return normalizedNewlines;
-  if (whiteSpace === 'pre-line') {
-    return normalizedNewlines
-      .split('\n')
-      .map(line => line.replace(/[\t ]+/g, ' ').trim())
-      .join('\n');
-  }
-  return normalizedNewlines.replace(/\s+/g, ' ').trim();
+  return breakTextLines(input.text, input.whiteSpace, input.maxWidth, widthOf);
 }
