@@ -69,7 +69,7 @@
       "notes": [
         {
           "kind": "todo",
-          "text": "declaration-cascade verifies that font-relative dimensions resolve after cascaded font size regardless of declaration order. Sharing containing-block definiteness across layout passes remains pending."
+          "text": "declaration-cascade verifies that font-relative dimensions resolve after cascaded font size regardless of declaration order. containing-block-composition verifies shared definiteness and box-inset rules across passes, nested calculations, and absolute descendants across static ancestors."
         },
         {
           "kind": "taffy-compat",

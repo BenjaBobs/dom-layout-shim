@@ -241,3 +241,24 @@ export function isCalculatedDimension(
 ): value is CalculatedDimension {
   return typeof value === 'object';
 }
+
+export function resolveDefiniteLength(
+  value:
+    | SupportedDimension
+    | 'min-content'
+    | 'max-content'
+    | 'fit-content'
+    | undefined,
+  basis: number | undefined,
+): number | undefined {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'object')
+    return basis === undefined
+      ? undefined
+      : (basis * value.percentage) / 100 + value.length;
+  if (typeof value === 'string' && value.endsWith('%'))
+    return basis === undefined
+      ? undefined
+      : (Number(value.slice(0, -1)) * basis) / 100;
+  return undefined;
+}

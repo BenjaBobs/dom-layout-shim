@@ -535,3 +535,10 @@ cell now reports 100×40px rather than a zero rectangle. Allocated cell widths
 reflow text; `vertical-align: top`, `middle`, and `bottom` place cell contents.
 Full intrinsic table track distribution and collapsed-border conflict resolution
 remain outside the supported table subset.
+
+Calculated dimensions use one containing-block resolver before and after layout,
+including percentage ancestors and border-box padding. For example, a child
+with `width: calc(100% - 20px)` inside a 200px border box with 10px padding on
+each side and 5px borders has width 150px. Absolute descendants use their
+positioned containing block across intervening static ancestors. In standards
+mode, observed auto height does not establish a definite percentage-height basis.
