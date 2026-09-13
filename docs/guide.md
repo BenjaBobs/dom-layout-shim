@@ -413,6 +413,12 @@ Two-dimensional translation, scaling, rotation, skew, and matrix transforms
 project client rectangles and hit-test regions. Rotated and skewed elements use
 their transformed quadrilateral for point queries.
 
+Overflow clips remain attached to their ancestors when descendants transform.
+For example, a 100px-wide child translated 80px right inside a 100px-wide
+`overflow: hidden` parent is hittable only in the visible 20px strip.
+Intersection observations use the same projected ancestor clips.
+
+
 Images use host-provided `naturalWidth` and `naturalHeight` when available.
 Image width/height attributes provide sizing hints and a fallback ratio; loaded
 image dimensions take precedence for the natural ratio. SVG uses numeric

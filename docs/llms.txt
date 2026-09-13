@@ -302,3 +302,8 @@ package consumers do not need the Rust toolchain.
 - Implementation phases: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/implementation-phases.md
 - Taffy pipeline roadmap: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/taffy-pipeline-roadmap.md
 - Release policy: https://github.com/BenjaBobs/dom-layout-shim/blob/main/docs/releasing.md
+
+Overflow clips remain attached to their ancestors when descendants transform.
+For example, a 100px-wide child translated 80px right inside a 100px-wide
+`overflow: hidden` parent is hittable only in the visible 20px strip.
+Intersection observations use the same projected ancestor clips.
