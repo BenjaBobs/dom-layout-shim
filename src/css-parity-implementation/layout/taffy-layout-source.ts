@@ -79,6 +79,7 @@ type TaffyLayoutState = {
   }[];
   contentsElements: Set<Element>;
   tableLayouts: Map<Element, SimpleTableLayout>;
+  cellFormatting: Map<Element, { node: bigint; style: SupportedStyle }>;
   styles: WeakMap<Element, SupportedStyle>;
   pseudoStyles: WeakMap<
     Element,
@@ -345,6 +346,7 @@ function buildTaffyLayoutTree(
     inlineContexts: [],
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
+    cellFormatting: new Map(),
     styles: new WeakMap<Element, SupportedStyle>(),
     pseudoStyles: new WeakMap(),
     customProperties: new WeakMap<Element, CustomProperties>(),
@@ -743,7 +745,14 @@ function recordInlineFragments(
     const origin = context.anonymous
       ? {
           x: (state.rects.get(context.host)?.x ?? 0) + layout.x,
-          y: (state.rects.get(context.host)?.y ?? 0) + layout.y,
+          y:
+            (state.rects.get(context.host)?.y ?? 0) +
+            layout.y +
+            tableCellContentOffset(
+              context.host,
+              state.rects.get(context.host)?.height ?? 0,
+              state,
+            ),
         }
       : hostBox;
     const result = context.format(
@@ -1986,6 +1995,32 @@ function recordSimpleTableLayout(
           stickyLayoutBox(cellStyle, cellBox, normalCellBox, scroll),
           normalCellBox,
         );
+        const formatting = state.cellFormatting.get(cell.element);
+        if (formatting) {
+          const offsetY = tableCellContentOffset(
+            cell.element,
+            cell.height,
+            state,
+          );
+          const elementScroll = readElementScrollOffset(cell.element);
+          recordChildLayouts(
+            cell.element,
+            {
+              x: cellBox.x + scroll.x - elementScroll.x,
+              y: cellBox.y + scroll.y + offsetY - elementScroll.y,
+            },
+            {
+              x: normalCellBox.x + scroll.x - elementScroll.x,
+              y: normalCellBox.y + scroll.y + offsetY - elementScroll.y,
+            },
+            childClipBounds(cellStyle, cellBox, clipBounds),
+            viewport,
+            scroll,
+            hasFixedAncestor(cell.element, state),
+            false,
+            state,
+          );
+        }
       }
     }
   }
@@ -2394,6 +2429,56 @@ function applyInheritedTextDefaults(
   inheritStyle(style, parentStyle);
 }
 
+function tableCellContentOffset(
+  element: Element,
+  height: number,
+  state: TaffyLayoutState,
+): number {
+  const formatting = state.cellFormatting.get(element);
+  if (!formatting) return 0;
+  const remaining = Math.max(
+    0,
+    height - state.tree.getLayout(formatting.node).height,
+  );
+  const alignment = resolveSupportedStyle(element, state).verticalAlign;
+  return alignment === 'middle'
+    ? remaining / 2
+    : alignment === 'bottom'
+      ? remaining
+      : 0;
+}
+
+function buildTableCellFormatting(
+  element: Element,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+): { width: number; height: number } | undefined {
+  if (!element.childNodes.length) return undefined;
+  const children = buildChildNodes(element, state);
+  if (!children.length) return undefined;
+  const formattingStyle: SupportedStyle = {
+    ...style,
+    display: 'block',
+    position: 'static',
+    height: undefined,
+    minHeight: undefined,
+    maxHeight: undefined,
+    margin: zeroEdges(),
+  };
+  const node = state.tree.newWithChildren(
+    toTaffyStyle(formattingStyle, undefined),
+    children,
+  );
+  state.cellFormatting.set(element, { node, style: formattingStyle });
+  state.elementNodes.set(element, node);
+  state.tree.computeLayoutWithMeasure(
+    node,
+    { width: 'max-content', height: 'max-content' },
+    measureTaffyNode,
+  );
+  return state.tree.getLayout(node);
+}
+
 function createSimpleTableLayout(
   element: Element,
   state: TaffyLayoutState,
@@ -2497,6 +2582,15 @@ function createSimpleTableLayout(
       for (const cell of rowPlacements[sectionIndex][rowIndex]) {
         const cellStyle = resolveSupportedStyle(cell.element, state);
         const cellSize = tableCellOuterSize(cellStyle, isCollapsedBorderTable);
+        const content = buildTableCellFormatting(
+          cell.element,
+          cellStyle,
+          state,
+        );
+        if (content) {
+          cellSize.width = Math.max(cellSize.width, content.width);
+          cellSize.height = Math.max(cellSize.height, content.height);
+        }
         if (cell.colSpan === 1) {
           columnWidths[cell.columnIndex] = Math.max(
             columnWidths[cell.columnIndex],
@@ -2538,6 +2632,46 @@ function createSimpleTableLayout(
   for (const [index, collapsed] of collapsedColumns.entries()) {
     if (collapsed) {
       columnWidths[index] = 0;
+    }
+  }
+  // Once columns are allocated, the ordinary formatting pipeline reflows each
+  // cell at its actual width. Wrapped content then contributes row constraints.
+  for (const [sectionIndex, rows] of rowPlacements.entries()) {
+    for (const [rowIndex, cells] of rows.entries()) {
+      for (const cell of cells) {
+        const formatting = state.cellFormatting.get(cell.element);
+        if (!formatting) continue;
+        const width = spannedTracksSize(
+          columnWidths,
+          cell.columnIndex,
+          cell.colSpan,
+          horizontalSpacing,
+        );
+        const style = {
+          ...formatting.style,
+          width,
+          boxSizing: 'border-box' as const,
+        };
+        formatting.style = style;
+        state.tree.setStyle(formatting.node, toTaffyStyle(style, undefined));
+        state.tree.computeLayoutWithMeasure(
+          formatting.node,
+          { width, height: 'max-content' },
+          measureTaffyNode,
+        );
+        const height = state.tree.getLayout(formatting.node).height;
+        if (cell.rowSpan === 1)
+          rowHeights[sectionIndex][rowIndex] = Math.max(
+            rowHeights[sectionIndex][rowIndex],
+            height,
+          );
+        else
+          rowSpanConstraints[sectionIndex].push({
+            startIndex: rowIndex,
+            span: cell.rowSpan,
+            size: height,
+          });
+      }
     }
   }
   for (const [sectionIndex, constraints] of rowSpanConstraints.entries()) {
@@ -3351,6 +3485,7 @@ function applyStructuralHtmlDefaults(
     applyTableDimensionAttributes(style, element);
   }
   if (tagName === 'td' || tagName === 'th') {
+    style.verticalAlign = 'middle';
     applyTableCellPaddingDefault(style, element);
   }
   if (tagName === 'object') {

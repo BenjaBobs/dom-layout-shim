@@ -38,9 +38,17 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["css-table-display", "table-explicit-cells"]
+        "fixtures": [
+          "css-table-display",
+          "table-explicit-cells",
+          "table-cell-content"
+        ]
       },
       "notes": [
+        {
+          "kind": "todo",
+          "text": "table-cell-content verifies ordinary block, flex, grid, and styled inline descendants inside cells, including allocated-width reflow, point queries, and top/middle/bottom alignment. Full intrinsic column distribution remains outside the supported subset."
+        },
         {
           "kind": "browser-parity",
           "text": "Native `table`, `caption`, `colgroup`, `col`, row-group, row, and cell elements plus authored table display values have parity coverage."
@@ -62,7 +70,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Intrinsic column sizing is not modeled."
+          "text": "Cell content contributes measured dimensions, but full intrinsic column distribution is not modeled."
         }
       ]
     },
@@ -111,17 +119,17 @@
     },
     {
       "id": "inert-table-hints",
-      "description": "`table-layout` and `vertical-align` hints are accepted without changing the supported geometry subset.",
+      "description": "`vertical-align: top/middle/bottom` places cell content; table layout algorithm hints remain limited.",
       "properties": ["table-layout", "vertical-align"],
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["table-explicit-cells"]
+        "fixtures": ["table-explicit-cells", "table-cell-content"]
       },
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "`table-layout` and `vertical-align` are parsed as inert declarations."
+          "text": "`table-layout` remains inert. Top, middle, and bottom cell alignment use measured content height; full cross-cell baseline alignment and other vertical-align modes remain unmodeled."
         }
       ]
     }

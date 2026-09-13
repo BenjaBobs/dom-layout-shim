@@ -1061,7 +1061,9 @@ export function applyDeclaration(
       );
       return;
     case 'vertical-align':
-      applyKeywordOnly(
+      applyKeyword(
+        style,
+        'verticalAlign',
         normalizedValue,
         [
           'baseline',

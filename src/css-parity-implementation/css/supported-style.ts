@@ -189,6 +189,15 @@ export type SupportedStyle = {
   whiteSpace: WhiteSpace;
   textTransform: TextTransform;
   content?: string;
+  verticalAlign?:
+    | 'baseline'
+    | 'top'
+    | 'middle'
+    | 'bottom'
+    | 'sub'
+    | 'super'
+    | 'text-top'
+    | 'text-bottom';
   transform: SupportedTransform[];
   translate?: Extract<SupportedTransform, { type: 'translate' }>;
   scale?: Extract<SupportedTransform, { type: 'scale' }>;
