@@ -68,6 +68,10 @@
       },
       "notes": [
         {
+          "kind": "todo",
+          "text": "declaration-cascade verifies that font-relative dimensions resolve after cascaded font size regardless of declaration order. Sharing containing-block definiteness across layout passes remains pending."
+        },
+        {
           "kind": "taffy-compat",
           "text": "Mixed percentage-and-length calculations are resolved to pixels before entering Taffy when the containing-block axis is definite."
         },

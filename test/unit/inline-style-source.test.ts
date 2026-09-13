@@ -4,6 +4,18 @@ import {
   parseDeclarationBlock,
 } from '../../src/css-parity-implementation/css/inline-style-source.ts';
 
+it('uses CSS token boundaries for comments, strings, functions, and recovery', () => {
+  expect(
+    parseDeclarationBlock(
+      '--label: "a;b:c"; /* ; */ width:var(--size, calc(20px + 2px)); broken; height:10px',
+    ).map(({ property, value }) => ({ property, value })),
+  ).toEqual([
+    { property: '--label', value: '"a;b:c"' },
+    { property: 'width', value: 'var(--size, calc(20px + 2px))' },
+    { property: 'height', value: '10px' },
+  ]);
+});
+
 it('separates inline priority metadata while retaining invalid values for policy routing', () => {
   const declarations = parseDeclarationBlock(
     'width: unsupported ! ImPoRtAnT; height: 20px; color: "!important"',

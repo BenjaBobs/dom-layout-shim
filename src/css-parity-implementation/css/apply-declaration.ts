@@ -100,6 +100,25 @@ export function applyDeclaration(
 
   const normalizedValue = resolvedValue.trim().toLowerCase();
 
+  if (normalizedProperty === 'content') {
+    if (['none', 'normal', 'initial', 'unset'].includes(normalizedValue)) {
+      style.content = undefined;
+    } else if (
+      resolvedValue.startsWith('attr(') &&
+      resolvedValue.endsWith(')')
+    ) {
+      style.content =
+        context.element?.getAttribute(resolvedValue.slice(5, -1).trim()) ?? '';
+    } else if (resolvedValue.startsWith('"') && resolvedValue.endsWith('"')) {
+      try {
+        style.content = JSON.parse(resolvedValue) as string;
+      } catch {
+        /* Invalid strings do not replace a cascaded value. */
+      }
+    }
+    return;
+  }
+
   switch (normalizedProperty) {
     case 'display':
       applyDisplay(style, normalizedValue, normalizedProperty, value, context);

@@ -10,17 +10,16 @@ import {
   applyCustomPropertyDeclaration,
   type CustomProperties,
 } from './custom-properties.ts';
-import { readDeclaration } from './lightningcss-value-stringifier.ts';
+import {
+  type CssDeclaration,
+  readDeclarationList,
+} from './declaration-list.ts';
 import { readSelectorList } from './selector-parser.ts';
 import { stylesheetRevision } from './stylesheet-revision.ts';
-import {
-  applyDeclaration,
-  type SupportedStyle,
-} from './supported-declaration.ts';
 
 export type StyleRule = {
   selector: string;
-  declarations: Array<{ property: string; value: string }>;
+  declarations: CssDeclaration[];
   specificity: number;
   order: number;
   pseudoElement?: 'before' | 'after';
@@ -361,7 +360,7 @@ export function createRuleMatchingSession(
   return ordered;
 }
 
-function matchingRules(
+export function matchingRules(
   rules: readonly StyleRule[],
   element: Element,
   policy: UnsupportedCssPolicy | undefined,
@@ -402,60 +401,6 @@ function matchingRules(
   return matched;
 }
 
-export function applyStyleRules(
-  style: SupportedStyle,
-  element: Element,
-  rules: readonly StyleRule[],
-  policy: UnsupportedCssPolicy | undefined,
-  rootFontSize?: number,
-  customProperties?: CustomProperties,
-  viewport?: Viewport,
-): void {
-  for (const rule of matchingRules(rules, element, policy).filter(
-    rule => !rule.pseudoElement,
-  )) {
-    for (const declaration of rule.declarations) {
-      applyDeclaration(style, declaration.property, declaration.value, {
-        policy,
-        source: 'stylesheet',
-        selector: rule.selector,
-        element,
-        rootFontSize,
-        viewport,
-        customProperties,
-      });
-    }
-  }
-}
-
-export function applyPseudoElementStyleRules(
-  style: SupportedStyle,
-  element: Element,
-  pseudoElement: 'before' | 'after',
-  rules: readonly StyleRule[],
-  policy: UnsupportedCssPolicy | undefined,
-  rootFontSize?: number,
-  customProperties?: CustomProperties,
-  viewport?: Viewport,
-): void {
-  for (const rule of matchingRules(rules, element, policy).filter(
-    rule => rule.pseudoElement === pseudoElement,
-  )) {
-    for (const declaration of rule.declarations) {
-      if (declaration.property === 'content') continue;
-      applyDeclaration(style, declaration.property, declaration.value, {
-        policy,
-        source: 'stylesheet',
-        selector: `${rule.selector}::${pseudoElement}`,
-        element,
-        rootFontSize,
-        viewport,
-        customProperties,
-      });
-    }
-  }
-}
-
 export function applyStylesheetCustomProperties(
   properties: Map<string, string>,
   inherited: CustomProperties,
@@ -475,67 +420,6 @@ export function applyStylesheetCustomProperties(
       );
     }
   }
-}
-
-export function readGeneratedContent(
-  element: Element,
-  rules: readonly StyleRule[],
-  policy: UnsupportedCssPolicy | undefined,
-): { before: string; after: string } {
-  const result = { before: '', after: '' };
-
-  for (const pseudoElement of ['before', 'after'] as const) {
-    const declarations = matchingRules(rules, element, policy)
-      .filter(rule => rule.pseudoElement === pseudoElement)
-      .flatMap(rule => rule.declarations);
-    const content = declarations
-      .filter(declaration => declaration.property === 'content')
-      .at(-1)?.value;
-    result[pseudoElement] = resolveGeneratedContent(content, element);
-  }
-
-  return result;
-}
-
-export function readGeneratedPseudoContent(
-  element: Element,
-  pseudoElement: 'before' | 'after',
-  rules: readonly StyleRule[],
-  policy: UnsupportedCssPolicy | undefined,
-): string | undefined {
-  const declarations = matchingRules(rules, element, policy)
-    .filter(rule => rule.pseudoElement === pseudoElement)
-    .flatMap(rule => rule.declarations);
-  const content = declarations
-    .filter(declaration => declaration.property === 'content')
-    .at(-1)?.value;
-
-  return resolveGeneratedContentValue(content, element);
-}
-
-function resolveGeneratedContent(
-  value: string | undefined,
-  element: Element,
-): string {
-  return resolveGeneratedContentValue(value, element) ?? '';
-}
-
-function resolveGeneratedContentValue(
-  value: string | undefined,
-  element: Element,
-): string | undefined {
-  if (!value || value === 'none' || value === 'normal') return undefined;
-  if (value.startsWith('attr(') && value.endsWith(')')) {
-    return element.getAttribute(value.slice(5, -1).trim()) ?? '';
-  }
-  if (value.startsWith('"') && value.endsWith('"')) {
-    try {
-      return JSON.parse(value) as string;
-    } catch {
-      return undefined;
-    }
-  }
-  return undefined;
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {
@@ -1317,10 +1201,7 @@ function collectStyleRule(
   policy: UnsupportedCssPolicy | undefined,
   rules: StyleRule[],
 ): void {
-  const declarations = [
-    ...(rule.declarations?.declarations ?? []),
-    ...(rule.declarations?.importantDeclarations ?? []),
-  ].map(readDeclaration);
+  const declarations = readDeclarationList(rule.declarations ?? {});
 
   for (const selector of readSelectorList(rule.selectors, policy)) {
     rules.push({

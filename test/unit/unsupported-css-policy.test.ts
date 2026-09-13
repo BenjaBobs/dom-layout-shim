@@ -357,7 +357,7 @@ describe('unsupported CSS policy', () => {
 
   it('throws on unsupported text decoration values in strict mode', async () => {
     document.body.innerHTML = `
-      <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; text-decoration:underline underline"></div>
+      <div id="box" style="position:absolute; left:0; top:0; width:100px; height:100px; text-decoration:underline unsupported-decoration"></div>
     `;
 
     await attachStrict();
