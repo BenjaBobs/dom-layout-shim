@@ -10,6 +10,7 @@ import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
 import { applyCascadedStyle, cascadeCustomProperties } from '../css/cascade.ts';
 import type { CustomProperties } from '../css/custom-properties.ts';
 import { collectElementDeclarations } from '../css/element-cascade.ts';
+import { inheritStyle } from '../css/inherited-style.ts';
 import { resolveCalculatedDimension } from '../css/length-value.ts';
 import {
   createRuleMatchingSession,
@@ -36,6 +37,11 @@ import {
   transformBoxPoints,
 } from '../geometry/transform.ts';
 import { prepareHitTesting } from '../hit-testing/point-query.ts';
+import {
+  createInlineFormatter,
+  type InlineLayout,
+  type InlineRun,
+} from './inline-formatting.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
 import { applyReplacedDimensionAttributes } from './taffy/replaced-intrinsic-size.ts';
 import {
@@ -49,7 +55,6 @@ import {
   createMeasureContext,
   type MeasureContext,
   measureTaffyNode,
-  transformMeasuredText,
 } from './taffy/taffy-measure.ts';
 import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts';
 
@@ -66,10 +71,12 @@ type TaffyLayoutState = {
   elementScrolls: Map<Element, ScrollOffset>;
   elementNodes: Map<Element, bigint>;
   measureContexts: Map<Element, MeasureContext>;
-  anonymousInlineRuns: Map<
-    Element,
-    { node: bigint; parent: Element; beforeText: string }
-  >;
+  inlineContexts: {
+    host: Element;
+    node: bigint;
+    anonymous: boolean;
+    format: (width: number) => InlineLayout;
+  }[];
   contentsElements: Set<Element>;
   tableLayouts: Map<Element, SimpleTableLayout>;
   styles: WeakMap<Element, SupportedStyle>;
@@ -89,7 +96,6 @@ type TaffyLayoutState = {
   domOrder: number;
   paintOrders: WeakMap<Element, number>;
   noBoxElements: Set<Element>;
-  inlineFragments?: Map<Element, { host: Element; fragments: Box[] }>;
 };
 
 type TaffyLayoutTree = {
@@ -336,7 +342,7 @@ function buildTaffyLayoutTree(
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
     measureContexts: new Map(),
-    anonymousInlineRuns: new Map(),
+    inlineContexts: [],
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     styles: new WeakMap<Element, SupportedStyle>(),
@@ -705,38 +711,7 @@ function collectTaffyLayoutSnapshot(
     false,
     state,
   );
-  if (state.inlineFragments) {
-    for (const [element, cached] of state.inlineFragments) {
-      const hostBox = state.clientRects.get(cached.host);
-      if (!hostBox) continue;
-      const fragments = cached.fragments.map(box => ({
-        ...box,
-        x: box.x + hostBox.x,
-        y: box.y + hostBox.y,
-      }));
-      state.fragmentRects.set(element, fragments);
-      state.rects.set(element, unionBoxes(fragments));
-    }
-  } else {
-    recordInlineFragments(document, state);
-    state.inlineFragments = new Map();
-    for (const [element, fragments] of state.fragmentRects) {
-      if (state.styles.get(element)?.display !== 'inline') continue;
-      const host =
-        state.anonymousInlineRuns.get(element)?.parent ??
-        nearestMeasuredAncestor(element, state);
-      const hostBox = host ? state.clientRects.get(host) : undefined;
-      if (host && hostBox)
-        state.inlineFragments.set(element, {
-          host,
-          fragments: fragments.map(box => ({
-            ...box,
-            x: box.x - hostBox.x,
-            y: box.y - hostBox.y,
-          })),
-        });
-    }
-  }
+  recordInlineFragments(document, state);
   applyVisualTransforms(document, state);
   collectScrollSizes(document, viewport, scroll, state);
   prepareHitTesting(state.boxes);
@@ -758,227 +733,112 @@ function collectTaffyLayoutSnapshot(
 }
 
 function recordInlineFragments(
-  document: Document,
+  _document: Document,
   state: TaffyLayoutState,
 ): void {
-  for (const element of Array.from(document.getElementsByTagName('*'))) {
-    const style = state.styles.get(element);
-
-    if (style?.display !== 'inline' || isHidden(element)) {
-      continue;
-    }
-
-    const anonymousRun = state.anonymousInlineRuns.get(element);
-    if (anonymousRun) {
-      const parentBox = state.clientRects.get(anonymousRun.parent);
-      if (!parentBox) continue;
-      const parentStyle = resolveSupportedStyle(anonymousRun.parent, state);
-      const layout = state.tree.getLayout(anonymousRun.node);
-      const beforeText = normalizeInlineText(
-        anonymousRun.beforeText,
-        parentStyle.whiteSpace,
-      );
-      const targetText = normalizeInlineText(
-        element.textContent ?? '',
-        parentStyle.whiteSpace,
-      );
-      const width = measureInlineWidth(targetText, parentStyle, state);
-      const fragment = {
-        x:
-          parentBox.x +
-          layout.x +
-          measureInlineWidth(beforeText, parentStyle, state),
-        y:
-          parentBox.y +
-          layout.y +
-          (parentStyle.lineHeight - parentStyle.fontSize) / 2,
-        width,
-        height: parentStyle.fontSize,
-      };
-      state.fragmentRects.set(element, [fragment]);
-      state.rects.set(element, fragment);
-      continue;
-    }
-
-    const host = nearestMeasuredAncestor(element, state);
-    const hostBox = host ? state.clientRects.get(host) : undefined;
-
-    if (!host || !hostBox || hostBox.width <= 0) {
-      continue;
-    }
-
-    const hostStyle = resolveSupportedStyle(host, state);
-    const fullText = normalizeInlineText(
-      host.textContent ?? '',
-      hostStyle.whiteSpace,
+  for (const context of state.inlineContexts) {
+    const hostBox = state.contentRects.get(context.host);
+    if (!hostBox) continue;
+    const layout = state.tree.getLayout(context.node);
+    const origin = context.anonymous
+      ? {
+          x: (state.rects.get(context.host)?.x ?? 0) + layout.x,
+          y: (state.rects.get(context.host)?.y ?? 0) + layout.y,
+        }
+      : hostBox;
+    const result = context.format(
+      context.anonymous ? layout.width : hostBox.width,
     );
-    const targetText = normalizeInlineText(
-      element.textContent ?? '',
-      hostStyle.whiteSpace,
-    );
-
-    if (!targetText || !fullText) {
-      continue;
+    for (const [element, localFragments] of result.fragments) {
+      const style = resolveSupportedStyle(element, state);
+      const fragments = localFragments.map(box => ({
+        ...box,
+        x: box.x + origin.x,
+        y: box.y + origin.y,
+      }));
+      const domOrder = nextDomOrder(state);
+      for (const box of fragments)
+        recordBox(
+          element,
+          style,
+          box,
+          infiniteClipBounds(),
+          domOrder,
+          true,
+          state,
+        );
+      state.fragmentRects.set(element, fragments);
+      state.rects.set(element, unionBoxes(fragments));
     }
-
-    const rawBefore = textBeforeDescendant(host, element);
-    const normalizedBefore = normalizeInlineText(
-      rawBefore,
-      hostStyle.whiteSpace,
-    );
-    const targetStart = Math.min(normalizedBefore.length, fullText.length);
-    const targetEnd = Math.min(
-      targetStart + targetText.length,
-      fullText.length,
-    );
-    const maximumWidth =
-      hostStyle.whiteSpace === 'nowrap' || hostStyle.whiteSpace === 'pre'
-        ? Number.MAX_SAFE_INTEGER
-        : hostBox.width;
-    const lines = layoutInlineLines(fullText, maximumWidth, hostStyle, state);
-    const fragments: Box[] = [];
-    let textOffset = 0;
-
-    for (const [lineIndex, line] of lines.entries()) {
-      const lineStart = fullText.indexOf(line, textOffset);
-      const resolvedLineStart = lineStart < 0 ? textOffset : lineStart;
-      const lineEnd = resolvedLineStart + line.length;
-      const fragmentStart = Math.max(targetStart, resolvedLineStart);
-      const fragmentEnd = Math.min(targetEnd, lineEnd);
-
-      if (fragmentEnd > fragmentStart) {
-        const prefix = fullText.slice(resolvedLineStart, fragmentStart);
-        const text = fullText.slice(fragmentStart, fragmentEnd);
-        const prefixWidth = measureInlineWidth(prefix, hostStyle, state);
-        const width = measureInlineWidth(text, hostStyle, state);
-        fragments.push({
-          x: hostBox.x + prefixWidth,
-          // CSS inline boxes use the font's em box inside the line box. The
-          // deterministic typography profile has no extra ascent/descent
-          // adjustment, so half-leading is split above and below the fragment.
-          y:
-            hostBox.y +
-            lineIndex * hostStyle.lineHeight +
-            (hostStyle.lineHeight - hostStyle.fontSize) / 2,
-          width,
-          height: hostStyle.fontSize,
-        });
-      }
-
-      textOffset = Math.max(textOffset, lineEnd);
-    }
-
-    state.fragmentRects.set(element, fragments);
-    state.rects.set(element, unionBoxes(fragments));
   }
 }
 
-function layoutInlineLines(
-  text: string,
-  maximumWidth: number,
-  style: SupportedStyle,
-  state: TaffyLayoutState,
-): string[] {
-  if (maximumWidth === Number.MAX_SAFE_INTEGER) {
-    return text.split('\n');
-  }
-
-  const lines: string[] = [];
-  for (const hardLine of text.split('\n')) {
-    const words = hardLine.split(' ');
-    let line = '';
-
-    for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (
-        !line ||
-        measureInlineWidth(candidate, style, state) <= maximumWidth
-      ) {
-        line = candidate;
-      } else {
-        lines.push(line);
-        line = word;
-      }
-    }
-
-    lines.push(line);
-  }
-
-  return lines;
-}
-
-function nearestMeasuredAncestor(
+function inlineRunsFor(
   element: Element,
   state: TaffyLayoutState,
-): Element | undefined {
-  for (
-    let ancestor = element.parentElement;
-    ancestor;
-    ancestor = ancestor.parentElement
-  ) {
-    if (
-      state.elementNodes.has(ancestor) &&
-      Array.from(ancestor.children).every(
-        child => resolveSupportedStyle(child, state).display === 'inline',
+  owners: readonly Element[] = [],
+): InlineRun[] {
+  const style = resolveSupportedStyle(element, state);
+  const runs: InlineRun[] = [];
+  const pseudo = (which: 'before' | 'after') => {
+    const pseudoStyle = resolvePseudoElementStyle(element, which, state);
+    if (pseudoStyle.display === 'inline' && pseudoStyle.content !== undefined)
+      runs.push({ text: pseudoStyle.content, style: pseudoStyle, owners });
+  };
+  pseudo('before');
+  for (const node of Array.from(element.childNodes)) {
+    if (node.nodeType === 3) {
+      const text =
+        style.whiteSpace === 'normal' || style.whiteSpace === 'nowrap'
+          ? (node.textContent ?? '').replace(/\s/g, ' ')
+          : (node.textContent ?? '');
+      runs.push({ text, style, owners });
+    } else if (node.nodeType === 1) {
+      const child = node as Element;
+      const childStyle = resolveSupportedStyle(child, state);
+      if (
+        isHidden(child) ||
+        childStyle.display === 'none' ||
+        isNonRenderedHtmlElement(child)
       )
-    ) {
-      return ancestor;
+        continue;
+      if (child.tagName.toLowerCase() === 'br')
+        runs.push({ text: '\n', style, owners });
+      else if (
+        childStyle.display === 'inline' ||
+        childStyle.display === 'contents'
+      ) {
+        markElementNoBox(child, state);
+        runs.push(
+          ...inlineRunsFor(
+            child,
+            state,
+            childStyle.display === 'inline' ? [...owners, child] : owners,
+          ),
+        );
+      }
     }
   }
-
-  return undefined;
+  pseudo('after');
+  return runs;
 }
 
-function textBeforeDescendant(host: Element, target: Element): string {
-  let result = '';
-  const view = host.ownerDocument.defaultView;
-  const walker = host.ownerDocument.createTreeWalker(
-    host,
-    view?.NodeFilter.SHOW_TEXT ?? 4,
-  );
-
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    if (target.contains(node)) {
-      break;
-    }
-    result += node.textContent ?? '';
-  }
-
-  return result;
-}
-
-function normalizeInlineText(
-  text: string,
-  whiteSpace: SupportedStyle['whiteSpace'],
-): string {
-  if (whiteSpace === 'pre' || whiteSpace === 'pre-wrap') {
-    return text.replace(/\r\n?/g, '\n');
-  }
-  if (whiteSpace === 'pre-line') {
-    return text
-      .replace(/\r\n?/g, '\n')
-      .replace(/[ \t\f\v]+/g, ' ')
-      .trim();
-  }
-  return text.replace(/\s+/g, ' ').trim();
-}
-
-function measureInlineWidth(
-  text: string,
+function inlineMeasureContext(
+  runs: readonly InlineRun[],
   style: SupportedStyle,
   state: TaffyLayoutState,
-): number {
-  return state.textMeasurer.measure({
-    text: transformMeasuredText(text, style.textTransform),
-    fontFamily: style.fontFamily,
-    fontSize: style.fontSize,
-    fontWeight: style.fontWeight,
-    letterSpacing: style.letterSpacing,
-    wordSpacing: style.wordSpacing,
-    lineHeight: style.lineHeight,
-    maxWidth: undefined,
-    whiteSpace: 'nowrap',
-  }).width;
+): { context: MeasureContext; format: (width: number) => InlineLayout } {
+  const format = createInlineFormatter(runs, style, state.textMeasurer);
+  return {
+    format,
+    context: {
+      ...style,
+      text: runs.map(run => run.text).join(''),
+      textMeasurer: {
+        measure: input => format(input.maxWidth ?? Number.MAX_SAFE_INTEGER),
+      },
+    },
+  };
 }
 
 function unionBoxes(boxes: readonly Box[]): Box {
@@ -1241,102 +1101,77 @@ function buildChildNodes(
       .toSorted((a, b) => a.order - b.order || a.sequence - b.sequence)
       .flatMap(item => item.nodes);
   }
-  const hasPseudoBox = hasGeneratedPseudoBox(parent, state);
-  const hasBlockChild =
-    children.some(
-      element => resolveSupportedStyle(element, state).display !== 'inline',
-    ) || hasPseudoBox;
-
-  if (!hasBlockChild) {
-    return children.flatMap(element => buildNodesForElement(element, state));
-  }
-
-  // CSS wraps inline content that shares a block container with block-level
-  // siblings in anonymous block boxes. Without these runs, text such as a
-  // secondary inline label after a heading contributes no height at all.
   const nodes: bigint[] = [];
-  let inlineText = '';
-  let inlineElements: { element: Element; beforeText: string }[] = [];
-  const flushInlineText = () => {
-    const text =
-      parentStyle.whiteSpace === 'normal' || parentStyle.whiteSpace === 'nowrap'
-        ? inlineText.trim()
-        : inlineText;
-    inlineText = '';
-    if (!text || (inlineElements.length === 0 && !hasPseudoBox)) {
-      inlineElements = [];
+  let runs: InlineRun[] = [];
+  const flush = () => {
+    if (!runs.some(run => run.text.trim())) {
+      runs = [];
       return;
     }
-
     const anonymousStyle = createDefaultStyle();
-    anonymousStyle.display = 'block';
-    anonymousStyle.fontFamily = parentStyle.fontFamily;
-    anonymousStyle.fontSize = parentStyle.fontSize;
-    anonymousStyle.fontWeight = parentStyle.fontWeight;
-    anonymousStyle.letterSpacing = parentStyle.letterSpacing;
-    anonymousStyle.wordSpacing = parentStyle.wordSpacing;
-    anonymousStyle.lineHeight = parentStyle.lineHeight;
-    anonymousStyle.whiteSpace = parentStyle.whiteSpace;
-    anonymousStyle.textTransform = parentStyle.textTransform;
-    const context: MeasureContext = {
-      text,
-      fontFamily: parentStyle.fontFamily,
-      fontSize: parentStyle.fontSize,
-      fontWeight: parentStyle.fontWeight,
-      letterSpacing: parentStyle.letterSpacing,
-      wordSpacing: parentStyle.wordSpacing,
-      lineHeight: parentStyle.lineHeight,
-      whiteSpace: parentStyle.whiteSpace,
-      textTransform: parentStyle.textTransform,
-      textMeasurer: state.textMeasurer,
-    };
+    inheritStyle(anonymousStyle, parentStyle);
+    const { context, format } = inlineMeasureContext(
+      runs,
+      anonymousStyle,
+      state,
+    );
     const node = state.tree.newLeafWithContext(
       toTaffyStyle(anonymousStyle, context),
       context,
     );
     nodes.push(node);
-    for (const entry of inlineElements) {
-      state.anonymousInlineRuns.set(entry.element, {
-        node,
-        parent,
-        beforeText: entry.beforeText,
-      });
-    }
-    inlineElements = [];
+    state.inlineContexts.push({ host: parent, node, anonymous: true, format });
+    runs = [];
   };
-
-  nodes.push(...buildGeneratedPseudoNodes(parent, 'before', state));
-
+  const pseudo = (which: 'before' | 'after') => {
+    const style = resolvePseudoElementStyle(parent, which, state);
+    if (style.display === 'inline' && style.content !== undefined)
+      runs.push({ text: style.content, style, owners: [] });
+    else {
+      flush();
+      nodes.push(...buildGeneratedPseudoNodes(parent, which, state));
+    }
+  };
+  pseudo('before');
   for (const node of Array.from(parent.childNodes)) {
     if (node.nodeType === 3) {
-      inlineText += node.textContent ?? '';
+      runs.push({
+        text:
+          parentStyle.whiteSpace === 'normal' ||
+          parentStyle.whiteSpace === 'nowrap'
+            ? (node.textContent ?? '').replace(/\s/g, ' ')
+            : (node.textContent ?? ''),
+        style: parentStyle,
+        owners: [],
+      });
       continue;
     }
     if (node.nodeType !== 1) continue;
-
     const element = node as Element;
-    if (!renderedChildren.has(element)) continue;
-    if (isNonRenderedHtmlElement(element) || isHidden(element)) continue;
+    if (
+      !renderedChildren.has(element) ||
+      isNonRenderedHtmlElement(element) ||
+      isHidden(element)
+    )
+      continue;
     const style = resolveSupportedStyle(element, state);
     if (style.display === 'none') {
       markSubtreeDisplayNone(element, state);
       continue;
     }
-    if (style.display === 'inline') {
-      inlineElements.push({ element, beforeText: inlineText });
-      inlineText +=
-        element.tagName.toLowerCase() === 'br'
-          ? '\n'
-          : (element.textContent ?? '');
-      markSubtreeNoBox(element, state);
-      continue;
+    if (element.tagName.toLowerCase() === 'br')
+      runs.push({ text: '\n', style: parentStyle, owners: [] });
+    else if (style.display === 'inline') {
+      markElementNoBox(element, state);
+      runs.push(...inlineRunsFor(element, state, [element]));
+    } else {
+      flush();
+      nodes.push(...buildNodesForElement(element, state));
     }
-
-    flushInlineText();
-    nodes.push(...buildNodesForElement(element, state));
   }
-  flushInlineText();
-  nodes.push(...buildGeneratedPseudoNodes(parent, 'after', state));
+  flush();
+  pseudo('after');
+  flush();
   return nodes;
 }
 
@@ -1405,13 +1240,40 @@ function buildNodesForElement(
       generatedContent[pseudoElement] = '';
     }
   }
-  const context = createMeasureContext(
+  let context = createMeasureContext(
     element,
     style,
     state.textMeasurer,
     state.nativeControlMetrics,
     generatedContent,
   );
+  const inlineOnly =
+    !context?.replacedSize &&
+    !context?.intrinsicReplaced &&
+    style.display !== 'flex' &&
+    style.display !== 'grid' &&
+    !hasGeneratedPseudoBox(element, state) &&
+    renderedElementChildren(element, state).every(
+      child =>
+        ['inline', 'none', 'contents'].includes(
+          resolveSupportedStyle(child, state).display,
+        ) || child.tagName.toLowerCase() === 'br',
+    );
+  let inlineFormat: ((width: number) => InlineLayout) | undefined;
+  if (
+    inlineOnly &&
+    (element.children.length > 0 ||
+      generatedContent.before ||
+      generatedContent.after)
+  ) {
+    const formatted = inlineMeasureContext(
+      inlineRunsFor(element, state),
+      style,
+      state,
+    );
+    context = formatted.context;
+    inlineFormat = formatted.format;
+  }
   if (context) {
     let parent = element.parentElement;
     while (
@@ -1428,7 +1290,9 @@ function buildNodesForElement(
   }
   const hasPseudoBox = hasGeneratedPseudoBox(element, state);
   const children =
-    context?.replacedSize || (canMeasureTextLeaf(element) && !hasPseudoBox)
+    context?.replacedSize ||
+    inlineFormat ||
+    (canMeasureTextLeaf(element) && !hasPseudoBox)
       ? []
       : buildChildNodes(element, state);
   const taffyStyle = toTaffyStyle(style, {
@@ -1440,6 +1304,13 @@ function buildNodesForElement(
       ? state.tree.newLeafWithContext(taffyStyle, context)
       : state.tree.newWithChildren(taffyStyle, children);
 
+  if (inlineFormat)
+    state.inlineContexts.push({
+      host: element,
+      node,
+      anonymous: false,
+      format: inlineFormat,
+    });
   state.elementNodes.set(element, node);
   return [node];
 }
@@ -1603,17 +1474,41 @@ function recordChildLayouts(
     const style = resolveSupportedStyle(element, state);
     const fixedSubtree = fixedContainingBlock || style.position === 'fixed';
     const layout = state.tree.getLayout(node);
+    const containingBlock =
+      style.position === 'absolute'
+        ? containingBlockFor(element, style, state)
+        : undefined;
+    const absoluteOrigin = containingBlock
+      ? state.rects.get(containingBlock)
+      : undefined;
+    const absoluteNormalOrigin = containingBlock
+      ? state.normalRects.get(containingBlock)
+      : undefined;
+    const visualOrigin =
+      style.position === 'absolute' && containingBlock !== element.parentElement
+        ? {
+            x: (absoluteOrigin?.x ?? -scroll.x) + scroll.x,
+            y: (absoluteOrigin?.y ?? -scroll.y) + scroll.y,
+          }
+        : origin;
+    const normalOrigin =
+      style.position === 'absolute' && containingBlock !== element.parentElement
+        ? {
+            x: (absoluteNormalOrigin?.x ?? -scroll.x) + scroll.x,
+            y: (absoluteNormalOrigin?.y ?? -scroll.y) + scroll.y,
+          }
+        : layoutOrigin;
     // Taffy models fixed as absolute, so collection re-roots fixed boxes to
     // viewport coordinates instead of inheriting a scrolled ancestor origin.
     const normalLayoutBox = {
-      x: style.position === 'fixed' ? layout.x : layoutOrigin.x + layout.x,
-      y: style.position === 'fixed' ? layout.y : layoutOrigin.y + layout.y,
+      x: style.position === 'fixed' ? layout.x : normalOrigin.x + layout.x,
+      y: style.position === 'fixed' ? layout.y : normalOrigin.y + layout.y,
       width: layout.width,
       height: layout.height,
     };
     const visualLayoutBox = {
-      x: style.position === 'fixed' ? layout.x : origin.x + layout.x,
-      y: style.position === 'fixed' ? layout.y : origin.y + layout.y,
+      x: style.position === 'fixed' ? layout.x : visualOrigin.x + layout.x,
+      y: style.position === 'fixed' ? layout.y : visualOrigin.y + layout.y,
       width: layout.width,
       height: layout.height,
     };
@@ -2410,16 +2305,7 @@ function resolvePseudoElementStyle(
   // their originating element. They are not DOM children, so this inheritance
   // must be copied explicitly before their own cascade is applied.
   style.display = 'inline';
-  style.fontFamily = originatingStyle.fontFamily;
-  style.fontSize = originatingStyle.fontSize;
-  style.fontWeight = originatingStyle.fontWeight;
-  style.letterSpacing = originatingStyle.letterSpacing;
-  style.wordSpacing = originatingStyle.wordSpacing;
-  style.lineHeight = originatingStyle.lineHeight;
-  style.whiteSpace = originatingStyle.whiteSpace;
-  style.textTransform = originatingStyle.textTransform;
-  style.pointerEvents = originatingStyle.pointerEvents;
-  style.visibility = originatingStyle.visibility;
+  inheritStyle(style, originatingStyle);
 
   const rootFontSize = resolveRootFontSize(element, state);
   const customProperties = resolveElementCustomProperties(element, state);
@@ -2505,16 +2391,7 @@ function applyInheritedTextDefaults(
   }
 
   const parentStyle = resolveSupportedStyle(parent, state);
-  style.fontFamily = parentStyle.fontFamily;
-  style.fontSize = parentStyle.fontSize;
-  style.fontWeight = parentStyle.fontWeight;
-  style.letterSpacing = parentStyle.letterSpacing;
-  style.wordSpacing = parentStyle.wordSpacing;
-  style.lineHeight = parentStyle.lineHeight;
-  style.whiteSpace = parentStyle.whiteSpace;
-  style.textTransform = parentStyle.textTransform;
-  style.pointerEvents = parentStyle.pointerEvents;
-  style.visibility = parentStyle.visibility;
+  inheritStyle(style, parentStyle);
 }
 
 function createSimpleTableLayout(

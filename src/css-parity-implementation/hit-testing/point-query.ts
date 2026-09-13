@@ -9,7 +9,8 @@ export function elementsFromPointInBoxes(
 ): Element[] {
   const elements: Element[] = [];
   for (const box of orderedHitBoxes(boxes)) {
-    if (hitContainsPoint(box, x, y)) elements.push(box.element);
+    if (!elements.includes(box.element) && hitContainsPoint(box, x, y))
+      elements.push(box.element);
   }
   return elements;
 }

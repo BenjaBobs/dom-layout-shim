@@ -27,7 +27,7 @@
       "notes": [
         {
           "kind": "todo",
-          "text": "declaration-cascade verifies content variables including pseudo-local custom properties through the shared cascade. Sharing styled inline and non-inline generated text layout remains pending."
+          "text": "declaration-cascade and inline-composition verify shared content cascading, pseudo-local variables, and preservation of pseudo typography in both inline and block layout."
         },
         {
           "kind": "browser-parity",

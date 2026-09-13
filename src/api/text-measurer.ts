@@ -1,4 +1,5 @@
 import { cacheTextMeasurer } from '../css-parity-implementation/layout/cached-text-measurer.ts';
+import { breakTextLines } from '../css-parity-implementation/layout/text-lines.ts';
 import { wordSpacingWidth } from '../css-parity-implementation/layout/word-spacing.ts';
 
 export type WhiteSpace = 'normal' | 'pre' | 'pre-line' | 'pre-wrap' | 'nowrap';
@@ -56,27 +57,14 @@ export function createDeterministicTextMeasurer(): TextMeasurer {
 }
 
 function breakTextIntoLines(input: TextMeasureInput): string[] {
-  const normalizedText = normalizeText(input.text, input.whiteSpace);
-
-  if (!normalizedText) {
-    return [];
-  }
-
-  if (preservesHardBreaks(input.whiteSpace)) {
-    return normalizedText.split('\n');
-  }
-
-  if (input.whiteSpace === 'nowrap' || !input.maxWidth || input.maxWidth <= 0) {
-    return [normalizedText];
-  }
-
-  return wrapNormalText(
-    normalizedText,
-    input.maxWidth,
-    input.fontFamily,
-    input.fontSize,
-    input.letterSpacing ?? 0,
-    input.wordSpacing ?? 0,
+  return breakTextLines(input.text, input.whiteSpace, input.maxWidth, text =>
+    measuredLineWidth(
+      text,
+      input.fontFamily,
+      input.fontSize,
+      input.letterSpacing ?? 0,
+      input.wordSpacing ?? 0,
+    ),
   );
 }
 
@@ -107,70 +95,4 @@ function letterSpacingWidth(text: string, letterSpacing: number): number {
   // Chromium includes one letter-spacing advance after every rendered glyph,
   // including the final glyph in an inline text run.
   return text.length * letterSpacing;
-}
-
-function normalizeText(text: string, whiteSpace: WhiteSpace): string {
-  if (whiteSpace === 'pre' || whiteSpace === 'pre-wrap') {
-    return text.replace(/\r\n?/g, '\n');
-  }
-
-  if (whiteSpace === 'pre-line') {
-    return text
-      .replace(/\r\n?/g, '\n')
-      .split('\n')
-      .map(line => line.replace(/[ \t\f\v]+/g, ' ').trim())
-      .join('\n');
-  }
-
-  return text.replace(/\s+/g, ' ').trim();
-}
-
-function preservesHardBreaks(whiteSpace: WhiteSpace): boolean {
-  return (
-    whiteSpace === 'pre' ||
-    whiteSpace === 'pre-line' ||
-    whiteSpace === 'pre-wrap'
-  );
-}
-
-function wrapNormalText(
-  text: string,
-  maxWidth: number,
-  fontFamily: string,
-  fontSize: number,
-  letterSpacing: number,
-  wordSpacing: number,
-): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let current = '';
-
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-
-    if (
-      measuredLineWidth(
-        next,
-        fontFamily,
-        fontSize,
-        letterSpacing,
-        wordSpacing,
-      ) <= maxWidth
-    ) {
-      current = next;
-      continue;
-    }
-
-    if (current) {
-      lines.push(current);
-    }
-
-    current = word;
-  }
-
-  if (current) {
-    lines.push(current);
-  }
-
-  return lines;
 }

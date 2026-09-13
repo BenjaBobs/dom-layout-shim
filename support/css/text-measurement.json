@@ -43,6 +43,10 @@
       },
       "notes": [
         {
+          "kind": "todo",
+          "text": "Whitespace normalization and line breaking are shared by default measurement, font-backed measurement, and styled inline formatting. inline-composition verifies pre-wrap and pre-line wrapping and fragment geometry."
+        },
+        {
           "kind": "browser-parity",
           "text": "Nested text inherits parent font metrics; `inherit`, `unset`, and `initial` are accepted where supported. Percentage and `em` sizes resolve against the inherited parent size, while `rem` resolves against the computed root size."
         },

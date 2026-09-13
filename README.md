@@ -521,3 +521,10 @@ Overflow clips remain attached to their ancestors when descendants transform.
 For example, a 100px-wide child translated 80px right inside a 100px-wide
 `overflow: hidden` parent is hittable only in the visible 20px strip.
 Intersection observations use the same projected ancestor clips.
+
+Inline text, including bare text after a block child, shares styled line layout
+with generated content. For example, a 30px-tall block followed by `Hello` in a
+container with `line-height: 20px` contributes a total height of 50px. Nested
+inline font settings and pseudo-element typography affect measurement; inline
+client fragments also participate in point queries. `pre-wrap` and `pre-line`
+use the shared wrapping rules, including preserved hard-break fragments.

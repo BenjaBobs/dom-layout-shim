@@ -39,6 +39,10 @@
       },
       "notes": [
         {
+          "kind": "todo",
+          "text": "inline-composition verifies bare text after blocks, nested inline typography, shared fragments and point queries, and preserved whitespace fragments. Inline measurement and projection consume the same styled runs."
+        },
+        {
           "kind": "browser-parity",
           "text": "Native phrasing elements contribute text through ancestor measurement without introducing block-flow breaks."
         }
