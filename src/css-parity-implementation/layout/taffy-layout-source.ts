@@ -11,7 +11,10 @@ import { applyCascadedStyle, cascadeCustomProperties } from '../css/cascade.ts';
 import type { CustomProperties } from '../css/custom-properties.ts';
 import { collectElementDeclarations } from '../css/element-cascade.ts';
 import { inheritStyle } from '../css/inherited-style.ts';
-import { resolveCalculatedDimension } from '../css/length-value.ts';
+import {
+  resolveCalculatedDimension,
+  resolveDefiniteLength,
+} from '../css/length-value.ts';
 import {
   createRuleMatchingSession,
   type ParsedStylesheet,
@@ -37,6 +40,11 @@ import {
   transformBoxPoints,
 } from '../geometry/transform.ts';
 import { prepareHitTesting } from '../hit-testing/point-query.ts';
+import {
+  type ContainingBlockEnvironment,
+  containingBlock,
+  percentageBasis,
+} from './containing-block.ts';
 import {
   createInlineFormatter,
   type InlineLayout,
@@ -70,6 +78,7 @@ type TaffyLayoutState = {
   intersectionRects: Map<Element, Box>;
   elementScrolls: Map<Element, ScrollOffset>;
   elementNodes: Map<Element, bigint>;
+  outOfFlowNodes: Map<Element, bigint[]>;
   measureContexts: Map<Element, MeasureContext>;
   inlineContexts: {
     host: Element;
@@ -274,9 +283,7 @@ export function computeTaffyDocumentLayout(
     stylesheetFingerprint,
   );
   computeTaffyLayout(layoutTree, viewport);
-  if (resolveDeferredCalculatedDimensions(layoutTree)) {
-    computeTaffyLayout(layoutTree, viewport);
-  }
+  resolveDeferredCalculatedDimensions(layoutTree);
   layoutTree.state.noBoxElements = new Set(layoutTree.state.rects.keys());
   if (stylesheetCache) stylesheetCache.layoutTree = layoutTree;
   return collectTaffyLayoutSnapshot(
@@ -342,6 +349,7 @@ function buildTaffyLayoutTree(
     intersectionRects: new Map<Element, Box>(),
     elementScrolls: new Map<Element, ScrollOffset>(),
     elementNodes: new Map<Element, bigint>(),
+    outOfFlowNodes: new Map(),
     measureContexts: new Map(),
     inlineContexts: [],
     contentsElements: new Set<Element>(),
@@ -461,30 +469,58 @@ function computeTaffyLayout(
 
 function resolveDeferredCalculatedDimensions(
   layoutTree: TaffyLayoutTree,
-): boolean {
-  let changed = false;
-
-  for (const [element, node] of layoutTree.state.elementNodes) {
-    const style = resolveSupportedStyle(element, layoutTree.state);
-    if (!hasCalculatedDimension(style)) continue;
-    const basis = computedPercentageBasis(element, style, layoutTree.state);
-    if (basis.width === undefined && basis.height === undefined) continue;
-
-    // The repository-owned Taffy 0.14 binding intentionally accepts resolved
-    // scalar and percentage values rather than carrying CSS calc expression
-    // trees. A first layout establishes definite auto inline sizes and
-    // positioned padding boxes; update only calc-bearing nodes and recompute.
-    layoutTree.state.tree.setStyle(
-      node,
-      toTaffyStyle(style, {
-        ...layoutTree.state.measureContexts.get(element),
-        percentageBasis: basis,
-      }),
-    );
-    changed = true;
+): void {
+  const { state } = layoutTree;
+  const levels = new Map<number, Element[]>();
+  for (const element of state.elementNodes.keys()) {
+    if (
+      state.cellFormatting.has(element) ||
+      !hasCalculatedDimension(resolveSupportedStyle(element, state))
+    )
+      continue;
+    let depth = 0;
+    for (
+      let parent = element.parentElement;
+      parent;
+      parent = parent.parentElement
+    )
+      depth++;
+    const entries = levels.get(depth) ?? [];
+    entries.push(element);
+    levels.set(depth, entries);
   }
-
-  return changed;
+  // Taffy's binding accepts scalar/percentage values, not calc trees. Resolve
+  // dependencies from outer formatting contexts inward, recomputing after each
+  // affected depth. This is a finite dependency traversal, not a convergence
+  // retry loop that substitutes observed auto heights for definite dimensions.
+  for (const [, elements] of [...levels].sort((a, b) => a[0] - b[0])) {
+    for (const element of elements) {
+      const style = resolveSupportedStyle(element, state);
+      const node = state.elementNodes.get(element);
+      if (node === undefined) continue;
+      state.tree.setStyle(
+        node,
+        toTaffyStyle(style, {
+          ...state.measureContexts.get(element),
+          percentageBasis: percentageBasisFor(element, style, state, true),
+        }),
+      );
+    }
+    computeTaffyLayout(layoutTree, state.viewport);
+    for (const formatting of state.cellFormatting.values()) {
+      state.tree.computeLayoutWithMeasure(
+        formatting.node,
+        {
+          width:
+            typeof formatting.style.width === 'number'
+              ? formatting.style.width
+              : 'max-content',
+          height: 'max-content',
+        },
+        measureTaffyNode,
+      );
+    }
+  }
 }
 
 function hasCalculatedDimension(style: SupportedStyle): boolean {
@@ -508,57 +544,20 @@ function hasCalculatedDimension(style: SupportedStyle): boolean {
   return values.some(value => typeof value === 'object' && value !== null);
 }
 
-function computedPercentageBasis(
-  element: Element,
-  style: SupportedStyle,
+function containingBlockEnvironment(
   state: TaffyLayoutState,
-): { width?: number; height?: number } {
-  if (style.position === 'fixed') return state.viewport;
-  const containingBlock = containingBlockFor(element, style, state);
-  if (
-    !containingBlock ||
-    containingBlock === element.ownerDocument.body ||
-    containingBlock === element.ownerDocument.documentElement
-  ) {
-    return state.viewport;
-  }
-
-  const node = state.elementNodes.get(containingBlock);
-  if (!node) return {};
-  const layout = state.tree.getLayout(node);
-  const containingStyle = resolveSupportedStyle(containingBlock, state);
-  const border = effectiveBorderWidth(containingStyle);
-  const positioned = style.position === 'absolute';
-  const horizontalInset = positioned
-    ? horizontal(border)
-    : horizontal(border) + fixedEdges(containingStyle.padding, 'x');
-  const verticalInset = positioned
-    ? vertical(border)
-    : vertical(border) + fixedEdges(containingStyle.padding, 'y');
-  const heightIsDefinite =
-    containingStyle.height !== undefined ||
-    (containingStyle.position !== 'static' &&
-      containingStyle.top !== undefined &&
-      containingStyle.bottom !== undefined);
-
+  measured = false,
+): ContainingBlockEnvironment {
   return {
-    width: Math.max(0, layout.width - horizontalInset),
-    height: heightIsDefinite
-      ? Math.max(0, layout.height - verticalInset)
+    viewport: state.viewport,
+    style: element => resolveSupportedStyle(element, state),
+    layout: measured
+      ? element => {
+          const node = state.elementNodes.get(element);
+          return node === undefined ? undefined : state.tree.getLayout(node);
+        }
       : undefined,
   };
-}
-
-function fixedEdges(
-  edges: Edges<SupportedStyle['padding']['top']>,
-  axis: 'x' | 'y',
-): number {
-  const values =
-    axis === 'x' ? [edges.left, edges.right] : [edges.top, edges.bottom];
-  return values.reduce<number>(
-    (total, value) => total + (typeof value === 'number' ? value : 0),
-    0,
-  );
 }
 
 function containingBlockFor(
@@ -566,16 +565,20 @@ function containingBlockFor(
   style: SupportedStyle,
   state: TaffyLayoutState,
 ): Element | null {
-  if (style.position !== 'absolute') return element.parentElement;
-  for (
-    let ancestor = element.parentElement;
-    ancestor;
-    ancestor = ancestor.parentElement
-  ) {
-    if (resolveSupportedStyle(ancestor, state).position !== 'static')
-      return ancestor;
-  }
-  return element.ownerDocument.documentElement;
+  return containingBlock(element, style, containingBlockEnvironment(state));
+}
+
+function percentageBasisFor(
+  element: Element,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+  measured = false,
+): { width?: number; height?: number } {
+  return percentageBasis(
+    element,
+    style,
+    containingBlockEnvironment(state, measured),
+  );
 }
 
 function collectScrollSizes(
@@ -617,14 +620,14 @@ function collectScrollSizes(
         clientWidth,
         end.width +
           (isProgrammaticallyScrollable(style.overflowX)
-            ? (definiteDimension(style.padding.right, paddingBasis) ?? 0)
+            ? (resolveDefiniteLength(style.padding.right, paddingBasis) ?? 0)
             : 0),
       ),
       height: Math.max(
         clientHeight,
         end.height +
           (isProgrammaticallyScrollable(style.overflowY)
-            ? (definiteDimension(style.padding.bottom, paddingBasis) ?? 0)
+            ? (resolveDefiniteLength(style.padding.bottom, paddingBasis) ?? 0)
             : 0),
       ),
     };
@@ -654,11 +657,11 @@ function collectScrollSizes(
     const marginRight =
       style.margin.right === 'auto'
         ? 0
-        : (definiteDimension(style.margin.right, paddingBasis) ?? 0);
+        : (resolveDefiniteLength(style.margin.right, paddingBasis) ?? 0);
     const marginBottom =
       style.margin.bottom === 'auto'
         ? 0
-        : (definiteDimension(style.margin.bottom, paddingBasis) ?? 0);
+        : (resolveDefiniteLength(style.margin.bottom, paddingBasis) ?? 0);
     const right =
       Math.max(box.x + width, transformed.x + transformed.width) +
       Math.max(0, marginRight);
@@ -1108,7 +1111,8 @@ function buildChildNodes(
 
     return items
       .toSorted((a, b) => a.order - b.order || a.sequence - b.sequence)
-      .flatMap(item => item.nodes);
+      .flatMap(item => item.nodes)
+      .concat(state.outOfFlowNodes.get(parent) ?? []);
   }
   const nodes: bigint[] = [];
   let runs: InlineRun[] = [];
@@ -1181,10 +1185,28 @@ function buildChildNodes(
   flush();
   pseudo('after');
   flush();
-  return nodes;
+  return nodes.concat(state.outOfFlowNodes.get(parent) ?? []);
 }
 
 function buildNodesForElement(
+  element: Element,
+  state: TaffyLayoutState,
+): bigint[] {
+  const nodes = buildElementFormattingNodes(element, state);
+  const style = resolveSupportedStyle(element, state);
+  if (style.position !== 'absolute' && style.position !== 'fixed') return nodes;
+  const parent =
+    containingBlockFor(element, style, state) ?? element.ownerDocument.body;
+  if (parent === element.parentElement) return nodes;
+  // Taffy positions against its tree parent. Hoist out-of-flow nodes to their
+  // CSS containing block while retaining DOM ancestry for clipping and paint.
+  const pending = state.outOfFlowNodes.get(parent) ?? [];
+  pending.push(...nodes);
+  state.outOfFlowNodes.set(parent, pending);
+  return [];
+}
+
+function buildElementFormattingNodes(
   element: Element,
   state: TaffyLayoutState,
 ): bigint[] {
@@ -1309,7 +1331,12 @@ function buildNodesForElement(
     percentageBasis: percentageBasisFor(element, style, state),
   });
   const node =
-    children.length === 0 && context
+    children.length === 0 &&
+    context &&
+    (canMeasureTextLeaf(element) ||
+      inlineFormat ||
+      context.replacedSize ||
+      context.intrinsicReplaced)
       ? state.tree.newLeafWithContext(taffyStyle, context)
       : state.tree.newWithChildren(taffyStyle, children);
 
@@ -1395,52 +1422,6 @@ function buildGeneratedPseudoNodes(
     textMeasurer: state.textMeasurer,
   };
   return [state.tree.newLeafWithContext(toTaffyStyle(style, context), context)];
-}
-
-function percentageBasisFor(
-  element: Element,
-  style: SupportedStyle,
-  state: TaffyLayoutState,
-): { width?: number; height?: number } {
-  // The repository-owned Taffy 0.14 binding does not carry CSS calc trees.
-  // Resolve affine percentage-plus-length values before conversion only when
-  // CSS gives us a definite containing-block axis; leave an indefinite axis
-  // unresolved rather than substituting an observed first-pass size and making
-  // layout circular.
-  if (style.position === 'fixed') return state.viewport;
-
-  const containingBlock = containingBlockFor(element, style, state);
-
-  if (
-    !containingBlock ||
-    containingBlock === element.ownerDocument.body ||
-    containingBlock === element.ownerDocument.documentElement
-  ) {
-    return state.viewport;
-  }
-
-  const containingStyle = resolveSupportedStyle(containingBlock, state);
-  return {
-    width: definiteDimension(containingStyle.width, state.viewport.width),
-    height: definiteDimension(containingStyle.height, state.viewport.height),
-  };
-}
-
-function definiteDimension(
-  value: SupportedStyle['width'],
-  viewportBasis: number,
-): number | undefined {
-  if (
-    value === undefined ||
-    value === 'min-content' ||
-    value === 'max-content' ||
-    value === 'fit-content'
-  )
-    return undefined;
-  const resolved = resolveCalculatedDimension(value, viewportBasis);
-  if (resolved === undefined) return undefined;
-  if (typeof resolved === 'number') return resolved;
-  return (Number(resolved.slice(0, -1)) * viewportBasis) / 100;
 }
 
 function recordChildLayouts(
