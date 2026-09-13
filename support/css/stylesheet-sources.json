@@ -20,6 +20,10 @@
       },
       "notes": [
         {
+          "kind": "todo",
+          "text": "Inline and stylesheet declarations share Lightning CSS parsing and origin/importance ordering. declaration-cascade verifies font-relative declaration order, cross-source importance, and custom-property priority."
+        },
+        {
           "kind": "implementation-quirk",
           "text": "Configured stylesheet text and document `style` elements are combined with other supported stylesheet sources in cascade order."
         },

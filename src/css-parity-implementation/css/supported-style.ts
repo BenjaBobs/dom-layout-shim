@@ -188,6 +188,7 @@ export type SupportedStyle = {
   lineHeight: number;
   whiteSpace: WhiteSpace;
   textTransform: TextTransform;
+  content?: string;
   transform: SupportedTransform[];
   translate?: Extract<SupportedTransform, { type: 'translate' }>;
   scale?: Extract<SupportedTransform, { type: 'scale' }>;

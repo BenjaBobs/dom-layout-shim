@@ -77,10 +77,13 @@ await attachLayoutEngine({
 > scroll changes. Repeated reads use the cached snapshot; scroll-only changes
 > reuse computed layout.
 
-Inline declarations strip the `!important` priority marker before interpreting
-values and apply important declarations after normal declarations in the same
-attribute. For example, `style="display: none !important; display: block"`
-produces a zero-sized rectangle and removes the element from point queries.
+Inline attributes and stylesheets share CSS declaration parsing and cascade
+priority. A stylesheet `width: 100px !important` beats normal inline
+`width: 200px`; an important inline declaration beats important author rules.
+Font-relative dimensions resolve after font size: both `width: 2em; font-size:
+30px` and the reversed declaration order produce a 60px width. Generated
+`::before` and `::after` content also resolves custom properties through this
+cascade, including variables declared on the pseudo-element itself.
 
 ## Use document stylesheets
 

@@ -26,6 +26,10 @@
       },
       "notes": [
         {
+          "kind": "todo",
+          "text": "declaration-cascade verifies content variables including pseudo-local custom properties through the shared cascade. Sharing styled inline and non-inline generated text layout remains pending."
+        },
+        {
           "kind": "browser-parity",
           "text": "Parity covers generated strings and attribute content affecting intrinsic width, height, and following block placement."
         },

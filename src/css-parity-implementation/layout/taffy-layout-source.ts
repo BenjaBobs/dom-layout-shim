@@ -7,21 +7,14 @@ import type {
 import type { NativeControlMetrics } from '../../api/native-control-profile.ts';
 import type { TextMeasurer } from '../../api/text-measurer.ts';
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
+import { applyCascadedStyle, cascadeCustomProperties } from '../css/cascade.ts';
 import type { CustomProperties } from '../css/custom-properties.ts';
-import {
-  applyInlineCustomProperties,
-  applyInlineStyle,
-} from '../css/inline-style-source.ts';
+import { collectElementDeclarations } from '../css/element-cascade.ts';
 import { resolveCalculatedDimension } from '../css/length-value.ts';
 import {
-  applyPseudoElementStyleRules,
-  applyStyleRules,
-  applyStylesheetCustomProperties,
   createRuleMatchingSession,
   type ParsedStylesheet,
   readCssTextRules,
-  readGeneratedContent,
-  readGeneratedPseudoContent,
   readStyleRules,
   type StyleRule,
   type StylesheetParseCache,
@@ -1359,11 +1352,10 @@ function buildNodesForElement(
     return [node];
   }
 
-  const generatedContent = readGeneratedContent(
-    element,
-    state.rules,
-    state.policy,
-  );
+  const generatedContent = {
+    before: resolvePseudoElementStyle(element, 'before', state).content ?? '',
+    after: resolvePseudoElementStyle(element, 'after', state).content ?? '',
+  };
   for (const pseudoElement of ['before', 'after'] as const) {
     if (
       generatedContent[pseudoElement] &&
@@ -1431,12 +1423,11 @@ function hasGeneratedPseudoBox(
   state: TaffyLayoutState,
 ): boolean {
   return (['before', 'after'] as const).some(pseudoElement => {
-    const content = readGeneratedPseudoContent(
+    const content = resolvePseudoElementStyle(
       element,
       pseudoElement,
-      state.rules,
-      state.policy,
-    );
+      state,
+    ).content;
     if (content === undefined) return false;
     const display = resolvePseudoElementStyle(
       element,
@@ -1452,12 +1443,11 @@ function buildGeneratedPseudoNodes(
   pseudoElement: 'before' | 'after',
   state: TaffyLayoutState,
 ): bigint[] {
-  const content = readGeneratedPseudoContent(
+  const content = resolvePseudoElementStyle(
     element,
     pseudoElement,
-    state.rules,
-    state.policy,
-  );
+    state,
+  ).content;
   if (content === undefined) return [];
 
   const style = resolvePseudoElementStyle(element, pseudoElement, state);
@@ -2349,31 +2339,17 @@ function resolveSupportedStyle(
     applyPortableUserAgentDefaults(style, element);
   }
   const rootFontSize = resolveRootFontSize(element, state);
-  applyStyleRules(
+  applyCascadedStyle(
     style,
-    element,
-    state.userAgentRules,
-    state.policy,
-    rootFontSize,
+    collectElementDeclarations(
+      element,
+      state.userAgentRules,
+      state.rules,
+      state.policy,
+      rootFontSize,
+      state.viewport,
+    ),
     customProperties,
-    state.viewport,
-  );
-  applyStyleRules(
-    style,
-    element,
-    state.rules,
-    state.policy,
-    rootFontSize,
-    customProperties,
-    state.viewport,
-  );
-  applyInlineStyle(
-    style,
-    element,
-    state.policy,
-    rootFontSize,
-    customProperties,
-    state.viewport,
   );
   applyPostAuthorStructuralDefaults(style, element);
   state.styles.set(element, style);
@@ -2407,25 +2383,19 @@ function resolvePseudoElementStyle(
 
   const rootFontSize = resolveRootFontSize(element, state);
   const customProperties = resolveElementCustomProperties(element, state);
-  applyPseudoElementStyleRules(
-    style,
+  const declarations = collectElementDeclarations(
     element,
-    pseudoElement,
     state.userAgentRules,
-    state.policy,
-    rootFontSize,
-    customProperties,
-    state.viewport,
-  );
-  applyPseudoElementStyleRules(
-    style,
-    element,
-    pseudoElement,
     state.rules,
     state.policy,
     rootFontSize,
-    customProperties,
     state.viewport,
+    pseudoElement,
+  );
+  applyCascadedStyle(
+    style,
+    declarations,
+    cascadeCustomProperties(customProperties, declarations),
   );
 
   // Inline-level generated boxes become blockified when they are flex or grid
@@ -2457,22 +2427,15 @@ function resolveElementCustomProperties(
   const inherited = element.parentElement
     ? resolveElementCustomProperties(element.parentElement, state)
     : new Map<string, string>();
-  const properties = new Map(inherited);
-  applyStylesheetCustomProperties(
-    properties,
+  const properties = cascadeCustomProperties(
     inherited,
-    element,
-    state.userAgentRules,
-    state.policy,
+    collectElementDeclarations(
+      element,
+      state.userAgentRules,
+      state.rules,
+      state.policy,
+    ),
   );
-  applyStylesheetCustomProperties(
-    properties,
-    inherited,
-    element,
-    state.rules,
-    state.policy,
-  );
-  applyInlineCustomProperties(properties, inherited, element);
   state.customProperties.set(element, properties);
   return properties;
 }
