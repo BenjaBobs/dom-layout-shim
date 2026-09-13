@@ -425,6 +425,14 @@ inline font settings and pseudo-element typography affect measurement; inline
 client fragments also participate in point queries. `pre-wrap` and `pre-line`
 use the shared wrapping rules, including preserved hard-break fragments.
 
+Table cells lay out block, flex, grid, and inline descendants through the shared
+formatting pipeline. A `width: 100px; height: 40px` div inside an otherwise empty
+cell now reports 100×40px rather than a zero rectangle. Allocated cell widths
+reflow text; `vertical-align: top`, `middle`, and `bottom` place cell contents.
+Full intrinsic table track distribution and collapsed-border conflict resolution
+remain outside the supported table subset.
+
+
 
 
 Images use host-provided `naturalWidth` and `naturalHeight` when available.
