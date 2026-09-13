@@ -24,9 +24,13 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["transform"]
+        "fixtures": ["transform", "transform-overflow"]
       },
       "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "transform-overflow verifies ancestor-owned clips with translated descendants, reflected nested clips, and shared intersection-observer projection."
+        },
         {
           "kind": "browser-parity",
           "text": "Translation, percentages, transform-list order, unchanged flow and offset geometry, descendant propagation, and transformed point queries have exact Chromium parity coverage."

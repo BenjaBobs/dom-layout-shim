@@ -25,6 +25,8 @@ import {
   type SupportedStyle,
   zeroEdges,
 } from '../css/supported-style.ts';
+import { clipPolygonToBox, polygonBounds } from '../geometry/clip-polygon.ts';
+import type { Point } from '../geometry/point.ts';
 import {
   type AffineTransform,
   elementTransform,
@@ -998,6 +1000,7 @@ function applyVisualTransforms(
   // Apply transforms after collection so getBoundingClientRect and hit testing
   // see visual geometry while offset/client APIs retain the layout boxes.
   const transforms = new Map<Element, AffineTransform>();
+  const untransformedRects = new Map(state.rects);
 
   for (const element of Array.from(document.getElementsByTagName('*'))) {
     const parentTransform = element.parentElement
@@ -1035,19 +1038,56 @@ function applyVisualTransforms(
     }
   }
 
-  state.boxes = state.boxes.map(box => ({
-    ...transformBox(box, transforms.get(box.element) ?? identityTransform),
-    polygon: transformBoxPoints(
-      box,
-      transforms.get(box.element) ?? identityTransform,
-    ),
-    element: box.element,
-    zIndex: box.zIndex,
-    domOrder: box.domOrder,
-    stackingOrder: box.stackingOrder,
-    pointerEvents: box.pointerEvents,
-    visibility: box.visibility,
-  }));
+  const clip = (element: Element, polygon: readonly Point[]) => {
+    let clipped = polygon;
+    let current: Element | null = element;
+    while (current?.parentElement) {
+      if (state.styles.get(current)?.position === 'fixed') break;
+      current = current.parentElement;
+      const style = state.styles.get(current);
+      const clientBox = state.clientRects.get(current);
+      if (!style || !clientBox || state.contentsElements.has(current)) continue;
+      clipped = clipPolygonToBox(
+        clipped,
+        clientBox,
+        transforms.get(current) ?? identityTransform,
+        {
+          x: style.overflowX !== 'visible',
+          y: style.overflowY !== 'visible',
+        },
+      );
+    }
+    return clipped;
+  };
+  for (const [element, box] of state.intersectionRects) {
+    // Intersection observations consume the same projected clip chain as hit
+    // testing. Client/offset dimensions intentionally remain layout geometry.
+    const normal = state.fragmentRects.get(element);
+    if (!normal?.length) continue;
+    const original = untransformedRects.get(element) ?? box;
+    state.intersectionRects.set(
+      element,
+      polygonBounds(
+        clip(
+          element,
+          transformBoxPoints(
+            original,
+            transforms.get(element) ?? identityTransform,
+          ),
+        ),
+      ),
+    );
+  }
+  state.boxes = state.boxes.flatMap(box => {
+    const polygon = clip(
+      box.element,
+      transformBoxPoints(box, transforms.get(box.element) ?? identityTransform),
+    );
+    const bounds = polygonBounds(polygon);
+    return bounds.width > 0 && bounds.height > 0
+      ? [{ ...box, ...bounds, polygon }]
+      : [];
+  });
 }
 
 function collectOffsetParents(
@@ -2152,9 +2192,9 @@ function recordBox(
     return;
   }
 
-  const hitBox = clipBox(box, clipBounds);
+  const hitBox = box;
 
-  if (!hitBox || hitBox.width <= 0 || hitBox.height <= 0) {
+  if (hitBox.width <= 0 || hitBox.height <= 0) {
     return;
   }
 
