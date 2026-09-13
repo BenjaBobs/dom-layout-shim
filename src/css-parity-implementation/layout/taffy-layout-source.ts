@@ -1,5 +1,4 @@
 import type { Box } from '../../api/box.ts';
-import type { HitBox } from '../../api/hit-box.ts';
 import type {
   UserAgentStyleOptions,
   Viewport,
@@ -29,16 +28,7 @@ import {
   type SupportedStyle,
   zeroEdges,
 } from '../css/supported-style.ts';
-import { clipPolygonToBox, polygonBounds } from '../geometry/clip-polygon.ts';
-import type { Point } from '../geometry/point.ts';
-import {
-  type AffineTransform,
-  elementTransform,
-  identityTransform,
-  multiplyTransforms,
-  transformBox,
-  transformBoxPoints,
-} from '../geometry/transform.ts';
+import { elementTransform, transformBox } from '../geometry/transform.ts';
 import { prepareHitTesting } from '../hit-testing/point-query.ts';
 import {
   type ContainingBlockEnvironment,
@@ -50,7 +40,12 @@ import {
   type InlineLayout,
   type InlineRun,
 } from './inline-formatting.ts';
+import {
+  createLayoutGeometry,
+  type LayoutGeometry,
+} from './layout-geometry.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
+import { projectLayoutGeometry } from './project-layout.ts';
 import { applyReplacedDimensionAttributes } from './taffy/replaced-intrinsic-size.ts';
 import {
   Display,
@@ -67,16 +62,7 @@ import {
 import { effectiveBorderWidth, toTaffyStyle } from './taffy/taffy-style.ts';
 
 type TaffyLayoutState = {
-  boxes: HitBox[];
-  rects: Map<Element, Box>;
-  fragmentRects: Map<Element, Box[]>;
-  layoutRects: Map<Element, Box>;
-  normalRects: Map<Element, Box>;
-  clientRects: Map<Element, Box>;
-  scrollSizes: Map<Element, { width: number; height: number }>;
-  contentRects: Map<Element, Box>;
-  intersectionRects: Map<Element, Box>;
-  elementScrolls: Map<Element, ScrollOffset>;
+  geometry: LayoutGeometry;
   elementNodes: Map<Element, bigint>;
   outOfFlowNodes: Map<Element, bigint[]>;
   measureContexts: Map<Element, MeasureContext>;
@@ -121,13 +107,6 @@ export type LayoutStylesheetCache = {
   documentRules?: StyleRule[];
   userAgentKey?: string;
   userAgentRules?: StyleRule[];
-};
-
-type ClipBounds = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
 };
 
 type SimpleTableLayout = {
@@ -284,7 +263,9 @@ export function computeTaffyDocumentLayout(
   );
   computeTaffyLayout(layoutTree, viewport);
   resolveDeferredCalculatedDimensions(layoutTree);
-  layoutTree.state.noBoxElements = new Set(layoutTree.state.rects.keys());
+  layoutTree.state.noBoxElements = new Set(
+    layoutTree.state.geometry.rects.keys(),
+  );
   if (stylesheetCache) stylesheetCache.layoutTree = layoutTree;
   return collectTaffyLayoutSnapshot(
     document,
@@ -305,16 +286,7 @@ export function reprojectTaffyDocumentLayout(
   // Scroll changes visual geometry, clipping and sticky placement, but not
   // resolved styles, text measurements or Taffy's computed flow layout. Use
   // fresh output maps so a previous observer snapshot stays immutable.
-  state.boxes = [];
-  state.rects = new Map();
-  state.fragmentRects = new Map();
-  state.layoutRects = new Map();
-  state.normalRects = new Map();
-  state.clientRects = new Map();
-  state.contentRects = new Map();
-  state.intersectionRects = new Map();
-  state.elementScrolls = new Map();
-  state.scrollSizes = new Map();
+  state.geometry = createLayoutGeometry();
   state.domOrder = 0;
   state.paintOrders = new WeakMap();
   for (const element of state.noBoxElements) markElementNoBox(element, state);
@@ -338,16 +310,7 @@ function buildTaffyLayoutTree(
   // distribution and fractional UA metrics match browser-observable boxes.
   tree.disableRounding();
   const state: TaffyLayoutState = {
-    boxes: [],
-    rects: new Map<Element, Box>(),
-    fragmentRects: new Map<Element, Box[]>(),
-    layoutRects: new Map<Element, Box>(),
-    normalRects: new Map<Element, Box>(),
-    clientRects: new Map<Element, Box>(),
-    scrollSizes: new Map(),
-    contentRects: new Map<Element, Box>(),
-    intersectionRects: new Map<Element, Box>(),
-    elementScrolls: new Map<Element, ScrollOffset>(),
+    geometry: createLayoutGeometry(),
     elementNodes: new Map<Element, bigint>(),
     outOfFlowNodes: new Map(),
     measureContexts: new Map(),
@@ -593,7 +556,7 @@ function collectScrollSizes(
   const ends = new Map<Element, { width: number; height: number }>();
   let documentWidth = viewport.width;
   let documentHeight = 0;
-  for (const [element, box] of [...state.normalRects].reverse()) {
+  for (const [element, box] of [...state.geometry.normalRects].reverse()) {
     const style = resolveSupportedStyle(element, state);
     if (!hasPrincipalBox(element, state) || style.display === 'inline')
       continue;
@@ -613,7 +576,8 @@ function collectScrollSizes(
       end.height = Math.max(end.height, layout.contentHeight);
     }
     const paddingBasis = element.parentElement
-      ? (state.contentRects.get(element.parentElement)?.width ?? viewport.width)
+      ? (state.geometry.contentRects.get(element.parentElement)?.width ??
+        viewport.width)
       : viewport.width;
     const size = {
       width: Math.max(
@@ -631,16 +595,20 @@ function collectScrollSizes(
             : 0),
       ),
     };
-    state.scrollSizes.set(element, size);
+    state.geometry.scrollSizes.set(element, size);
     if (style.position === 'fixed') continue;
     let parent = containingBlockFor(element, style, state);
     while (parent && state.contentsElements.has(parent))
       parent = parent.parentElement;
-    const parentBox = parent ? state.normalRects.get(parent) : undefined;
+    const parentBox = parent
+      ? state.geometry.normalRects.get(parent)
+      : undefined;
     const parentBorder = parent
       ? effectiveBorderWidth(resolveSupportedStyle(parent, state))
       : { left: 0, top: 0 };
-    const parentScroll = parent ? state.elementScrolls.get(parent) : undefined;
+    const parentScroll = parent
+      ? state.geometry.elementScrolls.get(parent)
+      : undefined;
     const width = Math.max(
       box.width,
       style.overflowX === 'visible' ? border.left + size.width : 0,
@@ -686,11 +654,11 @@ function collectScrollSizes(
   }
   // html/body are synthetic viewport wrappers in this engine, rather than
   // ordinary Taffy boxes. Standards-mode root scrolling includes the viewport.
-  state.scrollSizes.set(document.documentElement, {
+  state.geometry.scrollSizes.set(document.documentElement, {
     width: documentWidth,
     height: Math.max(viewport.height, documentHeight),
   });
-  state.scrollSizes.set(document.body, {
+  state.geometry.scrollSizes.set(document.body, {
     width: documentWidth,
     height:
       document.compatMode === 'BackCompat'
@@ -709,7 +677,6 @@ function collectTaffyLayoutSnapshot(
     document.body,
     { x: 0, y: 0 },
     { x: 0, y: 0 },
-    infiniteClipBounds(),
     viewport,
     scroll,
     false,
@@ -717,20 +684,25 @@ function collectTaffyLayoutSnapshot(
     state,
   );
   recordInlineFragments(document, state);
-  applyVisualTransforms(document, state);
+  projectLayoutGeometry(
+    document,
+    state.geometry,
+    state.styles,
+    state.contentsElements,
+  );
   collectScrollSizes(document, viewport, scroll, state);
-  prepareHitTesting(state.boxes);
+  prepareHitTesting(state.geometry.boxes);
 
   return {
-    boxes: state.boxes,
-    rects: state.rects,
-    fragmentRects: state.fragmentRects,
-    layoutRects: state.layoutRects,
-    clientRects: state.clientRects,
-    scrollSizes: state.scrollSizes,
-    contentRects: state.contentRects,
-    intersectionRects: state.intersectionRects,
-    elementScrolls: state.elementScrolls,
+    boxes: state.geometry.boxes,
+    rects: state.geometry.rects,
+    fragmentRects: state.geometry.fragmentRects,
+    layoutRects: state.geometry.layoutRects,
+    clientRects: state.geometry.clientRects,
+    scrollSizes: state.geometry.scrollSizes,
+    contentRects: state.geometry.contentRects,
+    intersectionRects: state.geometry.intersectionRects,
+    elementScrolls: state.geometry.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
     fixedElements: collectFixedElements(document, state),
@@ -742,18 +714,18 @@ function recordInlineFragments(
   state: TaffyLayoutState,
 ): void {
   for (const context of state.inlineContexts) {
-    const hostBox = state.contentRects.get(context.host);
+    const hostBox = state.geometry.contentRects.get(context.host);
     if (!hostBox) continue;
     const layout = state.tree.getLayout(context.node);
     const origin = context.anonymous
       ? {
-          x: (state.rects.get(context.host)?.x ?? 0) + layout.x,
+          x: (state.geometry.rects.get(context.host)?.x ?? 0) + layout.x,
           y:
-            (state.rects.get(context.host)?.y ?? 0) +
+            (state.geometry.rects.get(context.host)?.y ?? 0) +
             layout.y +
             tableCellContentOffset(
               context.host,
-              state.rects.get(context.host)?.height ?? 0,
+              state.geometry.rects.get(context.host)?.height ?? 0,
               state,
             ),
         }
@@ -770,17 +742,9 @@ function recordInlineFragments(
       }));
       const domOrder = nextDomOrder(state);
       for (const box of fragments)
-        recordBox(
-          element,
-          style,
-          box,
-          infiniteClipBounds(),
-          domOrder,
-          true,
-          state,
-        );
-      state.fragmentRects.set(element, fragments);
-      state.rects.set(element, unionBoxes(fragments));
+        recordBox(element, style, box, domOrder, true, state);
+      state.geometry.fragmentRects.set(element, fragments);
+      state.geometry.rects.set(element, unionBoxes(fragments));
     }
   }
 }
@@ -864,104 +828,6 @@ function unionBoxes(boxes: readonly Box[]): Box {
   return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
-function applyVisualTransforms(
-  document: Document,
-  state: TaffyLayoutState,
-): void {
-  // Taffy intentionally owns flow geometry and does not model CSS transforms.
-  // Apply transforms after collection so getBoundingClientRect and hit testing
-  // see visual geometry while offset/client APIs retain the layout boxes.
-  const transforms = new Map<Element, AffineTransform>();
-  const untransformedRects = new Map(state.rects);
-
-  for (const element of Array.from(document.getElementsByTagName('*'))) {
-    const parentTransform = element.parentElement
-      ? (transforms.get(element.parentElement) ?? identityTransform)
-      : identityTransform;
-    const box = state.rects.get(element);
-    const style = state.styles.get(element);
-    const localTransform =
-      box &&
-      style &&
-      !state.contentsElements.has(element) &&
-      style.display !== 'none' &&
-      style.display !== 'inline'
-        ? elementTransform(
-            box,
-            [style.translate, style.scale, ...style.transform].filter(
-              value => value !== undefined,
-            ),
-            style.transformOrigin,
-          )
-        : identityTransform;
-    const transform = multiplyTransforms(parentTransform, localTransform);
-    transforms.set(element, transform);
-
-    if (box) {
-      state.rects.set(element, transformBox(box, transform));
-    }
-
-    const fragments = state.fragmentRects.get(element);
-    if (fragments) {
-      state.fragmentRects.set(
-        element,
-        fragments.map(fragment => transformBox(fragment, transform)),
-      );
-    }
-  }
-
-  const clip = (element: Element, polygon: readonly Point[]) => {
-    let clipped = polygon;
-    let current: Element | null = element;
-    while (current?.parentElement) {
-      if (state.styles.get(current)?.position === 'fixed') break;
-      current = current.parentElement;
-      const style = state.styles.get(current);
-      const clientBox = state.clientRects.get(current);
-      if (!style || !clientBox || state.contentsElements.has(current)) continue;
-      clipped = clipPolygonToBox(
-        clipped,
-        clientBox,
-        transforms.get(current) ?? identityTransform,
-        {
-          x: style.overflowX !== 'visible',
-          y: style.overflowY !== 'visible',
-        },
-      );
-    }
-    return clipped;
-  };
-  for (const [element, box] of state.intersectionRects) {
-    // Intersection observations consume the same projected clip chain as hit
-    // testing. Client/offset dimensions intentionally remain layout geometry.
-    const normal = state.fragmentRects.get(element);
-    if (!normal?.length) continue;
-    const original = untransformedRects.get(element) ?? box;
-    state.intersectionRects.set(
-      element,
-      polygonBounds(
-        clip(
-          element,
-          transformBoxPoints(
-            original,
-            transforms.get(element) ?? identityTransform,
-          ),
-        ),
-      ),
-    );
-  }
-  state.boxes = state.boxes.flatMap(box => {
-    const polygon = clip(
-      box.element,
-      transformBoxPoints(box, transforms.get(box.element) ?? identityTransform),
-    );
-    const bounds = polygonBounds(polygon);
-    return bounds.width > 0 && bounds.height > 0
-      ? [{ ...box, ...bounds, polygon }]
-      : [];
-  });
-}
-
 function collectOffsetParents(
   document: Document,
   state: TaffyLayoutState,
@@ -1035,7 +901,7 @@ function hasPrincipalBox(element: Element, state: TaffyLayoutState): boolean {
     }
   }
 
-  return state.rects.has(element);
+  return state.geometry.rects.has(element);
 }
 
 function collectScrollContainers(
@@ -1428,7 +1294,6 @@ function recordChildLayouts(
   parent: Element | null,
   origin: { x: number; y: number },
   layoutOrigin: { x: number; y: number },
-  clipBounds: ClipBounds,
   viewport: Viewport,
   scroll: ScrollOffset,
   fixedContainingBlock: boolean,
@@ -1449,7 +1314,6 @@ function recordChildLayouts(
           element,
           origin,
           layoutOrigin,
-          clipBounds,
           viewport,
           scroll,
           fixedContainingBlock,
@@ -1469,10 +1333,10 @@ function recordChildLayouts(
         ? containingBlockFor(element, style, state)
         : undefined;
     const absoluteOrigin = containingBlock
-      ? state.rects.get(containingBlock)
+      ? state.geometry.rects.get(containingBlock)
       : undefined;
     const absoluteNormalOrigin = containingBlock
-      ? state.normalRects.get(containingBlock)
+      ? state.geometry.normalRects.get(containingBlock)
       : undefined;
     const visualOrigin =
       style.position === 'absolute' && containingBlock !== element.parentElement
@@ -1518,14 +1382,11 @@ function recordChildLayouts(
     state.paintOrders.set(element, domOrder);
 
     const elementScroll = readElementScrollOffset(element);
-    const hitClipBounds =
-      style.position === 'fixed' ? infiniteClipBounds() : clipBounds;
-    state.elementScrolls.set(element, elementScroll);
+    state.geometry.elementScrolls.set(element, elementScroll);
     recordBox(
       element,
       style,
       box,
-      hitClipBounds,
       domOrder,
       !suppressedByHiddenUntilFound,
       state,
@@ -1534,14 +1395,7 @@ function recordChildLayouts(
     );
     const tableLayout = state.tableLayouts.get(element);
     if (tableLayout) {
-      recordSimpleTableLayout(
-        tableLayout,
-        normalBox,
-        hitClipBounds,
-        viewport,
-        scroll,
-        state,
-      );
+      recordSimpleTableLayout(tableLayout, normalBox, viewport, scroll, state);
       continue;
     }
 
@@ -1561,7 +1415,6 @@ function recordChildLayouts(
             ? adjustedLayoutBox.y
             : normalLayoutBox.y) - elementScroll.y,
       },
-      childClipBounds(style, box, hitClipBounds),
       viewport,
       scroll,
       fixedSubtree,
@@ -1644,7 +1497,7 @@ function constrainStickyToContainingBlock(
   state: TaffyLayoutState,
 ): Box {
   const containingBlock = element.parentElement
-    ? state.clientRects.get(element.parentElement)
+    ? state.geometry.clientRects.get(element.parentElement)
     : undefined;
 
   if (!containingBlock) {
@@ -1710,7 +1563,7 @@ function stickyScrollport(
       continue;
     }
 
-    const clientBox = state.clientRects.get(ancestor);
+    const clientBox = state.geometry.clientRects.get(ancestor);
 
     if (clientBox) {
       const start = axis === 'x' ? clientBox.x : clientBox.y;
@@ -1760,19 +1613,19 @@ function readElementScrollOffset(element: Element): ScrollOffset {
 
 function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   const box = { x: 0, y: 0, width: 0, height: 0 };
-  state.rects.set(element, box);
-  state.fragmentRects.set(element, []);
-  state.layoutRects.set(element, box);
-  state.normalRects.set(element, box);
-  state.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
-  state.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
-  state.intersectionRects.set(element, {
+  state.geometry.rects.set(element, box);
+  state.geometry.fragmentRects.set(element, []);
+  state.geometry.layoutRects.set(element, box);
+  state.geometry.normalRects.set(element, box);
+  state.geometry.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
+  state.geometry.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
+  state.geometry.intersectionRects.set(element, {
     x: 0,
     y: 0,
     width: 0,
     height: 0,
   });
-  state.elementScrolls.set(element, readElementScrollOffset(element));
+  state.geometry.elementScrolls.set(element, readElementScrollOffset(element));
 }
 
 function markSubtreeDisplayNone(
@@ -1797,7 +1650,6 @@ function markSubtreeNoBox(element: Element, state: TaffyLayoutState): void {
 function recordSimpleTableLayout(
   tableLayout: SimpleTableLayout,
   normalTableBox: Box,
-  clipBounds: ClipBounds,
   viewport: Viewport,
   scroll: ScrollOffset,
   state: TaffyLayoutState,
@@ -1818,7 +1670,7 @@ function recordSimpleTableLayout(
       viewport,
       state,
     );
-    state.elementScrolls.set(
+    state.geometry.elementScrolls.set(
       tableLayout.caption.element,
       readElementScrollOffset(tableLayout.caption.element),
     );
@@ -1826,7 +1678,6 @@ function recordSimpleTableLayout(
       tableLayout.caption.element,
       captionStyle,
       captionBox,
-      clipBounds,
       nextDomOrder(state),
       true,
       state,
@@ -1845,7 +1696,7 @@ function recordSimpleTableLayout(
       viewport,
       state,
     );
-    state.elementScrolls.set(
+    state.geometry.elementScrolls.set(
       columnGroup.element,
       readElementScrollOffset(columnGroup.element),
     );
@@ -1853,7 +1704,6 @@ function recordSimpleTableLayout(
       columnGroup.element,
       columnGroupStyle,
       columnGroupBox,
-      clipBounds,
       nextDomOrder(state),
       false,
       state,
@@ -1876,7 +1726,7 @@ function recordSimpleTableLayout(
         viewport,
         state,
       );
-      state.elementScrolls.set(
+      state.geometry.elementScrolls.set(
         column.element,
         readElementScrollOffset(column.element),
       );
@@ -1884,7 +1734,6 @@ function recordSimpleTableLayout(
         column.element,
         columnStyle,
         columnBox,
-        clipBounds,
         nextDomOrder(state),
         false,
         state,
@@ -1904,7 +1753,7 @@ function recordSimpleTableLayout(
       viewport,
       state,
     );
-    state.elementScrolls.set(
+    state.geometry.elementScrolls.set(
       section.element,
       readElementScrollOffset(section.element),
     );
@@ -1912,7 +1761,6 @@ function recordSimpleTableLayout(
       section.element,
       sectionStyle,
       sectionBox,
-      clipBounds,
       nextDomOrder(state),
       false,
       state,
@@ -1930,7 +1778,7 @@ function recordSimpleTableLayout(
         viewport,
         state,
       );
-      state.elementScrolls.set(
+      state.geometry.elementScrolls.set(
         row.element,
         readElementScrollOffset(row.element),
       );
@@ -1938,7 +1786,6 @@ function recordSimpleTableLayout(
         row.element,
         rowStyle,
         rowBox,
-        clipBounds,
         nextDomOrder(state),
         false,
         state,
@@ -1961,7 +1808,7 @@ function recordSimpleTableLayout(
           cellStyle,
           state,
         );
-        state.elementScrolls.set(
+        state.geometry.elementScrolls.set(
           cell.element,
           readElementScrollOffset(cell.element),
         );
@@ -1969,7 +1816,6 @@ function recordSimpleTableLayout(
           cell.element,
           cellStyle,
           cellBox,
-          clipBounds,
           nextDomOrder(state),
           includeHitBox,
           state,
@@ -1994,7 +1840,6 @@ function recordSimpleTableLayout(
               x: normalCellBox.x + scroll.x - elementScroll.x,
               y: normalCellBox.y + scroll.y + offsetY - elementScroll.y,
             },
-            childClipBounds(cellStyle, cellBox, clipBounds),
             viewport,
             scroll,
             hasFixedAncestor(cell.element, state),
@@ -2032,8 +1877,10 @@ function tablePartVisualBox(
   state: TaffyLayoutState,
 ): Box {
   const parent = element.parentElement;
-  const parentVisualBox = parent ? state.rects.get(parent) : undefined;
-  const parentLayoutBox = parent ? state.normalRects.get(parent) : undefined;
+  const parentVisualBox = parent ? state.geometry.rects.get(parent) : undefined;
+  const parentLayoutBox = parent
+    ? state.geometry.normalRects.get(parent)
+    : undefined;
   const inheritedOffset = {
     x: (parentVisualBox?.x ?? 0) - (parentLayoutBox?.x ?? 0),
     y: (parentVisualBox?.y ?? 0) - (parentLayoutBox?.y ?? 0),
@@ -2081,23 +1928,19 @@ function recordBox(
   element: Element,
   style: SupportedStyle,
   box: Box,
-  clipBounds: ClipBounds,
   domOrder: number,
   includeHitBox: boolean,
   state: TaffyLayoutState,
   layoutBox: Box = box,
   normalBox: Box = layoutBox,
 ): void {
-  state.rects.set(element, box);
-  state.fragmentRects.set(element, [box]);
-  state.layoutRects.set(element, layoutBox);
-  state.normalRects.set(element, normalBox);
-  state.clientRects.set(element, computeClientBox(box, style));
-  state.contentRects.set(element, computeContentBox(box, style));
-  state.intersectionRects.set(
-    element,
-    clipBox(box, clipBounds) ?? { x: 0, y: 0, width: 0, height: 0 },
-  );
+  state.geometry.rects.set(element, box);
+  state.geometry.fragmentRects.set(element, [box]);
+  state.geometry.layoutRects.set(element, layoutBox);
+  state.geometry.normalRects.set(element, normalBox);
+  state.geometry.clientRects.set(element, computeClientBox(box, style));
+  state.geometry.contentRects.set(element, computeContentBox(box, style));
+  state.geometry.intersectionRects.set(element, box);
 
   if (!includeHitBox) {
     return;
@@ -2109,7 +1952,7 @@ function recordBox(
     return;
   }
 
-  state.boxes.push({
+  state.geometry.boxes.push({
     ...hitBox,
     element,
     // Sticky positioning always creates a stacking context. The hit-testing
@@ -2191,53 +2034,6 @@ function hasStickyAncestor(element: Element, state: TaffyLayoutState): boolean {
   }
 
   return false;
-}
-
-function childClipBounds(
-  style: SupportedStyle,
-  box: Box,
-  clipBounds: ClipBounds,
-): ClipBounds {
-  const clientBox = computeClientBox(box, style);
-
-  return {
-    left:
-      style.overflowX === 'visible'
-        ? clipBounds.left
-        : Math.max(clipBounds.left, clientBox.x),
-    right:
-      style.overflowX === 'visible'
-        ? clipBounds.right
-        : Math.min(clipBounds.right, clientBox.x + clientBox.width),
-    top:
-      style.overflowY === 'visible'
-        ? clipBounds.top
-        : Math.max(clipBounds.top, clientBox.y),
-    bottom:
-      style.overflowY === 'visible'
-        ? clipBounds.bottom
-        : Math.min(clipBounds.bottom, clientBox.y + clientBox.height),
-  };
-}
-
-function clipBox(box: Box, clipBounds: ClipBounds): Box | undefined {
-  const x = Math.max(box.x, clipBounds.left);
-  const y = Math.max(box.y, clipBounds.top);
-  const right = Math.min(box.x + box.width, clipBounds.right);
-  const bottom = Math.min(box.y + box.height, clipBounds.bottom);
-  const width = right - x;
-  const height = bottom - y;
-
-  return width > 0 && height > 0 ? { x, y, width, height } : undefined;
-}
-
-function infiniteClipBounds(): ClipBounds {
-  return {
-    left: Number.NEGATIVE_INFINITY,
-    right: Number.POSITIVE_INFINITY,
-    top: Number.NEGATIVE_INFINITY,
-    bottom: Number.POSITIVE_INFINITY,
-  };
 }
 
 function computeClientBox(box: Box, style: SupportedStyle): Box {

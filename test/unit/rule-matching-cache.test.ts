@@ -1,8 +1,7 @@
 import { expect, it, vi } from 'vitest';
-import {
-  applyStylesheetCustomProperties,
-  createRuleMatchingSession,
-} from '../../src/css-parity-implementation/css/stylesheet-source.ts';
+import { cascadeCustomProperties } from '../../src/css-parity-implementation/css/cascade.ts';
+import { collectElementDeclarations } from '../../src/css-parity-implementation/css/element-cascade.ts';
+import { createRuleMatchingSession } from '../../src/css-parity-implementation/css/stylesheet-source.ts';
 
 it('retains active selector expansions when stylesheets exceed the shared cache', () => {
   const rules = createRuleMatchingSession(
@@ -17,17 +16,11 @@ it('retains active selector expansions when stylesheets exceed the shared cache'
   const second = document.createElement('div');
   first.className = 'scope-0 item';
   second.className = 'scope-599 item';
-  const properties = (element: Element) => {
-    const result = new Map<string, string>();
-    applyStylesheetCustomProperties(
-      result,
+  const properties = (element: Element) =>
+    cascadeCustomProperties(
       new Map(),
-      element,
-      rules,
-      undefined,
+      collectElementDeclarations(element, [], rules),
     );
-    return result;
-  };
   // Count the scanner's function checks, independently of native DOM matching.
   // A bounded-cache eviction cycle used to repeat them for every element.
   const match = vi.spyOn(String.prototype, 'match');
@@ -45,13 +38,9 @@ it('retains active selector expansions when stylesheets exceed the shared cache'
     // Expansions are reusable; element match results belong to one layout pass.
     second.className = 'scope-1 item';
     const nextRules = createRuleMatchingSession(rules);
-    const next = new Map<string, string>();
-    applyStylesheetCustomProperties(
-      next,
+    const next = cascadeCustomProperties(
       new Map(),
-      second,
-      nextRules,
-      undefined,
+      collectElementDeclarations(second, [], nextRules),
     );
     expect(next.get('--matched')).toBe('1');
   } finally {

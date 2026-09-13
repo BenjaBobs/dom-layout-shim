@@ -1,8 +1,39 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 describe('source boundaries', () => {
+  it('keeps visual projection independent of the backend and CSS resolution', () => {
+    const dependencies = runtimeDependencies(
+      'src/css-parity-implementation/layout/project-layout.ts',
+    );
+    expect(
+      dependencies.some(path =>
+        /taffy|stylesheet-source|apply-declaration|cascade\.ts|attachment/.test(
+          path,
+        ),
+      ),
+    ).toBe(false);
+  });
+
+  it('keeps shared line breaking independent of DOM and backend layout', () => {
+    expect(
+      runtimeDependencies('src/css-parity-implementation/layout/text-lines.ts'),
+    ).toEqual([]);
+  });
+
+  it('keeps declaration interpretation independent of source selection', () => {
+    const dependencies = runtimeDependencies(
+      'src/css-parity-implementation/css/cascade.ts',
+    );
+    expect(
+      dependencies.some(path =>
+        /stylesheet-source|inline-style-source|element-cascade|taffy|attachment/.test(
+          path,
+        ),
+      ),
+    ).toBe(false);
+  });
   it('keeps source files inside the API and implementation areas', () => {
     const entries = readdirSync(resolve('src'), { withFileTypes: true })
       .map(entry => entry.name)
@@ -37,6 +68,24 @@ describe('source boundaries', () => {
     );
   });
 });
+
+function runtimeDependencies(
+  path: string,
+  visited = new Set<string>(),
+): string[] {
+  const source = readFileSync(resolve(path), 'utf8');
+  for (const match of source.matchAll(
+    /import\s+(?!type\b)([\s\S]*?)\s+from\s+'([^']+)'/g,
+  )) {
+    const target = match[2];
+    if (!target.startsWith('.')) continue;
+    const dependency = resolve(dirname(resolve(path)), target);
+    if (visited.has(dependency)) continue;
+    visited.add(dependency);
+    runtimeDependencies(dependency, visited);
+  }
+  return [...visited];
+}
 
 function directoriesIn(path: string): string[] {
   return readdirSync(resolve(path), { withFileTypes: true })

@@ -7,10 +7,6 @@ import {
 } from '../../api/unsupported-css-policy.ts';
 import { BoundedCache } from '../bounded-cache.ts';
 import {
-  applyCustomPropertyDeclaration,
-  type CustomProperties,
-} from './custom-properties.ts';
-import {
   type CssDeclaration,
   readDeclarationList,
 } from './declaration-list.ts';
@@ -399,27 +395,6 @@ export function matchingRules(
     .sort((a, b) => (session.rank.get(a) ?? 0) - (session.rank.get(b) ?? 0));
   session.matches.set(element, matched);
   return matched;
-}
-
-export function applyStylesheetCustomProperties(
-  properties: Map<string, string>,
-  inherited: CustomProperties,
-  element: Element,
-  rules: readonly StyleRule[],
-  policy: UnsupportedCssPolicy | undefined,
-): void {
-  for (const rule of matchingRules(rules, element, policy).filter(
-    rule => !rule.pseudoElement,
-  )) {
-    for (const declaration of rule.declarations) {
-      applyCustomPropertyDeclaration(
-        properties,
-        inherited,
-        declaration.property,
-        declaration.value,
-      );
-    }
-  }
 }
 
 function compareStyleRuleCascadeOrder(a: StyleRule, b: StyleRule): number {
