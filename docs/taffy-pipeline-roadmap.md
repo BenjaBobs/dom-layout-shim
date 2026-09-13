@@ -9,6 +9,50 @@ The repository owns a narrow WebAssembly binding pinned to Taffy 0.14.0. Its
 Rust source defines only the operations and style values this pipeline uses;
 generated JavaScript and WebAssembly are build output rather than source.
 
+## Current entry points
+
+Start with the owner of the behavior being changed; the large adapter is the
+orchestrator, not the starting point for every CSS fix. Paths below are relative
+to `src/css-parity-implementation/`.
+
+| Responsibility | Entry point | Contract |
+| --- | --- | --- |
+| Declaration parsing | `css/declaration-list.ts` | Inline attributes and stylesheet AST blocks produce common declarations with priority metadata. |
+| Source selection | `css/element-cascade.ts` | Matched rules and inline declarations retain origin and diagnostic context. |
+| Computed values | `css/cascade.ts`, `css/inherited-style.ts` | Apply origin/importance ordering, custom properties, font dependencies, and shared inheritance. |
+| Whitespace and wrapping | `layout/text-lines.ts` | Common line breaking with interchangeable width measurement. |
+| Styled inline layout | `layout/inline-formatting.ts` | Measurement and element-owned fragments share a cached formatting result. |
+| Percentage dependencies | `layout/containing-block.ts` | Pre-layout and measured phases share containing-block, definiteness, and box-inset rules. |
+| Tree construction and compute | `layout/taffy-layout-source.ts` | Build backend nodes and formatting contexts, including ordinary descendants inside table cells. |
+| Snapshot output allocation | `layout/layout-geometry.ts` | Allocate fresh geometry for every collection; retained layout state is reusable. |
+| Visual projection | `layout/project-layout.ts` | Consume geometry and computed styles; own transforms and ancestor clipping without calling the backend or cascade. |
+| Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
+
+### Phase invariants
+
+- Complete flow-affecting work before visual projection. Deferred calculations
+  follow outer-to-inner dependencies, and table cells reflow at allocated widths.
+- Reprojection allocates new geometry. It must not mutate an earlier snapshot
+  or invoke backend layout or text measurement when only scroll offsets change.
+- Layout client/offset dimensions and projected visual rectangles are distinct
+  outputs. Hit regions and intersection rectangles use the same clip chain.
+- Preserve DOM ancestry for paint and clipping when absolute backend nodes move
+  to their containing block.
+- `test/unit/source-boundaries.test.ts` enforces runtime dependency boundaries;
+  `test/unit/layout-projection.test.ts` compares reprojection with a full compute
+  and checks snapshot retention. Browser-observable interactions belong in
+  `test/browser-parity/cases/`.
+
+### Focused validation and reading
+
+Use symbol searches and targeted file sections before reading the full adapter.
+Run focused tests while implementing, then the repository's full required checks.
+Save full command output under ignored `.tmp/` and inspect summaries or failures
+instead of repeatedly loading successful build logs. Do not run package commands
+that rebuild WASM concurrently: tests, typechecking, builds, and docs share the
+generated binding directory. After a build, focused `pnpm exec vitest run`
+commands can reuse it.
+
 ## Taffy 0.14 Upgrade Audit
 
 The upgrade from the third-party Taffy 0.9.2 package removed compatibility
@@ -26,7 +70,7 @@ behavior that the current engine now owns natively:
 
 The remaining adapter behavior is not made obsolete by Taffy 0.14:
 
-- Mixed `calc()` values retain the two-pass resolution path because
+- Mixed `calc()` values retain dependency-ordered deferred resolution because
   `TaffyTree`'s high-level implementation does not resolve opaque calc handles;
   native resolution requires a custom low-level tree.
 - Flex and grid children remain sorted before tree construction because Taffy

@@ -1,12 +1,11 @@
 import { expect, it } from 'vitest';
-import {
-  applyInlineCustomProperties,
-  parseDeclarationBlock,
-} from '../../src/css-parity-implementation/css/inline-style-source.ts';
+import { cascadeCustomProperties } from '../../src/css-parity-implementation/css/cascade.ts';
+import { parseDeclarationList } from '../../src/css-parity-implementation/css/declaration-list.ts';
+import { collectElementDeclarations } from '../../src/css-parity-implementation/css/element-cascade.ts';
 
 it('uses CSS token boundaries for comments, strings, functions, and recovery', () => {
   expect(
-    parseDeclarationBlock(
+    parseDeclarationList(
       '--label: "a;b:c"; /* ; */ width:var(--size, calc(20px + 2px)); broken; height:10px',
     ).map(({ property, value }) => ({ property, value })),
   ).toEqual([
@@ -17,7 +16,7 @@ it('uses CSS token boundaries for comments, strings, functions, and recovery', (
 });
 
 it('separates inline priority metadata while retaining invalid values for policy routing', () => {
-  const declarations = parseDeclarationBlock(
+  const declarations = parseDeclarationList(
     'width: unsupported ! ImPoRtAnT; height: 20px; color: "!important"',
   );
   expect(
@@ -35,7 +34,9 @@ it('removes priority from custom property values and preserves important source 
     'style',
     '--size: 10px !important; --size: 20px !important; --size: 30px',
   );
-  const properties = new Map<string, string>();
-  applyInlineCustomProperties(properties, new Map(), element);
+  const properties = cascadeCustomProperties(
+    new Map(),
+    collectElementDeclarations(element, [], []),
+  );
   expect(properties.get('--size')).toBe('20px');
 });
