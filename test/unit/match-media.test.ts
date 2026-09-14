@@ -3,6 +3,29 @@ import { describe, expect, it, vi } from 'vitest';
 import { attachLayoutEngine } from '../../src/index.ts';
 
 describe('matchMedia', () => {
+  it('directs viewport assignments to setViewport in strict and sloppy code', async () => {
+    const window = new Window();
+    try {
+      const attachment = await attachLayoutEngine({ window });
+      for (const key of ['innerWidth', 'innerHeight'] as const) {
+        expect(() => {
+          window[key] = 123;
+        }).toThrow('attachment.setViewport({ width, height })');
+        // Function bodies without a strict directive model classic scripts.
+        expect(() =>
+          new Function('window', `window.${key} = 123`)(window),
+        ).toThrow('attachment.setViewport({ width, height })');
+      }
+      expect(window.innerWidth).toBe(1280);
+      expect(window.innerHeight).toBe(720);
+      attachment.setViewport({ width: 320, height: 640 });
+      expect(window.innerWidth).toBe(320);
+      expect(window.innerHeight).toBe(640);
+    } finally {
+      window.close();
+    }
+  });
+
   it('answers dimensions from the configured viewport', async () => {
     const window = new Window({ width: 1024, height: 768 });
 
