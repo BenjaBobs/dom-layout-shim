@@ -591,7 +591,7 @@ export class DocumentAttachment {
     for (const observer of this.resizeObservers) {
       const entries: ResizeObserverEntry[] = [];
       for (const [target, observation] of observer.observations) {
-        const border = snapshot.layoutRects.get(target) ?? zeroBox();
+        const border = snapshot.resizeRects.get(target) ?? zeroBox();
         const content = snapshot.contentRects.get(target) ?? zeroBox();
         const size = observedSize(observation.box, content, border, ratio);
         if (

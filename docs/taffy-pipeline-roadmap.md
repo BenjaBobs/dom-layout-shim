@@ -35,7 +35,8 @@ to `src/css-parity-implementation/`.
 - Reprojection allocates new geometry. It must not mutate an earlier snapshot
   or invoke backend layout or text measurement when only scroll offsets change.
 - Layout client/offset dimensions and projected visual rectangles are distinct
-  outputs. Hit regions and intersection rectangles use the same clip chain.
+  outputs. Hit regions and intersection rectangles use the same clip chain. Resize
+  observation boxes are separate from inline offset unions.
 - Preserve DOM ancestry for paint and clipping when absolute backend nodes move
   to their containing block.
 - `test/unit/source-boundaries.test.ts` enforces runtime dependency boundaries;

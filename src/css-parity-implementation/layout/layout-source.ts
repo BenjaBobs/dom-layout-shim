@@ -6,6 +6,7 @@ export type LayoutSnapshot = Readonly<{
   rects: ReadonlyMap<Element, Box>;
   fragmentRects: ReadonlyMap<Element, readonly Box[]>;
   layoutRects: ReadonlyMap<Element, Box>;
+  resizeRects: ReadonlyMap<Element, Box>;
   clientRects: ReadonlyMap<Element, Box>;
   scrollSizes: ReadonlyMap<Element, { width: number; height: number }>;
   contentRects: ReadonlyMap<Element, Box>;

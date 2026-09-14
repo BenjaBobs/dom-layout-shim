@@ -180,12 +180,17 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["elements-from-point-order", "z-index-dom-order"]
+        "fixtures": [
+          "elements-from-point-order",
+          "z-index-dom-order",
+          "inline-composition",
+          "sticky-positioning"
+        ]
       },
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Parity covers nested positioned contexts, containment of high-z-index descendants, integer `z-index` values, and DOM-order fallback."
+          "text": "Parity covers nested positioned contexts, containment of high-z-index descendants, integer `z-index` values, positioned overlays above inline fragments, in-flow descendants above positioned backgrounds, sticky table contexts, and DOM-order fallback."
         },
         {
           "kind": "limitation",

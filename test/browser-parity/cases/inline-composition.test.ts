@@ -1,6 +1,20 @@
 import { it } from 'vitest';
 import { expectChromiumParity } from '../parity-harness.ts';
 
+it('keeps inline offset dimensions, client dimensions, and paint ordering consistent with fragments', async () => {
+  await expectChromiumParity({
+    viewport: { width: 400, height: 300 },
+    typography: 'deterministic',
+    html: `<style>body{margin:0}#host{width:100px;font-size:20px;line-height:30px}#overlay{position:absolute;left:0;top:0;width:100px;height:30px}</style><div id="host">one <span id="text">two three four five</span></div><div id="overlay"></div>`,
+    queries: [
+      { type: 'rect', selector: '#text' },
+      { type: 'dimensions', selector: '#text' },
+      { type: 'scroll-size', selector: '#text' },
+      { type: 'point', x: 45, y: 10 },
+    ],
+  });
+});
+
 it('lays out bare text and styled inline runs after block children', async () => {
   await expectChromiumParity({
     viewport: { width: 400, height: 300 },

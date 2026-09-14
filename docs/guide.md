@@ -439,6 +439,13 @@ each side and 5px borders has width 150px. Absolute descendants use their
 positioned containing block across intervening static ancestors. In standards
 mode, observed auto height does not establish a definite percentage-height basis.
 
+For non-replaced inline elements, `offsetWidth` and `offsetHeight` span the
+fragment union, while `offsetLeft` and `offsetTop` use the first fragment.
+`clientWidth` and `clientHeight` remain zero. Positioned overlays paint above
+ordinary inline text, and in-flow descendants paint above their positioned
+container's background.
+
+
 
 
 
