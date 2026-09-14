@@ -108,7 +108,7 @@ export type TransformOrigin = {
   y: SupportedDimension;
 };
 
-export type SupportedStyle = {
+export type MutableSupportedStyle = {
   display:
     | 'block'
     | 'flow-root'
@@ -204,7 +204,17 @@ export type SupportedStyle = {
   transformOrigin: TransformOrigin;
 };
 
-export function createDefaultStyle(): SupportedStyle {
+/** Completed styles cannot be patched by layout or visual projection. */
+export type SupportedStyle = Immutable<MutableSupportedStyle>;
+
+type Immutable<T> =
+  T extends Map<infer K, infer V>
+    ? ReadonlyMap<K, Immutable<V>>
+    : T extends object
+      ? { readonly [K in keyof T]: Immutable<T[K]> }
+      : T;
+
+export function createDefaultStyle(): MutableSupportedStyle {
   return {
     display: 'block',
     position: 'static',

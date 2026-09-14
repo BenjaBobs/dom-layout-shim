@@ -1,4 +1,7 @@
-import type { SupportedStyle } from './supported-style.ts';
+import type {
+  MutableSupportedStyle,
+  SupportedStyle,
+} from './supported-style.ts';
 
 // All formatting contexts use the same inheritance parent contract, including
 // pseudo-elements (originating element) and anonymous runs (block container).
@@ -16,7 +19,7 @@ const inheritedProperties = [
 ] as const satisfies readonly (keyof SupportedStyle)[];
 
 export function inheritStyle(
-  style: SupportedStyle,
+  style: MutableSupportedStyle,
   parent: SupportedStyle,
 ): void {
   Object.assign(

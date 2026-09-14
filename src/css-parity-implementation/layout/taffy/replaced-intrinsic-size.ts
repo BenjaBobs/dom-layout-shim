@@ -1,4 +1,7 @@
-import type { SupportedStyle } from '../../css/supported-style.ts';
+import {
+  dimensionAttribute,
+  hasIntrinsicSizeOverride,
+} from '../../css/html-dimensions.ts';
 import type { Size } from './taffy-bindings.ts';
 
 export type ReplacedIntrinsicSize = {
@@ -66,44 +69,6 @@ export function readReplacedIntrinsicSize(
   };
 }
 
-export function applyReplacedDimensionAttributes(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const tag = element.tagName.toLowerCase();
-  if (tag !== 'img' && tag !== 'svg') return;
-  if (hasIntrinsicSizeOverride(element)) return;
-  const width = dimensionAttribute(element, 'width');
-  const height = dimensionAttribute(element, 'height');
-  style.width = width;
-  style.height = height;
-  // HTML image attributes are presentational sizing hints, including an auto
-  // ratio fallback before a resource supplies its natural ratio. SVG attributes
-  // supply intrinsic dimensions independently of CSS overrides.
-  if (tag === 'img' && width && height) {
-    style.aspectRatio = width / height;
-    style.aspectRatioIsHint = true;
-  }
-}
-
-function dimensionAttribute(
-  element: Element,
-  name: string,
-): number | undefined {
-  const value = element.getAttribute(name)?.trim();
-  if (!value || !/^\+?(?:\d+(?:\.\d*)?|\.\d+)(?:px)?$/.test(value))
-    return undefined;
-  const number = Number.parseFloat(value);
-  return Number.isFinite(number) && number >= 0 ? number : undefined;
-}
-
 function positiveNumber(value: number): number | undefined {
   return Number.isFinite(value) && value > 0 ? value : undefined;
-}
-
-function hasIntrinsicSizeOverride(element: Element): boolean {
-  return ['data-layout-width', 'data-layout-height'].every(name => {
-    const value = element.getAttribute(name);
-    return !!value && Number.isFinite(Number(value));
-  });
 }

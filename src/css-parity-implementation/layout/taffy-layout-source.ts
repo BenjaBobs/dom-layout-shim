@@ -7,14 +7,14 @@ import type {
 import type { NativeControlMetrics } from '../../api/native-control-profile.ts';
 import type { TextMeasurer } from '../../api/text-measurer.ts';
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
-import { applyCascadedStyle, cascadeCustomProperties } from '../css/cascade.ts';
-import type { CustomProperties } from '../css/custom-properties.ts';
-import { collectElementDeclarations } from '../css/element-cascade.ts';
-import { inheritStyle } from '../css/inherited-style.ts';
 import {
   resolveCalculatedDimension,
   resolveDefiniteLength,
 } from '../css/length-value.ts';
+import {
+  createStyleResolver,
+  type StyleResolver,
+} from '../css/style-resolver.ts';
 import {
   createRuleMatchingSession,
   type ParsedStylesheet,
@@ -24,7 +24,6 @@ import {
   type StylesheetParseCache,
 } from '../css/stylesheet-source.ts';
 import {
-  createDefaultStyle,
   type Edges,
   type SupportedStyle,
   zeroEdges,
@@ -47,7 +46,6 @@ import {
 } from './layout-geometry.ts';
 import type { LayoutSnapshot, ScrollOffset } from './layout-source.ts';
 import { projectLayoutGeometry } from './project-layout.ts';
-import { applyReplacedDimensionAttributes } from './taffy/replaced-intrinsic-size.ts';
 import {
   Display,
   loadTaffy,
@@ -76,18 +74,8 @@ type TaffyLayoutState = {
   contentsElements: Set<Element>;
   tableLayouts: Map<Element, SimpleTableLayout>;
   cellFormatting: Map<Element, { node: bigint; style: SupportedStyle }>;
-  styles: WeakMap<Element, SupportedStyle>;
-  hasPseudoRules: boolean;
-  pseudoStyles: WeakMap<
-    Element,
-    Partial<Record<'before' | 'after', SupportedStyle>>
-  >;
-  customProperties: WeakMap<Element, CustomProperties>;
+  styleResolver: StyleResolver;
   tree: TaffyTree;
-  rules: ReturnType<typeof readStyleRules>;
-  userAgentRules: ReturnType<typeof readCssTextRules>;
-  userAgentStyleProfile: Required<UserAgentStyleOptions>['profile'];
-  policy: UnsupportedCssPolicy | undefined;
   textMeasurer: TextMeasurer;
   nativeControlMetrics: NativeControlMetrics;
   viewport: Viewport;
@@ -205,11 +193,6 @@ type SimpleTableRowSpanConstraint = {
 
 let taffyLoadPromise: Promise<unknown> | undefined;
 
-const emptyPseudoStyle: SupportedStyle = {
-  ...createDefaultStyle(),
-  display: 'inline',
-};
-
 const nonRenderedHtmlElements = new Set([
   'base',
   'link',
@@ -220,25 +203,6 @@ const nonRenderedHtmlElements = new Set([
   'template',
   'title',
   'wbr',
-]);
-const inlinePhrasingHtmlElements = new Set([
-  'a',
-  'b',
-  'code',
-  'em',
-  'i',
-  'kbd',
-  'label',
-  'mark',
-  's',
-  'samp',
-  'small',
-  'span',
-  'strong',
-  'sub',
-  'sup',
-  'time',
-  'u',
 ]);
 
 export async function loadTaffyBackend(): Promise<void> {
@@ -326,31 +290,30 @@ function buildTaffyLayoutTree(
     contentsElements: new Set<Element>(),
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     cellFormatting: new Map(),
-    styles: new WeakMap<Element, SupportedStyle>(),
-    hasPseudoRules: false,
-    pseudoStyles: new WeakMap(),
-    customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
-    rules: createRuleMatchingSession(
-      cachedDocumentRules(
-        document,
-        policy,
-        stylesheets,
-        viewport,
-        stylesheetFingerprint,
-        stylesheetCache,
+    styleResolver: createStyleResolver({
+      rules: createRuleMatchingSession(
+        cachedDocumentRules(
+          document,
+          policy,
+          stylesheets,
+          viewport,
+          stylesheetFingerprint,
+          stylesheetCache,
+        ),
       ),
-    ),
-    userAgentRules: createRuleMatchingSession(
-      cachedUserAgentRules(
-        userAgentStyles.overrides,
-        policy,
-        viewport,
-        stylesheetCache,
+      userAgentRules: createRuleMatchingSession(
+        cachedUserAgentRules(
+          userAgentStyles.overrides,
+          policy,
+          viewport,
+          stylesheetCache,
+        ),
       ),
-    ),
-    userAgentStyleProfile: userAgentStyles.profile,
-    policy,
+      profile: userAgentStyles.profile,
+      policy,
+      viewport,
+    }),
     textMeasurer,
     nativeControlMetrics,
     viewport,
@@ -358,10 +321,6 @@ function buildTaffyLayoutTree(
     paintOrders: new WeakMap<Element, number>(),
     noBoxElements: new Set(),
   };
-
-  state.hasPseudoRules = [...state.rules, ...state.userAgentRules].some(
-    rule => rule.pseudoElement !== undefined,
-  );
 
   const rootStyle = new Style();
   rootStyle.display = Display.Block;
@@ -707,7 +666,7 @@ function collectTaffyLayoutSnapshot(
   const projected = projectLayoutGeometry(
     document,
     state.geometry,
-    state.styles,
+    state.styleResolver,
     state.contentsElements,
   );
   collectScrollSizes(document, viewport, scroll, state);
@@ -1021,8 +980,7 @@ function buildChildNodes(
       runs = [];
       return;
     }
-    const anonymousStyle = createDefaultStyle();
-    inheritStyle(anonymousStyle, parentStyle);
+    const anonymousStyle = state.styleResolver.anonymous(parentStyle);
     const { context, format } = inlineMeasureContext(
       runs,
       anonymousStyle,
@@ -2125,141 +2083,15 @@ function resolveSupportedStyle(
   element: Element,
   state: TaffyLayoutState,
 ): SupportedStyle {
-  const cached = state.styles.get(element);
-
-  if (cached) {
-    return cached;
-  }
-
-  const style = createDefaultStyle();
-  const customProperties = resolveElementCustomProperties(element, state);
-  applyInheritedTextDefaults(style, element, state);
-  applyStructuralHtmlDefaults(style, element);
-  if (state.userAgentStyleProfile === 'portable') {
-    applyPortableUserAgentDefaults(style, element);
-  }
-  const rootFontSize = resolveRootFontSize(element, state);
-  applyCascadedStyle(
-    style,
-    collectElementDeclarations(
-      element,
-      state.userAgentRules,
-      state.rules,
-      state.policy,
-      rootFontSize,
-      state.viewport,
-    ),
-    customProperties,
-  );
-  applyPostAuthorStructuralDefaults(style, element);
-  state.styles.set(element, style);
-  return style;
+  return state.styleResolver.element(element);
 }
 
 function resolvePseudoElementStyle(
   element: Element,
-  pseudoElement: 'before' | 'after',
+  pseudo: 'before' | 'after',
   state: TaffyLayoutState,
 ): SupportedStyle {
-  // No generated box can exist without a pseudo rule. Share the empty result
-  // instead of allocating and cascading two unused styles for every element.
-  if (!state.hasPseudoRules) return emptyPseudoStyle;
-  const cached = state.pseudoStyles.get(element)?.[pseudoElement];
-  if (cached) return cached;
-
-  const style = createDefaultStyle();
-  const originatingStyle = resolveSupportedStyle(element, state);
-  // `::before` and `::after` have an initial inline display and inherit from
-  // their originating element. They are not DOM children, so this inheritance
-  // must be copied explicitly before their own cascade is applied.
-  style.display = 'inline';
-  inheritStyle(style, originatingStyle);
-
-  const rootFontSize = resolveRootFontSize(element, state);
-  const customProperties = resolveElementCustomProperties(element, state);
-  const declarations = collectElementDeclarations(
-    element,
-    state.userAgentRules,
-    state.rules,
-    state.policy,
-    rootFontSize,
-    state.viewport,
-    pseudoElement,
-  );
-  applyCascadedStyle(
-    style,
-    declarations,
-    cascadeCustomProperties(customProperties, declarations),
-  );
-
-  // Inline-level generated boxes become blockified when they are flex or grid
-  // items, matching the browser's computed outer display before Taffy sees the
-  // originating element's children.
-  if (
-    style.display === 'inline' &&
-    (originatingStyle.display === 'flex' || originatingStyle.display === 'grid')
-  ) {
-    style.display = 'block';
-  }
-
-  const styles = state.pseudoStyles.get(element) ?? {};
-  styles[pseudoElement] = style;
-  state.pseudoStyles.set(element, styles);
-  return style;
-}
-
-function resolveElementCustomProperties(
-  element: Element,
-  state: TaffyLayoutState,
-): CustomProperties {
-  const cached = state.customProperties.get(element);
-
-  if (cached) {
-    return cached;
-  }
-
-  const inherited = element.parentElement
-    ? resolveElementCustomProperties(element.parentElement, state)
-    : new Map<string, string>();
-  const properties = cascadeCustomProperties(
-    inherited,
-    collectElementDeclarations(
-      element,
-      state.userAgentRules,
-      state.rules,
-      state.policy,
-    ),
-  );
-  state.customProperties.set(element, properties);
-  return properties;
-}
-
-function resolveRootFontSize(
-  element: Element,
-  state: TaffyLayoutState,
-): number {
-  const root = element.ownerDocument.documentElement;
-
-  if (!root || element === root) {
-    return 16;
-  }
-
-  return resolveSupportedStyle(root, state).fontSize;
-}
-
-function applyInheritedTextDefaults(
-  style: SupportedStyle,
-  element: Element,
-  state: TaffyLayoutState,
-): void {
-  const parent = element.parentElement;
-
-  if (!parent) {
-    return;
-  }
-
-  const parentStyle = resolveSupportedStyle(parent, state);
-  inheritStyle(style, parentStyle);
+  return state.styleResolver.pseudo(element, pseudo);
 }
 
 function tableCellContentOffset(
@@ -3198,49 +3030,6 @@ function tableCollapsedBorderInset(
   return inset;
 }
 
-function tableBorderSpacingDefault(table: Element): {
-  horizontal: number;
-  vertical: number;
-} {
-  const cellSpacing = nonNegativeAttributeNumber(table, 'cellspacing');
-
-  if (cellSpacing === undefined) {
-    return { horizontal: 2, vertical: 2 };
-  }
-
-  return { horizontal: cellSpacing, vertical: cellSpacing };
-}
-
-function applyTableDimensionAttributes(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const width = nonNegativeAttributeNumber(element, 'width');
-  const height = nonNegativeAttributeNumber(element, 'height');
-
-  style.width = width ?? style.width;
-  style.height = height ?? style.height;
-}
-
-function applyTableCellPaddingDefault(
-  style: SupportedStyle,
-  cell: Element,
-): void {
-  const table = closestAncestorTable(cell);
-  const cellPadding = table
-    ? nonNegativeAttributeNumber(table, 'cellpadding')
-    : undefined;
-
-  if (cellPadding === undefined) {
-    return;
-  }
-
-  style.padding.top = cellPadding;
-  style.padding.right = cellPadding;
-  style.padding.bottom = cellPadding;
-  style.padding.left = cellPadding;
-}
-
 function closestAncestorTable(
   element: Element,
   state?: TaffyLayoutState,
@@ -3261,20 +3050,6 @@ function closestAncestorTable(
   return undefined;
 }
 
-function nonNegativeAttributeNumber(
-  element: Element,
-  attribute: string,
-): number | undefined {
-  const value = element.getAttribute(attribute);
-
-  if (value === null || value.trim() === '') {
-    return undefined;
-  }
-
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : undefined;
-}
-
 function createReplacedMeasureContext(
   style: SupportedStyle,
   width: number,
@@ -3293,310 +3068,6 @@ function createReplacedMeasureContext(
     textMeasurer,
     replacedSize: { width, height },
   };
-}
-
-function applyStructuralHtmlDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const tagName = element.tagName.toLowerCase();
-
-  if (inlinePhrasingHtmlElements.has(tagName)) {
-    style.display = 'inline';
-  }
-
-  applyReplacedDimensionAttributes(style, element);
-
-  // HTML presentational attributes are author-origin hints, not browser-theme
-  // styling. Keep them active when the portable presentation profile is off.
-  if (
-    tagName === 'table' ||
-    tagName === 'col' ||
-    tagName === 'td' ||
-    tagName === 'th'
-  ) {
-    applyTableDimensionAttributes(style, element);
-  }
-  if (tagName === 'td' || tagName === 'th') {
-    style.verticalAlign = 'middle';
-    applyTableCellPaddingDefault(style, element);
-  }
-  if (tagName === 'object') {
-    applyObjectFallbackAttributes(style, element);
-  }
-}
-
-function applyPortableUserAgentDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const tagName = element.tagName.toLowerCase();
-
-  switch (tagName) {
-    case 'ul':
-    case 'ol':
-    case 'menu':
-      style.margin.top = 16;
-      style.margin.bottom = 16;
-      style.padding.left = 40;
-      return;
-    case 'dl':
-      style.margin.top = 16;
-      style.margin.bottom = 16;
-      return;
-    case 'dd':
-      style.margin.left = 40;
-      return;
-    case 'p':
-      applyBlockTextDefaults(style, 16, 20, 16, 16);
-      return;
-    case 'blockquote':
-      applyBlockTextDefaults(style, 16, 20, 16, 16);
-      style.margin.left = 40;
-      style.margin.right = 40;
-      return;
-    case 'address':
-      style.fontFamily = 'Times New Roman';
-      style.fontSize = 16;
-      style.lineHeight = 20;
-      return;
-    case 'figure':
-      style.margin.top = 16;
-      style.margin.right = 40;
-      style.margin.bottom = 16;
-      style.margin.left = 40;
-      return;
-    case 'pre':
-      applyBlockTextDefaults(style, 13, 17, 13, 13);
-      style.fontFamily = 'monospace';
-      style.whiteSpace = 'pre';
-      return;
-    case 'hr':
-      style.height = 0;
-      style.margin.top = 8;
-      style.margin.bottom = 8;
-      applyBorderDefaults(style, 'inset', 1);
-      return;
-    case 'dialog':
-      style.position = 'absolute';
-      style.zIndex = 1;
-      style.zIndexAuto = false;
-      style.margin.top = 'auto';
-      style.margin.right = 'auto';
-      style.margin.bottom = 'auto';
-      style.margin.left = 'auto';
-      style.padding.top = 16;
-      style.padding.right = 16;
-      style.padding.bottom = 16;
-      style.padding.left = 16;
-      applyBorderDefaults(style, 'solid', 3);
-      if (!element.hasAttribute('open')) {
-        style.display = 'none';
-      }
-      return;
-    case 'table':
-      style.tableBorderSpacing = tableBorderSpacingDefault(element);
-      return;
-    case 'col':
-      return;
-    case 'td':
-    case 'th':
-      return;
-    case 'iframe':
-      applyBorderDefaults(style, 'inset', 2);
-      return;
-    case 'object':
-      return;
-    case 'h1':
-      applyHeadingDefaults(style, 32, 40, 21.44);
-      return;
-    case 'h2':
-      applyHeadingDefaults(style, 24, 30, 19.92);
-      return;
-    case 'h3':
-      applyHeadingDefaults(style, 18.72, 23, 18.72);
-      return;
-    case 'h4':
-      applyHeadingDefaults(style, 16, 20, 21.28);
-      return;
-    case 'h5':
-      applyHeadingDefaults(style, 13.28, 17, 22.1776);
-      return;
-    case 'h6':
-      applyHeadingDefaults(style, 10.72, 14, 24.9776);
-      return;
-    case 'button':
-      applyFormControlBoxDefaults(style, 'outset', 2);
-      style.padding.top = 1;
-      style.padding.right = 6;
-      style.padding.bottom = 1;
-      style.padding.left = 6;
-      return;
-    case 'input':
-      applyInputUserAgentDefaults(style, element);
-      return;
-    case 'textarea':
-      applyFormControlBoxDefaults(style, 'solid', 1);
-      style.padding.top = 2;
-      style.padding.right = 2;
-      style.padding.bottom = 2;
-      style.padding.left = 2;
-      return;
-    case 'select':
-      applyFormControlBoxDefaults(style, 'solid', 1);
-      return;
-  }
-}
-
-function applyPostAuthorStructuralDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  if (
-    element.tagName.toLowerCase() === 'input' &&
-    (element.getAttribute('type') ?? 'text').toLowerCase() === 'hidden'
-  ) {
-    // Chromium keeps hidden inputs non-rendered even when author CSS sets
-    // display:block, so this UA constraint has to run after author styles.
-    style.display = 'none';
-  }
-
-  if (
-    element.tagName.toLowerCase() === 'audio' &&
-    !element.hasAttribute('controls')
-  ) {
-    // Audio elements without native controls do not generate a layout box in
-    // Chromium, even when author CSS sets display:block.
-    style.display = 'none';
-  }
-}
-
-function applyBlockTextDefaults(
-  style: SupportedStyle,
-  fontSize: number,
-  lineHeight: number,
-  marginTop: number,
-  marginBottom: number,
-): void {
-  style.fontFamily = 'Times New Roman';
-  style.fontSize = fontSize;
-  style.lineHeight = lineHeight;
-  style.margin.top = marginTop;
-  style.margin.bottom = marginBottom;
-}
-
-function applyHeadingDefaults(
-  style: SupportedStyle,
-  fontSize: number,
-  lineHeight: number,
-  blockMargin: number,
-): void {
-  applyBlockTextDefaults(style, fontSize, lineHeight, blockMargin, blockMargin);
-}
-
-function applyObjectFallbackAttributes(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  if (!isObjectFallbackContentLayout(element)) {
-    return;
-  }
-
-  style.width = readNumberAttribute(element, 'width') ?? style.width;
-  style.height = readNumberAttribute(element, 'height') ?? style.height;
-}
-
-function isObjectFallbackContentLayout(element: Element): boolean {
-  return (
-    element.tagName.toLowerCase() === 'object' &&
-    !element.hasAttribute('type') &&
-    !element.hasAttribute('data') &&
-    Array.from(element.children).some(
-      child => child.tagName.toLowerCase() !== 'param',
-    )
-  );
-}
-
-function applyInputUserAgentDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const type = (element.getAttribute('type') ?? 'text').toLowerCase();
-
-  style.boxSizing = 'border-box';
-
-  if (type === 'hidden') {
-    style.display = 'none';
-    return;
-  }
-
-  if (type === 'file' || type === 'image') {
-    return;
-  }
-
-  if (type === 'checkbox') {
-    style.margin.top = 3;
-    style.margin.right = 3;
-    style.margin.bottom = 3;
-    style.margin.left = 4;
-    return;
-  }
-
-  if (type === 'radio') {
-    style.margin.top = 3;
-    style.margin.right = 3;
-    style.margin.left = 5;
-    return;
-  }
-
-  if (type === 'range') {
-    style.margin.top = 2;
-    style.margin.left = 2;
-    style.margin.right = 2;
-    style.margin.bottom = 2;
-    return;
-  }
-
-  if (type === 'color') {
-    applyFormControlBoxDefaults(style, 'solid', 1);
-    return;
-  }
-
-  applyFormControlBoxDefaults(
-    style,
-    type === 'button' || type === 'submit' || type === 'reset'
-      ? 'outset'
-      : 'inset',
-    2,
-  );
-  style.padding.top = 1;
-  style.padding.right = 2;
-  style.padding.bottom = 1;
-  style.padding.left = 2;
-}
-
-function applyFormControlBoxDefaults(
-  style: SupportedStyle,
-  borderStyle: SupportedStyle['borderStyle']['top'],
-  borderWidth: number,
-): void {
-  style.boxSizing = 'border-box';
-  applyBorderDefaults(style, borderStyle, borderWidth);
-}
-
-function applyBorderDefaults(
-  style: SupportedStyle,
-  borderStyle: SupportedStyle['borderStyle']['top'],
-  borderWidth: number,
-): void {
-  style.borderStyle.top = borderStyle;
-  style.borderStyle.right = borderStyle;
-  style.borderStyle.bottom = borderStyle;
-  style.borderStyle.left = borderStyle;
-  style.borderWidth.top = borderWidth;
-  style.borderWidth.right = borderWidth;
-  style.borderWidth.bottom = borderWidth;
-  style.borderWidth.left = borderWidth;
 }
 
 function elementChildren(parent: Element): Element[] {
@@ -3673,18 +3144,4 @@ function horizontal(edges: Edges): number {
 
 function vertical(edges: Edges): number {
   return edges.top + edges.bottom;
-}
-
-function readNumberAttribute(
-  element: Element,
-  name: string,
-): number | undefined {
-  const value = element.getAttribute(name);
-
-  if (!value) {
-    return undefined;
-  }
-
-  const number = Number(value);
-  return Number.isFinite(number) ? number : undefined;
 }
