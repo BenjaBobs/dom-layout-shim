@@ -1,7 +1,12 @@
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import type { SupportedStyle } from '../css/supported-style.ts';
+import type { PercentageBasis } from './containing-block.ts';
+import { hasCalculatedDimension } from './length-dependencies.ts';
 import { Display, Style, type TaffyTree } from './taffy/taffy-bindings.ts';
-import type { MeasureContext } from './taffy/taffy-measure.ts';
+import {
+  type MeasureContext,
+  measureTaffyNode,
+} from './taffy/taffy-measure.ts';
 import { type TaffyStyleContext, toTaffyStyle } from './taffy/taffy-style.ts';
 
 export type FormattingSource =
@@ -51,6 +56,54 @@ export class FormattingPlan {
       context: input.context,
     });
     return node;
+  }
+
+  updateStyle(node: bigint, style: SupportedStyle): void {
+    const entry = this.require(node);
+    entry.style = style;
+    this.tree.setStyle(node, toTaffyStyle(style, entry.context));
+  }
+
+  /** Each formatting root uses the same finite dependency schedule, including
+   * intrinsic and allocated table-cell passes. No DOM-only or catch-up queue. */
+  compute(
+    root: bigint,
+    available: {
+      width: number | 'max-content';
+      height: number | 'max-content';
+    },
+    basis: (entry: PlannedFormatting) => PercentageBasis,
+  ): void {
+    const compute = () =>
+      this.tree.computeLayoutWithMeasure(root, available, measureTaffyNode);
+    compute();
+    let level = [this.require(root)];
+    while (level.length) {
+      const affected = level.filter(
+        entry => entry.style && hasCalculatedDimension(entry.style),
+      );
+      for (const entry of affected) {
+        if (!entry.style) continue;
+        this.tree.setStyle(
+          entry.node,
+          toTaffyStyle(entry.style, {
+            ...entry.context,
+            percentageBasis: basis(entry),
+          }),
+        );
+      }
+      if (affected.length) compute();
+      level = level.flatMap(entry =>
+        entry.children.map(child => this.require(child)),
+      );
+    }
+  }
+
+  private require(node: bigint): PlannedFormatting {
+    const entry = this.nodes.get(node);
+    if (!entry)
+      throw new Error('Backend node has no registered formatting identity');
+    return entry;
   }
 
   viewport(children: bigint[], viewport: Viewport): bigint {

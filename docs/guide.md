@@ -429,6 +429,12 @@ Layout declarations can use `em`, `rem`, viewport units, custom properties, and
 percentage, or number. Mixed percentage-and-pixel dimensions such as
 `calc(100% - 32px)` resolve when their containing-block axis is definite.
 
+Calculated dimensions also resolve for generated boxes and descendants of table
+cells after their containing widths are allocated. For example, a 200px cell
+containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
+child a 180px width and a 90px height; the row includes that resulting height.
+
+
 Percentage insets resolve against the corresponding definite containing-block
 axis. Nested positioned stacking contexts keep descendant `z-index` values
 inside the ancestor context during point queries.

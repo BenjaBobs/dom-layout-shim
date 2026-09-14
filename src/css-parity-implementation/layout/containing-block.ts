@@ -4,6 +4,11 @@ import type { SupportedStyle } from '../css/supported-style.ts';
 import type { BoxInsets } from './box-metrics.ts';
 import { effectiveBorderWidth } from './resolved-border.ts';
 
+export type ContainingBlockSubject = {
+  parentElement: Element | null;
+  ownerDocument: Document;
+};
+
 export type PercentageBasis = { width?: number; height?: number };
 export type ContainingBlockEnvironment = {
   viewport: Viewport;
@@ -14,7 +19,7 @@ export type ContainingBlockEnvironment = {
 };
 
 export function containingBlock(
-  element: Element,
+  element: ContainingBlockSubject,
   style: SupportedStyle,
   environment: ContainingBlockEnvironment,
 ): Element | null {
@@ -33,7 +38,7 @@ export function containingBlock(
 }
 
 export function percentageBasis(
-  element: Element,
+  element: ContainingBlockSubject,
   style: SupportedStyle,
   environment: ContainingBlockEnvironment,
 ): PercentageBasis {
@@ -75,6 +80,21 @@ export function percentageBasis(
       parentStyle[axis],
       ancestorBasis[axis],
     );
+    // A preferred ratio transfers a definite size to the opposite axis. Keep
+    // this in the shared basis model so generated and ordinary descendants
+    // agree; observed auto content height alone still does not make it definite.
+    if (specified === undefined && parentStyle.aspectRatio !== undefined) {
+      const opposite = axis === 'width' ? 'height' : 'width';
+      const definiteOpposite = resolveDefiniteLength(
+        parentStyle[opposite],
+        ancestorBasis[opposite],
+      );
+      if (definiteOpposite !== undefined)
+        specified =
+          axis === 'width'
+            ? definiteOpposite * parentStyle.aspectRatio
+            : definiteOpposite / parentStyle.aspectRatio;
+    }
     const start = resolveDefiniteLength(
       axis === 'width' ? parentStyle.left : parentStyle.top,
       ancestorBasis[axis],

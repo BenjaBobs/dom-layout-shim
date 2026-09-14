@@ -41,7 +41,8 @@
         "fixtures": [
           "css-table-display",
           "table-explicit-cells",
-          "table-cell-content"
+          "table-cell-content",
+          "formatting-length-dependencies"
         ]
       },
       "notes": [
@@ -60,6 +61,10 @@
         {
           "kind": "implementation-quirk",
           "text": "Supported HTML width, height, and cellpadding hints enter the same cascade as author declarations, above normal user-agent rules and below normal author rules."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Formatting dependencies include generated boxes and allocated table-cell descendants. Mixed calculated widths, ratio-derived heights, nested calculations, and following row/block flow are verified together."
         }
       ]
     },

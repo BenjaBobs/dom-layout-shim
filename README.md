@@ -310,6 +310,12 @@ originating element is a flex or grid container. For example, a block
 the originating element's ordinary content. Supported state, functional, and
 case-insensitive attribute selectors participate in stylesheet matching.
 
+Calculated dimensions also resolve for generated boxes and descendants of table
+cells after their containing widths are allocated. For example, a 200px cell
+containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
+child a 180px width and a 90px height; the row includes that resulting height.
+
+
 Native CSS nesting is supported for supported selectors and declarations,
 including `&`, implicit descendants, child combinators, and nested viewport
 `@media` rules. Parent selector lists retain their highest specificity and

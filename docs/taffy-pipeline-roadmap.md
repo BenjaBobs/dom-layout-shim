@@ -40,8 +40,10 @@ to `src/css-parity-implementation/`.
 - Completed styles are deeply read-only to formatting and projection. Only the
   resolver can initialize styles or call cascade/inheritance machinery; source
   boundary tests parse runtime imports, re-exports, and dynamic imports.
-- Complete flow-affecting work before visual projection. Deferred calculations
-  follow outer-to-inner dependencies, and table cells reflow at allocated widths.
+- Complete flow-affecting work before visual projection. Every backend node is registered in the formatting plan. Calculations follow
+  its parent/child dependencies, including generated and anonymous contexts.
+  Intrinsic and allocated table-cell passes use the same scheduler before row
+  constraints are finalized; there is no DOM-only queue or all-cell catch-up pass.
 - Backend layout reads are immutable and cached until the next computation. The
   binding owns invalidation; collectors cannot import the raw generated backend.
 - Every formatting context records all geometry outputs together. Anonymous
