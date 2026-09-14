@@ -1,3 +1,4 @@
+import type { Box } from '../../api/box.ts';
 import type { SupportedStyle } from '../css/supported-style.ts';
 import { clipPolygonToBox, polygonBounds } from '../geometry/clip-polygon.ts';
 import type { Point } from '../geometry/point.ts';
@@ -10,18 +11,27 @@ import {
   transformBoxPoints,
 } from '../geometry/transform.ts';
 import type { LayoutGeometry } from './layout-geometry.ts';
+import type { LayoutSnapshot } from './layout-source.ts';
 
 export function projectLayoutGeometry(
   document: Document,
-  geometry: LayoutGeometry,
+  geometry: Pick<
+    LayoutGeometry,
+    'rects' | 'fragmentRects' | 'clientRects' | 'hitBoxes'
+  >,
   styles: Pick<WeakMap<Element, SupportedStyle>, 'get'>,
   contentsElements: ReadonlySet<Element>,
-): void {
+): Pick<
+  LayoutSnapshot,
+  'rects' | 'fragmentRects' | 'intersectionRects' | 'boxes'
+> {
   // Taffy intentionally owns flow geometry and does not model CSS transforms.
   // Apply transforms after collection so getBoundingClientRect and hit testing
   // see visual geometry while offset/client APIs retain the layout boxes.
   const transforms = new Map<Element, AffineTransform>();
-  const untransformedRects = new Map(geometry.rects);
+  const rects = new Map(geometry.rects);
+  const fragmentRects = new Map(geometry.fragmentRects);
+  const intersectionRects = new Map<Element, Box>();
 
   for (const element of Array.from(document.getElementsByTagName('*'))) {
     const parentTransform = element.parentElement
@@ -47,12 +57,12 @@ export function projectLayoutGeometry(
     transforms.set(element, transform);
 
     if (box) {
-      geometry.rects.set(element, transformBox(box, transform));
+      rects.set(element, transformBox(box, transform));
     }
 
     const fragments = geometry.fragmentRects.get(element);
     if (fragments) {
-      geometry.fragmentRects.set(
+      fragmentRects.set(
         element,
         fragments.map(fragment => transformBox(fragment, transform)),
       );
@@ -80,13 +90,16 @@ export function projectLayoutGeometry(
     }
     return clipped;
   };
-  for (const [element, box] of geometry.intersectionRects) {
+  for (const [element, box] of geometry.rects) {
     // Intersection observations consume the same projected clip chain as hit
     // testing. Client/offset dimensions intentionally remain layout geometry.
     const normal = geometry.fragmentRects.get(element);
-    if (!normal?.length) continue;
-    const original = untransformedRects.get(element) ?? box;
-    geometry.intersectionRects.set(
+    if (!normal?.length) {
+      intersectionRects.set(element, box);
+      continue;
+    }
+    const original = box;
+    intersectionRects.set(
       element,
       polygonBounds(
         clip(
@@ -99,7 +112,7 @@ export function projectLayoutGeometry(
       ),
     );
   }
-  geometry.boxes = geometry.boxes.flatMap(box => {
+  const boxes = [...geometry.hitBoxes.values()].flat().flatMap(box => {
     const polygon = clip(
       box.element,
       transformBoxPoints(box, transforms.get(box.element) ?? identityTransform),
@@ -109,4 +122,5 @@ export function projectLayoutGeometry(
       ? [{ ...box, ...bounds, polygon }]
       : [];
   });
+  return { rects, fragmentRects, intersectionRects, boxes };
 }

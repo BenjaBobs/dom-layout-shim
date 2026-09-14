@@ -1,4 +1,5 @@
 import type { Box } from '../../api/box.ts';
+import type { HitBox } from '../../api/hit-box.ts';
 import type {
   UserAgentStyleOptions,
   Viewport,
@@ -127,7 +128,8 @@ type SimpleTableCaptionLayout = {
 };
 
 type SimpleTableSectionLayout = {
-  element: Element;
+  /** Anonymous row groups have no DOM geometry of their own. */
+  element: Element | undefined;
   x: number;
   y: number;
   width: number;
@@ -702,25 +704,25 @@ function collectTaffyLayoutSnapshot(
     state,
   );
   recordInlineFragments(document, state);
-  projectLayoutGeometry(
+  const projected = projectLayoutGeometry(
     document,
     state.geometry,
     state.styles,
     state.contentsElements,
   );
   collectScrollSizes(document, viewport, scroll, state);
-  prepareHitTesting(state.geometry.boxes);
+  prepareHitTesting(projected.boxes);
 
   return {
-    boxes: state.geometry.boxes,
-    rects: state.geometry.rects,
-    fragmentRects: state.geometry.fragmentRects,
+    boxes: projected.boxes,
+    rects: projected.rects,
+    fragmentRects: projected.fragmentRects,
     layoutRects: state.geometry.layoutRects,
     resizeRects: state.geometry.resizeRects,
     clientRects: state.geometry.clientRects,
     scrollSizes: state.geometry.scrollSizes,
     contentRects: state.geometry.contentRects,
-    intersectionRects: state.geometry.intersectionRects,
+    intersectionRects: projected.intersectionRects,
     elementScrolls: state.geometry.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
@@ -760,20 +762,23 @@ function recordInlineFragments(
         y: box.y + origin.y,
       }));
       const domOrder = nextDomOrder(state);
-      for (const box of fragments)
-        recordBox(element, style, box, domOrder, true, state);
       const union = unionBoxes(fragments);
       const first = fragments[0] ?? union;
-      state.geometry.fragmentRects.set(element, fragments);
-      state.geometry.rects.set(element, union);
-      // CSSOM offset size spans all fragments, but offset position belongs to
-      // the first fragment. Inline elements have no client or resize box.
-      state.geometry.layoutRects.set(element, {
-        ...union,
-        x: first.x,
-        y: first.y,
+      const zero = { x: 0, y: 0, width: 0, height: 0 };
+      state.paintOrders.set(element, domOrder);
+      state.geometry.record(element, {
+        rects: union,
+        fragmentRects: fragments,
+        // Offset size spans fragments; offset position belongs to the first.
+        layoutRects: { ...union, x: first.x, y: first.y },
+        normalRects: union,
+        resizeRects: zero,
+        clientRects: zero,
+        contentRects: zero,
+        hitBoxes: fragments.flatMap(box =>
+          createHitBoxes(element, style, box, domOrder, true, state),
+        ),
       });
-      state.geometry.normalRects.set(element, union);
     }
   }
 }
@@ -1642,18 +1647,15 @@ function readElementScrollOffset(element: Element): ScrollOffset {
 
 function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   const box = { x: 0, y: 0, width: 0, height: 0 };
-  state.geometry.rects.set(element, box);
-  state.geometry.fragmentRects.set(element, []);
-  state.geometry.layoutRects.set(element, box);
-  state.geometry.resizeRects.set(element, box);
-  state.geometry.normalRects.set(element, box);
-  state.geometry.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
-  state.geometry.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
-  state.geometry.intersectionRects.set(element, {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
+  state.geometry.record(element, {
+    rects: box,
+    fragmentRects: [],
+    layoutRects: box,
+    resizeRects: box,
+    normalRects: box,
+    clientRects: box,
+    contentRects: box,
+    hitBoxes: [],
   });
   state.geometry.elementScrolls.set(element, readElementScrollOffset(element));
 }
@@ -1774,29 +1776,31 @@ function recordSimpleTableLayout(
   }
 
   for (const section of tableLayout.sections) {
-    const sectionStyle = resolveSupportedStyle(section.element, state);
-    const normalSectionBox = offsetTableBox(normalTableBox, section);
-    const sectionBox = tablePartVisualBox(
-      section.element,
-      sectionStyle,
-      normalSectionBox,
-      viewport,
-      state,
-    );
-    state.geometry.elementScrolls.set(
-      section.element,
-      readElementScrollOffset(section.element),
-    );
-    recordBox(
-      section.element,
-      sectionStyle,
-      sectionBox,
-      nextDomOrder(state),
-      false,
-      state,
-      stickyLayoutBox(sectionStyle, sectionBox, normalSectionBox, scroll),
-      normalSectionBox,
-    );
+    if (section.element) {
+      const sectionStyle = resolveSupportedStyle(section.element, state);
+      const normalSectionBox = offsetTableBox(normalTableBox, section);
+      const sectionBox = tablePartVisualBox(
+        section.element,
+        sectionStyle,
+        normalSectionBox,
+        viewport,
+        state,
+      );
+      state.geometry.elementScrolls.set(
+        section.element,
+        readElementScrollOffset(section.element),
+      );
+      recordBox(
+        section.element,
+        sectionStyle,
+        sectionBox,
+        nextDomOrder(state),
+        false,
+        state,
+        stickyLayoutBox(sectionStyle, sectionBox, normalSectionBox, scroll),
+        normalSectionBox,
+      );
+    }
 
     for (const row of section.rows) {
       const rowStyle = resolveSupportedStyle(row.element, state);
@@ -1965,48 +1969,51 @@ function recordBox(
   normalBox: Box = layoutBox,
 ): void {
   state.paintOrders.set(element, domOrder);
-  state.geometry.rects.set(element, box);
-  state.geometry.fragmentRects.set(element, [box]);
-  state.geometry.layoutRects.set(element, layoutBox);
-  state.geometry.normalRects.set(element, normalBox);
   const inline = style.display === 'inline';
   const zero = { x: 0, y: 0, width: 0, height: 0 };
-  state.geometry.resizeRects.set(element, inline ? zero : layoutBox);
-  state.geometry.clientRects.set(
-    element,
-    inline ? zero : computeClientBox(box, style),
-  );
-  state.geometry.contentRects.set(
-    element,
-    inline ? zero : computeContentBox(box, style),
-  );
-  state.geometry.intersectionRects.set(element, box);
-
-  if (!includeHitBox) {
-    return;
-  }
-
-  const hitBox = box;
-
-  if (hitBox.width <= 0 || hitBox.height <= 0) {
-    return;
-  }
-
-  state.geometry.boxes.push({
-    ...hitBox,
-    element,
-    // Sticky positioning always creates a stacking context. The hit-testing
-    // model uses a flat numeric order, so lift an auto/zero sticky subtree
-    // above ordinary in-flow content while preserving explicit z-index values.
-    zIndex:
-      style.zIndex === 0 && hasStickyAncestor(element, state)
-        ? 0.5
-        : style.zIndex,
-    domOrder,
-    stackingOrder: stackingOrderFor(element, style, domOrder, state),
-    pointerEvents: style.pointerEvents,
-    visibility: style.visibility,
+  state.geometry.record(element, {
+    rects: box,
+    fragmentRects: [box],
+    layoutRects: layoutBox,
+    normalRects: normalBox,
+    resizeRects: inline ? zero : layoutBox,
+    clientRects: inline ? zero : computeClientBox(box, style),
+    contentRects: inline ? zero : computeContentBox(box, style),
+    hitBoxes: createHitBoxes(
+      element,
+      style,
+      box,
+      domOrder,
+      includeHitBox,
+      state,
+    ),
   });
+}
+
+function createHitBoxes(
+  element: Element,
+  style: SupportedStyle,
+  box: Box,
+  domOrder: number,
+  include: boolean,
+  state: TaffyLayoutState,
+): HitBox[] {
+  if (!include || box.width <= 0 || box.height <= 0) return [];
+  return [
+    {
+      ...box,
+      element,
+      // Sticky positioning creates a stacking context, including with auto z-index.
+      zIndex:
+        style.zIndex === 0 && hasStickyAncestor(element, state)
+          ? 0.5
+          : style.zIndex,
+      domOrder,
+      stackingOrder: stackingOrderFor(element, style, domOrder, state),
+      pointerEvents: style.pointerEvents,
+      visibility: style.visibility,
+    },
+  ];
 }
 
 function stackingOrderFor(
@@ -2582,7 +2589,7 @@ function createSimpleTableLayout(
     }
 
     sectionLayouts.push({
-      element: section,
+      element: section === element ? undefined : section,
       x: leadingX,
       y: sectionY,
       width:
