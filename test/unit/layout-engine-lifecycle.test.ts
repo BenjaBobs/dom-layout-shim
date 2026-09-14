@@ -37,7 +37,7 @@ function expectRestored(before: Map<object, PropertyDescriptorMap>): void {
     expect(publicDescriptors(target)).toEqual(original);
 }
 
-describe('attachment lifecycle', () => {
+describe('layout engine lifecycle', () => {
   it('restores own and inherited DOM descriptors, including CSSOM, and permits reattachment', async () => {
     const window = new Window({ width: 900, height: 700 });
     try {
@@ -68,14 +68,14 @@ describe('attachment lifecycle', () => {
       );
       const nativeRect = div.getBoundingClientRect;
       expect(isLayoutEngineAttached(window)).toBe(false);
-      const attachment = await attachLayoutEngine({
+      const layoutEngine = await attachLayoutEngine({
         window,
         viewport: { width: 300, height: 200 },
       });
       expect(isLayoutEngineAttached(window)).toBe(true);
       div.getBoundingClientRect(); // Install lazy stylesheet revision hooks.
-      attachment.detach();
-      attachment.detach();
+      layoutEngine.detach();
+      layoutEngine.detach();
       expect(isLayoutEngineAttached(window)).toBe(false);
       expectRestored(before);
       // Window/document internal caches may grow, so compare only public patches.
@@ -98,10 +98,10 @@ describe('attachment lifecycle', () => {
       expect(div.getBoundingClientRect).toBe(nativeRect);
       expect(window.innerWidth).toBe(900);
       expect(window.innerHeight).toBe(700);
-      expect(() => attachment.setViewport({ width: 1, height: 1 })).toThrow(
+      expect(() => layoutEngine.setViewport({ width: 1, height: 1 })).toThrow(
         'detached',
       );
-      expect(() => attachment.flushLayout()).toThrow('detached');
+      expect(() => layoutEngine.flushLayout()).toThrow('detached');
       const next = await attachLayoutEngine({ window });
       styleRule.style.setProperty('width', '30px');
       expect(div.getBoundingClientRect().width).toBe(30);
@@ -112,7 +112,7 @@ describe('attachment lifecycle', () => {
     }
   });
 
-  it('keeps replacement attachments and other windows active', async () => {
+  it('keeps replacement layout engines and other windows active', async () => {
     const first = new Window();
     const second = new Window();
     try {
@@ -202,7 +202,7 @@ describe('attachment lifecycle', () => {
         window.MutationObserver.prototype,
         'disconnect',
       );
-      const attachment = await attachLayoutEngine({ window });
+      const layoutEngine = await attachLayoutEngine({ window });
       const resized = vi.fn();
       const intersected = vi.fn();
       const resize = new (
@@ -214,7 +214,7 @@ describe('attachment lifecycle', () => {
       resize.observe(window.document.body as unknown as Element);
       intersection.observe(window.document.body as unknown as Element);
       expect(request).toHaveBeenCalled();
-      attachment.detach();
+      layoutEngine.detach();
       expect(cancel).toHaveBeenCalledWith(42);
       expect(disconnect).toHaveBeenCalledTimes(2);
       for (const [callback] of request.mock.calls) callback(0);
@@ -234,7 +234,7 @@ describe('attachment lifecycle', () => {
     }
   });
 
-  it('restores partial patches when attachment fails', async () => {
+  it('restores partial patches when layout engine setup fails', async () => {
     const window = new Window();
     try {
       const native = window.document.body.getBoundingClientRect;

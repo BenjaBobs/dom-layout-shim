@@ -1,5 +1,5 @@
 The example mounts real Ant Design components and portals. DOM Layout Shim is a
-test-only attachment; the application does not import it or use an Ant-specific
+test-only layout engine; the application does not import it or use an Ant-specific
 adapter.
 
 #### 1. Configure happy-dom and React tests

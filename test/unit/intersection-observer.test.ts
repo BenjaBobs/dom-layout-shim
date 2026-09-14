@@ -9,7 +9,7 @@ it('reports viewport intersections and threshold crossings', async () => {
   document.body.innerHTML = `
     <div id="box" style="position:absolute;left:150px;top:0;width:100px;height:40px"></div>
   `;
-  const layout = await attachLayoutEngine({
+  const layoutEngine = await attachLayoutEngine({
     window,
     viewport: { width: 200, height: 100 },
     observers: { delivery: 'manual' },
@@ -20,7 +20,7 @@ it('reports viewport intersections and threshold crossings', async () => {
   });
   const box = requiredElement('#box');
   observer.observe(box);
-  layout.flushLayout();
+  layoutEngine.flushLayout();
 
   expect(callback.mock.calls[0]?.[0][0]).toMatchObject({
     target: box,
@@ -35,14 +35,14 @@ it('reports viewport intersections and threshold crossings', async () => {
     'style',
     'position:absolute;left:175px;top:0;width:100px;height:40px',
   );
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback.mock.calls[1]?.[0][0]?.intersectionRatio).toBe(0.25);
 
   box.setAttribute(
     'style',
     'position:absolute;left:180px;top:0;width:100px;height:40px',
   );
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback).toHaveBeenCalledTimes(2);
 });
 
@@ -52,7 +52,7 @@ it('supports element roots, root margins, and normalized options', async () => {
       <div id="box" style="position:absolute;left:90px;top:0;width:20px;height:20px"></div>
     </div>
   `;
-  const layout = await attachLayoutEngine({
+  const layoutEngine = await attachLayoutEngine({
     window,
     viewport: { width: 300, height: 200 },
     observers: { delivery: 'manual' },
@@ -65,7 +65,7 @@ it('supports element roots, root margins, and normalized options', async () => {
     threshold: [1, 0, 0.5, 0.5],
   });
   observer.observe(requiredElement('#box'));
-  layout.flushLayout();
+  layoutEngine.flushLayout();
 
   expect(observer.rootMargin).toBe('0px 10px 0px 10px');
   expect(observer.thresholds).toEqual([0, 0.5, 1]);
@@ -109,7 +109,7 @@ it('validates thresholds and root margins', async () => {
 it('calculates intersections after resize callbacks settle layout', async () => {
   document.body.innerHTML =
     '<div id="box" style="position:absolute;left:0;width:100px;height:20px"></div>';
-  const layout = await attachLayoutEngine({
+  const layoutEngine = await attachLayoutEngine({
     window,
     viewport: { width: 200, height: 100 },
     observers: { delivery: 'manual' },
@@ -124,7 +124,7 @@ it('calculates intersections after resize callbacks settle layout', async () => 
   const intersectionCallback = vi.fn<IntersectionObserverCallback>();
   new window.IntersectionObserver(intersectionCallback).observe(box);
 
-  layout.flushLayout();
+  layoutEngine.flushLayout();
 
   expect(intersectionCallback.mock.calls[0]?.[0][0]?.intersectionRatio).toBe(
     0.5,

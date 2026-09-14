@@ -1,6 +1,6 @@
 export type {
   AttachLayoutEngineOptions,
-  LayoutEngineAttachment,
+  LayoutEngine,
 } from './api/attach-layout-engine.ts';
 export {
   attachLayoutEngine,

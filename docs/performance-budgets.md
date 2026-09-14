@@ -5,16 +5,16 @@ exits unsuccessfully when a budget is exceeded, so it can also be used as a
 regression check in CI or before performance-sensitive changes are merged.
 
 The benchmark uses documents containing 50, 200, and 800 elements. Each size
-measures attachment, first layout, cached geometry reads, a single-element
+measures layout engine setup, first layout, cached geometry reads, a single-element
 style mutation followed by layout, full stylesheet invalidation, and both point
 query APIs. It also measures retained heap growth after 200 mutation-driven
 invalidations of the 200-element document.
 
 State-changing mutation and stylesheet timings are medians. Cached reads and
-point queries use Tinybench's warmup and corrected mean latency; attachment and
+point queries use Tinybench's warmup and corrected mean latency; layout engine setup and
 first layout are one-time measurements. The Taffy WebAssembly backend is primed
-before attachment timing starts, because module loading is a process-wide
-startup cost rather than a per-document attachment cost. Memory is measured
+before layout engine setup timing starts, because module loading is a process-wide
+startup cost rather than a per-document setup cost. Memory is measured
 before and after explicit garbage collection; the benchmark script therefore
 runs Node.js with `--expose-gc`.
 

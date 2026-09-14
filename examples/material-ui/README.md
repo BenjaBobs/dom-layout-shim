@@ -12,7 +12,7 @@ is hit while the dialog is open. A direct `button.click()` would miss that class
 of interaction bug.
 
 See [docs/layout-shim-setup.md](docs/layout-shim-setup.md) for the concise
-Vitest, React mounting, shim attachment, and first-assertion setup used here.
+Vitest, React mounting, layout engine setup, and first-assertion setup used here.
 
 Run it from the repository root:
 

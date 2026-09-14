@@ -1,5 +1,5 @@
 import type { Box } from '../box.ts';
-import type { DocumentAttachment } from './document-attachment.ts';
+import type { DocumentLayoutEngine } from './document-layout-engine.ts';
 
 export type IntersectionObservation = {
   lastThresholdIndex?: number;
@@ -16,7 +16,7 @@ export type LayoutIntersectionObserver = IntersectionObserver & {
 type MarginValue = { value: number; unit: 'px' | '%' };
 
 export function createIntersectionObserverConstructor(
-  attachment: DocumentAttachment,
+  layoutEngine: DocumentLayoutEngine,
 ): typeof IntersectionObserver {
   return class LayoutBackedIntersectionObserver
     implements IntersectionObserver
@@ -38,7 +38,7 @@ export function createIntersectionObserverConstructor(
         throw new TypeError('IntersectionObserver callback must be a function');
       }
       this.callback = callback;
-      this.root = normalizeRoot(options.root, attachment.document);
+      this.root = normalizeRoot(options.root, layoutEngine.document);
       this.marginValues = parseRootMargin(options.rootMargin ?? '0px');
       this.rootMargin = this.marginValues
         .map(value => `${value.value}${value.unit}`)
@@ -51,20 +51,20 @@ export function createIntersectionObserverConstructor(
       // normalized value here makes that known gap explicit and avoids relying
       // on happy-dom's inert observer implementation.
       this.thresholds = normalizeThresholds(options.threshold);
-      attachment.addIntersectionObserver(this);
+      layoutEngine.addIntersectionObserver(this);
     }
 
     disconnect(): void {
       this.observations.clear();
       this.queuedEntries.length = 0;
-      attachment.intersectionObservationsChanged();
+      layoutEngine.intersectionObservationsChanged();
     }
 
     observe(target: Element): void {
-      attachment.assertObservationTarget(target, 'IntersectionObserver');
+      layoutEngine.assertObservationTarget(target, 'IntersectionObserver');
       if (!this.observations.has(target)) {
         this.observations.set(target, {});
-        attachment.intersectionObservationsChanged();
+        layoutEngine.intersectionObservationsChanged();
       }
     }
 
@@ -73,9 +73,9 @@ export function createIntersectionObserverConstructor(
     }
 
     unobserve(target: Element): void {
-      attachment.assertObservationTarget(target, 'IntersectionObserver');
+      layoutEngine.assertObservationTarget(target, 'IntersectionObserver');
       this.observations.delete(target);
-      attachment.intersectionObservationsChanged();
+      layoutEngine.intersectionObservationsChanged();
     }
   } as unknown as typeof IntersectionObserver;
 }

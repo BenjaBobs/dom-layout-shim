@@ -1,5 +1,5 @@
 import { Features, transform } from 'lightningcss';
-import { matchesViewportMediaQuery } from '../../api/attachment/viewport-media-query.ts';
+import { matchesViewportMediaQuery } from '../../api/layout-engine/viewport-media-query.ts';
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import {
   handleUnsupportedCss,

@@ -72,7 +72,7 @@ describe('layout cache reuse', () => {
     const second = new CSSStyleSheet();
     second.replaceSync('.box { height:30px }');
     document.adoptedStyleSheets = [first, second];
-    const attachment = await attachLayoutEngine({
+    const layoutEngine = await attachLayoutEngine({
       window,
       viewport: { width: 500, height: 300 },
     });
@@ -81,7 +81,7 @@ describe('layout cache reuse', () => {
     const serialize = vi.spyOn(first.cssRules[0], 'cssText', 'get');
     (second.cssRules[0] as CSSStyleRule).style.height = '40px';
     expect(box.getBoundingClientRect().height).toBe(40);
-    attachment.setViewport({ width: 700, height: 300 });
+    layoutEngine.setViewport({ width: 700, height: 300 });
     expect(box.getBoundingClientRect().width).toBe(200);
     expect(serialize).not.toHaveBeenCalled();
   });
@@ -141,14 +141,14 @@ describe('layout cache reuse', () => {
   it('keeps inactive media diagnostics lazy when reusing parsed sheets', async () => {
     document.body.innerHTML =
       '<style>@media (min-width:600px) { @supports (display:block) { .box { width:20px } } }</style><div class="box"></div>';
-    const attachment = await attachLayoutEngine({
+    const layoutEngine = await attachLayoutEngine({
       window,
       viewport: { width: 500, height: 300 },
       unsupportedCss: { default: 'throw' },
     });
     const box = document.querySelector('.box') as HTMLElement;
     expect(() => box.getBoundingClientRect()).not.toThrow();
-    attachment.setViewport({ width: 700, height: 300 });
+    layoutEngine.setViewport({ width: 700, height: 300 });
     expect(() => box.getBoundingClientRect()).toThrow(/unsupported/);
   });
 

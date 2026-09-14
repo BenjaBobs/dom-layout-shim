@@ -9,7 +9,7 @@ coverage where relevant.
 Cases:
 
 - Package entry point and build output.
-- Window-level layout engine attachment lifecycle.
+- Window-level layout engine lifecycle.
 - DOM API patching and restoration.
 - `offsetWidth`, `offsetHeight`, `clientWidth`, and `clientHeight` patching.
 - Happy DOM unit tests.
@@ -98,7 +98,7 @@ Cases:
 - Replaced element metadata for images and SVGs.
 
 Status: partially implemented. A deterministic text measurer is configurable.
-The default attachment path discovers supported initial `@font-face` sources,
+The default layout engine setup discovers supported initial `@font-face` sources,
 measures registered glyph advances and kerning directly, and falls back to an
 approximation for unmatched families. Text-only leaves can contribute to auto
 height, positioned text-only leaves can use measured auto width/height, and

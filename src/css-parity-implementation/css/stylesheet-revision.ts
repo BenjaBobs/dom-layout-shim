@@ -1,4 +1,4 @@
-import { PropertyPatches } from '../../api/attachment/property-patches.ts';
+import { PropertyPatches } from '../../api/layout-engine/property-patches.ts';
 
 // CSSOM edits do not emit MutationObserver records. Track the public mutation
 // methods and setters once, then check a revision without serializing rules.

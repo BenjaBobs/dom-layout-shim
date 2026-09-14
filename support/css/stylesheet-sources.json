@@ -29,7 +29,7 @@
         },
         {
           "kind": "implementation-quirk",
-          "text": "Parsed source trees and collected rules are cached per attachment and source revision. Changing one sheet preserves other parsed sheets. Selector candidate indexes and matching results are scoped to each layout computation, while pure declaration/selector string caches have bounded capacity."
+          "text": "Parsed source trees and collected rules are cached per layout engine and source revision. Changing one sheet preserves other parsed sheets. Selector candidate indexes and matching results are scoped to each layout computation, while pure declaration/selector string caches have bounded capacity."
         }
       ]
     },

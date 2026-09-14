@@ -38,7 +38,7 @@ it('delivers initial and changed layout-backed sizes in auto mode', async () => 
 it('batches observer delivery across mutation microtasks', async () => {
   document.body.innerHTML =
     '<div id="box" style="width:100px;height:40px"></div>';
-  const layout = await attachLayoutEngine({ window });
+  const layoutEngine = await attachLayoutEngine({ window });
   const callback = vi.fn<ResizeObserverCallback>();
   const box = requiredElement('#box');
   new window.ResizeObserver(callback).observe(box);
@@ -47,7 +47,7 @@ it('batches observer delivery across mutation microtasks', async () => {
   box.setAttribute('style', 'width:120px;height:40px');
   await Promise.resolve();
   box.setAttribute('style', 'width:140px;height:40px');
-  layout.flushLayout();
+  layoutEngine.flushLayout();
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback.mock.calls[0]?.[0][0]?.contentRect.width).toBe(140);
@@ -61,23 +61,23 @@ it('keeps delivery deterministic in manual mode', () => {
   return attachLayoutEngine({
     window,
     observers: { delivery: 'manual' },
-  }).then(layout => {
+  }).then(layoutEngine => {
     const callback = vi.fn<ResizeObserverCallback>();
     const observer = new window.ResizeObserver(callback);
     const box = requiredElement('#box');
     observer.observe(box, { box: 'border-box' });
 
     expect(callback).not.toHaveBeenCalled();
-    layout.flushLayout();
+    layoutEngine.flushLayout();
     expect(callback).toHaveBeenCalledTimes(1);
 
     box.setAttribute('style', 'width:140px;height:40px');
-    layout.flushLayout();
+    layoutEngine.flushLayout();
     expect(callback.mock.calls[1]?.[0][0]?.borderBoxSize[0]?.inlineSize).toBe(
       140,
     );
 
-    layout.flushLayout();
+    layoutEngine.flushLayout();
     expect(callback).toHaveBeenCalledTimes(2);
   });
 });
@@ -85,7 +85,7 @@ it('keeps delivery deterministic in manual mode', () => {
 it('supports unobserve, disconnect, and observation box replacement', async () => {
   document.body.innerHTML =
     '<div id="box" style="box-sizing:content-box;width:100px;height:40px;padding:10px"></div>';
-  const layout = await attachLayoutEngine({
+  const layoutEngine = await attachLayoutEngine({
     window,
     observers: { delivery: 'manual' },
   });
@@ -95,16 +95,16 @@ it('supports unobserve, disconnect, and observation box replacement', async () =
 
   observer.observe(box);
   observer.observe(box, { box: 'border-box' });
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback).toHaveBeenCalledTimes(1);
 
   observer.unobserve(box);
   box.setAttribute('style', 'width:120px;height:40px;padding:10px');
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback).toHaveBeenCalledTimes(1);
 
   observer.observe(box);
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback).toHaveBeenCalledTimes(2);
   observer.disconnect();
 });
@@ -112,7 +112,7 @@ it('supports unobserve, disconnect, and observation box replacement', async () =
 it('does not notify for position-only changes', async () => {
   document.body.innerHTML =
     '<div id="box" style="position:absolute;left:0;width:100px;height:40px"></div>';
-  const layout = await attachLayoutEngine({
+  const layoutEngine = await attachLayoutEngine({
     window,
     observers: { delivery: 'manual' },
   });
@@ -120,12 +120,12 @@ it('does not notify for position-only changes', async () => {
   const observer = new window.ResizeObserver(callback);
   const box = requiredElement('#box');
   observer.observe(box);
-  layout.flushLayout();
+  layoutEngine.flushLayout();
 
   box.setAttribute(
     'style',
     'position:absolute;left:50px;width:100px;height:40px',
   );
-  layout.flushLayout();
+  layoutEngine.flushLayout();
   expect(callback).toHaveBeenCalledTimes(1);
 });

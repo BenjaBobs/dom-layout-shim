@@ -13,7 +13,7 @@ control after the modal closes. Calling `.click()` directly would bypass that
 important overlap check.
 
 See [docs/layout-shim-setup.md](docs/layout-shim-setup.md) for the concise
-Vitest, React mounting, shim attachment, and first-assertion setup used here.
+Vitest, React mounting, layout engine setup, and first-assertion setup used here.
 
 ## Run locally
 
