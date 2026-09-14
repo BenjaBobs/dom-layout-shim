@@ -29,7 +29,7 @@ export type PlannedFormatting = {
 
 /** Every backend node has an identity, source, and formatting dependencies. */
 export class FormattingPlan {
-  readonly nodes = new Map<bigint, PlannedFormatting>();
+  private readonly nodes = new Map<bigint, PlannedFormatting>();
   private readonly tree: TaffyTree;
   constructor(tree: TaffyTree) {
     this.tree = tree;
@@ -72,7 +72,7 @@ export class FormattingPlan {
       width: number | 'max-content';
       height: number | 'max-content';
     },
-    basis: (entry: PlannedFormatting) => PercentageBasis,
+    basis: (entry: Readonly<PlannedFormatting>) => PercentageBasis,
   ): void {
     const compute = () =>
       this.tree.computeLayoutWithMeasure(root, available, measureTaffyNode);

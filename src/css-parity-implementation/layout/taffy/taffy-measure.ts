@@ -65,7 +65,7 @@ export function createMeasureContext(
     };
   }
 
-  const text = `${generatedContent.before}${textContentForMeasurement(element)}${generatedContent.after}`;
+  const text = `${generatedContent.before}${flattenedTextContent(element)}${generatedContent.after}`;
 
   if (
     !text.trim() &&
@@ -89,19 +89,6 @@ export function createMeasureContext(
     textMeasurer,
     inlineAdvance: flexButtonInlineAdvance(element, style),
   };
-}
-
-export function canMeasureTextLeaf(element: Element): boolean {
-  return Array.from(element.childNodes).every(node => {
-    if (node.nodeType === textNodeType || node.nodeType === commentNodeType) {
-      return true;
-    }
-
-    return (
-      node.nodeType === elementNodeType &&
-      (node as Element).tagName.toLowerCase() === 'br'
-    );
-  });
 }
 
 export function transformMeasuredText(
@@ -579,25 +566,6 @@ function defaultInputButtonLabel(type: string): string {
     default:
       return '';
   }
-}
-
-function textContentForMeasurement(element: Element): string {
-  if (!canMeasureTextLeaf(element)) {
-    return flattenedTextContent(element);
-  }
-
-  return Array.from(element.childNodes)
-    .map(node => {
-      if (
-        node.nodeType === elementNodeType &&
-        (node as Element).tagName.toLowerCase() === 'br'
-      ) {
-        return '\n';
-      }
-
-      return node.textContent ?? '';
-    })
-    .join('');
 }
 
 function flattenedTextContent(node: Node): string {

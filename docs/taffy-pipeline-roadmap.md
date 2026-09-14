@@ -35,6 +35,9 @@ to `src/css-parity-implementation/`.
 
 ### Phase invariants
 
+- Every formatting kind requires explicit layout and geometry participation.
+  Construction dispatch is exhaustive; collectors reject fragments or principal
+  boxes for incompatible kinds.
 - Every style field requires an explicit inherited/initial classification. Table
   captions and empty cells consume computed inheritance, without layout-time
   guesses based on default values or table ancestors.

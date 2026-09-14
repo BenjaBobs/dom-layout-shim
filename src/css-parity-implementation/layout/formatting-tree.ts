@@ -15,6 +15,32 @@ export type FormattingKind =
   | 'table-row'
   | 'table-cell';
 
+export type FormattingParticipation =
+  | Readonly<{ layout: 'none'; geometry: 'none' }>
+  | Readonly<{ layout: 'inline'; geometry: 'fragments' }>
+  | Readonly<{ layout: 'contents'; geometry: 'none' }>
+  | Readonly<{
+      layout: 'backend' | 'table' | 'table-part';
+      geometry: 'principal';
+    }>;
+
+// Adding a kind requires explicit layout and geometry participation. Table
+// parts use table allocation when owned by a table and backend fallback otherwise.
+const participation: Record<FormattingKind, FormattingParticipation> = {
+  box: { layout: 'backend', geometry: 'principal' },
+  inline: { layout: 'inline', geometry: 'fragments' },
+  contents: { layout: 'contents', geometry: 'none' },
+  suppressed: { layout: 'none', geometry: 'none' },
+  break: { layout: 'none', geometry: 'none' },
+  table: { layout: 'table', geometry: 'principal' },
+  'table-caption': { layout: 'table-part', geometry: 'principal' },
+  'table-column-group': { layout: 'table-part', geometry: 'principal' },
+  'table-column': { layout: 'table-part', geometry: 'principal' },
+  'table-section': { layout: 'table-part', geometry: 'principal' },
+  'table-row': { layout: 'table-part', geometry: 'principal' },
+  'table-cell': { layout: 'table-part', geometry: 'principal' },
+};
+
 export type GeneratedFormatting = Readonly<{
   kind: 'generated';
   owner: Element;
@@ -25,6 +51,7 @@ export type GeneratedFormatting = Readonly<{
 
 export type ElementFormatting = Readonly<{
   kind: FormattingKind;
+  participation: FormattingParticipation;
   element: Element;
   style: SupportedStyle;
   children: readonly Element[];
@@ -134,6 +161,7 @@ export function createFormattingTree(
       );
     records.set(element, {
       kind,
+      participation: participation[kind],
       element,
       style,
       children,
