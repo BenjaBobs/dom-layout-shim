@@ -114,7 +114,7 @@
       "notes": [
         {
           "kind": "limitation",
-          "text": "Unsupported media features and other at-rules route through the configured unsupported CSS policy. Parser recovery reports the authored stylesheet when rules are discarded; strict policy and callback errors propagate unchanged."
+          "text": "Unsupported media features and other at-rules route through the configured unsupported CSS policy. Parser recovery reports the authored stylesheet when rules are discarded; strict policy and callback errors propagate unchanged. Unsupported rule values retain authored stylesheet text rather than AST JSON. Unsupported declaration diagnostics preserve authored CSS values when the typed value stringifier has no CSS representation."
         }
       ]
     }

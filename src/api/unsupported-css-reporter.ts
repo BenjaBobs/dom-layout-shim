@@ -99,6 +99,44 @@ export function createUnsupportedCssReporter(): UnsupportedCssReporter {
   };
 }
 
+/** Merges serialized worker/window summaries without mutating the inputs. */
+export function mergeUnsupportedCssSummaries(
+  summaries: readonly UnsupportedCssSummary[],
+): UnsupportedCssSummary {
+  const entries = new Map<string, UnsupportedCssSummaryEntry>();
+  for (const summary of summaries) {
+    for (const entry of summary.declarations) {
+      const key = JSON.stringify([entry.reason, entry.property, entry.value]);
+      const previous = entries.get(key);
+      entries.set(key, {
+        property: entry.property,
+        value: entry.value,
+        reason: entry.reason,
+        sources: [
+          ...new Set([...(previous?.sources ?? []), ...entry.sources]),
+        ].sort(),
+        selectors: [
+          ...new Set([...(previous?.selectors ?? []), ...entry.selectors]),
+        ].sort(),
+        elements: [
+          ...new Set([...(previous?.elements ?? []), ...entry.elements]),
+        ].sort(),
+        computedValues: [
+          ...new Set([
+            ...(previous?.computedValues ?? []),
+            ...entry.computedValues,
+          ]),
+        ].sort(),
+        occurrences: (previous?.occurrences ?? 0) + entry.occurrences,
+      });
+    }
+  }
+  return {
+    unsupportedDeclarationCount: entries.size,
+    declarations: [...entries.values()].sort(compareSummaryEntries),
+  };
+}
+
 function readComputedValue(context: UnsupportedCssContext): string {
   if (
     !context.element ||

@@ -1,5 +1,6 @@
 import { transform, transformStyleAttribute } from 'lightningcss';
 import { BoundedCache } from '../bounded-cache.ts';
+import { createDeclarationSourceRecorder } from './authored-declaration-values.ts';
 import { readDeclaration } from './lightningcss-value-stringifier.ts';
 
 export type CssDeclaration = {
@@ -30,6 +31,7 @@ export function parseDeclarationList(text: string): readonly CssDeclaration[] {
   const cached = cache.get(text);
   if (cached) return cached;
   const originals: unknown[] = [];
+  const recordSource = createDeclarationSourceRecorder(text);
   // Collect before Lightning CSS optimizes shorthands or values, just as the
   // stylesheet nesting pass does. The attribute parser owns token boundaries
   // and recovery; the second pass only recovers priority from inert markers.
@@ -38,6 +40,7 @@ export function parseDeclarationList(text: string): readonly CssDeclaration[] {
     errorRecovery: true,
     visitor: {
       Declaration(declaration) {
+        recordSource(declaration);
         const index = originals.push(declaration) - 1;
         return { property: `--layout-declaration-${index}`, raw: '0' };
       },

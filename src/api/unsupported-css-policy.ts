@@ -1,3 +1,5 @@
+import type { UnsupportedCssReporter } from './unsupported-css-reporter.ts';
+
 export type UnsupportedCssDecision = 'ignore' | 'warn' | 'throw';
 
 export type UnsupportedCssReason =
@@ -18,6 +20,8 @@ export type UnsupportedCssContext = {
 };
 
 export type UnsupportedCssPolicy = {
+  /** Collect warnings directly; explicit policy decisions still take precedence. */
+  reporter?: UnsupportedCssReporter;
   default?: UnsupportedCssDecision;
   properties?: Record<string, UnsupportedCssDecision>;
   onWarning?: (context: UnsupportedCssContext) => void;
@@ -78,8 +82,10 @@ export function handleUnsupportedCss(
 
   warnings.add(warningKey);
 
-  if (policy?.onWarning) {
-    policy.onWarning(fullContext);
+  policy?.reporter?.onWarning(fullContext);
+  if (policy?.onWarning || policy?.reporter) {
+    if (policy.onWarning !== policy.reporter?.onWarning)
+      policy.onWarning?.(fullContext);
     return;
   }
 

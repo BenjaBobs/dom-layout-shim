@@ -40,3 +40,17 @@ it('removes priority from custom property values and preserves important source 
   );
   expect(properties.get('--size')).toBe('20px');
 });
+
+it('retains CSS text for unsupported typed values without round-tripping ASTs', () => {
+  expect(
+    parseDeclarationList(
+      'animation-delay: broken; animation-delay: .4s ! /* priority */ important; vertical-align: -.125em; grid-column-start: content-start; animation-duration: 2s, 3s',
+    ).map(({ property, value }) => ({ property, value })),
+  ).toEqual([
+    { property: 'animation-delay', value: 'broken' },
+    { property: 'vertical-align', value: '-.125em' },
+    { property: 'grid-column-start', value: 'content-start' },
+    { property: 'animation-duration', value: '2s, 3s' },
+    { property: 'animation-delay', value: '.4s' },
+  ]);
+});

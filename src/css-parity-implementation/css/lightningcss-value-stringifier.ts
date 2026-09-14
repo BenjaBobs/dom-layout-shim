@@ -1,3 +1,5 @@
+import { authoredDeclarationValue } from './authored-declaration-values.ts';
+
 export function readDeclaration(declaration: unknown): {
   property: string;
   value: string;
@@ -33,9 +35,13 @@ export function readDeclaration(declaration: unknown): {
     }
   }
 
+  const value = stringifyCssValue(declaration.property, declaration.value);
   return {
     property: declaration.property,
-    value: stringifyCssValue(declaration.property, declaration.value),
+    value:
+      value.includes('{"') || value.includes('[object Object]')
+        ? (authoredDeclarationValue(declaration) ?? value)
+        : value,
   };
 }
 

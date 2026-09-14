@@ -69,7 +69,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Unsupported CSS and selectors are ignored with one actionable warning per distinct input by default; strict throw and silent ignore policies remain configurable."
+          "text": "Unsupported CSS and selectors are ignored with one actionable warning per distinct input by default; strict throw and silent ignore policies remain configurable. Reporter selector values contain complete CSS selectors rather than serialized AST components."
         }
       ]
     },

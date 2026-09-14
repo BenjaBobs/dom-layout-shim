@@ -62,4 +62,7 @@ export type {
   UnsupportedCssSummary,
   UnsupportedCssSummaryEntry,
 } from './api/unsupported-css-reporter.ts';
-export { createUnsupportedCssReporter } from './api/unsupported-css-reporter.ts';
+export {
+  createUnsupportedCssReporter,
+  mergeUnsupportedCssSummaries,
+} from './api/unsupported-css-reporter.ts';
