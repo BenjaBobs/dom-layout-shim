@@ -126,6 +126,13 @@ event on the attached window.
 
 ### Observe element resizing
 
+Resize observations and inline fragments use the padding resolved during layout.
+For example, a content-box block with `width:100px;height:80px;padding:10%;border:
+2px solid` inside a 200px-wide parent has 20px padding on every side: its border
+box is 144×124px, and its observed content box is 100×80px. Grid items resolve
+percentage padding against their grid area. Changing a containing block's size
+recomputes the padding before sizing parents and following siblings.
+
 Attaching the engine installs a layout-backed `window.ResizeObserver`. Layout
 remains lazy until an observer has an active target; observed mutations are
 then batched and delivered automatically:

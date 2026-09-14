@@ -245,6 +245,13 @@ delivery with `observers: { delivery: 'manual' }`, then call
 synchronously deliver pending entries. Geometry reads do not deliver observer
 callbacks.
 
+Resize observations and inline fragments use the padding resolved during layout.
+For example, a content-box block with `width:100px;height:80px;padding:10%;border:
+2px solid` inside a 200px-wide parent has 20px padding on every side: its border
+box is 144×124px, and its observed content box is 100×80px. Grid items resolve
+percentage padding against their grid area. Changing a containing block's size
+recomputes the padding before sizing parents and following siblings.
+
 The attached window also installs a layout-backed `IntersectionObserver` with
 viewport or element roots, pixel/percentage `rootMargin`, threshold arrays,
 `observe`, `unobserve`, `disconnect`, and `takeRecords`. Automatic delivery

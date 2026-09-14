@@ -163,14 +163,16 @@ export class Style {
   inset: Rect<LengthPercentageAuto> = autoRect();
 }
 
-export type Layout = {
+export type Layout = Readonly<{
+  border: Readonly<Rect<number>>;
+  padding: Readonly<Rect<number>>;
   x: number;
   y: number;
   width: number;
   height: number;
   contentWidth: number;
   contentHeight: number;
-};
+}>;
 
 export type MeasureFunction = (
   knownDimensions: Size<number | undefined>,
@@ -180,7 +182,7 @@ export type MeasureFunction = (
   style: unknown,
 ) => Size<number>;
 
-export interface TaffyTree {
+interface TaffyBackend {
   disableRounding(): void;
   newLeafWithContext(style: Style, context: unknown): bigint;
   newWithChildren(style: Style, children: bigint[]): bigint;
@@ -193,9 +195,50 @@ export interface TaffyTree {
   getLayout(node: bigint): Layout;
 }
 
-export const TaffyTree = WasmTaffyTree as unknown as {
-  new (): TaffyTree;
+const NativeTaffyTree = WasmTaffyTree as unknown as {
+  new (): TaffyBackend;
 };
+
+/** Each completed backend computation owns one immutable set of layout reads. */
+export class TaffyTree implements TaffyBackend {
+  private readonly backend = new NativeTaffyTree();
+  private readonly layouts = new Map<bigint, Layout>();
+
+  disableRounding(): void {
+    this.backend.disableRounding();
+  }
+
+  newLeafWithContext(style: Style, context: unknown): bigint {
+    return this.backend.newLeafWithContext(style, context);
+  }
+
+  newWithChildren(style: Style, children: bigint[]): bigint {
+    return this.backend.newWithChildren(style, children);
+  }
+
+  setStyle(node: bigint, style: Style): void {
+    this.backend.setStyle(node, style);
+  }
+
+  computeLayoutWithMeasure(
+    node: bigint,
+    available: Size<AvailableSpace>,
+    measure: MeasureFunction,
+  ): void {
+    // The binding alone owns invalidation: callers cannot compute while leaving
+    // a cache of old metrics attached to a new result. Scroll reuses these reads.
+    this.layouts.clear();
+    this.backend.computeLayoutWithMeasure(node, available, measure);
+  }
+
+  getLayout(node: bigint): Layout {
+    const cached = this.layouts.get(node);
+    if (cached) return cached;
+    const layout = this.backend.getLayout(node);
+    this.layouts.set(node, layout);
+    return layout;
+  }
+}
 
 let loadPromise: Promise<unknown> | undefined;
 

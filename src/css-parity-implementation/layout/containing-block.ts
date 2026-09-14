@@ -1,13 +1,16 @@
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import { resolveDefiniteLength } from '../css/length-value.ts';
 import type { SupportedStyle } from '../css/supported-style.ts';
+import type { BoxInsets } from './box-metrics.ts';
 import { effectiveBorderWidth } from './taffy/taffy-style.ts';
 
 export type PercentageBasis = { width?: number; height?: number };
 export type ContainingBlockEnvironment = {
   viewport: Viewport;
   style(element: Element): SupportedStyle;
-  layout?(element: Element): { width: number; height: number } | undefined;
+  layout?(
+    element: Element,
+  ): ({ width: number; height: number } & Partial<BoxInsets>) | undefined;
 };
 
 export function containingBlock(
@@ -44,21 +47,24 @@ export function percentageBasis(
     return environment.viewport;
   const parentStyle = environment.style(parent);
   const ancestorBasis = percentageBasis(parent, parentStyle, environment);
-  const border = effectiveBorderWidth(parentStyle);
+  const measured = environment.layout?.(parent);
+  const border = measured?.border ?? effectiveBorderWidth(parentStyle);
   // CSS percentage padding on either axis resolves against the containing
   // block's inline size, rather than the element's eventual measured size.
-  const paddingX =
-    (resolveDefiniteLength(parentStyle.padding.left, ancestorBasis.width) ??
-      0) +
-    (resolveDefiniteLength(parentStyle.padding.right, ancestorBasis.width) ??
-      0);
-  const paddingY =
-    (resolveDefiniteLength(parentStyle.padding.top, ancestorBasis.width) ?? 0) +
-    (resolveDefiniteLength(parentStyle.padding.bottom, ancestorBasis.width) ??
-      0);
+  const paddingX = measured?.padding
+    ? measured.padding.left + measured.padding.right
+    : (resolveDefiniteLength(parentStyle.padding.left, ancestorBasis.width) ??
+        0) +
+      (resolveDefiniteLength(parentStyle.padding.right, ancestorBasis.width) ??
+        0);
+  const paddingY = measured?.padding
+    ? measured.padding.top + measured.padding.bottom
+    : (resolveDefiniteLength(parentStyle.padding.top, ancestorBasis.width) ??
+        0) +
+      (resolveDefiniteLength(parentStyle.padding.bottom, ancestorBasis.width) ??
+        0);
   const borderX = border.left + border.right;
   const borderY = border.top + border.bottom;
-  const measured = environment.layout?.(parent);
   const positioned = style.position === 'absolute';
   const dimension = (
     axis: 'width' | 'height',

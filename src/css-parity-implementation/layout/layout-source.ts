@@ -2,18 +2,21 @@ import type { Box } from '../../api/box.ts';
 import type { HitBox } from '../../api/hit-box.ts';
 
 export type LayoutSnapshot = Readonly<{
-  readonly boxes: readonly HitBox[];
-  rects: ReadonlyMap<Element, Box>;
-  fragmentRects: ReadonlyMap<Element, readonly Box[]>;
-  layoutRects: ReadonlyMap<Element, Box>;
-  resizeRects: ReadonlyMap<Element, Box>;
-  clientRects: ReadonlyMap<Element, Box>;
-  scrollSizes: ReadonlyMap<Element, { width: number; height: number }>;
-  contentRects: ReadonlyMap<Element, Box>;
-  intersectionRects: ReadonlyMap<Element, Box>;
-  elementScrolls: ReadonlyMap<Element, ScrollOffset>;
+  readonly boxes: readonly Readonly<HitBox>[];
+  rects: ReadonlyMap<Element, Readonly<Box>>;
+  fragmentRects: ReadonlyMap<Element, readonly Readonly<Box>[]>;
+  layoutRects: ReadonlyMap<Element, Readonly<Box>>;
+  resizeRects: ReadonlyMap<Element, Readonly<Box>>;
+  clientRects: ReadonlyMap<Element, Readonly<Box>>;
+  scrollSizes: ReadonlyMap<
+    Element,
+    Readonly<{ width: number; height: number }>
+  >;
+  contentRects: ReadonlyMap<Element, Readonly<Box>>;
+  intersectionRects: ReadonlyMap<Element, Readonly<Box>>;
+  elementScrolls: ReadonlyMap<Element, Readonly<ScrollOffset>>;
   offsetParents: ReadonlyMap<Element, Element | null>;
-  scrollContainers: ReadonlyMap<Element, { x: boolean; y: boolean }>;
+  scrollContainers: ReadonlyMap<Element, Readonly<{ x: boolean; y: boolean }>>;
   fixedElements: ReadonlySet<Element>;
 }>;
 

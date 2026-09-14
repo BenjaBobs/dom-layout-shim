@@ -139,7 +139,8 @@
           "border-box-padding-border",
           "content-box-padding-border",
           "logical-properties",
-          "static-parent-padding-border"
+          "static-parent-padding-border",
+          "resize-observer"
         ]
       },
       "notes": [
@@ -150,6 +151,14 @@
         {
           "kind": "implementation-quirk",
           "text": "Logical padding is mapped as `horizontal-tb` LTR."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "resize-observer verifies resolved percentage padding across block/flex/grid, content-box/border-box sizing, nested resizing, generated and positioned boxes, and ordinary table-cell descendants. Inline fragments and observer boxes share resolved layout insets."
+        },
+        {
+          "kind": "taffy-compat",
+          "text": "The owned binding corrects Taffy 0.14 block-item vertical percentage padding against parent inline size before final layout. A dependency-ordered traversal covers all backend nodes; raw source percentages are retained for later computations."
         }
       ]
     },

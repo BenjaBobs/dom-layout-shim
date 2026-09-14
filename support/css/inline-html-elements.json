@@ -64,12 +64,20 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["inline-html-defaults", "inline-composition"]
+        "fixtures": [
+          "inline-html-defaults",
+          "inline-composition",
+          "resize-observer"
+        ]
       },
       "notes": [
         {
           "kind": "limitation",
           "text": "Atomic inline replaced elements and baseline effects for sub and sup are not modeled. Native phrasing elements and authored inline text containers share fragment, offset/client, and hit geometry; inline-composition verifies both declaration sources and flex-item blockification."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "resize-observer verifies inline fragment origins inside percentage-padded block, flex, and grid items using the same resolved insets as content-box observations."
         }
       ]
     }
