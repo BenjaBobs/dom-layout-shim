@@ -2,7 +2,7 @@ import type { Viewport } from '../../api/layout-engine-config.ts';
 import { resolveDefiniteLength } from '../css/length-value.ts';
 import type { SupportedStyle } from '../css/supported-style.ts';
 import type { BoxInsets } from './box-metrics.ts';
-import { effectiveBorderWidth } from './taffy/taffy-style.ts';
+import { effectiveBorderWidth } from './resolved-border.ts';
 
 export type PercentageBasis = { width?: number; height?: number };
 export type ContainingBlockEnvironment = {

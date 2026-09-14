@@ -11,7 +11,7 @@ export type InlineRun = {
 export type InlineLayout = {
   width: number;
   height: number;
-  fragments: Map<Element, Box[]>;
+  readonly fragments: ReadonlyMap<Element, readonly Readonly<Box>[]>;
 };
 
 export function createInlineFormatter(

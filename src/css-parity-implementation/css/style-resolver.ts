@@ -22,12 +22,15 @@ type Pseudo = 'before' | 'after';
 type Resolution = { style: SupportedStyle; customProperties: CustomProperties };
 
 /** The only style-construction entry point available to formatting contexts. */
-export type StyleResolver = {
+export type ResolvedStyles = {
   element(element: Element): SupportedStyle;
   pseudo(element: Element, pseudo: Pseudo): SupportedStyle;
-  anonymous(parent: SupportedStyle): SupportedStyle;
-  /** Projection may inspect completed styles, but must not resolve new ones. */
   get(element: Element): SupportedStyle | undefined;
+};
+
+export type StyleResolver = ResolvedStyles & {
+  complete(elements: readonly Element[]): ResolvedStyles;
+  anonymous(parent: SupportedStyle): SupportedStyle;
 };
 
 export function createStyleResolver(options: {
@@ -129,6 +132,33 @@ export function createStyleResolver(options: {
     return result;
   }
   return {
+    complete(targets) {
+      const styles = new Map<Element, SupportedStyle>();
+      const generated = new Map<Element, Record<Pseudo, SupportedStyle>>();
+      for (const element of targets) {
+        styles.set(element, resolve(element).style);
+        generated.set(element, {
+          before: hasPseudoRules
+            ? resolve(element, 'before').style
+            : emptyPseudoStyle,
+          after: hasPseudoRules
+            ? resolve(element, 'after').style
+            : emptyPseudoStyle,
+        });
+      }
+      const required = <T>(value: T | undefined): T => {
+        if (value === undefined)
+          throw new Error(
+            'Snapshot requested a style outside the completed layout',
+          );
+        return value;
+      };
+      return {
+        element: element => required(styles.get(element)),
+        pseudo: (element, pseudo) => required(generated.get(element))[pseudo],
+        get: element => styles.get(element),
+      };
+    },
     element: element => resolve(element).style,
     pseudo: (element, pseudo) =>
       hasPseudoRules ? resolve(element, pseudo).style : emptyPseudoStyle,

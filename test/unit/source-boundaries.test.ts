@@ -4,6 +4,19 @@ import { parseSync, Visitor } from 'vite';
 import { describe, expect, it } from 'vitest';
 
 describe('source boundaries', () => {
+  it('keeps snapshot collection independent of layout and style construction', () => {
+    const dependencies = runtimeDependencies(
+      'src/css-parity-implementation/layout/collect-layout.ts',
+    );
+    expect(
+      dependencies.filter(path =>
+        /taffy|style-resolver|stylesheet-source|apply-declaration|cascade\.ts|inline-formatting|text-lines|attachment/.test(
+          path,
+        ),
+      ),
+    ).toEqual([]);
+  });
+
   it('keeps visual projection independent of the backend and CSS resolution', () => {
     const dependencies = runtimeDependencies(
       'src/css-parity-implementation/layout/project-layout.ts',

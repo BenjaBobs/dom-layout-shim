@@ -123,7 +123,7 @@ export class DocumentAttachment {
     this.document.removeEventListener('scroll', this.handleScroll, true);
     for (const event of hoverEvents)
       this.document.removeEventListener(event, this.handleHover, true);
-    this.stylesheetCache.layoutTree = undefined;
+    this.stylesheetCache.layout = undefined;
     this.document.removeEventListener('load', this.handleImageResource, true);
     this.document.removeEventListener('error', this.handleImageResource, true);
     this.document.defaultView?.removeEventListener('scroll', this.handleScroll);
