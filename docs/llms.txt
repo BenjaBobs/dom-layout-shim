@@ -165,7 +165,6 @@ cells after their containing widths are allocated. For example, a 200px cell
 containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
 child a 180px width and a 90px height; the row includes that resulting height.
 
-
 Nested positioned stacking contexts constrain descendant `z-index` values for
 point queries. Flex-styled buttons include text, inline icons, gaps, padding,
 and borders in deterministic intrinsic sizing.
@@ -373,7 +372,6 @@ property `stylesheet` and the original CSS when layout is queried, instead of
 silently discarding the rule. Strict policy errors and warning callback errors
 propagate unchanged.
 
-
 Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
 `TypeError` that points to `attachment.setViewport({ width, height })`. For
 example, replace `window.innerWidth = 320` with
@@ -404,3 +402,27 @@ sums occurrences, and sorts and deduplicates their metadata without mutating
 inputs. Warning deduplication still happens per attachment, so occurrences count
 collected warnings rather than every element or layout query. An empty input
 produces an empty summary.
+
+Use `isLayoutEngineAttached(window)` to check attachment state and
+`attachment.detach()` to return the window to its DOM harness:
+
+```ts
+import { attachLayoutEngine, isLayoutEngineAttached } from 'dom-layout-shim'
+
+if (!isLayoutEngineAttached(window)) {
+  const attachment = await attachLayoutEngine({ window })
+  // Run the test using deterministic geometry.
+  attachment.detach()
+  console.log(isLayoutEngineAttached(window)) // false
+}
+```
+
+Detach restores original property descriptors for geometry, hit testing,
+scrolling, viewport dimensions, `matchMedia`, observer constructors, and CSSOM
+tracking. It disconnects internal mutation observers, removes event listeners,
+cancels pending observer delivery, and clears layout-backed observations and
+caches. Shared prototype hooks remain available to other attached windows;
+detached elements use their native behavior. Calling `detach()` repeatedly is
+safe. `setViewport()` and `flushLayout()` on the detached attachment throw.
+Attaching again replaces the previous attachment; calling the old attachment's
+`detach()` cannot disconnect its replacement.

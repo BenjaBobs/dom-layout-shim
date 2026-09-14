@@ -2,7 +2,10 @@ export type {
   AttachLayoutEngineOptions,
   LayoutEngineAttachment,
 } from './api/attach-layout-engine.ts';
-export { attachLayoutEngine } from './api/attach-layout-engine.ts';
+export {
+  attachLayoutEngine,
+  isLayoutEngineAttached,
+} from './api/attach-layout-engine.ts';
 export type { Box } from './api/box.ts';
 export type {
   CssSupportClaim,

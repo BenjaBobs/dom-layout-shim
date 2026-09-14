@@ -215,6 +215,12 @@ layout.setViewport({ width: 390, height: 844 })
 invalidates cached geometry, updates subsequent `matchMedia()` answers, and
 dispatches `window.resize`.
 
+Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
+`TypeError` that points to `attachment.setViewport({ width, height })`. For
+example, replace `window.innerWidth = 320` with
+`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
+non-strict scripts, where an assignment previously could silently do nothing.
+
 ## Observe element resizing
 
 Resize observations and inline fragments use the padding resolved during layout.
@@ -434,7 +440,6 @@ cells after their containing widths are allocated. For example, a 200px cell
 containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
 child a 180px width and a 90px height; the row includes that resulting height.
 
-
 Percentage insets resolve against the corresponding definite containing-block
 axis. Nested positioned stacking contexts keep descendant `z-index` values
 inside the ancestor context during point queries.
@@ -476,8 +481,6 @@ fragment union, while `offsetLeft` and `offsetTop` use the first fragment.
 `clientWidth` and `clientHeight` remain zero. Positioned overlays paint above
 ordinary inline text, and in-flow descendants paint above their positioned
 container's background.
-
-
 
 
 
@@ -554,57 +557,11 @@ behavior-specific support claims, Chromium fixtures, and limitations. Select a
 fixture to preview its test source without leaving the explorer, or follow its
 GitHub link to inspect the repository version.
 
-## Explore UI-library examples
-
-The [UI library examples](./examples.html) implement the same task workspace in
-Material UI and Ant Design. Their tests attach DOM Layout Shim to happy-dom and
-exercise geometry-derived pointer targets, scrollable content, portalled menus,
-modal blocking, and layout invalidation through real library components.
-
-The hosted pages run in a browser for visual inspection. They complement rather
-than replace Chromium parity fixtures: each example publishes its known
-compatibility limitations alongside the working scenario.
-
-Run `pnpm run examples:compatibility` to execute every named checkpoint in both
-Chromium and happy-dom with the shim. The command reports observation coverage,
-agreement by geometry, visibility, and hit testing, repeated difference groups,
-stability, computed layout inputs, hit-test stacks, and unsupported CSS observed
-on the example elements. An ordinary difference does not fail the command; only
-failure to execute or capture the report does.
-
-The generated `examples/*/compatibility-report.json` files are ignored build
-artifacts. Run the command before local documentation generation when fresh
-reports are needed. Documentation CI always regenerates them with its installed
-Chromium before assembling the deployment artifact.
-
-## Use it in a test lifecycle
-
-Attach after creating the window, reset content between tests, and close the
-window when the suite finishes.
-
-```ts
-// Give each test an isolated document and layout attachment.
-beforeEach(async () => {
-  window = new Window()
-  await attachLayoutEngine({ window })
-})
-
-// Release DOM resources after every test.
-afterEach(() => window.close())
-```
-
 Stylesheet parser recovery also consults the unsupported-CSS policy. For example,
 `stylesheets: ['div: { width: 20px }']` reports an `unsupported-rule` entry with
 property `stylesheet` and the original CSS when layout is queried, instead of
 silently discarding the rule. Strict policy errors and warning callback errors
 propagate unchanged.
-
-
-Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
-`TypeError` that points to `attachment.setViewport({ width, height })`. For
-example, replace `window.innerWidth = 320` with
-`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
-non-strict scripts, where an assignment previously could silently do nothing.
 
 Use `unsupportedCss: { reporter }` to collect warnings directly. The default is
 `warn`; explicit `default`, `properties`, and `property` decisions still take
@@ -630,3 +587,71 @@ sums occurrences, and sorts and deduplicates their metadata without mutating
 inputs. Warning deduplication still happens per attachment, so occurrences count
 collected warnings rather than every element or layout query. An empty input
 produces an empty summary.
+
+## Explore UI-library examples
+
+The [UI library examples](./examples.html) implement the same task workspace in
+Material UI and Ant Design. Their tests attach DOM Layout Shim to happy-dom and
+exercise geometry-derived pointer targets, scrollable content, portalled menus,
+modal blocking, and layout invalidation through real library components.
+
+The hosted pages run in a browser for visual inspection. They complement rather
+than replace Chromium parity fixtures: each example publishes its known
+compatibility limitations alongside the working scenario.
+
+Run `pnpm run examples:compatibility` to execute every named checkpoint in both
+Chromium and happy-dom with the shim. The command reports observation coverage,
+agreement by geometry, visibility, and hit testing, repeated difference groups,
+stability, computed layout inputs, hit-test stacks, and unsupported CSS observed
+on the example elements. An ordinary difference does not fail the command; only
+failure to execute or capture the report does.
+
+The generated `examples/*/compatibility-report.json` files are ignored build
+artifacts. Run the command before local documentation generation when fresh
+reports are needed. Documentation CI always regenerates them with its installed
+Chromium before assembling the deployment artifact.
+
+## Use it in a test lifecycle
+
+Attach after creating the window, detach after the test, and close the window
+when its resources are no longer needed.
+
+```ts
+let layout: Awaited<ReturnType<typeof attachLayoutEngine>>
+
+// Give each test an isolated document and layout attachment.
+beforeEach(async () => {
+  window = new Window()
+  layout = await attachLayoutEngine({ window })
+})
+
+// Release layout patches and DOM resources after every test.
+afterEach(() => {
+  layout.detach()
+  window.close()
+})
+```
+
+Use `isLayoutEngineAttached(window)` to check attachment state and
+`attachment.detach()` to return the window to its DOM harness:
+
+```ts
+import { attachLayoutEngine, isLayoutEngineAttached } from 'dom-layout-shim'
+
+if (!isLayoutEngineAttached(window)) {
+  const attachment = await attachLayoutEngine({ window })
+  // Run the test using deterministic geometry.
+  attachment.detach()
+  console.log(isLayoutEngineAttached(window)) // false
+}
+```
+
+Detach restores original property descriptors for geometry, hit testing,
+scrolling, viewport dimensions, `matchMedia`, observer constructors, and CSSOM
+tracking. It disconnects internal mutation observers, removes event listeners,
+cancels pending observer delivery, and clears layout-backed observations and
+caches. Shared prototype hooks remain available to other attached windows;
+detached elements use their native behavior. Calling `detach()` repeatedly is
+safe. `setViewport()` and `flushLayout()` on the detached attachment throw.
+Attaching again replaces the previous attachment; calling the old attachment's
+`detach()` cannot disconnect its replacement.

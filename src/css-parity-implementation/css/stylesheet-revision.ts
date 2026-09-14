@@ -1,3 +1,5 @@
+import { PropertyPatches } from '../../api/attachment/property-patches.ts';
+
 // CSSOM edits do not emit MutationObserver records. Track the public mutation
 // methods and setters once, then check a revision without serializing rules.
 // Weak keys avoid retaining sheets, rules, or detached documents.
@@ -6,9 +8,41 @@ type Revision = {
   structure: number;
   tracked: number;
   reliable: boolean;
+  objects: Set<object>;
+  media: Set<MediaList>;
+  scopes: Set<TrackingScope>;
 };
 const revisions = new WeakMap<object, Revision>();
-const patched = new WeakMap<object, boolean>();
+type TrackingScope = {
+  patches: PropertyPatches;
+  targets: WeakMap<object, boolean>;
+  revisions: Set<Revision>;
+};
+const documentScopes = new WeakMap<Document, TrackingScope>();
+const standaloneScope = createScope();
+function createScope(): TrackingScope {
+  return {
+    patches: new PropertyPatches(),
+    targets: new WeakMap(),
+    revisions: new Set(),
+  };
+}
+
+export function releaseStylesheetRevisions(document: Document): void {
+  const scope = documentScopes.get(document);
+  if (!scope) return;
+  scope.patches.restore();
+  for (const revision of scope.revisions) {
+    revision.scopes.delete(scope);
+    if (revision.scopes.size === 0) {
+      for (const object of revision.objects) revisions.delete(object);
+      revision.objects.clear();
+      revision.media.clear();
+    }
+  }
+  scope.revisions.clear();
+  documentScopes.delete(document);
+}
 const structuralMutators = new Set([
   'insertRule',
   'deleteRule',
@@ -36,11 +70,36 @@ const mutators = new Set([
   'clear',
 ]);
 
-export function stylesheetRevision(sheet: CSSStyleSheet): number | undefined {
+export function stylesheetRevision(
+  sheet: CSSStyleSheet,
+  document?: Document,
+): number | undefined {
+  let scope = document ? documentScopes.get(document) : standaloneScope;
+  if (!scope) {
+    scope = createScope();
+    if (document) documentScopes.set(document, scope);
+  }
   let revision = revisions.get(sheet);
   if (!revision) {
-    revision = { value: 0, structure: 0, tracked: -1, reliable: true };
+    revision = {
+      value: 0,
+      structure: 0,
+      tracked: -1,
+      reliable: true,
+      objects: new Set(),
+      media: new Set(),
+      scopes: new Set([scope]),
+    };
     trackObject(sheet, revision);
+  }
+  scope.revisions.add(revision);
+  if (!revision.scopes.has(scope)) {
+    revision.scopes.add(scope);
+    for (const object of revision.objects) {
+      if (revision.media.has(object as MediaList))
+        patchMedia(object as MediaList, revision, scope);
+      else patchObject(object, revision, scope);
+    }
   }
   if (revision.tracked !== revision.structure) {
     try {
@@ -74,17 +133,26 @@ function trackRules(rules: CSSRuleList, revision: Revision): void {
 function trackObject(object: object, revision: Revision): void {
   if (revisions.has(object)) return;
   revisions.set(object, revision);
+  revision.objects.add(object);
+  for (const scope of revision.scopes) patchObject(object, revision, scope);
+}
+
+function patchObject(
+  object: object,
+  revision: Revision,
+  scope: TrackingScope,
+): void {
   for (
     let target: object | null = object;
     target && target !== Object.prototype;
     target = Object.getPrototypeOf(target)
   ) {
-    const reliable = patched.get(target);
+    const reliable = scope.targets.get(target);
     if (reliable !== undefined) {
       if (!reliable) revision.reliable = false;
       continue;
     }
-    patched.set(target, true);
+    scope.targets.set(target, true);
     for (const key of Object.getOwnPropertyNames(target)) {
       const descriptor = Object.getOwnPropertyDescriptor(target, key);
       if (!descriptor) continue;
@@ -93,7 +161,7 @@ function trackObject(object: object, revision: Revision): void {
       if (!setter && !(typeof method === 'function' && mutators.has(key)))
         continue;
       try {
-        Object.defineProperty(target, key, {
+        scope.patches.defineProperty(target, key, {
           ...descriptor,
           ...(setter
             ? {
@@ -133,7 +201,7 @@ function trackObject(object: object, revision: Revision): void {
               }),
         });
       } catch {
-        patched.set(target, false);
+        scope.targets.set(target, false);
         revision.reliable = false;
       }
     }
@@ -143,13 +211,23 @@ function trackObject(object: object, revision: Revision): void {
 function trackMedia(media: MediaList, revision: Revision): void {
   if (revisions.has(media)) return;
   revisions.set(media, revision);
+  revision.objects.add(media);
+  revision.media.add(media);
+  for (const scope of revision.scopes) patchMedia(media, revision, scope);
+}
+
+function patchMedia(
+  media: MediaList,
+  revision: Revision,
+  scope: TrackingScope,
+): void {
   // happy-dom's MediaList is a proxy that binds setters/methods to its hidden
   // target. Prototype wrappers cannot look that target up in our WeakMap, so
   // install the three public mutation hooks on the list itself instead.
   try {
     for (const key of ['appendMedium', 'deleteMedium'] as const) {
       const method = media[key];
-      Object.defineProperty(media, key, {
+      scope.patches.defineProperty(media, key, {
         configurable: true,
         writable: true,
         value(value: string) {
@@ -167,7 +245,7 @@ function trackMedia(media: MediaList, revision: Revision): void {
       );
       if (descriptor?.set) {
         const setter = descriptor.set;
-        Object.defineProperty(media, 'mediaText', {
+        scope.patches.defineProperty(media, 'mediaText', {
           ...descriptor,
           configurable: true,
           set(value: string) {

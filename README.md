@@ -124,6 +124,30 @@ layout.setViewport({ width: 390, height: 844 })
 Changing the viewport invalidates cached geometry and dispatches a `resize`
 event on the attached window.
 
+Use `isLayoutEngineAttached(window)` to check attachment state and
+`attachment.detach()` to return the window to its DOM harness:
+
+```ts
+import { attachLayoutEngine, isLayoutEngineAttached } from 'dom-layout-shim'
+
+if (!isLayoutEngineAttached(window)) {
+  const attachment = await attachLayoutEngine({ window })
+  // Run the test using deterministic geometry.
+  attachment.detach()
+  console.log(isLayoutEngineAttached(window)) // false
+}
+```
+
+Detach restores original property descriptors for geometry, hit testing,
+scrolling, viewport dimensions, `matchMedia`, observer constructors, and CSSOM
+tracking. It disconnects internal mutation observers, removes event listeners,
+cancels pending observer delivery, and clears layout-backed observations and
+caches. Shared prototype hooks remain available to other attached windows;
+detached elements use their native behavior. Calling `detach()` repeatedly is
+safe. `setViewport()` and `flushLayout()` on the detached attachment throw.
+Attaching again replaces the previous attachment; calling the old attachment's
+`detach()` cannot disconnect its replacement.
+
 Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
 `TypeError` that points to `attachment.setViewport({ width, height })`. For
 example, replace `window.innerWidth = 320` with
@@ -321,7 +345,6 @@ cells after their containing widths are allocated. For example, a 200px cell
 containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
 child a 180px width and a 90px height; the row includes that resulting height.
 
-
 Native CSS nesting is supported for supported selectors and declarations,
 including `&`, implicit descendants, child combinators, and nested viewport
 `@media` rules. Parent selector lists retain their highest specificity and
@@ -369,7 +392,6 @@ counts, source and selector types, affected elements, and the browser-like
 computed values observed when the warning was collected. These extra fields
 help separate active layout inputs from repeated or superseded fallback rules.
 Call `reporter.reset()` between independent suites.
-
 
 Use `unsupportedCss: { reporter }` to collect warnings directly. The default is
 `warn`; explicit `default`, `properties`, and `property` decisions still take

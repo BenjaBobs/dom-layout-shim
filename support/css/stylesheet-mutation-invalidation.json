@@ -36,7 +36,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Per-sheet value revisions invalidate parsed CSS; separate structural revisions trigger rule-object discovery only after rule insertion, removal, or replacement. Document stylesheet membership and authored text are cached behind MutationObserver delivery/takeRecords. Sheet identity, disabled state, and adopted-sheet ordering remain checked. Non-patchable CSSOM retains content fingerprinting."
+          "text": "Per-sheet value revisions invalidate parsed CSS; separate structural revisions trigger rule-object discovery only after rule insertion, removal, or replacement. Document stylesheet membership and authored text are cached behind MutationObserver delivery/takeRecords. Sheet identity, disabled state, and adopted-sheet ordering remain checked. Non-patchable CSSOM retains content fingerprinting. Detach releases document-owned revision hooks and mutation observers; shared CSSOM/prototype hooks remain until their final attached owner detaches. Reattachment establishes fresh tracking."
         }
       ]
     }
