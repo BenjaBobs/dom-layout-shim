@@ -46,7 +46,10 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["generated-pseudo-elements"]
+        "fixtures": [
+          "generated-pseudo-elements",
+          "formatting-length-dependencies"
+        ]
       },
       "notes": [
         {
@@ -56,6 +59,10 @@
         {
           "kind": "limitation",
           "text": "Counters, images, positioned generated boxes, pseudo-element geometry APIs, and pseudo-element hit targets are not modeled."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Formatting dependencies include generated boxes and allocated table-cell descendants. Mixed calculated widths, ratio-derived heights, nested calculations, and following row/block flow are verified together."
         }
       ]
     }

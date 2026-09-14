@@ -40,7 +40,6 @@ export type TaffyLayoutState = LayoutReadState & {
   tableLayouts: Map<Element, SimpleTableLayout>;
   cellFormatting: Map<Element, { node: bigint; style: SupportedStyle }>;
   styleResolver: StyleResolver;
-  tree: TaffyTree;
   textMeasurer: TextMeasurer;
   nativeControlMetrics: NativeControlMetrics;
 };

@@ -4,12 +4,14 @@ import { parseSync, Visitor } from 'vite';
 import { describe, expect, it } from 'vitest';
 
 describe('source boundaries', () => {
-  it('registers all backend nodes through the formatting plan', () => {
+  it('registers all backend construction and computation through the formatting plan', () => {
     for (const path of sourceFiles('src')) {
       if (/formatting-plan\.ts$|taffy-bindings\.ts$/.test(path)) continue;
-      expect(readFileSync(path, 'utf8'), path).not.toMatch(
-        /\.(?:newLeafWithContext|newWithChildren)\s*\(/,
-      );
+      const violations =
+        readFileSync(path, 'utf8').match(
+          /\.(?:newLeafWithContext|newWithChildren|computeLayoutWithMeasure|setStyle)\s*\(/g,
+        ) ?? [];
+      expect(violations, path).toEqual([]);
     }
   });
 

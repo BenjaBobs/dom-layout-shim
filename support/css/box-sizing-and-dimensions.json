@@ -63,7 +63,8 @@
           "offset-geometry",
           "percentage-sizing",
           "calculated-relative-lengths",
-          "intrinsic-sizing"
+          "intrinsic-sizing",
+          "formatting-length-dependencies"
         ]
       },
       "notes": [
@@ -78,6 +79,10 @@
         {
           "kind": "taffy-compat",
           "text": "Taffy 0.14 probes fit-content text with a definite available width. Text measurement clamps that width between minimum and maximum content widths instead of returning the longest wrapped line advance."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "Formatting dependencies include generated boxes and allocated table-cell descendants. Mixed calculated widths, ratio-derived heights, nested calculations, and following row/block flow are verified together."
         }
       ]
     },

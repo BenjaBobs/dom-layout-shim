@@ -54,14 +54,13 @@ import type {
   SimpleTableSectionLayout,
   TaffyLayoutState,
 } from './layout-state.ts';
+import { hasCalculatedDimension } from './length-dependencies.ts';
 import { effectiveBorderWidth } from './resolved-border.ts';
 import { type Layout, loadTaffy, TaffyTree } from './taffy/taffy-bindings.ts';
 import {
   createMeasureContext,
   type MeasureContext,
-  measureTaffyNode,
 } from './taffy/taffy-measure.ts';
-import { toTaffyStyle } from './taffy/taffy-style.ts';
 
 type TaffyLayoutTree = {
   root: bigint;
@@ -141,7 +140,6 @@ export function computeTaffyDocumentLayout(
     stylesheetFingerprint,
   );
   computeTaffyLayout(layoutTree, viewport);
-  resolveDeferredCalculatedDimensions(layoutTree);
   const layout = completeLayout(document, layoutTree.state);
   if (stylesheetCache) stylesheetCache.layout = layout;
   return collectTaffyLayoutSnapshot(
@@ -356,88 +354,36 @@ function computeTaffyLayout(
   layoutTree: TaffyLayoutTree,
   viewport: Viewport,
 ): void {
-  layoutTree.state.tree.computeLayoutWithMeasure(
+  computeFormattingRoot(
     layoutTree.root,
     { width: viewport.width, height: viewport.height },
-    measureTaffyNode,
+    layoutTree.state,
   );
 }
 
-function resolveDeferredCalculatedDimensions(
-  layoutTree: TaffyLayoutTree,
+function computeFormattingRoot(
+  node: bigint,
+  available: { width: number | 'max-content'; height: number | 'max-content' },
+  state: TaffyLayoutState,
 ): void {
-  const { state } = layoutTree;
-  const levels = new Map<number, Element[]>();
-  for (const element of state.elementNodes.keys()) {
-    if (
-      state.cellFormatting.has(element) ||
-      !hasCalculatedDimension(resolveSupportedStyle(element, state))
-    )
-      continue;
-    let depth = 0;
-    for (
-      let parent = element.parentElement;
-      parent;
-      parent = parent.parentElement
-    )
-      depth++;
-    const entries = levels.get(depth) ?? [];
-    entries.push(element);
-    levels.set(depth, entries);
-  }
-  // Taffy's binding accepts scalar/percentage values, not calc trees. Resolve
-  // dependencies from outer formatting contexts inward, recomputing after each
-  // affected depth. This is a finite dependency traversal, not a convergence
-  // retry loop that substitutes observed auto heights for definite dimensions.
-  for (const [, elements] of [...levels].sort((a, b) => a[0] - b[0])) {
-    for (const element of elements) {
-      const style = resolveSupportedStyle(element, state);
-      const node = state.elementNodes.get(element);
-      if (node === undefined) continue;
-      state.tree.setStyle(
-        node,
-        toTaffyStyle(style, {
-          ...state.measureContexts.get(element),
-          percentageBasis: percentageBasisFor(element, style, state, true),
-        }),
-      );
-    }
-    computeTaffyLayout(layoutTree, state.viewport);
-    for (const formatting of state.cellFormatting.values()) {
-      state.tree.computeLayoutWithMeasure(
-        formatting.node,
-        {
-          width:
-            typeof formatting.style.width === 'number'
-              ? formatting.style.width
-              : 'max-content',
-          height: 'max-content',
-        },
-        measureTaffyNode,
-      );
-    }
-  }
-}
-
-function hasCalculatedDimension(style: SupportedStyle): boolean {
-  const values: unknown[] = [
-    style.width,
-    style.height,
-    style.minWidth,
-    style.minHeight,
-    style.maxWidth,
-    style.maxHeight,
-    style.flexBasis,
-    style.top,
-    style.right,
-    style.bottom,
-    style.left,
-    style.rowGap,
-    style.columnGap,
-    ...Object.values(style.margin),
-    ...Object.values(style.padding),
-  ];
-  return values.some(value => typeof value === 'object' && value !== null);
+  state.plan.compute(node, available, entry => {
+    if (!entry.style || entry.source.kind === 'viewport') return {};
+    const source = entry.source;
+    const owner = source.kind === 'element' ? source.element : source.owner;
+    // Generated and anonymous inline boxes are children of their originating
+    // element. Table-cell roots represent that element's allocated box itself.
+    const subject =
+      source.kind === 'generated' ||
+      (source.kind === 'anonymous' && source.role === 'inline')
+        ? { parentElement: owner, ownerDocument: owner.ownerDocument }
+        : owner;
+    const environment = containingBlockEnvironment(state, true);
+    return percentageBasis(subject, entry.style, {
+      ...environment,
+      style: element =>
+        state.cellFormatting.get(element)?.style ?? environment.style(element),
+    });
+  });
 }
 
 function percentageBasisFor(
@@ -877,10 +823,10 @@ function buildTableCellFormatting(
   });
   state.cellFormatting.set(element, { node, style: formattingStyle });
   state.elementNodes.set(element, node);
-  state.tree.computeLayoutWithMeasure(
+  computeFormattingRoot(
     node,
     { width: 'max-content', height: 'max-content' },
-    measureTaffyNode,
+    state,
   );
   return state.tree.getLayout(node);
 }
@@ -1053,11 +999,11 @@ function createSimpleTableLayout(
           boxSizing: 'border-box' as const,
         };
         formatting.style = style;
-        state.tree.setStyle(formatting.node, toTaffyStyle(style, undefined));
-        state.tree.computeLayoutWithMeasure(
+        state.plan.updateStyle(formatting.node, style);
+        computeFormattingRoot(
           formatting.node,
           { width, height: 'max-content' },
-          measureTaffyNode,
+          state,
         );
         const height = state.tree.getLayout(formatting.node).height;
         if (cell.rowSpan === 1)

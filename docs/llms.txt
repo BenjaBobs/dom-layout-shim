@@ -160,6 +160,12 @@ Mixed percentage-and-pixel dimensions resolve when their containing-block axis
 is definite. Percentage insets resolve against the corresponding containing
 block axis.
 
+Calculated dimensions also resolve for generated boxes and descendants of table
+cells after their containing widths are allocated. For example, a 200px cell
+containing a child with `width: calc(100% - 20px); aspect-ratio: 2` gives that
+child a 180px width and a 90px height; the row includes that resulting height.
+
+
 Nested positioned stacking contexts constrain descendant `z-index` values for
 point queries. Flex-styled buttons include text, inline icons, gaps, padding,
 and borders in deterministic intrinsic sizing.
