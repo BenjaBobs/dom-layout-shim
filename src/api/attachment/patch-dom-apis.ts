@@ -79,10 +79,12 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     innerWidth: {
       configurable: true,
       get: () => attachmentForDocument(document).getViewport().width,
+      set: () => rejectViewportAssignment('innerWidth'),
     },
     innerHeight: {
       configurable: true,
       get: () => attachmentForDocument(document).getViewport().height,
+      set: () => rejectViewportAssignment('innerHeight'),
     },
   });
 
@@ -339,4 +341,10 @@ function patchScrollOffsets(prototype: object): boolean {
     });
   }
   return reliable;
+}
+
+function rejectViewportAssignment(property: string): never {
+  throw new TypeError(
+    `Cannot assign window.${property} while a layout engine is attached. Use the attachment returned by attachLayoutEngine(): attachment.setViewport({ width, height }).`,
+  );
 }

@@ -124,6 +124,12 @@ layout.setViewport({ width: 390, height: 844 })
 Changing the viewport invalidates cached geometry and dispatches a `resize`
 event on the attached window.
 
+Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
+`TypeError` that points to `attachment.setViewport({ width, height })`. For
+example, replace `window.innerWidth = 320` with
+`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
+non-strict scripts, where an assignment previously could silently do nothing.
+
 ### Observe element resizing
 
 Resize observations and inline fragments use the padding resolved during layout.

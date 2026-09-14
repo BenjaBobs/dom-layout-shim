@@ -372,3 +372,10 @@ Stylesheet parser recovery also consults the unsupported-CSS policy. For example
 property `stylesheet` and the original CSS when layout is queried, instead of
 silently discarding the rule. Strict policy errors and warning callback errors
 propagate unchanged.
+
+
+Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
+`TypeError` that points to `attachment.setViewport({ width, height })`. For
+example, replace `window.innerWidth = 320` with
+`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
+non-strict scripts, where an assignment previously could silently do nothing.
