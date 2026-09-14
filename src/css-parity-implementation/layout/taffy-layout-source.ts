@@ -25,6 +25,8 @@ import {
   collectTaffyLayoutSnapshot,
 } from './collect-layout.ts';
 import { percentageBasis } from './containing-block.ts';
+import { FormattingPlan } from './formatting-plan.ts';
+import { createFormattingTree } from './formatting-tree.ts';
 import {
   createInlineFormatter,
   type InlineLayout,
@@ -33,8 +35,6 @@ import {
 import {
   containingBlockEnvironment,
   containingBlockFor,
-  isHidden,
-  isNonRenderedHtmlElement,
   markElementNoBox,
   markSubtreeDisplayNone,
   markSubtreeNoBox,
@@ -55,15 +55,8 @@ import type {
   TaffyLayoutState,
 } from './layout-state.ts';
 import { effectiveBorderWidth } from './resolved-border.ts';
+import { type Layout, loadTaffy, TaffyTree } from './taffy/taffy-bindings.ts';
 import {
-  Display,
-  type Layout,
-  loadTaffy,
-  Style,
-  TaffyTree,
-} from './taffy/taffy-bindings.ts';
-import {
-  canMeasureTextLeaf,
   createMeasureContext,
   type MeasureContext,
   measureTaffyNode,
@@ -203,6 +196,7 @@ function completeLayout(
   });
   return {
     phase: 'completed',
+    formatting: state.formatting,
     elementNodes: state.elementNodes,
     contentsElements: state.contentsElements,
     tableLayouts: state.tableLayouts,
@@ -225,7 +219,8 @@ function completeLayout(
     textOverflowElements: new Set(
       [...state.elementNodes.keys()].filter(
         element =>
-          canMeasureTextLeaf(element) || hasGeneratedPseudoBox(element, state),
+          state.formatting.element(element).textLeaf ||
+          hasGeneratedPseudoBox(element, state),
       ),
     ),
     inlineContexts,
@@ -248,8 +243,32 @@ function buildTaffyLayoutTree(
   // geometry APIs preserve CSS subpixels. Keep raw Taffy values so flex
   // distribution and fractional UA metrics match browser-observable boxes.
   tree.disableRounding();
+  const styleResolver = createStyleResolver({
+    rules: createRuleMatchingSession(
+      cachedDocumentRules(
+        document,
+        policy,
+        stylesheets,
+        viewport,
+        stylesheetFingerprint,
+        stylesheetCache,
+      ),
+    ),
+    userAgentRules: createRuleMatchingSession(
+      cachedUserAgentRules(
+        userAgentStyles.overrides,
+        policy,
+        viewport,
+        stylesheetCache,
+      ),
+    ),
+    profile: userAgentStyles.profile,
+    policy,
+    viewport,
+  });
   const state: TaffyLayoutState = {
     phase: 'building',
+    plan: new FormattingPlan(tree),
     geometry: createLayoutGeometry(),
     elementNodes: new Map<Element, bigint>(),
     outOfFlowNodes: new Map(),
@@ -259,29 +278,8 @@ function buildTaffyLayoutTree(
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     cellFormatting: new Map(),
     tree,
-    styleResolver: createStyleResolver({
-      rules: createRuleMatchingSession(
-        cachedDocumentRules(
-          document,
-          policy,
-          stylesheets,
-          viewport,
-          stylesheetFingerprint,
-          stylesheetCache,
-        ),
-      ),
-      userAgentRules: createRuleMatchingSession(
-        cachedUserAgentRules(
-          userAgentStyles.overrides,
-          policy,
-          viewport,
-          stylesheetCache,
-        ),
-      ),
-      profile: userAgentStyles.profile,
-      policy,
-      viewport,
-    }),
+    styleResolver,
+    formatting: createFormattingTree(document, styleResolver),
     textMeasurer,
     nativeControlMetrics,
     viewport,
@@ -289,13 +287,9 @@ function buildTaffyLayoutTree(
     paintOrders: new WeakMap<Element, number>(),
   };
 
-  const rootStyle = new Style();
-  rootStyle.display = Display.Block;
-  rootStyle.size = { width: viewport.width, height: viewport.height };
-
-  const root = tree.newWithChildren(
-    rootStyle,
+  const root = state.plan.viewport(
     buildChildNodes(document.body, state),
+    viewport,
   );
 
   return { root, state };
@@ -474,28 +468,24 @@ function inlineRunsFor(
   const style = resolveSupportedStyle(element, state);
   const runs: InlineRun[] = [];
   const pseudo = (which: 'before' | 'after') => {
-    const pseudoStyle = resolvePseudoElementStyle(element, which, state);
-    if (pseudoStyle.display === 'inline' && pseudoStyle.content !== undefined)
+    const generated = state.formatting.element(element)[which];
+    const pseudoStyle = generated.style;
+    if (generated.output === 'inline' && pseudoStyle.content !== undefined)
       runs.push({ text: pseudoStyle.content, style: pseudoStyle, owners });
   };
   pseudo('before');
-  for (const node of Array.from(element.childNodes)) {
-    if (node.nodeType === 3) {
+  for (const node of state.formatting.element(element).content) {
+    if (typeof node === 'string') {
       const text =
         style.whiteSpace === 'normal' || style.whiteSpace === 'nowrap'
-          ? (node.textContent ?? '').replace(/\s/g, ' ')
-          : (node.textContent ?? '');
+          ? node.replace(/\s/g, ' ')
+          : node;
       runs.push({ text, style, owners });
-    } else if (node.nodeType === 1) {
-      const child = node as Element;
+    } else {
+      const child = node;
       const childStyle = resolveSupportedStyle(child, state);
-      if (
-        isHidden(child) ||
-        childStyle.display === 'none' ||
-        isNonRenderedHtmlElement(child)
-      )
-        continue;
-      if (child.tagName.toLowerCase() === 'br')
+      if (state.formatting.element(child).kind === 'suppressed') continue;
+      if (state.formatting.element(child).kind === 'break')
         runs.push({ text: '\n', style, owners });
       else if (
         childStyle.display === 'inline' ||
@@ -574,17 +564,20 @@ function buildChildNodes(
       anonymousStyle,
       state,
     );
-    const node = state.tree.newLeafWithContext(
-      toTaffyStyle(anonymousStyle, context),
+    const node = state.plan.create({
+      source: { kind: 'anonymous', owner: parent, role: 'inline' },
+      style: anonymousStyle,
       context,
-    );
+      measure: context,
+    });
     nodes.push(node);
     state.inlineContexts.push({ host: parent, node, anonymous: true, format });
     runs = [];
   };
   const pseudo = (which: 'before' | 'after') => {
-    const style = resolvePseudoElementStyle(parent, which, state);
-    if (style.display === 'inline' && style.content !== undefined)
+    const generated = state.formatting.element(parent)[which];
+    const style = generated.style;
+    if (generated.output === 'inline' && style.content !== undefined)
       runs.push({ text: style.content, style, owners: [] });
     else {
       flush();
@@ -592,33 +585,27 @@ function buildChildNodes(
     }
   };
   pseudo('before');
-  for (const node of Array.from(parent.childNodes)) {
-    if (node.nodeType === 3) {
+  for (const node of state.formatting.element(parent).content) {
+    if (typeof node === 'string') {
       runs.push({
         text:
           parentStyle.whiteSpace === 'normal' ||
           parentStyle.whiteSpace === 'nowrap'
-            ? (node.textContent ?? '').replace(/\s/g, ' ')
-            : (node.textContent ?? ''),
+            ? node.replace(/\s/g, ' ')
+            : node,
         style: parentStyle,
         owners: [],
       });
       continue;
     }
-    if (node.nodeType !== 1) continue;
-    const element = node as Element;
-    if (
-      !renderedChildren.has(element) ||
-      isNonRenderedHtmlElement(element) ||
-      isHidden(element)
-    )
-      continue;
+    const element = node;
+    if (!renderedChildren.has(element)) continue;
     const style = resolveSupportedStyle(element, state);
-    if (style.display === 'none') {
+    if (state.formatting.element(element).kind === 'suppressed') {
       markSubtreeDisplayNone(element, state);
       continue;
     }
-    if (element.tagName.toLowerCase() === 'br')
+    if (state.formatting.element(element).kind === 'break')
       runs.push({ text: '\n', style: parentStyle, owners: [] });
     else if (style.display === 'inline') {
       markElementNoBox(element, state);
@@ -658,20 +645,18 @@ function buildElementFormattingNodes(
 ): bigint[] {
   const style = resolveSupportedStyle(element, state);
 
-  if (isHidden(element) || style.display === 'none') {
+  if (state.formatting.element(element).kind === 'suppressed') {
     markSubtreeDisplayNone(element, state);
     return [];
   }
 
-  if (element.tagName.toLowerCase() === 'br') {
+  if (state.formatting.element(element).kind === 'break') {
     markElementNoBox(element, state);
     return [];
   }
 
   if (style.display === 'inline') {
-    // Native inline phrasing elements do not participate as block-level Taffy
-    // children. Their text is measured through the nearest modeled ancestor via
-    // textContent; their own inline fragments are not yet exposed as rects.
+    // Inline content is owned by its host formatter, not a principal backend node.
     markSubtreeNoBox(element, state);
     return [];
   }
@@ -693,13 +678,15 @@ function buildElementFormattingNodes(
       tableLayout.height,
       state.textMeasurer,
     );
-    const node = state.tree.newLeafWithContext(
-      toTaffyStyle(style, {
+    const node = state.plan.create({
+      source: { kind: 'element', element },
+      style,
+      context: {
         ...context,
         percentageBasis: percentageBasisFor(element, style, state),
-      }),
-      context,
-    );
+      },
+      measure: context,
+    });
     state.elementNodes.set(element, node);
     return [node];
   }
@@ -769,22 +756,26 @@ function buildElementFormattingNodes(
   const children =
     context?.replacedSize ||
     inlineFormat ||
-    (canMeasureTextLeaf(element) && !hasPseudoBox)
+    (state.formatting.element(element).textLeaf && !hasPseudoBox)
       ? []
       : buildChildNodes(element, state);
-  const taffyStyle = toTaffyStyle(style, {
-    ...context,
-    percentageBasis: percentageBasisFor(element, style, state),
-  });
-  const node =
+  const measuredLeaf =
     children.length === 0 &&
     context &&
-    (canMeasureTextLeaf(element) ||
+    (state.formatting.element(element).textLeaf ||
       inlineFormat ||
       context.replacedSize ||
-      context.intrinsicReplaced)
-      ? state.tree.newLeafWithContext(taffyStyle, context)
-      : state.tree.newWithChildren(taffyStyle, children);
+      context.intrinsicReplaced);
+  const node = state.plan.create({
+    source: { kind: 'element', element },
+    style,
+    children,
+    context: {
+      ...context,
+      percentageBasis: percentageBasisFor(element, style, state),
+    },
+    measure: measuredLeaf ? context : undefined,
+  });
 
   if (inlineFormat)
     state.inlineContexts.push({
@@ -815,20 +806,8 @@ function hasGeneratedPseudoBox(
   element: Element,
   state: LayoutReadState,
 ): boolean {
-  return (['before', 'after'] as const).some(pseudoElement => {
-    const content = resolvePseudoElementStyle(
-      element,
-      pseudoElement,
-      state,
-    ).content;
-    if (content === undefined) return false;
-    const display = resolvePseudoElementStyle(
-      element,
-      pseudoElement,
-      state,
-    ).display;
-    return display !== 'inline' && display !== 'none' && display !== 'contents';
-  });
+  const record = state.formatting.element(element);
+  return record.before.output === 'box' || record.after.output === 'box';
 }
 
 function buildGeneratedPseudoNodes(
@@ -841,16 +820,13 @@ function buildGeneratedPseudoNodes(
     pseudoElement,
     state,
   ).content;
-  if (content === undefined) return [];
+  if (
+    content === undefined ||
+    state.formatting.element(element)[pseudoElement].output !== 'box'
+  )
+    return [];
 
   const style = resolvePseudoElementStyle(element, pseudoElement, state);
-  if (
-    style.display === 'inline' ||
-    style.display === 'none' ||
-    style.display === 'contents'
-  ) {
-    return [];
-  }
 
   // Generated boxes have no DOM node to attach to. Keep them as anonymous
   // Taffy leaves: they affect their originating element's formatting context,
@@ -867,7 +843,14 @@ function buildGeneratedPseudoNodes(
     textTransform: style.textTransform,
     textMeasurer: state.textMeasurer,
   };
-  return [state.tree.newLeafWithContext(toTaffyStyle(style, context), context)];
+  return [
+    state.plan.create({
+      source: { kind: 'generated', owner: element, pseudo: pseudoElement },
+      style,
+      context,
+      measure: context,
+    }),
+  ];
 }
 
 function buildTableCellFormatting(
@@ -887,10 +870,11 @@ function buildTableCellFormatting(
     maxHeight: undefined,
     margin: zeroEdges(),
   };
-  const node = state.tree.newWithChildren(
-    toTaffyStyle(formattingStyle, undefined),
+  const node = state.plan.create({
+    source: { kind: 'anonymous', owner: element, role: 'table-cell' },
+    style: formattingStyle,
     children,
-  );
+  });
   state.cellFormatting.set(element, { node, style: formattingStyle });
   state.elementNodes.set(element, node);
   state.tree.computeLayoutWithMeasure(
@@ -1259,89 +1243,59 @@ function createSimpleTableLayout(
 }
 
 function isTableElement(element: Element, state: TaffyLayoutState): boolean {
-  return (
-    element.tagName.toLowerCase() === 'table' ||
-    resolveSupportedStyle(element, state).display === 'table'
-  );
+  return state.formatting.element(element).kind === 'table';
 }
 
 function isTableCaptionElement(
   element: Element,
   state: TaffyLayoutState,
 ): boolean {
-  return (
-    element.tagName.toLowerCase() === 'caption' ||
-    resolveSupportedStyle(element, state).display === 'table-caption'
-  );
+  return state.formatting.element(element).kind === 'table-caption';
 }
 
 function isTableColumnGroupElement(
   element: Element,
   state: TaffyLayoutState,
 ): boolean {
-  return (
-    element.tagName.toLowerCase() === 'colgroup' ||
-    resolveSupportedStyle(element, state).display === 'table-column-group'
-  );
+  return state.formatting.element(element).kind === 'table-column-group';
 }
 
 function isTableColumnElement(
   element: Element,
   state: TaffyLayoutState,
 ): boolean {
-  return (
-    element.tagName.toLowerCase() === 'col' ||
-    resolveSupportedStyle(element, state).display === 'table-column'
-  );
+  return state.formatting.element(element).kind === 'table-column';
 }
 
 function isTableSectionElement(
   element: Element,
   state: TaffyLayoutState,
 ): boolean {
-  const tagName = element.tagName.toLowerCase();
-  const display = resolveSupportedStyle(element, state).display;
-
-  return (
-    tagName === 'tbody' ||
-    tagName === 'thead' ||
-    tagName === 'tfoot' ||
-    display === 'table-row-group' ||
-    display === 'table-header-group' ||
-    display === 'table-footer-group'
-  );
+  return state.formatting.element(element).kind === 'table-section';
 }
 
 function isTableRowElement(element: Element, state: TaffyLayoutState): boolean {
-  return (
-    element.tagName.toLowerCase() === 'tr' ||
-    resolveSupportedStyle(element, state).display === 'table-row'
-  );
+  return state.formatting.element(element).kind === 'table-row';
 }
 
 function isTableCellElement(
   element: Element,
   state: TaffyLayoutState,
 ): boolean {
-  const tagName = element.tagName.toLowerCase();
-  return (
-    tagName === 'td' ||
-    tagName === 'th' ||
-    resolveSupportedStyle(element, state).display === 'table-cell'
-  );
+  return state.formatting.element(element).kind === 'table-cell';
 }
 
 function tableCaptionElement(
   table: Element,
   state: TaffyLayoutState,
 ): Element | undefined {
-  return Array.from(table.children).find(child =>
+  return [...state.formatting.element(table).children].find(child =>
     isTableCaptionElement(child, state),
   );
 }
 
 function tableColumnGroups(table: Element, state: TaffyLayoutState): Element[] {
-  return Array.from(table.children).filter(
+  return [...state.formatting.element(table).children].filter(
     child =>
       isTableColumnGroupElement(child, state) &&
       tableColumnElements(child, state).length > 0,
@@ -1352,7 +1306,7 @@ function tableColumnElements(
   columnGroup: Element,
   state: TaffyLayoutState,
 ): Element[] {
-  return Array.from(columnGroup.children).filter(child =>
+  return [...state.formatting.element(columnGroup).children].filter(child =>
     isTableColumnElement(child, state),
   );
 }
@@ -1426,7 +1380,7 @@ function tableSectionElements(
   table: Element,
   state: TaffyLayoutState,
 ): Element[] {
-  const sections = Array.from(table.children).filter(child =>
+  const sections = [...state.formatting.element(table).children].filter(child =>
     isTableSectionElement(child, state),
   );
 
@@ -1438,37 +1392,20 @@ function tableSectionElements(
 }
 
 function tableSectionOrder(section: Element, state: TaffyLayoutState): number {
-  const tagName = section.tagName.toLowerCase();
-
-  if (tagName === 'thead') {
-    return 0;
-  }
-
-  if (tagName === 'tfoot') {
-    return 2;
-  }
-
-  switch (resolveSupportedStyle(section, state).display) {
-    case 'table-header-group':
-      return 0;
-    case 'table-footer-group':
-      return 2;
-    default:
-      return 1;
-  }
+  return state.formatting.element(section).sectionOrder;
 }
 
 function tableRowElements(
   section: Element,
   state: TaffyLayoutState,
 ): Element[] {
-  return Array.from(section.children).filter(child =>
+  return [...state.formatting.element(section).children].filter(child =>
     isTableRowElement(child, state),
   );
 }
 
 function tableCellElements(row: Element, state: TaffyLayoutState): Element[] {
-  return Array.from(row.children).filter(child =>
+  return [...state.formatting.element(row).children].filter(child =>
     isTableCellElement(child, state),
   );
 }

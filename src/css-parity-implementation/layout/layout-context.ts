@@ -7,18 +7,6 @@ import {
 import type { ScrollOffset } from './layout-source.ts';
 import type { LayoutReadState } from './layout-state.ts';
 
-const nonRenderedHtmlElements = new Set([
-  'base',
-  'link',
-  'meta',
-  'noscript',
-  'script',
-  'style',
-  'template',
-  'title',
-  'wbr',
-]);
-
 export function containingBlockEnvironment(
   state: LayoutReadState,
   measured = false,
@@ -75,7 +63,7 @@ export function markSubtreeDisplayNone(
 ): void {
   markElementNoBox(element, state);
 
-  for (const child of elementChildren(element)) {
+  for (const child of state.formatting.element(element).children) {
     markSubtreeDisplayNone(child, state);
   }
 }
@@ -86,7 +74,7 @@ export function markSubtreeNoBox(
 ): void {
   markElementNoBox(element, state);
 
-  for (const child of elementChildren(element)) {
+  for (const child of state.formatting.element(element).children) {
     markSubtreeNoBox(child, state);
   }
 }
@@ -106,70 +94,9 @@ export function resolvePseudoElementStyle(
   return state.styleResolver.pseudo(element, pseudo);
 }
 
-export function elementChildren(parent: Element): Element[] {
-  return Array.from(parent.children).filter(
-    element => !isNonRenderedHtmlElement(element),
-  );
-}
-
 export function renderedElementChildren(
   parent: Element,
   state: LayoutReadState,
-): Element[] {
-  const children = orderedElementChildren(parent, state);
-
-  if (!isClosedDetails(parent)) {
-    return children;
-  }
-
-  return children.filter(child => {
-    const rendered = isSummaryElement(child);
-
-    if (!rendered) {
-      markSubtreeDisplayNone(child, state);
-    }
-
-    return rendered;
-  });
-}
-
-export function orderedElementChildren(
-  parent: Element,
-  state: LayoutReadState,
-): Element[] {
-  const children = elementChildren(parent);
-  const parentStyle = resolveSupportedStyle(parent, state);
-
-  if (parentStyle.display !== 'flex' && parentStyle.display !== 'grid') {
-    return children;
-  }
-
-  // CSS order participates in flex/grid layout order before Taffy sees children.
-  return children.toSorted(
-    (a, b) =>
-      resolveSupportedStyle(a, state).order -
-      resolveSupportedStyle(b, state).order,
-  );
-}
-
-export function isHidden(element: Element): boolean {
-  return element.hasAttribute('hidden') && !isHiddenUntilFound(element);
-}
-
-export function isHiddenUntilFound(element: Element): boolean {
-  return element.getAttribute('hidden')?.toLowerCase() === 'until-found';
-}
-
-export function isClosedDetails(element: Element): boolean {
-  return (
-    element.tagName.toLowerCase() === 'details' && !element.hasAttribute('open')
-  );
-}
-
-export function isSummaryElement(element: Element): boolean {
-  return element.tagName.toLowerCase() === 'summary';
-}
-
-export function isNonRenderedHtmlElement(element: Element): boolean {
-  return nonRenderedHtmlElements.has(element.tagName.toLowerCase());
+): readonly Element[] {
+  return state.formatting.element(parent).children;
 }
