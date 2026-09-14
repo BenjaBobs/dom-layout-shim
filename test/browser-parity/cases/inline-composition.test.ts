@@ -69,3 +69,37 @@ it.each(['pre-wrap', 'pre-line'] as const)(
     });
   },
 );
+
+it.each(['inline-style', 'stylesheet'])(
+  'uses the same inline formatting for native spans and %s display declarations',
+  async source => {
+    const declaration =
+      source === 'inline-style' ? 'style="display:inline"' : 'class="inline"';
+    await expectChromiumParity({
+      viewport: { width: 400, height: 300 },
+      typography: 'deterministic',
+      html: `<!doctype html><style>body{margin:0}.host{width:100px;font-size:20px;line-height:30px}.inline{display:inline}</style><div class="host"><span id="native">one two three four</span></div><div class="host"><div id="authored" ${declaration}>one two three four</div></div>`,
+      queries: [
+        { type: 'client-rects', selector: '#native' },
+        { type: 'client-rects', selector: '#authored' },
+        { type: 'dimensions', selector: '#authored' },
+        { type: 'scroll-size', selector: '#authored' },
+        { type: 'point', x: 10, y: 100 },
+      ],
+    });
+  },
+);
+
+it('blockifies inline elements and generated boxes in flex formatting contexts', async () => {
+  await expectChromiumParity({
+    viewport: { width: 400, height: 300 },
+    typography: 'deterministic',
+    html: `<!doctype html><style>body{margin:0}#host{display:flex;width:200px}#host::before{content:"before";display:inline;width:40px;height:30px}#contents{display:contents}#item{display:inline;width:60px;height:40px}</style><div id="host"><div id="contents"><span id="item">item</span></div></div>`,
+    queries: [
+      { type: 'rect', selector: '#host' },
+      { type: 'dimensions', selector: '#item' },
+      { type: 'rect', selector: '#item' },
+      { type: 'point', x: 50, y: 10 },
+    ],
+  });
+});

@@ -15,12 +15,12 @@
       "description": "Configured CSS text and document style elements contribute rules in cascade order.",
       "support": "supported",
       "parity": {
-        "status": "not-applicable",
-        "fixtures": []
+        "status": "verified",
+        "fixtures": ["declaration-cascade"]
       },
       "notes": [
         {
-          "kind": "todo",
+          "kind": "browser-parity",
           "text": "Inline and stylesheet declarations share Lightning CSS parsing and origin/importance ordering. declaration-cascade verifies font-relative declaration order, cross-source importance, and custom-property priority."
         },
         {
@@ -44,7 +44,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "The `portable` profile is enabled by default, `none` disables its presentation defaults, and `userAgentStyles.overrides` adds CSS below document and inline styles. Structural HTML behavior and native-control metrics are separate concerns."
+          "text": "The portable profile supplies declarations to the common cascade; none omits its presentation defaults. HTML sizing hints rank above normal user-agent rules and below normal author rules. Important user-agent rules outrank important author rules. Native-control intrinsic metrics and HTML non-rendering constraints remain separate."
         }
       ]
     },

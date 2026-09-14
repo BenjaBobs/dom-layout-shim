@@ -35,11 +35,11 @@
       "support": "supported",
       "parity": {
         "status": "verified",
-        "fixtures": ["inline-html-defaults"]
+        "fixtures": ["inline-html-defaults", "inline-composition"]
       },
       "notes": [
         {
-          "kind": "todo",
+          "kind": "browser-parity",
           "text": "inline-composition verifies bare text after blocks, nested inline typography, shared fragments and point queries, and preserved whitespace fragments. Inline measurement and projection consume the same styled runs. Offset dimensions use the fragment union and first-fragment origin; inline client dimensions remain zero. Positioned-overlay point queries are covered."
         },
         {
@@ -64,12 +64,12 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["inline-html-defaults"]
+        "fixtures": ["inline-html-defaults", "inline-composition"]
       },
       "notes": [
         {
           "kind": "limitation",
-          "text": "Inline hit boxes, mixed inline/block formatting, nested elements with distinct typography, and baseline effects for `sub` and `sup` are not modeled."
+          "text": "Atomic inline replaced elements and baseline effects for sub and sup are not modeled. Native phrasing elements and authored inline text containers share fragment, offset/client, and hit geometry; inline-composition verifies both declaration sources and flex-item blockification."
         }
       ]
     }

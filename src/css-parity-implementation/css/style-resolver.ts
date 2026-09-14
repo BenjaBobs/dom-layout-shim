@@ -3,13 +3,16 @@ import type {
   Viewport,
 } from '../../api/layout-engine-config.ts';
 import type { UnsupportedCssPolicy } from '../../api/unsupported-css-policy.ts';
-import { applyCascadedStyle, cascadeCustomProperties } from './cascade.ts';
+import {
+  applyCascadedStyle,
+  type CascadedDeclaration,
+  cascadeCustomProperties,
+} from './cascade.ts';
 import type { CustomProperties } from './custom-properties.ts';
 import { collectElementDeclarations } from './element-cascade.ts';
 import {
-  applyPortableUserAgentDefaults,
-  applyPostAuthorStructuralDefaults,
-  applyStructuralHtmlDefaults,
+  htmlStyleDeclarations,
+  suppressesPrincipalBox,
 } from './html-style-defaults.ts';
 import { inheritStyle } from './inherited-style.ts';
 import type { StyleRule } from './stylesheet-source.ts';
@@ -59,40 +62,64 @@ export function createStyleResolver(options: {
     if (pseudo) {
       // Generated boxes inherit from their originating element, not its parent.
       style.display = 'inline';
-    } else {
-      applyStructuralHtmlDefaults(style, element);
-      if (options.profile === 'portable')
-        applyPortableUserAgentDefaults(style, element);
     }
     const root = element.ownerDocument.documentElement;
     const rootFontSize =
       !root || root === element ? 16 : resolve(root).style.fontSize;
     // Match and parse once. Variables and ordinary declarations must consume
     // the same selected sources, priorities, and diagnostic context.
-    const declarations = collectElementDeclarations(
+    const defaults = pseudo
+      ? undefined
+      : htmlStyleDeclarations(element, options.profile);
+    const declarationContext = {
       element,
-      options.userAgentRules,
-      options.rules,
-      options.policy,
+      policy: options.policy,
       rootFontSize,
-      options.viewport,
-      pseudo,
-    );
+      viewport: options.viewport,
+      source: 'stylesheet' as const,
+    };
+    const declarations: CascadedDeclaration[] = [
+      ...(defaults?.userAgent ?? []).map(declaration => ({
+        ...declaration,
+        origin: 'user-agent' as const,
+        context: declarationContext,
+      })),
+      ...(defaults?.presentationalHints ?? []).map(declaration => ({
+        ...declaration,
+        origin: 'presentational-hint' as const,
+        context: declarationContext,
+      })),
+      ...collectElementDeclarations(
+        element,
+        options.userAgentRules,
+        options.rules,
+        options.policy,
+        rootFontSize,
+        options.viewport,
+        pseudo,
+      ),
+    ];
     const customProperties = cascadeCustomProperties(
       parent?.customProperties ?? new Map(),
       declarations,
     );
     applyCascadedStyle(style, declarations, customProperties);
-    if (pseudo) {
-      // Flex/grid items are blockified before entering the backend tree.
+    // Blockification is a computed-display rule shared by elements and pseudos.
+    // display:contents ancestors do not establish the item's formatting context.
+    if (style.display === 'inline') {
+      let container = pseudo ? element : element.parentElement;
+      while (container && resolve(container).style.display === 'contents')
+        container = container.parentElement;
+      const display = container ? resolve(container).style.display : undefined;
       if (
-        style.display === 'inline' &&
-        (parent?.style.display === 'flex' || parent?.style.display === 'grid')
+        style.position === 'absolute' ||
+        style.position === 'fixed' ||
+        display === 'flex' ||
+        display === 'grid'
       )
         style.display = 'block';
-    } else {
-      applyPostAuthorStructuralDefaults(style, element);
     }
+    if (!pseudo && suppressesPrincipalBox(element)) style.display = 'none';
     const result = { style, customProperties };
     if (pseudo) {
       const entries = pseudos.get(element) ?? {};

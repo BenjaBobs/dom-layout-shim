@@ -1795,11 +1795,7 @@ function recordSimpleTableLayout(
           viewport,
           state,
         );
-        const includeHitBox = tableCellIncludesHitBox(
-          cell.element,
-          cellStyle,
-          state,
-        );
+        const includeHitBox = tableCellIncludesHitBox(cell.element, cellStyle);
         state.geometry.elementScrolls.set(
           cell.element,
           readElementScrollOffset(cell.element),
@@ -1901,13 +1897,8 @@ function offsetTableBox(
 function tableCellIncludesHitBox(
   element: Element,
   style: SupportedStyle,
-  state: TaffyLayoutState,
 ): boolean {
-  const table = closestAncestorTable(element, state);
-  const tableStyle = table ? resolveSupportedStyle(table, state) : undefined;
-  const emptyCells = style.emptyCells ?? tableStyle?.emptyCells ?? 'show';
-
-  return emptyCells !== 'hide' || element.textContent?.trim() !== '';
+  return style.emptyCells !== 'hide' || element.textContent?.trim() !== '';
 }
 
 function nextDomOrder(state: TaffyLayoutState): number {
@@ -2220,13 +2211,7 @@ function createSimpleTableLayout(
   const captionHeight = captionStyle
     ? tableCaptionOuterHeight(captionStyle)
     : 0;
-  // caption-side is inherited in browsers. We do not yet track declaration
-  // provenance, so a caption's non-default value wins and otherwise the table
-  // value supplies the inherited side.
-  const captionSide =
-    captionStyle && captionStyle.captionSide !== 'top'
-      ? captionStyle.captionSide
-      : tableStyle.captionSide;
+  const captionSide = captionStyle?.captionSide ?? tableStyle.captionSide;
 
   for (const columns of columnPlacements) {
     for (const column of columns) {
@@ -3028,26 +3013,6 @@ function tableCollapsedBorderInset(
   }
 
   return inset;
-}
-
-function closestAncestorTable(
-  element: Element,
-  state?: TaffyLayoutState,
-): Element | undefined {
-  let current = element.parentElement;
-
-  while (current) {
-    if (
-      current.tagName.toLowerCase() === 'table' ||
-      (state && resolveSupportedStyle(current, state).display === 'table')
-    ) {
-      return current;
-    }
-
-    current = current.parentElement;
-  }
-
-  return undefined;
 }
 
 function createReplacedMeasureContext(

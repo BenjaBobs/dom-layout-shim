@@ -230,6 +230,25 @@ Font-relative dimensions resolve after font size: both `width: 2em; font-size:
 `::before` and `::after` content also resolves custom properties through this
 cascade, including variables declared on the pseudo-element itself.
 
+Portable presentation defaults and HTML sizing hints also enter this cascade.
+Normal user-agent rules yield to HTML hints such as `<img width="100">`, and
+normal author CSS can override those hints. Important user-agent rules retain
+priority over important author rules. A paragraph with `font-size: 2em` inside
+a 30px parent now resolves to 60px, rather than using the portable paragraph
+font size as its inheritance base.
+
+For non-replaced text containers, authored `display: inline` uses the same
+wrapped fragments as native phrasing elements. For example,
+`<div style="display:inline">one two three</div>` participates in its parent's
+line layout instead of creating a block. Absolute/fixed elements and flex/grid
+items are blockified before layout. Atomic inline replaced elements,
+`inline-block`, and inline outer flex/grid/table layout remain outside this
+inline-formatting subset.
+
+Table properties also use normal inheritance. A caption with `caption-side: top`
+overrides a table's `caption-side: bottom`; `empty-cells` can inherit through
+row groups and rows before a cell's own declaration overrides it.
+
 Intrinsic sizing accepts `min-content`, `max-content`, and `fit-content` for
 `width`, `height`, `inline-size`, and `block-size`. For example,
 `style="width: max-content"` sizes a text box to its unwrapped content instead

@@ -38,3 +38,16 @@ it('aligns ordinary block descendants within taller cells', async () => {
     ],
   });
 });
+
+it('uses computed inheritance for caption placement and empty-cell hit testing', async () => {
+  await expectChromiumParity({
+    viewport: { width: 400, height: 300 },
+    html: `<!doctype html><style>body{margin:0}table{border-spacing:0;caption-side:bottom}caption{caption-side:top;height:10px}td{width:50px;height:20px;padding:0}tbody{empty-cells:hide}#shown{empty-cells:show}</style><table id="table"><caption id="caption"></caption><tbody><tr><td id="hidden"></td><td id="shown"></td></tr></tbody></table>`,
+    queries: [
+      { type: 'rect', selector: '#caption' },
+      { type: 'rect', selector: '#hidden' },
+      { type: 'point', x: 10, y: 15 },
+      { type: 'point', x: 60, y: 15 },
+    ],
+  });
+});

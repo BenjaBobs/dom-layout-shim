@@ -22,6 +22,10 @@
         {
           "kind": "implementation-quirk",
           "text": "Image width and height attributes are presentational hints. Their ratio supplies the pre-load fallback; loaded natural dimensions supply the intrinsic size and preferred natural ratio. Missing dimensions remain zero for images without a resource."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "HTML image sizing attributes enter the common cascade as presentational hints. Their aspect ratio remains a fallback for intrinsic sizing; authored aspect-ratio replaces that hint."
         }
       ]
     },
