@@ -12,7 +12,10 @@ import {
   readDeclarationList,
 } from './declaration-list.ts';
 import { readSelectorList } from './selector-parser.ts';
-import { stylesheetRevision } from './stylesheet-revision.ts';
+import {
+  releaseStylesheetRevisions,
+  stylesheetRevision,
+} from './stylesheet-revision.ts';
 
 export type StyleRule = {
   selector: string;
@@ -97,6 +100,7 @@ export function readStyleRules(
     if (source.sheet?.disabled) continue;
     const load = () => readDocumentStylesheetCssText(source, policy);
     const token = stylesheetToken(
+      document,
       source.sheet,
       source.authored ?? '',
       load,
@@ -113,7 +117,7 @@ export function readStyleRules(
     if (sheet.disabled) continue;
     const load = () =>
       readCssomRules(sheet, `adopted stylesheet ${index}`, policy);
-    const token = stylesheetToken(sheet, '', load);
+    const token = stylesheetToken(document, sheet, '', load);
     let parsed = cache?.sources.get(sheet);
     if (cache && parsed?.token !== token) {
       parsed = { token };
@@ -261,6 +265,7 @@ export function documentStylesheetFingerprint(document: Document): string {
   // Compare small per-sheet tokens, preserving membership and cascade order.
   const documentSources = documentStylesheetSources(document).map(source =>
     stylesheetToken(
+      document,
       source.sheet,
       source.authored ?? '',
       () => readDocumentStylesheetCssText(source, undefined, false),
@@ -268,7 +273,7 @@ export function documentStylesheetFingerprint(document: Document): string {
     ),
   );
   const adoptedSources = adoptedStylesheets(document).map(sheet =>
-    stylesheetToken(sheet, '', () =>
+    stylesheetToken(document, sheet, '', () =>
       readCssomRules(sheet, 'adopted stylesheet', undefined, false),
     ),
   );
@@ -287,13 +292,14 @@ const sheetTokens = new WeakMap<
 let nextSheetToken = 1;
 
 function stylesheetToken(
+  document: Document,
   sheet: CSSStyleSheet | null,
   authored: string,
   fallback: () => string | undefined,
   source?: Element,
 ): string {
   if (!sheet) return fingerprintPart('missing', 'none', 'enabled', authored);
-  const revision = stylesheetRevision(sheet);
+  const revision = stylesheetRevision(sheet, document);
   if (revision === undefined) {
     return fingerprintPart(
       'fallback',
@@ -1215,4 +1221,10 @@ function collectStyleRule(
         : {}),
     });
   }
+}
+
+export function releaseDocumentStylesheets(document: Document): void {
+  documentSourceCaches.get(document)?.observer.disconnect();
+  documentSourceCaches.delete(document);
+  releaseStylesheetRevisions(document);
 }

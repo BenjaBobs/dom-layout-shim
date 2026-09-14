@@ -1,4 +1,7 @@
-import { documentStylesheetFingerprint } from '../../css-parity-implementation/css/stylesheet-source.ts';
+import {
+  documentStylesheetFingerprint,
+  releaseDocumentStylesheets,
+} from '../../css-parity-implementation/css/stylesheet-source.ts';
 import { createDomRect } from '../../css-parity-implementation/geometry/dom-rect.ts';
 import {
   elementFromPointInBoxes,
@@ -99,18 +102,23 @@ export class DocumentAttachment {
     this.userAgentStyles = options.userAgentStyles;
     this.nativeControlMetrics = options.nativeControlMetrics;
     this.observerDelivery = options.observerDelivery;
-    patchDomApis(this);
-    this.mutationObserver = observeMutations(this.document, () => {
-      this.dirty = true;
-      this.scheduleObserverDelivery();
-    });
-    this.document.addEventListener('scroll', this.handleScroll, true);
-    for (const event of hoverEvents)
-      this.document.addEventListener(event, this.handleHover, true);
-    // Image decoding changes natural dimensions without a DOM mutation.
-    this.document.addEventListener('load', this.handleImageResource, true);
-    this.document.addEventListener('error', this.handleImageResource, true);
-    this.document.defaultView?.addEventListener('scroll', this.handleScroll);
+    try {
+      patchDomApis(this);
+      this.mutationObserver = observeMutations(this.document, () => {
+        this.dirty = true;
+        this.scheduleObserverDelivery();
+      });
+      this.document.addEventListener('scroll', this.handleScroll, true);
+      for (const event of hoverEvents)
+        this.document.addEventListener(event, this.handleHover, true);
+      // Image decoding changes natural dimensions without a DOM mutation.
+      this.document.addEventListener('load', this.handleImageResource, true);
+      this.document.addEventListener('error', this.handleImageResource, true);
+      this.document.defaultView?.addEventListener('scroll', this.handleScroll);
+    } catch (error) {
+      this.detach();
+      throw error;
+    }
   }
 
   detach(): void {
@@ -128,6 +136,22 @@ export class DocumentAttachment {
     this.document.removeEventListener('error', this.handleImageResource, true);
     this.document.defaultView?.removeEventListener('scroll', this.handleScroll);
     this.cancelScheduledObserverDelivery();
+    for (const observer of this.resizeObservers) observer.observations.clear();
+    for (const observer of this.intersectionObservers) {
+      observer.observations.clear();
+      observer.queuedEntries.length = 0;
+    }
+    this.resizeObservers.clear();
+    this.intersectionObservers.clear();
+    this.snapshot = undefined;
+    this.snapshotScroll = undefined;
+    this.snapshotActiveElement = undefined;
+    this.stylesheetFingerprint = undefined;
+    this.untrackedScrolls.clear();
+    this.snapshotHoveredElements = [];
+    for (const key of Object.keys(this.stylesheetCache))
+      delete this.stylesheetCache[key as keyof LayoutStylesheetCache];
+    releaseDocumentStylesheets(this.document);
     unpatchDomApis(this);
     this.detached = true;
   }
@@ -261,12 +285,12 @@ export class DocumentAttachment {
   }
 
   intersectionObservationsChanged(): void {
-    this.assertAttached();
+    if (this.detached) return;
     this.scheduleObserverDelivery();
   }
 
   resizeObservationsChanged(): void {
-    this.assertAttached();
+    if (this.detached) return;
     this.scheduleObserverDelivery();
   }
 
