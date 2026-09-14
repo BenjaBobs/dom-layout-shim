@@ -76,6 +76,7 @@ type TaffyLayoutState = {
   tableLayouts: Map<Element, SimpleTableLayout>;
   cellFormatting: Map<Element, { node: bigint; style: SupportedStyle }>;
   styles: WeakMap<Element, SupportedStyle>;
+  hasPseudoRules: boolean;
   pseudoStyles: WeakMap<
     Element,
     Partial<Record<'before' | 'after', SupportedStyle>>
@@ -202,6 +203,11 @@ type SimpleTableRowSpanConstraint = {
 
 let taffyLoadPromise: Promise<unknown> | undefined;
 
+const emptyPseudoStyle: SupportedStyle = {
+  ...createDefaultStyle(),
+  display: 'inline',
+};
+
 const nonRenderedHtmlElements = new Set([
   'base',
   'link',
@@ -319,6 +325,7 @@ function buildTaffyLayoutTree(
     tableLayouts: new Map<Element, SimpleTableLayout>(),
     cellFormatting: new Map(),
     styles: new WeakMap<Element, SupportedStyle>(),
+    hasPseudoRules: false,
     pseudoStyles: new WeakMap(),
     customProperties: new WeakMap<Element, CustomProperties>(),
     tree,
@@ -349,6 +356,10 @@ function buildTaffyLayoutTree(
     paintOrders: new WeakMap<Element, number>(),
     noBoxElements: new Set(),
   };
+
+  state.hasPseudoRules = [...state.rules, ...state.userAgentRules].some(
+    rule => rule.pseudoElement !== undefined,
+  );
 
   const rootStyle = new Style();
   rootStyle.display = Display.Block;
@@ -537,6 +548,13 @@ function percentageBasisFor(
   state: TaffyLayoutState,
   measured = false,
 ): { width?: number; height?: number } {
+  // Native scalar/percentage dimensions need no adapter basis; only mixed
+  // calculations and intrinsic replaced sizing consume it at this boundary.
+  if (
+    !hasCalculatedDimension(style) &&
+    !state.measureContexts.get(element)?.intrinsicReplaced
+  )
+    return {};
   return percentageBasis(
     element,
     style,
@@ -698,6 +716,7 @@ function collectTaffyLayoutSnapshot(
     rects: state.geometry.rects,
     fragmentRects: state.geometry.fragmentRects,
     layoutRects: state.geometry.layoutRects,
+    resizeRects: state.geometry.resizeRects,
     clientRects: state.geometry.clientRects,
     scrollSizes: state.geometry.scrollSizes,
     contentRects: state.geometry.contentRects,
@@ -743,8 +762,18 @@ function recordInlineFragments(
       const domOrder = nextDomOrder(state);
       for (const box of fragments)
         recordBox(element, style, box, domOrder, true, state);
+      const union = unionBoxes(fragments);
+      const first = fragments[0] ?? union;
       state.geometry.fragmentRects.set(element, fragments);
-      state.geometry.rects.set(element, unionBoxes(fragments));
+      state.geometry.rects.set(element, union);
+      // CSSOM offset size spans all fragments, but offset position belongs to
+      // the first fragment. Inline elements have no client or resize box.
+      state.geometry.layoutRects.set(element, {
+        ...union,
+        x: first.x,
+        y: first.y,
+      });
+      state.geometry.normalRects.set(element, union);
     }
   }
 }
@@ -1616,6 +1645,7 @@ function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   state.geometry.rects.set(element, box);
   state.geometry.fragmentRects.set(element, []);
   state.geometry.layoutRects.set(element, box);
+  state.geometry.resizeRects.set(element, box);
   state.geometry.normalRects.set(element, box);
   state.geometry.clientRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
   state.geometry.contentRects.set(element, { x: 0, y: 0, width: 0, height: 0 });
@@ -1934,12 +1964,22 @@ function recordBox(
   layoutBox: Box = box,
   normalBox: Box = layoutBox,
 ): void {
+  state.paintOrders.set(element, domOrder);
   state.geometry.rects.set(element, box);
   state.geometry.fragmentRects.set(element, [box]);
   state.geometry.layoutRects.set(element, layoutBox);
   state.geometry.normalRects.set(element, normalBox);
-  state.geometry.clientRects.set(element, computeClientBox(box, style));
-  state.geometry.contentRects.set(element, computeContentBox(box, style));
+  const inline = style.display === 'inline';
+  const zero = { x: 0, y: 0, width: 0, height: 0 };
+  state.geometry.resizeRects.set(element, inline ? zero : layoutBox);
+  state.geometry.clientRects.set(
+    element,
+    inline ? zero : computeClientBox(box, style),
+  );
+  state.geometry.contentRects.set(
+    element,
+    inline ? zero : computeContentBox(box, style),
+  );
   state.geometry.intersectionRects.set(element, box);
 
   if (!includeHitBox) {
@@ -1976,6 +2016,7 @@ function stackingOrderFor(
   state: TaffyLayoutState,
 ): number[] | undefined {
   const contexts: Array<{ style: SupportedStyle; domOrder: number }> = [];
+  let positionedContainerSeen = style.position !== 'static';
 
   for (
     let ancestor = element.parentElement;
@@ -1983,15 +2024,20 @@ function stackingOrderFor(
     ancestor = ancestor.parentElement
   ) {
     const ancestorStyle = resolveSupportedStyle(ancestor, state);
-    if (createsStackingContext(ancestorStyle)) {
+    // In-flow descendants paint above their positioned container's background.
+    // Auto-z positioned descendants still escape that paint container; only
+    // actual stacking contexts constrain their z-index.
+    if (
+      createsStackingContext(ancestorStyle) ||
+      (!positionedContainerSeen && ancestorStyle.position !== 'static')
+    ) {
       contexts.unshift({
         style: ancestorStyle,
         domOrder: state.paintOrders.get(ancestor) ?? -1,
       });
     }
+    if (ancestorStyle.position !== 'static') positionedContainerSeen = true;
   }
-
-  if (contexts.length === 0 && !createsStackingContext(style)) return undefined;
 
   // Encode each supported ancestor context separately. A descendant's large
   // local z-index therefore cannot outrank a sibling above its ancestor context,
@@ -2108,6 +2154,9 @@ function resolvePseudoElementStyle(
   pseudoElement: 'before' | 'after',
   state: TaffyLayoutState,
 ): SupportedStyle {
+  // No generated box can exist without a pseudo rule. Share the empty result
+  // instead of allocating and cascading two unused styles for every element.
+  if (!state.hasPseudoRules) return emptyPseudoStyle;
   const cached = state.pseudoStyles.get(element)?.[pseudoElement];
   if (cached) return cached;
 

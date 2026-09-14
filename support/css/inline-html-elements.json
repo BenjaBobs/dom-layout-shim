@@ -40,7 +40,7 @@
       "notes": [
         {
           "kind": "todo",
-          "text": "inline-composition verifies bare text after blocks, nested inline typography, shared fragments and point queries, and preserved whitespace fragments. Inline measurement and projection consume the same styled runs."
+          "text": "inline-composition verifies bare text after blocks, nested inline typography, shared fragments and point queries, and preserved whitespace fragments. Inline measurement and projection consume the same styled runs. Offset dimensions use the fragment union and first-fragment origin; inline client dimensions remain zero. Positioned-overlay point queries are covered."
         },
         {
           "kind": "browser-parity",

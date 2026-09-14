@@ -11,6 +11,8 @@ export type LayoutGeometry = {
   /** Untransformed geometry for offset APIs and scroll-overflow collection. */
   layoutRects: Map<Element, Box>;
   normalRects: Map<Element, Box>;
+  /** Resize observation excludes non-replaced inline boxes. */
+  resizeRects: Map<Element, Box>;
   /** Layout client/content boxes; transforms do not change native dimensions. */
   clientRects: Map<Element, Box>;
   contentRects: Map<Element, Box>;
@@ -27,6 +29,7 @@ export function createLayoutGeometry(): LayoutGeometry {
     fragmentRects: new Map(),
     layoutRects: new Map(),
     normalRects: new Map(),
+    resizeRects: new Map(),
     clientRects: new Map(),
     contentRects: new Map(),
     intersectionRects: new Map(),
