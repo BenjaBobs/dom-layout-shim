@@ -1,5 +1,112 @@
 # dom-layout-shim
 
+## 0.10.0
+
+### Minor Changes
+
+- 60d3b27: Detach layout engines and inspect whether a window is attached.
+  
+  Use `isLayoutEngineAttached(window)` to make shared setup idempotent. After `const layoutEngine = await attachLayoutEngine({ window })`, call `layoutEngine.detach()` to restore original DOM descriptors, viewport and media APIs, observers, and CSSOM hooks. `isLayoutEngineAttached(window)` then returns false, and native geometry methods work again.
+  
+  Detach disconnects observers, cancels scheduled delivery, removes listeners, and clears caches. Repeated detach calls are safe; other windows stay attached. Detached layout engine methods throw, and detaching an old handle cannot disconnect a replacement layout engine.
+- 94af943: Collect unsupported CSS directly and merge reports across workers.
+  
+  Pass `unsupportedCss: { reporter }` to attachLayoutEngine, query geometry, and read `reporter.getSummary()`. Explicit ignore/throw decisions still take precedence. Diagnostic values now use CSS text: an animation delay formerly reported as AST JSON is reported as `0.4s`, and selector entries contain the complete selector.
+  
+  Use `mergeUnsupportedCssSummaries([firstSummary, secondSummary])` after transporting worker summaries as JSON. Matching entries merge their metadata and sum occurrences; two summaries of one identical unsupported declaration produce one combined declaration.
+- b00d997: Name the public layout engine handle LayoutEngine.
+  
+  Breaking before 1.0: replace type imports of `LayoutEngineAttachment` with `LayoutEngine`. For example, use `const layoutEngine: LayoutEngine = await attachLayoutEngine({ window })`, then `layoutEngine.setViewport({ width: 320, height: 640 })` or `layoutEngine.detach()`. Runtime methods retain their behavior; diagnostics and examples now consistently call the handle a layout engine.
+- 4324410: Explain how to change the attached viewport when direct assignment is attempted.
+  
+  Breaking before 1.0: assigning window.innerWidth or window.innerHeight now throws a TypeError with migration guidance, including in non-strict scripts where assignment could silently do nothing. Replace `window.innerWidth = 320` with `layoutEngine.setViewport({ width: 320, height: 640 })` to update layout and media queries together.
+
+### Patch Changes
+
+- 857b090: Keep transformed hit regions and intersection observations inside ancestor overflow clips.
+  
+  A 100px-wide child translated 80px right inside a 100px-wide `overflow: hidden`
+  parent now receives hits only in the visible 20px strip. Previously,
+  `elementFromPoint(150, 10)` could return that child outside the parent's clip.
+  Children translated into a clip are also hittable, and reflected ancestor clips
+  retain their own coordinate spaces.
+- 051355d: Resolve calculated dimensions for generated boxes and table-cell descendants before finalizing their containing layout. Percentage heights also recognize a definite height transferred from `aspect-ratio`.
+  
+  For example, a 200px-wide table cell containing `width: calc(100% - 20px); aspect-ratio: 2` now gives the child a 180px width and 90px height and includes that height in the row. Previously the child could be corrected after the row was already sized. A generated flex item with `width: calc(50% - 10px)` now contributes its resolved width to the following item's position.
+- 218ff3b: Use resolved padding consistently for layout, inline fragments, and resize observations.
+  
+  For a block with `width:100px;height:80px;padding:10%;border:2px solid` inside
+  a 200px-wide parent, percentage padding now contributes 20px on every side.
+  Its content-box height remains 80px and its border-box height is 124px, instead
+  of losing the vertical padding. ResizeObserver reports the same content box,
+  and inline fragments start inside the resolved padding.
+  
+  Grid items use their grid area's percentage basis. Nested, generated, and
+  positioned boxes, plus ordinary content inside table cells, share the corrected
+  layout measurements. Backend layout reads are cached until the next computation;
+  scroll-only projection reuses them.
+- 7fa7bfd: Lay out ordinary descendants inside table cells.
+  
+  A `width: 100px; height: 40px` div inside a table cell now reports a 100×40px
+  rectangle instead of 0×0px and participates in point queries. Cells reuse block,
+  flex, grid, and styled inline layout, reflowing text at the allocated column
+  width. Top, middle, and bottom alignment place content within taller cells.
+  The existing limitations on full intrinsic table sizing remain.
+- c75f429: Share styled inline layout across text measurement, fragments, and point queries.
+  
+  A 30px block followed by bare `Hello` in a container with `line-height: 20px`
+  now contributes 50px of height instead of 30px. Nested inline font settings and
+  inline pseudo-element typography now participate in measurement, and inline
+  fragments are hittable through `elementFromPoint()`.
+  
+  Default and font-backed measurement share whitespace and wrapping rules;
+  `pre-wrap` and `pre-line` wrap at available width. Preserved breaking spaces and
+  hard breaks produce their own client fragments. Absolute descendants of static
+  ancestors also retain their containing-block origin when text adds flow height.
+  
+  Inline offset sizes now span the fragment union and offset positions use the
+  first fragment; client dimensions remain zero. For example, a span wrapping
+  across three 30px lines with a 20px em box has an 80px `offsetHeight`, rather
+  than the last fragment's 20px. Positioned overlays remain above ordinary inline
+  text, while in-flow descendants paint above their container's background.
+- 98a8d3b: Unify inline and stylesheet declaration parsing and cascade resolution.
+  
+  A stylesheet `width: 100px !important` now beats normal inline `width: 200px`,
+  instead of producing 200px. Both `width: 2em; font-size: 30px` and the reversed
+  order now produce 60px; previously the first order produced 32px.
+  
+  Quoted semicolons in inline values are parsed as CSS tokens. Generated content
+  such as `::before { --label: "Hello"; content: var(--label) }` now resolves the
+  pseudo-element's custom properties through the same cascade as its other styles.
+  Inline values receive the same parser normalization as stylesheet declarations.
+- 8646a92: Resolve nested calculated dimensions against consistent containing blocks.
+  
+  A child with `width: calc(100% - 20px)` inside a 200px border box with 10px
+  padding on each side and 5px borders now resolves to 150px. Nested calculations
+  are resolved from outer contexts inward, including auto block widths.
+  Absolute descendants use their positioned containing block across static
+  ancestors instead of sizing against an intervening static element.
+- 228076e: Report stylesheet rules discarded during parser recovery.
+  
+  For example, stylesheets containing `div: { width: 20px }` now report an unsupported-rule entry for `stylesheet` with the authored CSS when layout is queried. Previously the reporter could remain empty. Strict-policy errors and warning callback errors now propagate unchanged.
+- 17f03dc: Apply browser defaults and HTML sizing hints through the shared CSS cascade.
+  
+  A paragraph with `font-size:2em` inside a 30px parent now uses 60px, rather than
+  32px from the portable paragraph default. HTML hints such as `<img width="100">`
+  now beat normal user-agent width overrides while remaining overridable by
+  normal author CSS. Important user-agent rules retain their higher priority.
+  
+  Authored `display:inline` on a non-replaced text container now uses the same
+  line fragments, dimensions, and hit testing as native phrasing elements. For
+  example, `<div style="display:inline">one two three</div>` joins its parent's
+  line layout instead of becoming a block. Inline elements and generated boxes
+  still become blocks when positioned absolutely/fixed or used as flex/grid items.
+  Atomic inline replaced elements and inline-block formatting remain unsupported.
+  
+  Table properties also use normal inheritance. A caption with `caption-side: top`
+  overrides a table's `caption-side: bottom`; `empty-cells` can inherit through
+  row groups and rows before a cell's own declaration overrides it.
+
 ## 0.9.0
 
 ### Minor Changes
