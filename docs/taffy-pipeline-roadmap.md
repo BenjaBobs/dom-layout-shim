@@ -24,15 +24,19 @@ to `src/css-parity-implementation/`.
 | Styled inline layout | `layout/inline-formatting.ts` | Measurement and element-owned fragments share a cached formatting result. |
 | Percentage dependencies | `layout/containing-block.ts` | Pre-layout and measured phases share containing-block, definiteness, and box-inset rules. |
 | Tree construction and compute | `layout/taffy-layout-source.ts` | Build backend nodes and formatting contexts, including ordinary descendants inside table cells. |
-| Snapshot output allocation | `layout/layout-geometry.ts` | Allocate fresh geometry for every collection; retained layout state is reusable. |
-| Visual projection | `layout/project-layout.ts` | Consume geometry and computed styles; own transforms and ancestor clipping without calling the backend or cascade. |
+| Snapshot output allocation | `layout/layout-geometry.ts` | Require complete element geometry records; collectors cannot write individual output maps. |
+| Visual projection | `layout/project-layout.ts` | Read layout geometry and computed styles; return separate visual output without mutating layout or calling the backend/cascade. |
 | Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
 
 ### Phase invariants
 
 - Complete flow-affecting work before visual projection. Deferred calculations
   follow outer-to-inner dependencies, and table cells reflow at allocated widths.
-- Reprojection allocates new geometry. It must not mutate an earlier snapshot
+- Every formatting context records all geometry outputs together. Anonymous
+  formatting boxes cannot overwrite their originating DOM element. Replacing an
+  element record also replaces its hit fragments.
+- Visual projection returns separate maps and leaves its layout input unchanged.
+  Reprojection allocates new geometry. It must not mutate an earlier snapshot
   or invoke backend layout or text measurement when only scroll offsets change.
 - Layout client/offset dimensions and projected visual rectangles are distinct
   outputs. Hit regions and intersection rectangles use the same clip chain. Resize
