@@ -1,7 +1,16 @@
-import { applyReplacedDimensionAttributes } from './html-dimensions.ts';
-import type { MutableSupportedStyle as SupportedStyle } from './supported-style.ts';
+import type { CssDeclaration } from './declaration-list.ts';
+import {
+  dimensionAttribute,
+  hasIntrinsicSizeOverride,
+} from './html-dimensions.ts';
 
-const inlinePhrasingHtmlElements = new Set([
+type Declarations = readonly CssDeclaration[];
+const empty: Declarations = [];
+const declarations = (values: Record<string, string>): Declarations =>
+  Object.entries(values).map(([property, value]) => ({ property, value }));
+const inline = declarations({ display: 'inline' });
+const middle = declarations({ 'vertical-align': 'middle' });
+const inlineTags = new Set([
   'a',
   'b',
   'code',
@@ -20,385 +29,191 @@ const inlinePhrasingHtmlElements = new Set([
   'time',
   'u',
 ]);
-function tableBorderSpacingDefault(table: Element): {
-  horizontal: number;
-  vertical: number;
+const text = (
+  fontSize: number,
+  lineHeight: number,
+  top: number,
+  bottom = top,
+) => ({
+  'font-family': 'Times New Roman',
+  'font-size': `${fontSize}px`,
+  'line-height': `${lineHeight}px`,
+  'margin-top': `${top}px`,
+  'margin-bottom': `${bottom}px`,
+});
+const control = (border: string) => ({ 'box-sizing': 'border-box', border });
+const list = declarations({
+  'margin-top': '16px',
+  'margin-bottom': '16px',
+  'padding-left': '40px',
+});
+const portable: Record<string, Declarations> = {
+  ul: list,
+  ol: list,
+  menu: list,
+  dl: declarations({ 'margin-top': '16px', 'margin-bottom': '16px' }),
+  dd: declarations({ 'margin-left': '40px' }),
+  p: declarations(text(16, 20, 16)),
+  blockquote: declarations({
+    ...text(16, 20, 16),
+    'margin-left': '40px',
+    'margin-right': '40px',
+  }),
+  address: declarations({
+    'font-family': 'Times New Roman',
+    'font-size': '16px',
+    'line-height': '20px',
+  }),
+  figure: declarations({ margin: '16px 40px' }),
+  pre: declarations({
+    ...text(13, 17, 13),
+    'font-family': 'monospace',
+    'white-space': 'pre',
+  }),
+  hr: declarations({
+    height: '0px',
+    'margin-top': '8px',
+    'margin-bottom': '8px',
+    border: '1px inset',
+  }),
+  dialog: declarations({
+    position: 'absolute',
+    'z-index': '1',
+    margin: 'auto',
+    padding: '16px',
+    border: '3px solid',
+  }),
+  iframe: declarations({ border: '2px inset' }),
+  h1: declarations(text(32, 40, 21.44)),
+  h2: declarations(text(24, 30, 19.92)),
+  h3: declarations(text(18.72, 23, 18.72)),
+  h4: declarations(text(16, 20, 21.28)),
+  h5: declarations(text(13.28, 17, 22.1776)),
+  h6: declarations(text(10.72, 14, 24.9776)),
+  button: declarations({ ...control('2px outset'), padding: '1px 6px' }),
+  textarea: declarations({ ...control('1px solid'), padding: '2px' }),
+  select: declarations(control('1px solid')),
+};
+const input: Record<string, Declarations> = {
+  hidden: declarations({ 'box-sizing': 'border-box', display: 'none' }),
+  file: declarations({ 'box-sizing': 'border-box' }),
+  image: declarations({ 'box-sizing': 'border-box' }),
+  checkbox: declarations({
+    'box-sizing': 'border-box',
+    margin: '3px 3px 3px 4px',
+  }),
+  radio: declarations({
+    'box-sizing': 'border-box',
+    'margin-top': '3px',
+    'margin-right': '3px',
+    'margin-left': '5px',
+  }),
+  range: declarations({ 'box-sizing': 'border-box', margin: '2px' }),
+  color: declarations(control('1px solid')),
+  button: declarations({ ...control('2px outset'), padding: '1px 2px' }),
+  text: declarations({ ...control('2px inset'), padding: '1px 2px' }),
+};
+input.submit = input.button;
+input.reset = input.button;
+
+/** HTML supplies declaration sources, never a partially mutated computed style. */
+export function htmlStyleDeclarations(
+  element: Element,
+  profile: 'portable' | 'none',
+): {
+  userAgent: Declarations;
+  presentationalHints: Declarations;
 } {
-  const cellSpacing = nonNegativeAttributeNumber(table, 'cellspacing');
-
-  if (cellSpacing === undefined) {
-    return { horizontal: 2, vertical: 2 };
+  const tag = element.tagName.toLowerCase();
+  const structural = inlineTags.has(tag)
+    ? inline
+    : tag === 'td' || tag === 'th'
+      ? middle
+      : empty;
+  let presentation = empty;
+  const hints: CssDeclaration[] = [];
+  const dimension = (property: string, value: number | undefined) => {
+    if (value !== undefined) hints.push({ property, value: `${value}px` });
+  };
+  if ((tag === 'img' || tag === 'svg') && !hasIntrinsicSizeOverride(element)) {
+    const width = dimensionAttribute(element, 'width');
+    const height = dimensionAttribute(element, 'height');
+    dimension('width', width);
+    dimension('height', height);
+    // The declaration's hint origin preserves the image's natural-ratio fallback.
+    if (tag === 'img' && width && height)
+      hints.push({ property: 'aspect-ratio', value: `${width} / ${height}` });
   }
-
-  return { horizontal: cellSpacing, vertical: cellSpacing };
-}
-
-function applyTableDimensionAttributes(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const width = nonNegativeAttributeNumber(element, 'width');
-  const height = nonNegativeAttributeNumber(element, 'height');
-
-  style.width = width ?? style.width;
-  style.height = height ?? style.height;
-}
-
-function applyTableCellPaddingDefault(
-  style: SupportedStyle,
-  cell: Element,
-): void {
-  const table = closestHtmlTable(cell);
-  const cellPadding = table
-    ? nonNegativeAttributeNumber(table, 'cellpadding')
-    : undefined;
-
-  if (cellPadding === undefined) {
-    return;
+  if (['table', 'col', 'td', 'th'].includes(tag)) {
+    dimension('width', nonNegativeAttributeNumber(element, 'width'));
+    dimension('height', nonNegativeAttributeNumber(element, 'height'));
   }
-
-  style.padding.top = cellPadding;
-  style.padding.right = cellPadding;
-  style.padding.bottom = cellPadding;
-  style.padding.left = cellPadding;
-}
-
-function closestHtmlTable(element: Element): Element | undefined {
-  let current = element.parentElement;
-  while (current) {
-    if (current.tagName.toLowerCase() === 'table') return current;
-    current = current.parentElement;
+  if (tag === 'td' || tag === 'th') {
+    let table = element.parentElement;
+    while (table && table.tagName.toLowerCase() !== 'table')
+      table = table.parentElement;
+    const padding = table
+      ? nonNegativeAttributeNumber(table, 'cellpadding')
+      : undefined;
+    if (padding !== undefined)
+      hints.push({ property: 'padding', value: `${padding}px` });
   }
-  return undefined;
-}
-function nonNegativeAttributeNumber(
-  element: Element,
-  attribute: string,
-): number | undefined {
-  const value = element.getAttribute(attribute);
-
-  if (value === null || value.trim() === '') {
-    return undefined;
-  }
-
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : undefined;
-}
-
-export function applyStructuralHtmlDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const tagName = element.tagName.toLowerCase();
-
-  if (inlinePhrasingHtmlElements.has(tagName)) {
-    style.display = 'inline';
-  }
-
-  applyReplacedDimensionAttributes(style, element);
-
-  // HTML presentational attributes are author-origin hints, not browser-theme
-  // styling. Keep them active when the portable presentation profile is off.
   if (
-    tagName === 'table' ||
-    tagName === 'col' ||
-    tagName === 'td' ||
-    tagName === 'th'
-  ) {
-    applyTableDimensionAttributes(style, element);
-  }
-  if (tagName === 'td' || tagName === 'th') {
-    style.verticalAlign = 'middle';
-    applyTableCellPaddingDefault(style, element);
-  }
-  if (tagName === 'object') {
-    applyObjectFallbackAttributes(style, element);
-  }
-}
-
-export function applyPortableUserAgentDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  const tagName = element.tagName.toLowerCase();
-
-  switch (tagName) {
-    case 'ul':
-    case 'ol':
-    case 'menu':
-      style.margin.top = 16;
-      style.margin.bottom = 16;
-      style.padding.left = 40;
-      return;
-    case 'dl':
-      style.margin.top = 16;
-      style.margin.bottom = 16;
-      return;
-    case 'dd':
-      style.margin.left = 40;
-      return;
-    case 'p':
-      applyBlockTextDefaults(style, 16, 20, 16, 16);
-      return;
-    case 'blockquote':
-      applyBlockTextDefaults(style, 16, 20, 16, 16);
-      style.margin.left = 40;
-      style.margin.right = 40;
-      return;
-    case 'address':
-      style.fontFamily = 'Times New Roman';
-      style.fontSize = 16;
-      style.lineHeight = 20;
-      return;
-    case 'figure':
-      style.margin.top = 16;
-      style.margin.right = 40;
-      style.margin.bottom = 16;
-      style.margin.left = 40;
-      return;
-    case 'pre':
-      applyBlockTextDefaults(style, 13, 17, 13, 13);
-      style.fontFamily = 'monospace';
-      style.whiteSpace = 'pre';
-      return;
-    case 'hr':
-      style.height = 0;
-      style.margin.top = 8;
-      style.margin.bottom = 8;
-      applyBorderDefaults(style, 'inset', 1);
-      return;
-    case 'dialog':
-      style.position = 'absolute';
-      style.zIndex = 1;
-      style.zIndexAuto = false;
-      style.margin.top = 'auto';
-      style.margin.right = 'auto';
-      style.margin.bottom = 'auto';
-      style.margin.left = 'auto';
-      style.padding.top = 16;
-      style.padding.right = 16;
-      style.padding.bottom = 16;
-      style.padding.left = 16;
-      applyBorderDefaults(style, 'solid', 3);
-      if (!element.hasAttribute('open')) {
-        style.display = 'none';
-      }
-      return;
-    case 'table':
-      style.tableBorderSpacing = tableBorderSpacingDefault(element);
-      return;
-    case 'col':
-      return;
-    case 'td':
-    case 'th':
-      return;
-    case 'iframe':
-      applyBorderDefaults(style, 'inset', 2);
-      return;
-    case 'object':
-      return;
-    case 'h1':
-      applyHeadingDefaults(style, 32, 40, 21.44);
-      return;
-    case 'h2':
-      applyHeadingDefaults(style, 24, 30, 19.92);
-      return;
-    case 'h3':
-      applyHeadingDefaults(style, 18.72, 23, 18.72);
-      return;
-    case 'h4':
-      applyHeadingDefaults(style, 16, 20, 21.28);
-      return;
-    case 'h5':
-      applyHeadingDefaults(style, 13.28, 17, 22.1776);
-      return;
-    case 'h6':
-      applyHeadingDefaults(style, 10.72, 14, 24.9776);
-      return;
-    case 'button':
-      applyFormControlBoxDefaults(style, 'outset', 2);
-      style.padding.top = 1;
-      style.padding.right = 6;
-      style.padding.bottom = 1;
-      style.padding.left = 6;
-      return;
-    case 'input':
-      applyInputUserAgentDefaults(style, element);
-      return;
-    case 'textarea':
-      applyFormControlBoxDefaults(style, 'solid', 1);
-      style.padding.top = 2;
-      style.padding.right = 2;
-      style.padding.bottom = 2;
-      style.padding.left = 2;
-      return;
-    case 'select':
-      applyFormControlBoxDefaults(style, 'solid', 1);
-      return;
-  }
-}
-
-export function applyPostAuthorStructuralDefaults(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  if (
-    element.tagName.toLowerCase() === 'input' &&
-    (element.getAttribute('type') ?? 'text').toLowerCase() === 'hidden'
-  ) {
-    // Chromium keeps hidden inputs non-rendered even when author CSS sets
-    // display:block, so this UA constraint has to run after author styles.
-    style.display = 'none';
-  }
-
-  if (
-    element.tagName.toLowerCase() === 'audio' &&
-    !element.hasAttribute('controls')
-  ) {
-    // Audio elements without native controls do not generate a layout box in
-    // Chromium, even when author CSS sets display:block.
-    style.display = 'none';
-  }
-}
-
-function applyBlockTextDefaults(
-  style: SupportedStyle,
-  fontSize: number,
-  lineHeight: number,
-  marginTop: number,
-  marginBottom: number,
-): void {
-  style.fontFamily = 'Times New Roman';
-  style.fontSize = fontSize;
-  style.lineHeight = lineHeight;
-  style.margin.top = marginTop;
-  style.margin.bottom = marginBottom;
-}
-
-function applyHeadingDefaults(
-  style: SupportedStyle,
-  fontSize: number,
-  lineHeight: number,
-  blockMargin: number,
-): void {
-  applyBlockTextDefaults(style, fontSize, lineHeight, blockMargin, blockMargin);
-}
-
-function applyObjectFallbackAttributes(
-  style: SupportedStyle,
-  element: Element,
-): void {
-  if (!isObjectFallbackContentLayout(element)) {
-    return;
-  }
-
-  style.width = readNumberAttribute(element, 'width') ?? style.width;
-  style.height = readNumberAttribute(element, 'height') ?? style.height;
-}
-
-function isObjectFallbackContentLayout(element: Element): boolean {
-  return (
-    element.tagName.toLowerCase() === 'object' &&
+    tag === 'object' &&
     !element.hasAttribute('type') &&
     !element.hasAttribute('data') &&
     Array.from(element.children).some(
       child => child.tagName.toLowerCase() !== 'param',
     )
+  ) {
+    dimension('width', nonNegativeAttributeNumber(element, 'width'));
+    dimension('height', nonNegativeAttributeNumber(element, 'height'));
+  }
+  if (profile === 'portable') {
+    presentation =
+      tag === 'input'
+        ? (ownDeclarations(
+            input,
+            (element.getAttribute('type') ?? 'text').toLowerCase(),
+          ) ?? input.text)
+        : (ownDeclarations(portable, tag) ?? empty);
+    if (tag === 'dialog' && !element.hasAttribute('open'))
+      presentation = [...presentation, { property: 'display', value: 'none' }];
+    if (tag === 'table')
+      presentation = declarations({
+        'border-spacing': `${nonNegativeAttributeNumber(element, 'cellspacing') ?? 2}px`,
+      });
+  }
+  return {
+    userAgent: [...structural, ...presentation],
+    presentationalHints: hints,
+  };
+}
+
+/** Rendering eligibility is an HTML constraint, not an author-overridable default. */
+export function suppressesPrincipalBox(element: Element): boolean {
+  const tag = element.tagName.toLowerCase();
+  // Chromium suppresses these even when author CSS requests display:block.
+  return (
+    (tag === 'input' &&
+      (element.getAttribute('type') ?? 'text').toLowerCase() === 'hidden') ||
+    (tag === 'audio' && !element.hasAttribute('controls'))
   );
 }
 
-function applyInputUserAgentDefaults(
-  style: SupportedStyle,
+function nonNegativeAttributeNumber(
   element: Element,
-): void {
-  const type = (element.getAttribute('type') ?? 'text').toLowerCase();
-
-  style.boxSizing = 'border-box';
-
-  if (type === 'hidden') {
-    style.display = 'none';
-    return;
-  }
-
-  if (type === 'file' || type === 'image') {
-    return;
-  }
-
-  if (type === 'checkbox') {
-    style.margin.top = 3;
-    style.margin.right = 3;
-    style.margin.bottom = 3;
-    style.margin.left = 4;
-    return;
-  }
-
-  if (type === 'radio') {
-    style.margin.top = 3;
-    style.margin.right = 3;
-    style.margin.left = 5;
-    return;
-  }
-
-  if (type === 'range') {
-    style.margin.top = 2;
-    style.margin.left = 2;
-    style.margin.right = 2;
-    style.margin.bottom = 2;
-    return;
-  }
-
-  if (type === 'color') {
-    applyFormControlBoxDefaults(style, 'solid', 1);
-    return;
-  }
-
-  applyFormControlBoxDefaults(
-    style,
-    type === 'button' || type === 'submit' || type === 'reset'
-      ? 'outset'
-      : 'inset',
-    2,
-  );
-  style.padding.top = 1;
-  style.padding.right = 2;
-  style.padding.bottom = 1;
-  style.padding.left = 2;
-}
-
-function applyFormControlBoxDefaults(
-  style: SupportedStyle,
-  borderStyle: SupportedStyle['borderStyle']['top'],
-  borderWidth: number,
-): void {
-  style.boxSizing = 'border-box';
-  applyBorderDefaults(style, borderStyle, borderWidth);
-}
-
-function applyBorderDefaults(
-  style: SupportedStyle,
-  borderStyle: SupportedStyle['borderStyle']['top'],
-  borderWidth: number,
-): void {
-  style.borderStyle.top = borderStyle;
-  style.borderStyle.right = borderStyle;
-  style.borderStyle.bottom = borderStyle;
-  style.borderStyle.left = borderStyle;
-  style.borderWidth.top = borderWidth;
-  style.borderWidth.right = borderWidth;
-  style.borderWidth.bottom = borderWidth;
-  style.borderWidth.left = borderWidth;
-}
-
-function readNumberAttribute(
-  element: Element,
-  name: string,
+  attribute: string,
 ): number | undefined {
-  const value = element.getAttribute(name);
-
-  if (!value) {
-    return undefined;
-  }
-
+  const value = element.getAttribute(attribute);
+  if (value === null || value.trim() === '') return undefined;
   const number = Number(value);
-  return Number.isFinite(number) ? number : undefined;
+  return Number.isFinite(number) && number >= 0 ? number : undefined;
+}
+
+function ownDeclarations(
+  rules: Record<string, Declarations>,
+  key: string,
+): Declarations | undefined {
+  return Object.hasOwn(rules, key) ? rules[key] : undefined;
 }

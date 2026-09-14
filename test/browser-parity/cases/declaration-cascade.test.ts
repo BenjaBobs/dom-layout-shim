@@ -41,3 +41,15 @@ it('resolves generated content variables including pseudo-local custom propertie
     ],
   });
 });
+
+it.each(['inline-style', 'stylesheet'])(
+  'resolves %s font sizes against inheritance rather than a portable default',
+  async source => {
+    const authored = source === 'inline-style' ? 'style="font-size:2em"' : '';
+    await expectChromiumParity({
+      viewport: { width: 400, height: 300 },
+      html: `<!doctype html><style>body{margin:0}#parent{font-size:30px}#text{margin:0;width:1em;height:10px}${source === 'stylesheet' ? '#text{font-size:2em}' : ''}</style><div id="parent"><p id="text" ${authored}></p></div>`,
+      queries: [{ type: 'rect', selector: '#text' }],
+    });
+  },
+);

@@ -76,8 +76,6 @@ describe('source boundaries', () => {
       'apply-declaration.ts',
       'cascade.ts',
       'inherited-style.ts',
-      'html-dimensions.ts',
-      'html-style-defaults.ts',
     ].map(name => resolve(css, name));
     for (const path of sourceFiles('src')) {
       if (writers.includes(path)) continue;

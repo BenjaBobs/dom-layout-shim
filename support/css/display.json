@@ -18,16 +18,20 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["display-aliases", "static-block-flow"]
+        "fixtures": [
+          "display-aliases",
+          "static-block-flow",
+          "inline-composition"
+        ]
       },
       "notes": [
         {
           "kind": "taffy-compat",
-          "text": "Authored `inline`, `inline-block`, and `list-item` values are blockified. `flow-root` is passed to Taffy 0.14 and establishes an independent block formatting context."
+          "text": "Authored inline values reach shared inline formatting for non-replaced text containers. Computed blockification applies to absolute/fixed elements and flex/grid items, including display:contents flattening. inline-block and list-item remain blockified; flow-root reaches the backend formatting context."
         },
         {
           "kind": "limitation",
-          "text": "Inline formatting and list marker layout are not modeled."
+          "text": "Atomic inline replaced elements, inline-block formatting, and list marker layout are not modeled."
         }
       ]
     },

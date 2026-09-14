@@ -56,6 +56,10 @@
         {
           "kind": "limitation",
           "text": "The implemented table subset is intentionally narrow and relies on explicit sizing for complex structures."
+        },
+        {
+          "kind": "implementation-quirk",
+          "text": "Supported HTML width, height, and cellpadding hints enter the same cascade as author declarations, above normal user-agent rules and below normal author rules."
         }
       ]
     },
@@ -97,9 +101,14 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["table-explicit-cells"]
+        "fixtures": ["table-explicit-cells", "table-cell-content"]
       },
-      "notes": []
+      "notes": [
+        {
+          "kind": "browser-parity",
+          "text": "table-cell-content verifies explicit caption-side:top overriding inherited bottom and empty-cells inheritance through a row group with a cell override. Table properties use common computed inheritance."
+        }
+      ]
     },
     {
       "id": "table-visibility-and-hit-testing",
@@ -108,12 +117,16 @@
       "support": "partial",
       "parity": {
         "status": "verified",
-        "fixtures": ["table-explicit-cells"]
+        "fixtures": ["table-explicit-cells", "table-cell-content"]
       },
       "notes": [
         {
           "kind": "limitation",
           "text": "Complex table-specific `visibility: collapse` interactions are not modeled."
+        },
+        {
+          "kind": "browser-parity",
+          "text": "table-cell-content verifies explicit caption-side:top overriding inherited bottom and empty-cells inheritance through a row group with a cell override. Table properties use common computed inheritance."
         }
       ]
     },

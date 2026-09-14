@@ -31,6 +31,9 @@ to `src/css-parity-implementation/`.
 
 ### Phase invariants
 
+- Every style field requires an explicit inherited/initial classification. Table
+  captions and empty cells consume computed inheritance, without layout-time
+  guesses based on default values or table ancestors.
 - Completed styles are deeply read-only to formatting and projection. Only the
   resolver can initialize styles or call cascade/inheritance machinery; source
   boundary tests parse runtime imports, re-exports, and dynamic imports.
@@ -62,12 +65,13 @@ that rebuild WASM concurrently: tests, typechecking, builds, and docs share the
 generated binding directory. After a build, focused `pnpm exec vitest run`
 commands can reuse it.
 
-### Remaining architectural exceptions
+### Specialized behavior and completion criteria
 
-`css/html-style-defaults.ts` owns the existing procedural HTML initialization,
-portable presentation, and non-rendering constraints. Only the resolver may call
-it. This isolates the exception; it does **not** turn those defaults into CSS
-rules. Changes here still need profile-on/profile-off and author-override coverage.
+`css/html-style-defaults.ts` supplies user-agent declarations and presentational
+hints to the common cascade; it cannot mutate a style. Normal hints rank between
+normal user-agent and author declarations. Hidden-input and controls-free audio
+suppression are explicit HTML box-generation constraints. Computed blockification
+is shared by elements and pseudos, including items flattened through contents.
 
 Table track allocation and inline formatting remain specialized algorithms. They
 must reuse resolved styles and submit complete geometry records. Their existence

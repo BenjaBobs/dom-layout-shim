@@ -56,3 +56,28 @@ it('keeps pseudo and anonymous initialization inside the same resolution session
   expect(host.content).toBeUndefined();
   expect(anonymous).not.toBe(host);
 });
+
+it.each(['portable', 'none'] as const)(
+  'cascades HTML sizing hints between normal user-agent and author declarations with the %s profile',
+  profile => {
+    const element = document.createElement('img');
+    element.setAttribute('width', '100');
+    element.setAttribute('height', '50');
+    document.body.replaceChildren(element);
+    const resolver = (userAgent: string, author = '') =>
+      createStyleResolver({
+        rules: readCssTextRules(author, 'author.css', undefined),
+        userAgentRules: readCssTextRules(userAgent, 'ua.css', undefined),
+        profile,
+        policy: undefined,
+        viewport: { width: 400, height: 300 },
+      }).element(element);
+    expect(resolver('img{width:25px}').width).toBe(100);
+    expect(resolver('img{width:25px}', 'img{width:75px}').width).toBe(75);
+    expect(
+      resolver('img{width:25px!important}', 'img{width:75px!important}').width,
+    ).toBe(25);
+    expect(resolver('').aspectRatioIsHint).toBe(true);
+    expect(resolver('', 'img{aspect-ratio:3}').aspectRatioIsHint).toBe(false);
+  },
+);

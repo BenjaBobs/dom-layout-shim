@@ -1820,6 +1820,8 @@ function applyDisplay(
       style.display = value;
       return;
     case 'inline':
+      style.display = 'inline';
+      return;
     case 'inline-block':
     case 'list-item':
       style.display = 'block';

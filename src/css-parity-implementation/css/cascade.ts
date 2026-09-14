@@ -12,7 +12,7 @@ import type { MutableSupportedStyle as SupportedStyle } from './supported-style.
 
 export type CascadedDeclaration = CssDeclaration & {
   context: DeclarationContext;
-  origin: 'user-agent' | 'author';
+  origin: 'user-agent' | 'presentational-hint' | 'author';
 };
 
 // Input order already expresses specificity, source order, and inline priority
@@ -20,14 +20,15 @@ export type CascadedDeclaration = CssDeclaration & {
 export function orderDeclarations(
   declarations: readonly CascadedDeclaration[],
 ): CascadedDeclaration[] {
-  const rank = (declaration: CascadedDeclaration) =>
-    declaration.important
-      ? declaration.origin === 'user-agent'
-        ? 3
-        : 2
-      : declaration.origin === 'user-agent'
-        ? 0
-        : 1;
+  const rank = (declaration: CascadedDeclaration) => {
+    if (declaration.important)
+      return declaration.origin === 'user-agent' ? 4 : 3;
+    return declaration.origin === 'user-agent'
+      ? 0
+      : declaration.origin === 'presentational-hint'
+        ? 1
+        : 2;
+  };
   return declarations.toSorted((a, b) => rank(a) - rank(b));
 }
 
@@ -88,5 +89,13 @@ export function applyCascadedStyle(
       ...declaration.context,
       customProperties,
     });
+    if (
+      declaration.origin === 'presentational-hint' &&
+      declaration.property === 'aspect-ratio'
+    ) {
+      // HTML image attributes provide an auto-ratio fallback, while author CSS
+      // supplies a preferred ratio. Keep that distinction on the winning value.
+      style.aspectRatioIsHint = true;
+    }
   }
 }
