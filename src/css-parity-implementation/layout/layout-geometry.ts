@@ -1,17 +1,19 @@
 import type { Box } from '../../api/box.ts';
 import type { HitBox } from '../../api/hit-box.ts';
+import type { BoxInsets } from './box-metrics.ts';
 import type { ScrollOffset } from './layout-source.ts';
 
 /** Every formatting context must supply the complete, unprojected output. */
 export type ElementGeometry = {
-  rects: Box;
-  fragmentRects: readonly Box[];
-  layoutRects: Box;
-  normalRects: Box;
-  resizeRects: Box;
-  clientRects: Box;
-  contentRects: Box;
-  hitBoxes: readonly HitBox[];
+  insets: BoxInsets;
+  rects: Readonly<Box>;
+  fragmentRects: readonly Readonly<Box>[];
+  layoutRects: Readonly<Box>;
+  normalRects: Readonly<Box>;
+  resizeRects: Readonly<Box>;
+  clientRects: Readonly<Box>;
+  contentRects: Readonly<Box>;
+  hitBoxes: readonly Readonly<HitBox>[];
 };
 
 type GeometryMaps = {
@@ -32,6 +34,7 @@ export function createLayoutGeometry(): LayoutGeometry {
   const maps: {
     [K in keyof ElementGeometry]: Map<Element, ElementGeometry[K]>;
   } = {
+    insets: new Map(),
     rects: new Map(),
     fragmentRects: new Map(),
     layoutRects: new Map(),

@@ -10,6 +10,7 @@ import {
 } from '../../src/css-parity-implementation/layout/taffy-layout-source.ts';
 
 it.each([
+  '<div style="width:80px;height:200px;padding:10%;border:2px solid"><span>Percentage padded text</span></div>',
   '<div style="height:200px;transform:translateX(10px)"><span style="font-size:20px">one two three four five</span></div>',
   '<table style="border-spacing:0"><tbody><tr><td style="padding:0"><div style="width:100px;height:150px"><span>Cell text</span></div></td></tr></tbody></table>',
   '<div style="height:200px"><div style="position:sticky;top:0;height:20px">Sticky</div><div style="position:fixed;top:10px;left:200px;width:20px;height:20px"></div></div>',

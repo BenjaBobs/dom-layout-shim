@@ -1,8 +1,11 @@
 use js_sys::{Array, Function, Object, Reflect};
+use std::collections::{BTreeMap, HashMap};
 use taffy::prelude::*;
+use taffy::style::ExpandedLengthPercentage;
 use taffy::style::{
     GridTemplateArea, GridTemplateAreas, GridTemplateComponent, GridTemplateRepetition,
 };
+use taffy::util::ResolveOrZero;
 use wasm_bindgen::prelude::*;
 
 type JsResult<T> = Result<T, JsValue>;
@@ -10,6 +13,7 @@ type JsResult<T> = Result<T, JsValue>;
 #[wasm_bindgen]
 pub struct TaffyTree {
     tree: taffy::TaffyTree<JsValue>,
+    percentage_padding: HashMap<NodeId, Rect<LengthPercentage>>,
 }
 
 #[wasm_bindgen]
@@ -18,6 +22,7 @@ impl TaffyTree {
     pub fn new() -> Self {
         Self {
             tree: taffy::TaffyTree::new(),
+            percentage_padding: HashMap::new(),
         }
     }
 
@@ -28,10 +33,14 @@ impl TaffyTree {
 
     #[wasm_bindgen(js_name = newLeafWithContext)]
     pub fn new_leaf_with_context(&mut self, style: &JsValue, context: JsValue) -> JsResult<u64> {
-        self.tree
-            .new_leaf_with_context(parse_style(style)?, context)
-            .map(u64::from)
-            .map_err(to_js_error)
+        let style = parse_style(style)?;
+        let padding = style.padding;
+        let node = self
+            .tree
+            .new_leaf_with_context(style, context)
+            .map_err(to_js_error)?;
+        remember_percentage_padding(&mut self.percentage_padding, node, padding);
+        Ok(node.into())
     }
 
     #[wasm_bindgen(js_name = newWithChildren)]
@@ -40,17 +49,22 @@ impl TaffyTree {
             .iter()
             .map(js_node_id)
             .collect::<JsResult<Vec<_>>>()?;
-        self.tree
-            .new_with_children(parse_style(style)?, &children)
-            .map(u64::from)
-            .map_err(to_js_error)
+        let style = parse_style(style)?;
+        let padding = style.padding;
+        let node = self
+            .tree
+            .new_with_children(style, &children)
+            .map_err(to_js_error)?;
+        remember_percentage_padding(&mut self.percentage_padding, node, padding);
+        Ok(node.into())
     }
 
     #[wasm_bindgen(js_name = setStyle)]
     pub fn set_style(&mut self, node: u64, style: &JsValue) -> JsResult<()> {
-        self.tree
-            .set_style(NodeId::from(node), parse_style(style)?)
-            .map_err(to_js_error)
+        let node = NodeId::from(node);
+        let style = parse_style(style)?;
+        remember_percentage_padding(&mut self.percentage_padding, node, style.padding);
+        self.tree.set_style(node, style).map_err(to_js_error)
     }
 
     #[wasm_bindgen(js_name = computeLayoutWithMeasure)]
@@ -61,37 +75,69 @@ impl TaffyTree {
         measure: &Function,
     ) -> JsResult<()> {
         let available_space = parse_available_size(available_space)?;
-        let mut measure_error = None;
-        let result = self.tree.compute_layout_with_measure(
-            NodeId::from(root),
-            available_space,
-            |inputs, node, mut context, style| {
-                taffy::compute_leaf_layout(
-                    inputs,
-                    style,
-                    |_, _| 0.0,
-                    |known, available| {
-                        if measure_error.is_some() {
-                            return Size::ZERO;
-                        }
-
-                        match call_measure(measure, known, available, node, context.as_deref_mut())
-                        {
-                            Ok(size) => size,
-                            Err(error) => {
-                                measure_error = Some(error);
-                                Size::ZERO
-                            }
-                        }
-                    },
-                )
-            },
-        );
-
-        if let Some(error) = measure_error {
-            return Err(error);
+        let root = NodeId::from(root);
+        let mut levels: BTreeMap<usize, Vec<NodeId>> = BTreeMap::new();
+        // Taffy 0.14 block::generate_item_list resolves vertical percentage
+        // padding against parent height, affecting both flow sizing and stored
+        // padding. Normalize at the backend boundary, before final layout, for
+        // every backend node (DOM, generated, anonymous, and table-cell roots).
+        // Remove this when upstream uses node_inner_size.width for those edges.
+        for (&node, &padding) in &self.percentage_padding {
+            let mut ancestor = node;
+            let mut depth = 0;
+            while ancestor != root {
+                let Some(parent) = self.tree.parent(ancestor) else {
+                    break;
+                };
+                ancestor = parent;
+                depth += 1;
+            }
+            if ancestor != root {
+                continue;
+            }
+            // Restore percentages before each computation: changed parents and
+            // independent formatting-root widths must resolve from source again.
+            let mut style = self.tree.style(node).map_err(to_js_error)?.clone();
+            if style.padding != padding {
+                style.padding = padding;
+                self.tree
+                    .set_style(node, style.clone())
+                    .map_err(to_js_error)?;
+            }
+            if node == root || style.position == Position::Absolute {
+                continue;
+            }
+            let parent = self.tree.parent(node).unwrap();
+            if matches!(
+                self.tree.style(parent).map_err(to_js_error)?.display,
+                Display::Block | Display::FlowRoot
+            ) {
+                levels.entry(depth).or_default().push(node);
+            }
         }
-        result.map_err(to_js_error)
+        run_layout(&mut self.tree, root, available_space, measure)?;
+        // A finite outer-to-inner traversal handles nested percentages without
+        // geometry-only repairs or arbitrary convergence retries.
+        for nodes in levels.values() {
+            for &node in nodes {
+                let parent = self.tree.parent(node).unwrap();
+                let layout = self.tree.layout(parent).map_err(to_js_error)?;
+                let width = (layout.size.width
+                    - layout.border.left
+                    - layout.border.right
+                    - layout.padding.left
+                    - layout.padding.right
+                    - layout.scrollbar_size.width)
+                    .max(0.0);
+                let padding =
+                    self.percentage_padding[&node].resolve_or_zero(Some(width), |_, _| 0.0);
+                let mut style = self.tree.style(node).map_err(to_js_error)?.clone();
+                style.padding = padding.map(LengthPercentage::length);
+                self.tree.set_style(node, style).map_err(to_js_error)?;
+            }
+            run_layout(&mut self.tree, root, available_space, measure)?;
+        }
+        Ok(())
     }
 
     #[wasm_bindgen(js_name = getLayout)]
@@ -102,6 +148,18 @@ impl TaffyTree {
         set(&object, "y", layout.location.y)?;
         set(&object, "width", layout.size.width)?;
         set(&object, "height", layout.size.height)?;
+        // Preserve the solver's resolved insets. Reinterpreting authored CSS in
+        // geometry loses percentage padding (especially grid-area percentages).
+        Reflect::set(
+            &object,
+            &JsValue::from_str("border"),
+            &rect_object(layout.border)?,
+        )?;
+        Reflect::set(
+            &object,
+            &JsValue::from_str("padding"),
+            &rect_object(layout.padding)?,
+        )?;
         set(
             &object,
             "contentWidth",
@@ -114,6 +172,59 @@ impl TaffyTree {
         )?;
         Ok(object.into())
     }
+}
+
+fn remember_percentage_padding(
+    sources: &mut HashMap<NodeId, Rect<LengthPercentage>>,
+    node: NodeId,
+    padding: Rect<LengthPercentage>,
+) {
+    if [padding.top, padding.right, padding.bottom, padding.left]
+        .iter()
+        .any(|edge| matches!(edge.expand(), ExpandedLengthPercentage::Percent(_)))
+    {
+        sources.insert(node, padding);
+    } else {
+        sources.remove(&node);
+    }
+}
+
+fn run_layout(
+    tree: &mut taffy::TaffyTree<JsValue>,
+    root: NodeId,
+    available_space: Size<AvailableSpace>,
+    measure: &Function,
+) -> JsResult<()> {
+    let mut measure_error = None;
+    let result = tree.compute_layout_with_measure(
+        root,
+        available_space,
+        |inputs, node, mut context, style| {
+            taffy::compute_leaf_layout(
+                inputs,
+                style,
+                |_, _| 0.0,
+                |known, available| {
+                    if measure_error.is_some() {
+                        return Size::ZERO;
+                    }
+
+                    match call_measure(measure, known, available, node, context.as_deref_mut()) {
+                        Ok(size) => size,
+                        Err(error) => {
+                            measure_error = Some(error);
+                            Size::ZERO
+                        }
+                    }
+                },
+            )
+        },
+    );
+
+    if let Some(error) = measure_error {
+        return Err(error);
+    }
+    result.map_err(to_js_error)
 }
 
 fn call_measure(
@@ -552,6 +663,15 @@ fn size_object(width: JsValue, height: JsValue) -> JsResult<JsValue> {
     let object = Object::new();
     Reflect::set(&object, &JsValue::from_str("width"), &width)?;
     Reflect::set(&object, &JsValue::from_str("height"), &height)?;
+    Ok(object.into())
+}
+
+fn rect_object(rect: Rect<f32>) -> JsResult<JsValue> {
+    let object = Object::new();
+    set(&object, "top", rect.top)?;
+    set(&object, "right", rect.right)?;
+    set(&object, "bottom", rect.bottom)?;
+    set(&object, "left", rect.left)?;
     Ok(object.into())
 }
 

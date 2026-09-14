@@ -1,5 +1,6 @@
 import { expect, expectTypeOf, it } from 'vitest';
 import { createDefaultStyle } from '../../src/css-parity-implementation/css/supported-style.ts';
+import { emptyBoxInsets } from '../../src/css-parity-implementation/layout/box-metrics.ts';
 import {
   createLayoutGeometry,
   type ElementGeometry,
@@ -11,6 +12,7 @@ it('replaces complete element output without retaining stale hit fragments', () 
   const element = document.createElement('div');
   const box = { x: 10, y: 20, width: 30, height: 40 };
   const output: ElementGeometry = {
+    insets: emptyBoxInsets,
     rects: box,
     fragmentRects: [box],
     layoutRects: box,
@@ -47,6 +49,7 @@ it('projects repeatedly without modifying or transforming the layout input twice
   const geometry = createLayoutGeometry();
   const box = { x: 10, y: 20, width: 30, height: 40 };
   geometry.record(element, {
+    insets: emptyBoxInsets,
     rects: box,
     fragmentRects: [box],
     layoutRects: box,

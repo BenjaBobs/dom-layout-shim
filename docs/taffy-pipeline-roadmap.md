@@ -25,6 +25,7 @@ to `src/css-parity-implementation/`.
 | Styled inline layout | `layout/inline-formatting.ts` | Measurement and element-owned fragments share a cached formatting result. |
 | Percentage dependencies | `layout/containing-block.ts` | Pre-layout and measured phases share containing-block, definiteness, and box-inset rules. |
 | Tree construction and compute | `layout/taffy-layout-source.ts` | Build backend nodes and formatting contexts, including ordinary descendants inside table cells. |
+| Resolved box metrics | `layout/box-metrics.ts`, `layout/taffy/taffy-bindings.ts` | Backend border/padding values feed content/client geometry, scroll sizes, and containing-block calculations; no consumer-specific percentage reconstruction. |
 | Snapshot output allocation | `layout/layout-geometry.ts` | Require complete element geometry records; collectors cannot write individual output maps. |
 | Visual projection | `layout/project-layout.ts` | Read layout geometry and computed styles; return separate visual output without mutating layout or calling the backend/cascade. |
 | Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
@@ -39,6 +40,8 @@ to `src/css-parity-implementation/`.
   boundary tests parse runtime imports, re-exports, and dynamic imports.
 - Complete flow-affecting work before visual projection. Deferred calculations
   follow outer-to-inner dependencies, and table cells reflow at allocated widths.
+- Backend layout reads are immutable and cached until the next computation. The
+  binding owns invalidation; collectors cannot import the raw generated backend.
 - Every formatting context records all geometry outputs together. Anonymous
   formatting boxes cannot overwrite their originating DOM element. Replacing an
   element record also replaces its hit fragments.
@@ -101,6 +104,13 @@ behavior that the current engine now owns natively:
   were removed.
 
 The remaining adapter behavior is not made obsolete by Taffy 0.14:
+
+- Taffy 0.14 block item construction resolves vertical percentage padding against
+  parent height. The owned binding normalizes percentages against parent inline
+  size in a finite outer-to-inner backend-node traversal, then computes final
+  layout. This covers generated/anonymous nodes too; geometry never repairs the
+  resulting flow sizes. Revisit when upstream `block::generate_item_list` uses
+  `node_inner_size.width` for the padding basis.
 
 - Mixed `calc()` values retain dependency-ordered deferred resolution because
   `TaffyTree`'s high-level implementation does not resolve opaque calc handles;

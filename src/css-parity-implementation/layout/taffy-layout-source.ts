@@ -30,6 +30,7 @@ import {
 } from '../css/supported-style.ts';
 import { elementTransform, transformBox } from '../geometry/transform.ts';
 import { prepareHitTesting } from '../hit-testing/point-query.ts';
+import { type BoxInsets, boxMetrics, emptyBoxInsets } from './box-metrics.ts';
 import {
   type ContainingBlockEnvironment,
   containingBlock,
@@ -539,7 +540,8 @@ function collectScrollSizes(
     const style = resolveSupportedStyle(element, state);
     if (!hasPrincipalBox(element, state) || style.display === 'inline')
       continue;
-    const border = effectiveBorderWidth(style);
+    const insets = state.geometry.insets.get(element) ?? emptyBoxInsets;
+    const border = insets.border;
     const clientWidth = Math.max(0, box.width - border.left - border.right);
     const clientHeight = Math.max(0, box.height - border.top - border.bottom);
     const end = ends.get(element) ?? { width: 0, height: 0 };
@@ -563,14 +565,14 @@ function collectScrollSizes(
         clientWidth,
         end.width +
           (isProgrammaticallyScrollable(style.overflowX)
-            ? (resolveDefiniteLength(style.padding.right, paddingBasis) ?? 0)
+            ? insets.padding.right
             : 0),
       ),
       height: Math.max(
         clientHeight,
         end.height +
           (isProgrammaticallyScrollable(style.overflowY)
-            ? (resolveDefiniteLength(style.padding.bottom, paddingBasis) ?? 0)
+            ? insets.padding.bottom
             : 0),
       ),
     };
@@ -583,7 +585,7 @@ function collectScrollSizes(
       ? state.geometry.normalRects.get(parent)
       : undefined;
     const parentBorder = parent
-      ? effectiveBorderWidth(resolveSupportedStyle(parent, state))
+      ? (state.geometry.insets.get(parent)?.border ?? emptyBoxInsets.border)
       : { left: 0, top: 0 };
     const parentScroll = parent
       ? state.geometry.elementScrolls.get(parent)
@@ -726,6 +728,7 @@ function recordInlineFragments(
       const zero = { x: 0, y: 0, width: 0, height: 0 };
       state.paintOrders.set(element, domOrder);
       state.geometry.record(element, {
+        insets: emptyBoxInsets,
         rects: union,
         fragmentRects: fragments,
         // Offset size spans fragments; offset position belongs to the first.
@@ -1606,6 +1609,7 @@ function readElementScrollOffset(element: Element): ScrollOffset {
 function markElementNoBox(element: Element, state: TaffyLayoutState): void {
   const box = { x: 0, y: 0, width: 0, height: 0 };
   state.geometry.record(element, {
+    insets: emptyBoxInsets,
     rects: box,
     fragmentRects: [],
     layoutRects: box,
@@ -1919,15 +1923,18 @@ function recordBox(
 ): void {
   state.paintOrders.set(element, domOrder);
   const inline = style.display === 'inline';
+  const insets = resolvedBoxInsets(element, style, state);
+  const metrics = boxMetrics(box, insets);
   const zero = { x: 0, y: 0, width: 0, height: 0 };
   state.geometry.record(element, {
+    insets,
     rects: box,
     fragmentRects: [box],
     layoutRects: layoutBox,
     normalRects: normalBox,
     resizeRects: inline ? zero : layoutBox,
-    clientRects: inline ? zero : computeClientBox(box, style),
-    contentRects: inline ? zero : computeContentBox(box, style),
+    clientRects: inline ? zero : metrics.client,
+    contentRects: inline ? zero : metrics.content,
     hitBoxes: createHitBoxes(
       element,
       style,
@@ -2038,35 +2045,35 @@ function hasStickyAncestor(element: Element, state: TaffyLayoutState): boolean {
   return false;
 }
 
-function computeClientBox(box: Box, style: SupportedStyle): Box {
-  const border = effectiveBorderWidth(style);
-
+function resolvedBoxInsets(
+  element: Element,
+  style: SupportedStyle,
+  state: TaffyLayoutState,
+): BoxInsets {
+  const node = state.elementNodes.get(element);
+  if (node !== undefined) {
+    const layout = state.tree.getLayout(node);
+    return { border: layout.border, padding: layout.padding };
+  }
+  // Table parts without backend nodes use the table's allocated geometry.
+  // Their CSS lengths still resolve through the shared containing-block model.
+  const environment = containingBlockEnvironment(state, true);
+  const basis = percentageBasis(element, style, {
+    ...environment,
+    layout: ancestor =>
+      environment.layout?.(ancestor) ??
+      state.geometry.layoutRects.get(ancestor),
+  });
+  const edge = (value: SupportedStyle['padding']['top']) =>
+    resolveDefiniteLength(value, basis.width) ?? 0;
   return {
-    x: box.x + border.left,
-    y: box.y + border.top,
-    width: Math.max(0, box.width - horizontal(border)),
-    height: Math.max(0, box.height - vertical(border)),
-  };
-}
-
-function computeContentBox(box: Box, style: SupportedStyle): Box {
-  const client = computeClientBox(box, style);
-  // Percentage padding is resolved by Taffy against the containing block. The
-  // observer surface currently mirrors the engine's fixed-length box model;
-  // unresolved percentage edges contribute zero until that model exposes its
-  // resolved padding values.
-  const left = typeof style.padding.left === 'number' ? style.padding.left : 0;
-  const right =
-    typeof style.padding.right === 'number' ? style.padding.right : 0;
-  const top = typeof style.padding.top === 'number' ? style.padding.top : 0;
-  const bottom =
-    typeof style.padding.bottom === 'number' ? style.padding.bottom : 0;
-
-  return {
-    x: client.x + left,
-    y: client.y + top,
-    width: Math.max(0, client.width - left - right),
-    height: Math.max(0, client.height - top - bottom),
+    border: effectiveBorderWidth(style),
+    padding: {
+      top: edge(style.padding.top),
+      right: edge(style.padding.right),
+      bottom: edge(style.padding.bottom),
+      left: edge(style.padding.left),
+    },
   };
 }
 

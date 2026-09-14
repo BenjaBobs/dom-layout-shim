@@ -17,6 +17,14 @@ describe('source boundaries', () => {
     ).toBe(false);
   });
 
+  it('derives box metrics only from resolved numeric layout inputs', () => {
+    expect(
+      runtimeDependencies(
+        'src/css-parity-implementation/layout/box-metrics.ts',
+      ),
+    ).toEqual([]);
+  });
+
   it('keeps shared line breaking independent of DOM and backend layout', () => {
     expect(
       runtimeDependencies('src/css-parity-implementation/layout/text-lines.ts'),
@@ -48,6 +56,20 @@ describe('source boundaries', () => {
       for (const edge of importsIn(path)) {
         if (!edge.source.startsWith('.')) continue;
         const target = resolve(dirname(path), edge.source);
+        if (
+          target.startsWith(
+            `${resolve('src/css-parity-implementation/layout/taffy/generated')}/`,
+          )
+        ) {
+          expect(
+            path,
+            'Raw backend access bypasses layout cache ownership',
+          ).toBe(
+            resolve(
+              'src/css-parity-implementation/layout/taffy/taffy-bindings.ts',
+            ),
+          );
+        }
         for (const [module, allowed] of Object.entries(owners)) {
           if (target !== resolve(css, module)) continue;
           expect(
