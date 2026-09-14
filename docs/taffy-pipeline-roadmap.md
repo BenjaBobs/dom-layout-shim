@@ -19,6 +19,7 @@ to `src/css-parity-implementation/`.
 | --- | --- | --- |
 | Declaration parsing | `css/declaration-list.ts` | Inline attributes and stylesheet AST blocks produce common declarations with priority metadata. |
 | Source selection | `css/element-cascade.ts` | Matched rules and inline declarations retain origin and diagnostic context. |
+| Style construction | `css/style-resolver.ts` | One session resolves elements, pseudo-elements, and anonymous styles; variables and properties consume one declaration selection. |
 | Computed values | `css/cascade.ts`, `css/inherited-style.ts` | Apply origin/importance ordering, custom properties, font dependencies, and shared inheritance. |
 | Whitespace and wrapping | `layout/text-lines.ts` | Common line breaking with interchangeable width measurement. |
 | Styled inline layout | `layout/inline-formatting.ts` | Measurement and element-owned fragments share a cached formatting result. |
@@ -30,6 +31,9 @@ to `src/css-parity-implementation/`.
 
 ### Phase invariants
 
+- Completed styles are deeply read-only to formatting and projection. Only the
+  resolver can initialize styles or call cascade/inheritance machinery; source
+  boundary tests parse runtime imports, re-exports, and dynamic imports.
 - Complete flow-affecting work before visual projection. Deferred calculations
   follow outer-to-inner dependencies, and table cells reflow at allocated widths.
 - Every formatting context records all geometry outputs together. Anonymous
@@ -57,6 +61,25 @@ instead of repeatedly loading successful build logs. Do not run package commands
 that rebuild WASM concurrently: tests, typechecking, builds, and docs share the
 generated binding directory. After a build, focused `pnpm exec vitest run`
 commands can reuse it.
+
+### Remaining architectural exceptions
+
+`css/html-style-defaults.ts` owns the existing procedural HTML initialization,
+portable presentation, and non-rendering constraints. Only the resolver may call
+it. This isolates the exception; it does **not** turn those defaults into CSS
+rules. Changes here still need profile-on/profile-off and author-override coverage.
+
+Table track allocation and inline formatting remain specialized algorithms. They
+must reuse resolved styles and submit complete geometry records. Their existence
+is not evidence that arbitrary CSS properties belong in those algorithms.
+
+A feature is complete only when its shared semantic owner and affected consumers
+are covered. Check equivalent declaration sources, ordinary/pseudo inheritance,
+relevant formatting contexts, and geometry consumers (fragments, dimensions,
+observers, hits, and scroll reprojection). Select the relevant combinations; do
+not duplicate every layout assertion in unit and parity suites. Document any
+remaining unsupported combinations in the support inventory rather than marking
+a broader feature complete.
 
 ## Taffy 0.14 Upgrade Audit
 

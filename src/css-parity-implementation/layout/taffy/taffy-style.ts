@@ -3,7 +3,6 @@ import type {
   Edges,
   GridMaxTrackBreadth,
   GridMinTrackBreadth,
-  GridTemplateTrack,
   GridTrack,
   MarginValue,
   SupportedDimension,
@@ -349,8 +348,11 @@ function isFractionTrack(
 }
 
 function isGridRepeat(
-  track: GridTemplateTrack,
-): track is { repeat: number; tracks: GridTrack[] } {
+  track: SupportedStyle['gridTemplateColumns'][number],
+): track is Extract<
+  SupportedStyle['gridTemplateColumns'][number],
+  { repeat: number }
+> {
   return typeof track === 'object' && track !== null && 'repeat' in track;
 }
 

@@ -30,29 +30,10 @@ import type {
   MarginValue,
   OverflowValue,
   SupportedDimension,
-  SupportedStyle,
+  MutableSupportedStyle as SupportedStyle,
   SupportedTransform,
   TransformOrigin,
 } from './supported-style.ts';
-
-export type {
-  AlignContentValue,
-  AlignItemsValue,
-  AlignSelfValue,
-  BorderStyles,
-  Edges,
-  FlexWrapValue,
-  GridMaxTrackBreadth,
-  GridMinTrackBreadth,
-  GridPlacementValue,
-  GridTemplateTrack,
-  GridTrack,
-  JustifyContentValue,
-  OverflowValue,
-  SupportedDimension,
-  SupportedStyle,
-} from './supported-style.ts';
-export { createDefaultStyle } from './supported-style.ts';
 
 export type DeclarationContext = {
   policy?: UnsupportedCssPolicy;

@@ -8,7 +8,7 @@ import {
   type CustomProperties,
 } from './custom-properties.ts';
 import type { CssDeclaration } from './declaration-list.ts';
-import type { SupportedStyle } from './supported-style.ts';
+import type { MutableSupportedStyle as SupportedStyle } from './supported-style.ts';
 
 export type CascadedDeclaration = CssDeclaration & {
   context: DeclarationContext;
