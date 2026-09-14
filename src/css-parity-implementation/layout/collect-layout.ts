@@ -1,5 +1,4 @@
 import type { Box } from '../../api/box.ts';
-import type { HitBox } from '../../api/hit-box.ts';
 import type { Viewport } from '../../api/layout-engine-config.ts';
 import {
   resolveCalculatedDimension,
@@ -8,8 +7,9 @@ import {
 import type { SupportedStyle } from '../css/supported-style.ts';
 import { elementTransform, transformBox } from '../geometry/transform.ts';
 import { prepareHitTesting } from '../hit-testing/point-query.ts';
-import { type BoxInsets, boxMetrics, emptyBoxInsets } from './box-metrics.ts';
+import { type BoxInsets, emptyBoxInsets } from './box-metrics.ts';
 import { percentageBasis } from './containing-block.ts';
+import type { PaintMetadata } from './geometry-record.ts';
 import {
   containingBlockEnvironment,
   containingBlockFor,
@@ -46,10 +46,11 @@ function collectScrollSizes(
   viewport: Viewport,
   scroll: ScrollOffset,
   state: CollectionState,
-): void {
+): Map<Element, { width: number; height: number }> {
   // Accumulate local overflow once per snapshot. A clipped child's own scroll
   // area must not enlarge its parent's area, and scroll offsets must not make
   // the content shrink as it is scrolled out of view.
+  const sizes = new Map<Element, { width: number; height: number }>();
   const ends = new Map<Element, { width: number; height: number }>();
   let documentWidth = viewport.width;
   let documentHeight = 0;
@@ -90,7 +91,7 @@ function collectScrollSizes(
             : 0),
       ),
     };
-    state.geometry.scrollSizes.set(element, size);
+    sizes.set(element, size);
     if (style.position === 'fixed') continue;
     let parent = containingBlockFor(element, style, state);
     while (parent && state.contentsElements.has(parent))
@@ -149,17 +150,18 @@ function collectScrollSizes(
   }
   // html/body are synthetic viewport wrappers in this engine, rather than
   // ordinary Taffy boxes. Standards-mode root scrolling includes the viewport.
-  state.geometry.scrollSizes.set(document.documentElement, {
+  sizes.set(document.documentElement, {
     width: documentWidth,
     height: Math.max(viewport.height, documentHeight),
   });
-  state.geometry.scrollSizes.set(document.body, {
+  sizes.set(document.body, {
     width: documentWidth,
     height:
       document.compatMode === 'BackCompat'
         ? Math.max(viewport.height, documentHeight)
         : documentHeight,
   });
+  return sizes;
 }
 
 export function collectTaffyLayoutSnapshot(
@@ -179,26 +181,28 @@ export function collectTaffyLayoutSnapshot(
     state,
   );
   recordInlineFragments(document, state);
+  const geometry = state.geometry.complete(
+    collectScrollSizes(document, viewport, scroll, state),
+  );
   const projected = projectLayoutGeometry(
     document,
-    state.geometry,
+    geometry,
     state.styleResolver,
     state.contentsElements,
   );
-  collectScrollSizes(document, viewport, scroll, state);
   prepareHitTesting(projected.boxes);
 
   return {
     boxes: projected.boxes,
     rects: projected.rects,
     fragmentRects: projected.fragmentRects,
-    layoutRects: state.geometry.layoutRects,
-    resizeRects: state.geometry.resizeRects,
-    clientRects: state.geometry.clientRects,
-    scrollSizes: state.geometry.scrollSizes,
-    contentRects: state.geometry.contentRects,
+    layoutRects: geometry.layoutRects,
+    resizeRects: geometry.resizeRects,
+    clientRects: geometry.clientRects,
+    scrollSizes: geometry.scrollSizes,
+    contentRects: geometry.contentRects,
     intersectionRects: projected.intersectionRects,
-    elementScrolls: state.geometry.elementScrolls,
+    elementScrolls: geometry.elementScrolls,
     offsetParents: collectOffsetParents(document, state),
     scrollContainers: collectScrollContainers(document, state),
     fixedElements: collectFixedElements(document, state),
@@ -235,37 +239,18 @@ function recordInlineFragments(
         y: box.y + origin.y,
       }));
       const domOrder = nextDomOrder(state);
-      const union = unionBoxes(fragments);
-      const first = fragments[0] ?? union;
-      const zero = { x: 0, y: 0, width: 0, height: 0 };
       state.paintOrders.set(element, domOrder);
+      state.geometry.recordScrollOffset(
+        element,
+        readElementScrollOffset(element),
+      );
       state.geometry.record(element, {
-        insets: emptyBoxInsets,
-        rects: union,
-        fragmentRects: fragments,
-        // Offset size spans fragments; offset position belongs to the first.
-        layoutRects: { ...union, x: first.x, y: first.y },
-        normalRects: union,
-        resizeRects: zero,
-        clientRects: zero,
-        contentRects: zero,
-        hitBoxes: fragments.flatMap(box =>
-          createHitBoxes(element, style, box, domOrder, true, state),
-        ),
+        kind: 'inline',
+        fragments,
+        paint: paintMetadata(element, style, domOrder, true, state),
       });
     }
   }
-}
-
-function unionBoxes(boxes: readonly Box[]): Box {
-  if (boxes.length === 0) {
-    return { x: 0, y: 0, width: 0, height: 0 };
-  }
-  const left = Math.min(...boxes.map(box => box.x));
-  const top = Math.min(...boxes.map(box => box.y));
-  const right = Math.max(...boxes.map(box => box.x + box.width));
-  const bottom = Math.max(...boxes.map(box => box.y + box.height));
-  return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
 function collectOffsetParents(
@@ -473,7 +458,7 @@ function recordChildLayouts(
     state.paintOrders.set(element, domOrder);
 
     const elementScroll = readElementScrollOffset(element);
-    state.geometry.elementScrolls.set(element, elementScroll);
+    state.geometry.recordScrollOffset(element, elementScroll);
     recordBox(
       element,
       style,
@@ -719,7 +704,7 @@ function recordSimpleTableLayout(
       viewport,
       state,
     );
-    state.geometry.elementScrolls.set(
+    state.geometry.recordScrollOffset(
       tableLayout.caption.element,
       readElementScrollOffset(tableLayout.caption.element),
     );
@@ -745,7 +730,7 @@ function recordSimpleTableLayout(
       viewport,
       state,
     );
-    state.geometry.elementScrolls.set(
+    state.geometry.recordScrollOffset(
       columnGroup.element,
       readElementScrollOffset(columnGroup.element),
     );
@@ -775,7 +760,7 @@ function recordSimpleTableLayout(
         viewport,
         state,
       );
-      state.geometry.elementScrolls.set(
+      state.geometry.recordScrollOffset(
         column.element,
         readElementScrollOffset(column.element),
       );
@@ -803,7 +788,7 @@ function recordSimpleTableLayout(
         viewport,
         state,
       );
-      state.geometry.elementScrolls.set(
+      state.geometry.recordScrollOffset(
         section.element,
         readElementScrollOffset(section.element),
       );
@@ -829,7 +814,7 @@ function recordSimpleTableLayout(
         viewport,
         state,
       );
-      state.geometry.elementScrolls.set(
+      state.geometry.recordScrollOffset(
         row.element,
         readElementScrollOffset(row.element),
       );
@@ -855,7 +840,7 @@ function recordSimpleTableLayout(
           state,
         );
         const includeHitBox = tableCellIncludesHitBox(cell.element, cellStyle);
-        state.geometry.elementScrolls.set(
+        state.geometry.recordScrollOffset(
           cell.element,
           readElementScrollOffset(cell.element),
         );
@@ -977,54 +962,35 @@ function recordBox(
   normalBox: Box = layoutBox,
 ): void {
   state.paintOrders.set(element, domOrder);
-  const inline = style.display === 'inline';
-  const insets = resolvedBoxInsets(element, style, state);
-  const metrics = boxMetrics(box, insets);
-  const zero = { x: 0, y: 0, width: 0, height: 0 };
   state.geometry.record(element, {
-    insets,
-    rects: box,
-    fragmentRects: [box],
-    layoutRects: layoutBox,
-    normalRects: normalBox,
-    resizeRects: inline ? zero : layoutBox,
-    clientRects: inline ? zero : metrics.client,
-    contentRects: inline ? zero : metrics.content,
-    hitBoxes: createHitBoxes(
-      element,
-      style,
-      box,
-      domOrder,
-      includeHitBox,
-      state,
-    ),
+    kind: 'principal',
+    box,
+    layoutBox,
+    normalBox,
+    insets: resolvedBoxInsets(element, style, state),
+    paint: paintMetadata(element, style, domOrder, includeHitBox, state),
   });
 }
 
-function createHitBoxes(
+function paintMetadata(
   element: Element,
   style: SupportedStyle,
-  box: Box,
   domOrder: number,
   include: boolean,
   state: LayoutReadState,
-): HitBox[] {
-  if (!include || box.width <= 0 || box.height <= 0) return [];
-  return [
-    {
-      ...box,
-      element,
-      // Sticky positioning creates a stacking context, including with auto z-index.
-      zIndex:
-        style.zIndex === 0 && hasStickyAncestor(element, state)
-          ? 0.5
-          : style.zIndex,
-      domOrder,
-      stackingOrder: stackingOrderFor(element, style, domOrder, state),
-      pointerEvents: style.pointerEvents,
-      visibility: style.visibility,
-    },
-  ];
+): PaintMetadata | undefined {
+  if (!include) return undefined;
+  return {
+    // Sticky positioning creates a stacking context, including with auto z-index.
+    zIndex:
+      style.zIndex === 0 && hasStickyAncestor(element, state)
+        ? 0.5
+        : style.zIndex,
+    domOrder,
+    stackingOrder: stackingOrderFor(element, style, domOrder, state),
+    pointerEvents: style.pointerEvents,
+    visibility: style.visibility,
+  };
 }
 
 function stackingOrderFor(

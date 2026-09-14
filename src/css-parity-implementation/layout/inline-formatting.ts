@@ -9,8 +9,8 @@ export type InlineRun = {
   owners: readonly Element[];
 };
 export type InlineLayout = {
-  width: number;
-  height: number;
+  readonly width: number;
+  readonly height: number;
   readonly fragments: ReadonlyMap<Element, readonly Readonly<Box>[]>;
 };
 

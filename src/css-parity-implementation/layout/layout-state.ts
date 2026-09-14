@@ -16,7 +16,10 @@ export type LayoutReadState = {
   elementNodes: ReadonlyMap<Element, bigint>;
   contentsElements: ReadonlySet<Element>;
   tableLayouts: ReadonlyMap<Element, SimpleTableLayout>;
-  cellFormatting: ReadonlyMap<Element, { node: bigint; style: SupportedStyle }>;
+  cellFormatting: ReadonlyMap<
+    Element,
+    Readonly<{ node: bigint; style: SupportedStyle }>
+  >;
   styleResolver: ResolvedStyles;
   tree: Pick<TaffyTree, 'getLayout'>;
   viewport: Viewport;
@@ -67,61 +70,61 @@ export type CollectionState = Omit<CompletedLayout, 'phase'> & {
 };
 
 export type SimpleTableLayout = {
-  width: number;
-  height: number;
-  caption?: SimpleTableCaptionLayout;
-  columnGroups: SimpleTableColumnGroupLayout[];
-  sections: SimpleTableSectionLayout[];
+  readonly width: number;
+  readonly height: number;
+  readonly caption?: SimpleTableCaptionLayout;
+  readonly columnGroups: readonly SimpleTableColumnGroupLayout[];
+  readonly sections: readonly SimpleTableSectionLayout[];
 };
 
 export type SimpleTableCaptionLayout = {
-  element: Element;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  readonly element: Element;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 };
 
 export type SimpleTableSectionLayout = {
   /** Anonymous row groups have no DOM geometry of their own. */
-  element: Element | undefined;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rows: SimpleTableRowLayout[];
+  readonly element: Element | undefined;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly rows: readonly SimpleTableRowLayout[];
 };
 
 export type SimpleTableRowLayout = {
-  element: Element;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  cells: SimpleTableCellLayout[];
+  readonly element: Element;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly cells: readonly SimpleTableCellLayout[];
 };
 
 export type SimpleTableColumnGroupLayout = {
-  element: Element;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  columns: SimpleTableColumnLayout[];
+  readonly element: Element;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly columns: readonly SimpleTableColumnLayout[];
 };
 
 export type SimpleTableColumnLayout = {
-  element: Element;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  readonly element: Element;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 };
 
 export type SimpleTableCellLayout = {
-  element: Element;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  readonly element: Element;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 };

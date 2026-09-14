@@ -1,20 +1,9 @@
-import type { Box } from '../../api/box.ts';
-import type { HitBox } from '../../api/hit-box.ts';
-import type { BoxInsets } from './box-metrics.ts';
+import {
+  deriveGeometry,
+  type ElementGeometry,
+  type GeometryRecord,
+} from './geometry-record.ts';
 import type { ScrollOffset } from './layout-source.ts';
-
-/** Every formatting context must supply the complete, unprojected output. */
-export type ElementGeometry = {
-  insets: BoxInsets;
-  rects: Readonly<Box>;
-  fragmentRects: readonly Readonly<Box>[];
-  layoutRects: Readonly<Box>;
-  normalRects: Readonly<Box>;
-  resizeRects: Readonly<Box>;
-  clientRects: Readonly<Box>;
-  contentRects: Readonly<Box>;
-  hitBoxes: readonly Readonly<HitBox>[];
-};
 
 type GeometryMaps = {
   readonly [K in keyof ElementGeometry]: ReadonlyMap<
@@ -22,12 +11,18 @@ type GeometryMaps = {
     ElementGeometry[K]
   >;
 };
+type ScrollSize = Readonly<{ width: number; height: number }>;
+export type CompletedGeometry = GeometryMaps & {
+  readonly scrollSizes: ReadonlyMap<Element, ScrollSize>;
+  readonly elementScrolls: ReadonlyMap<Element, ScrollOffset>;
+};
 
-/** Maps are read-only to collectors: partial geometry writes are not permitted. */
+/** Scratch writes require canonical input; completion seals the output. */
 export type LayoutGeometry = GeometryMaps & {
-  record(element: Element, output: ElementGeometry): void;
-  scrollSizes: Map<Element, { width: number; height: number }>;
-  elementScrolls: Map<Element, ScrollOffset>;
+  record(element: Element, input: GeometryRecord): void;
+  recordScrollOffset(element: Element, offset: ScrollOffset): void;
+  readonly elementScrolls: ReadonlyMap<Element, ScrollOffset>;
+  complete(scrollSizes: ReadonlyMap<Element, ScrollSize>): CompletedGeometry;
 };
 
 export function createLayoutGeometry(): LayoutGeometry {
@@ -44,6 +39,12 @@ export function createLayoutGeometry(): LayoutGeometry {
     contentRects: new Map(),
     hitBoxes: new Map(),
   };
+  const kinds = new Map<Element, GeometryRecord['kind']>();
+  const elementScrolls = new Map<Element, ScrollOffset>();
+  let completed = false;
+  const assertWritable = () => {
+    if (completed) throw new Error('Cannot mutate completed geometry');
+  };
   function set<K extends keyof ElementGeometry>(
     key: K,
     element: Element,
@@ -53,14 +54,32 @@ export function createLayoutGeometry(): LayoutGeometry {
   }
   return {
     ...maps,
-    record(element, output) {
-      // Iterate the exhaustive mapped type: adding an output requires a map and
-      // a value at every producer; replacement also replaces old hit fragments.
-      for (const key of Object.keys(maps) as (keyof ElementGeometry)[]) {
+    elementScrolls,
+    record(element, input) {
+      assertWritable();
+      const output = deriveGeometry(element, input);
+      kinds.set(element, input.kind);
+      for (const key of Object.keys(maps) as (keyof ElementGeometry)[])
         set(key, element, output);
-      }
     },
-    scrollSizes: new Map(),
-    elementScrolls: new Map(),
+    recordScrollOffset(element, offset) {
+      assertWritable();
+      elementScrolls.set(element, offset);
+    },
+    complete(scrollSizes) {
+      assertWritable();
+      const sizes = new Map(scrollSizes);
+      for (const [element, kind] of kinds) {
+        if (!elementScrolls.has(element))
+          throw new Error('Geometry is missing an element scroll offset');
+        if (kind === 'principal' && !sizes.has(element))
+          throw new Error(
+            'Principal geometry is missing its completed scroll size',
+          );
+        if (kind !== 'principal') sizes.set(element, { width: 0, height: 0 });
+      }
+      completed = true;
+      return { ...maps, elementScrolls, scrollSizes: sizes };
+    },
   };
 }
