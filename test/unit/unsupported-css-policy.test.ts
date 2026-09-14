@@ -11,6 +11,46 @@ afterEach(() => {
 });
 
 describe('unsupported CSS policy', () => {
+  it('reports rules discarded by parser recovery and retains strict errors', async () => {
+    const css = 'div: { width: 20px; }';
+    const reporter = createUnsupportedCssReporter();
+    await attach({
+      stylesheets: [css],
+      unsupportedCss: { onWarning: reporter.onWarning },
+    });
+    document.body.getBoundingClientRect();
+    expect(reporter.getSummary().declarations).toEqual([
+      expect.objectContaining({
+        property: 'stylesheet',
+        value: css,
+        reason: 'unsupported-rule',
+      }),
+    ]);
+
+    const property = vi.fn(() => 'throw' as const);
+    await attach({
+      stylesheets: ['@supports (display: grid) { div { width: 20px } }'],
+      unsupportedCss: { property },
+    });
+    expect(() => document.body.getBoundingClientRect()).toThrow(
+      'Unsupported CSS unsupported-rule: @supports',
+    );
+    expect(property).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets policy callback failures escape unchanged', async () => {
+    const error = new Error('consumer callback');
+    await attach({
+      stylesheets: ['@supports (display: grid) { div { width: 20px } }'],
+      unsupportedCss: {
+        onWarning: () => {
+          throw error;
+        },
+      },
+    });
+    expect(() => document.body.getBoundingClientRect()).toThrow(error);
+  });
+
   it('warns once and continues layout by default', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     document.body.innerHTML = `

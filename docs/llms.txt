@@ -366,3 +366,9 @@ fragment union, while `offsetLeft` and `offsetTop` use the first fragment.
 `clientWidth` and `clientHeight` remain zero. Positioned overlays paint above
 ordinary inline text, and in-flow descendants paint above their positioned
 container's background.
+
+Stylesheet parser recovery also consults the unsupported-CSS policy. For example,
+`stylesheets: ['div: { width: 20px }']` reports an `unsupported-rule` entry with
+property `stylesheet` and the original CSS when layout is queried, instead of
+silently discarding the rule. Strict policy errors and warning callback errors
+propagate unchanged.

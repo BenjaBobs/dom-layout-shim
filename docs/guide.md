@@ -592,3 +592,9 @@ beforeEach(async () => {
 // Release DOM resources after every test.
 afterEach(() => window.close())
 ```
+
+Stylesheet parser recovery also consults the unsupported-CSS policy. For example,
+`stylesheets: ['div: { width: 20px }']` reports an `unsupported-rule` entry with
+property `stylesheet` and the original CSS when layout is queried, instead of
+silently discarding the rule. Strict policy errors and warning callback errors
+propagate unchanged.

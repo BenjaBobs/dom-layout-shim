@@ -44,6 +44,7 @@ let nextStylesheetId = 1;
 export type ParsedStylesheet = {
   token?: string;
   ast?: Array<{ type: string; value: unknown }>;
+  recoveryCss?: string;
   viewportKey?: string;
   rules?: StyleRule[];
 };
@@ -627,8 +628,9 @@ function readCssRules(
   viewport: Viewport | undefined,
   cache?: ParsedStylesheet,
 ): void {
+  let ast = cache?.ast;
+  let recoveryCss = cache?.recoveryCss;
   try {
-    let ast = cache?.ast;
     if (!ast) {
       const collectedAst: Array<{ type: string; value: unknown }> = [];
       ast = collectedAst;
@@ -652,7 +654,7 @@ function readCssRules(
           },
         },
       });
-      transform({
+      const collected = transform({
         filename,
         code: flattened.code,
         errorRecovery: true,
@@ -667,32 +669,49 @@ function readCssRules(
           },
         },
       });
-      if (cache) cache.ast = ast;
+      // Recovery can discard a rule before our visitor sees it. Preserve the
+      // authored CSS with the parsed cache so every policy sees that loss.
+      if (flattened.warnings.length || collected.warnings.length)
+        recoveryCss = cssText;
+      if (cache) {
+        cache.ast = ast;
+        cache.recoveryCss = recoveryCss;
+      }
     }
-    for (const rule of ast) {
-      if (rule.type === 'style')
-        collectStyleRule(
-          rule.value as Parameters<typeof collectStyleRule>[0],
-          policy,
-          rules,
-        );
-      else if (rule.type === 'media')
-        collectMediaRule(rule.value, policy, rules, viewport);
-      else if (rule.type !== 'font-face')
-        handleUnsupportedCss(policy, {
-          property: `@${rule.type}`,
-          value: rule.type,
-          reason: 'unsupported-rule',
-          source: 'stylesheet',
-        });
-    }
-  } catch (error) {
+  } catch {
     handleUnsupportedCss(policy, {
       property: 'stylesheet',
-      value: error instanceof Error ? error.message : String(error),
+      value: cssText,
       reason: 'unsupported-rule',
       source: 'stylesheet',
     });
+    return;
+  }
+  // Policy callbacks and strict-policy errors must escape unchanged, rather
+  // than being caught and reported a second time as parser failures.
+  if (recoveryCss !== undefined)
+    handleUnsupportedCss(policy, {
+      property: 'stylesheet',
+      value: recoveryCss,
+      reason: 'unsupported-rule',
+      source: 'stylesheet',
+    });
+  for (const rule of ast) {
+    if (rule.type === 'style')
+      collectStyleRule(
+        rule.value as Parameters<typeof collectStyleRule>[0],
+        policy,
+        rules,
+      );
+    else if (rule.type === 'media')
+      collectMediaRule(rule.value, policy, rules, viewport);
+    else if (rule.type !== 'font-face')
+      handleUnsupportedCss(policy, {
+        property: `@${rule.type}`,
+        value: rule.type,
+        reason: 'unsupported-rule',
+        source: 'stylesheet',
+      });
   }
 }
 
