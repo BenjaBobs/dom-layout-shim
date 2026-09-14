@@ -1,3 +1,4 @@
+import { type Selector, transform } from 'lightningcss';
 import {
   handleUnsupportedCss,
   type UnsupportedCssPolicy,
@@ -19,9 +20,35 @@ export function readSelectorList(
   }
 
   return selectors.flatMap(selector => {
-    const result = readSelector(selector, policy);
+    let unsupported = false;
+    const result = readSelector(selector, {
+      onWarning: () => {
+        unsupported = true;
+      },
+    });
+    if (unsupported) {
+      handleUnsupportedSelector(printSelector(selector), policy);
+      return [];
+    }
     return result ? [result] : [];
   });
+}
+
+function printSelector(selector: Selector): string {
+  const result = transform({
+    filename: 'selector.css',
+    code: Buffer.from('x { --layout-selector: 0 }'),
+    visitor: {
+      Rule(rule) {
+        if (rule.type === 'style') {
+          rule.value.selectors = [selector];
+          return rule;
+        }
+      },
+    },
+  });
+  const css = Buffer.from(result.code).toString();
+  return css.slice(0, css.lastIndexOf('{')).trim();
 }
 
 function readSelector(

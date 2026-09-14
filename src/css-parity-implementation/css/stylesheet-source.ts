@@ -6,6 +6,7 @@ import {
   type UnsupportedCssPolicy,
 } from '../../api/unsupported-css-policy.ts';
 import { BoundedCache } from '../bounded-cache.ts';
+import { createDeclarationSourceRecorder } from './authored-declaration-values.ts';
 import {
   type CssDeclaration,
   readDeclarationList,
@@ -44,6 +45,7 @@ let nextStylesheetId = 1;
 export type ParsedStylesheet = {
   token?: string;
   ast?: Array<{ type: string; value: unknown }>;
+  sourceCss?: string;
   recoveryCss?: string;
   viewportKey?: string;
   rules?: StyleRule[];
@@ -628,6 +630,7 @@ function readCssRules(
   viewport: Viewport | undefined,
   cache?: ParsedStylesheet,
 ): void {
+  cssText = cache?.sourceCss ?? cssText;
   let ast = cache?.ast;
   let recoveryCss = cache?.recoveryCss;
   try {
@@ -640,6 +643,7 @@ function readCssRules(
       // Keep this separate from the visitor to avoid round-tripping its unparsed
       // var() token objects through the Node binding.
       const declarations: unknown[] = [];
+      const recordSource = createDeclarationSourceRecorder(cssText);
       const flattened = transform({
         filename,
         code: Buffer.from(cssText),
@@ -647,6 +651,7 @@ function readCssRules(
         errorRecovery: true,
         visitor: {
           Declaration(declaration) {
+            recordSource(declaration);
             // Protect declarations from the lowering pass's shorthand merging
             // and value simplification; collection needs the original AST.
             const index = declarations.push(declaration) - 1;
@@ -675,6 +680,7 @@ function readCssRules(
         recoveryCss = cssText;
       if (cache) {
         cache.ast = ast;
+        cache.sourceCss = cssText;
         cache.recoveryCss = recoveryCss;
       }
     }
@@ -704,11 +710,11 @@ function readCssRules(
         rules,
       );
     else if (rule.type === 'media')
-      collectMediaRule(rule.value, policy, rules, viewport);
+      collectMediaRule(rule.value, policy, rules, viewport, cssText);
     else if (rule.type !== 'font-face')
       handleUnsupportedCss(policy, {
         property: `@${rule.type}`,
-        value: rule.type,
+        value: cssText,
         reason: 'unsupported-rule',
         source: 'stylesheet',
       });
@@ -748,16 +754,17 @@ function collectMediaRule(
   policy: UnsupportedCssPolicy | undefined,
   rules: StyleRule[],
   viewport: Viewport | undefined,
+  cssText: string,
 ): void {
   if (!isRecord(mediaRule) || !Array.isArray(mediaRule.rules)) {
-    reportUnsupportedMediaRule(policy, mediaRule);
+    reportUnsupportedMediaRule(policy, cssText);
     return;
   }
 
   const query = stringifyMediaQueryList(mediaRule.query);
 
   if (viewport === undefined || query === undefined) {
-    reportUnsupportedMediaRule(policy, mediaRule.query);
+    reportUnsupportedMediaRule(policy, cssText);
     return;
   }
 
@@ -767,7 +774,7 @@ function collectMediaRule(
 
   for (const nestedRule of mediaRule.rules) {
     if (!isRecord(nestedRule) || typeof nestedRule.type !== 'string') {
-      reportUnsupportedMediaRule(policy, nestedRule);
+      reportUnsupportedMediaRule(policy, cssText);
     } else if (nestedRule.type === 'style') {
       collectStyleRule(
         nestedRule.value as Parameters<typeof collectStyleRule>[0],
@@ -775,11 +782,11 @@ function collectMediaRule(
         rules,
       );
     } else if (nestedRule.type === 'media') {
-      collectMediaRule(nestedRule.value, policy, rules, viewport);
+      collectMediaRule(nestedRule.value, policy, rules, viewport, cssText);
     } else {
       handleUnsupportedCss(policy, {
         property: `@${nestedRule.type}`,
-        value: nestedRule.type,
+        value: cssText,
         reason: 'unsupported-rule',
         source: 'stylesheet',
       });
@@ -789,11 +796,11 @@ function collectMediaRule(
 
 function reportUnsupportedMediaRule(
   policy: UnsupportedCssPolicy | undefined,
-  value: unknown,
+  value: string,
 ): void {
   handleUnsupportedCss(policy, {
     property: '@media',
-    value: JSON.stringify(value),
+    value,
     reason: 'unsupported-rule',
     source: 'stylesheet',
   });

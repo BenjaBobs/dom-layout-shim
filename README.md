@@ -355,9 +355,10 @@ const reporter = createUnsupportedCssReporter()
 
 await attachLayoutEngine({
   window,
-  unsupportedCss: { onWarning: reporter.onWarning },
+  unsupportedCss: { reporter },
 })
 
+document.body.getBoundingClientRect() // Trigger lazy layout and diagnostics.
 const summary = reporter.getSummary()
 console.log(summary.unsupportedDeclarationCount)
 ```
@@ -369,6 +370,31 @@ computed values observed when the warning was collected. These extra fields
 help separate active layout inputs from repeated or superseded fallback rules.
 Call `reporter.reset()` between independent suites.
 
+
+Use `unsupportedCss: { reporter }` to collect warnings directly. The default is
+`warn`; explicit `default`, `properties`, and `property` decisions still take
+precedence. An optional `onWarning` callback receives the same warnings. Layout
+is lazy: query geometry before reading the summary. Values contain CSS text
+(for example, `animation-delay: 0.4s` reports value `0.4s`), and unsupported
+selectors contain selector text rather than an AST dump. Unsupported rules and
+parser recovery include the authored stylesheet; unavailable stylesheet entries
+retain their diagnostic description.
+
+Merge summaries from isolated test workers or windows with the public
+`mergeUnsupportedCssSummaries(summaries)` helper:
+
+```ts
+import { mergeUnsupportedCssSummaries } from 'dom-layout-shim'
+const combined = mergeUnsupportedCssSummaries([firstSummary, secondSummary])
+console.log(combined.unsupportedDeclarationCount)
+```
+
+Transport each worker's `reporter.getSummary()` as JSON using your test runner's
+collection mechanism. Merging combines equal property/value/reason entries,
+sums occurrences, and sorts and deduplicates their metadata without mutating
+inputs. Warning deduplication still happens per attachment, so occurrences count
+collected warnings rather than every element or layout query. An empty input
+produces an empty summary.
 Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
 `'ignore'` to deliberately suppress unsupported declarations. Decisions can
 also be overridden by property. Text measurement falls back to a deterministic
