@@ -4,6 +4,15 @@ import { parseSync, Visitor } from 'vite';
 import { describe, expect, it } from 'vitest';
 
 describe('source boundaries', () => {
+  it('registers all backend nodes through the formatting plan', () => {
+    for (const path of sourceFiles('src')) {
+      if (/formatting-plan\.ts$|taffy-bindings\.ts$/.test(path)) continue;
+      expect(readFileSync(path, 'utf8'), path).not.toMatch(
+        /\.(?:newLeafWithContext|newWithChildren)\s*\(/,
+      );
+    }
+  });
+
   it('keeps snapshot collection independent of layout and style construction', () => {
     const dependencies = runtimeDependencies(
       'src/css-parity-implementation/layout/collect-layout.ts',

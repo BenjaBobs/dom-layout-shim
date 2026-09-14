@@ -13,7 +13,6 @@ import { percentageBasis } from './containing-block.ts';
 import {
   containingBlockEnvironment,
   containingBlockFor,
-  isHiddenUntilFound,
   markElementNoBox,
   readElementScrollOffset,
   renderedElementChildren,
@@ -275,7 +274,7 @@ function collectOffsetParents(
 ): Map<Element, Element | null> {
   const offsetParents = new Map<Element, Element | null>();
 
-  for (const element of Array.from(document.getElementsByTagName('*'))) {
+  for (const element of state.formatting.elements) {
     offsetParents.set(element, findOffsetParent(element, document, state));
   }
 
@@ -326,32 +325,20 @@ function findOffsetParent(
 }
 
 function hasPrincipalBox(element: Element, state: LayoutReadState): boolean {
-  for (
-    let current: Element | null = element;
-    current;
-    current = current.parentElement
-  ) {
-    const display = resolveSupportedStyle(current, state).display;
-
-    if (display === 'none') {
-      return false;
-    }
-
-    if (current === element && display === 'contents') {
-      return false;
-    }
-  }
+  const kind = state.formatting.element(element).kind;
+  if (kind === 'suppressed' || kind === 'contents' || kind === 'break')
+    return false;
 
   return state.geometry.rects.has(element);
 }
 
 function collectScrollContainers(
-  document: Document,
+  _document: Document,
   state: CollectionState,
 ): Map<Element, { x: boolean; y: boolean }> {
   const containers = new Map<Element, { x: boolean; y: boolean }>();
 
-  for (const element of Array.from(document.getElementsByTagName('*'))) {
+  for (const element of state.formatting.elements) {
     const style = resolveSupportedStyle(element, state);
 
     containers.set(element, {
@@ -364,11 +351,11 @@ function collectScrollContainers(
 }
 
 function collectFixedElements(
-  document: Document,
+  _document: Document,
   state: CollectionState,
 ): Set<Element> {
   return new Set(
-    Array.from(document.getElementsByTagName('*')).filter(element =>
+    state.formatting.elements.filter(element =>
       hasFixedAncestor(element, state),
     ),
   );
@@ -522,7 +509,8 @@ function recordChildLayouts(
       viewport,
       scroll,
       fixedSubtree,
-      suppressedByHiddenUntilFound || isHiddenUntilFound(element),
+      suppressedByHiddenUntilFound ||
+        state.formatting.element(element).hiddenUntilFound,
       state,
     );
   }

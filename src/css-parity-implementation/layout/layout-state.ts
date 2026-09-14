@@ -3,12 +3,15 @@ import type { NativeControlMetrics } from '../../api/native-control-profile.ts';
 import type { TextMeasurer } from '../../api/text-measurer.ts';
 import type { ResolvedStyles, StyleResolver } from '../css/style-resolver.ts';
 import type { SupportedStyle } from '../css/supported-style.ts';
+import type { FormattingPlan } from './formatting-plan.ts';
+import type { FormattingTree } from './formatting-tree.ts';
 import type { InlineLayout } from './inline-formatting.ts';
 import type { LayoutGeometry } from './layout-geometry.ts';
 import type { TaffyTree } from './taffy/taffy-bindings.ts';
 import type { MeasureContext } from './taffy/taffy-measure.ts';
 
 export type LayoutReadState = {
+  formatting: FormattingTree;
   geometry: LayoutGeometry;
   elementNodes: ReadonlyMap<Element, bigint>;
   contentsElements: ReadonlySet<Element>;
@@ -23,6 +26,7 @@ export type LayoutReadState = {
 
 export type TaffyLayoutState = LayoutReadState & {
   phase: 'building';
+  plan: FormattingPlan;
   elementNodes: Map<Element, bigint>;
   outOfFlowNodes: Map<Element, bigint[]>;
   measureContexts: Map<Element, MeasureContext>;
