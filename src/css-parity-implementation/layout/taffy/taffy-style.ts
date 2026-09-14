@@ -9,6 +9,7 @@ import type {
   SupportedSize,
   SupportedStyle,
 } from '../../css/supported-style.ts';
+import { effectiveBorderWidth } from '../resolved-border.ts';
 import type { ReplacedIntrinsicSize } from './replaced-intrinsic-size.ts';
 import {
   AlignContent,
@@ -212,29 +213,6 @@ function toTaffyGridPlacement(
   value: SupportedStyle['gridColumnStart'],
 ): 'auto' | number | { span: number } | { area: string } {
   return value;
-}
-
-export function effectiveBorderWidth(style: SupportedStyle): Edges {
-  return {
-    top: borderStyleHasGeometry(style.borderStyle.top)
-      ? style.borderWidth.top
-      : 0,
-    right: borderStyleHasGeometry(style.borderStyle.right)
-      ? style.borderWidth.right
-      : 0,
-    bottom: borderStyleHasGeometry(style.borderStyle.bottom)
-      ? style.borderWidth.bottom
-      : 0,
-    left: borderStyleHasGeometry(style.borderStyle.left)
-      ? style.borderWidth.left
-      : 0,
-  };
-}
-
-function borderStyleHasGeometry(
-  style: SupportedStyle['borderStyle'][keyof SupportedStyle['borderStyle']],
-): boolean {
-  return style !== 'none' && style !== 'hidden';
 }
 
 function toTaffyDisplay(value: SupportedStyle['display']): Display {

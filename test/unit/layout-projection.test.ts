@@ -42,6 +42,8 @@ it.each([
     const savedInitial = serialize(initial);
     scroller.scrollTop = 25;
     const backend = vi.spyOn(TaffyTree.prototype, 'computeLayoutWithMeasure');
+    const layoutReads = vi.spyOn(TaffyTree.prototype, 'getLayout');
+    const measurement = vi.spyOn(config.textMeasurer, 'measure');
     const projected = reprojectTaffyDocumentLayout(
       document,
       config.viewport,
@@ -49,7 +51,11 @@ it.each([
       cache,
     );
     expect(backend).not.toHaveBeenCalled();
+    expect(layoutReads).not.toHaveBeenCalled();
+    expect(measurement).not.toHaveBeenCalled();
     backend.mockRestore();
+    layoutReads.mockRestore();
+    measurement.mockRestore();
     expect(projected).toBeDefined();
     expect(projected?.rects).not.toBe(initial.rects);
     expect(projected?.boxes).not.toBe(initial.boxes);

@@ -26,6 +26,7 @@ to `src/css-parity-implementation/`.
 | Percentage dependencies | `layout/containing-block.ts` | Pre-layout and measured phases share containing-block, definiteness, and box-inset rules. |
 | Tree construction and compute | `layout/taffy-layout-source.ts` | Build backend nodes and formatting contexts, including ordinary descendants inside table cells. |
 | Resolved box metrics | `layout/box-metrics.ts`, `layout/taffy/taffy-bindings.ts` | Backend border/padding values feed content/client geometry, scroll sizes, and containing-block calculations; no consumer-specific percentage reconstruction. |
+| Phase capabilities | `layout/layout-state.ts`, `layout/collect-layout.ts` | Construction owns the backend and measurer. Completion captures resolved styles, backend results, and inline fragments. Collection has stored values and fresh scratch state only. |
 | Snapshot output allocation | `layout/layout-geometry.ts` | Require complete element geometry records; collectors cannot write individual output maps. |
 | Visual projection | `layout/project-layout.ts` | Read layout geometry and computed styles; return separate visual output without mutating layout or calling the backend/cascade. |
 | Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
