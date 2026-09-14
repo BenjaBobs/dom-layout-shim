@@ -591,28 +591,27 @@ function buildElementFormattingNodes(
 ): bigint[] {
   const style = resolveSupportedStyle(element, state);
 
-  if (state.formatting.element(element).kind === 'suppressed') {
-    markSubtreeDisplayNone(element, state);
-    return [];
-  }
-
-  if (state.formatting.element(element).kind === 'break') {
-    markElementNoBox(element, state);
-    return [];
-  }
-
-  if (style.display === 'inline') {
-    // Inline content is owned by its host formatter, not a principal backend node.
-    markSubtreeNoBox(element, state);
-    return [];
-  }
-
-  if (style.display === 'contents') {
-    // display: contents removes the element's own principal box while its
-    // children participate in the parent's Taffy formatting context.
-    markElementNoBox(element, state);
-    state.contentsElements.add(element);
-    return buildChildNodes(element, state);
+  const participation = state.formatting.element(element).participation;
+  switch (participation.layout) {
+    case 'none':
+      markSubtreeDisplayNone(element, state);
+      return [];
+    case 'inline':
+      // The host formatter owns inline text and fragments.
+      markSubtreeNoBox(element, state);
+      return [];
+    case 'contents':
+      markElementNoBox(element, state);
+      state.contentsElements.add(element);
+      return buildChildNodes(element, state);
+    case 'backend':
+    case 'table':
+    case 'table-part':
+      break;
+    default: {
+      const unhandled: never = participation;
+      throw new Error(`Unhandled formatting participation: ${unhandled}`);
+    }
   }
 
   const tableLayout = createSimpleTableLayout(element, state);

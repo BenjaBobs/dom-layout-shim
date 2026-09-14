@@ -1,7 +1,11 @@
-import { expect, it, vi } from 'vitest';
+import { expect, expectTypeOf, it, vi } from 'vitest';
 import { createStyleResolver } from '../../src/css-parity-implementation/css/style-resolver.ts';
 import { readCssTextRules } from '../../src/css-parity-implementation/css/stylesheet-source.ts';
 import { createFormattingTree } from '../../src/css-parity-implementation/layout/formatting-tree.ts';
+import type {
+  CollectionState,
+  CompletedLayout,
+} from '../../src/css-parity-implementation/layout/layout-state.ts';
 
 it('captures rendering participation once across inline, rule, generated, and table sources', () => {
   document.body.innerHTML = `
@@ -27,6 +31,14 @@ it('captures rendering participation once across inline, rule, generated, and ta
   expect(get('inline').kind).toBe('inline');
   expect(get('contents').kind).toBe('contents');
   expect(get('cell').kind).toBe('table-cell');
+  expect(get('cell').participation).toEqual({
+    layout: 'table-part',
+    geometry: 'principal',
+  });
+  expect(get('inline').participation).toEqual({
+    layout: 'inline',
+    geometry: 'fragments',
+  });
   expect(get('closed').kind).toBe('suppressed');
   expect(get('descendant').kind).toBe('suppressed');
   expect(get('host').before).toMatchObject({
@@ -40,4 +52,18 @@ it('captures rendering participation once across inline, rule, generated, and ta
   expect(get('host')).toBe(original);
   expect(attributes).not.toHaveBeenCalled();
   expect(styles).not.toHaveBeenCalled();
+});
+
+it('restricts completed and collection capabilities to stored results', () => {
+  expectTypeOf<CompletedLayout>().not.toHaveProperty('plan');
+  expectTypeOf<CollectionState>().not.toHaveProperty('textMeasurer');
+  expectTypeOf<CollectionState['tree']>().not.toHaveProperty(
+    'computeLayoutWithMeasure',
+  );
+  expectTypeOf<CollectionState['styleResolver']>().not.toHaveProperty(
+    'anonymous',
+  );
+  expectTypeOf<CompletedLayout['inlineContexts'][number]>().not.toHaveProperty(
+    'format',
+  );
 });

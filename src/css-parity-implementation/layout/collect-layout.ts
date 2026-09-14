@@ -232,6 +232,12 @@ function recordInlineFragments(
       : hostBox;
     const result = context.result;
     for (const [element, localFragments] of result.fragments) {
+      if (
+        state.formatting.element(element).participation.geometry !== 'fragments'
+      )
+        throw new Error(
+          'Inline formatter returned fragments for a non-inline element',
+        );
       const style = resolveSupportedStyle(element, state);
       const fragments = localFragments.map(box => ({
         ...box,
@@ -310,8 +316,7 @@ function findOffsetParent(
 }
 
 function hasPrincipalBox(element: Element, state: LayoutReadState): boolean {
-  const kind = state.formatting.element(element).kind;
-  if (kind === 'suppressed' || kind === 'contents' || kind === 'break')
+  if (state.formatting.element(element).participation.geometry === 'none')
     return false;
 
   return state.geometry.rects.has(element);
@@ -961,6 +966,8 @@ function recordBox(
   layoutBox: Box = box,
   normalBox: Box = layoutBox,
 ): void {
+  if (state.formatting.element(element).participation.geometry !== 'principal')
+    throw new Error('Principal geometry requires a principal formatting box');
   state.paintOrders.set(element, domOrder);
   state.geometry.record(element, {
     kind: 'principal',
