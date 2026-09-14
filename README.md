@@ -368,6 +368,12 @@ Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or
 also be overridden by property. Text measurement falls back to a deterministic
 approximation in Node-like runtimes without canvas text measurement.
 
+Stylesheet parser recovery also consults the unsupported-CSS policy. For example,
+`stylesheets: ['div: { width: 20px }']` reports an `unsupported-rule` entry with
+property `stylesheet` and the original CSS when layout is queried, instead of
+silently discarding the rule. Strict policy errors and warning callback errors
+propagate unchanged.
+
 Native-control intrinsic geometry uses the deterministic `portable` profile by
 default. Select it explicitly when a test wants to document that target rather
 than follow the machine running the test:
