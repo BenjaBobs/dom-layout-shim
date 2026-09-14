@@ -320,7 +320,7 @@ describe('layout invalidation and isolation', () => {
     });
   });
 
-  it('isolates layout attachments by happy-dom window', async () => {
+  it('isolates layout engines by happy-dom window', async () => {
     const narrowWindow = new Window({ width: 100, height: 100 });
     const wideWindow = new Window({ width: 300, height: 100 });
 
@@ -358,7 +358,7 @@ describe('layout invalidation and isolation', () => {
       '<div id="box" style="position:fixed; inset:0"></div>';
     const resize = vi.fn();
     window.addEventListener('resize', resize);
-    const attachment = await attachLayoutEngine({
+    const layoutEngine = await attachLayoutEngine({
       window,
       viewport: { width: 320, height: 640 },
     });
@@ -367,7 +367,7 @@ describe('layout invalidation and isolation', () => {
     expect(requiredElement('#box').getBoundingClientRect().width).toBe(320);
     expect(window.matchMedia('(orientation: portrait)').matches).toBe(true);
 
-    attachment.setViewport({ width: 800, height: 600 });
+    layoutEngine.setViewport({ width: 800, height: 600 });
 
     expect(window.innerWidth).toBe(800);
     expect(window.innerHeight).toBe(600);

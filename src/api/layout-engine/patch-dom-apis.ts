@@ -1,4 +1,4 @@
-import type { DocumentAttachment } from './document-attachment.ts';
+import type { DocumentLayoutEngine } from './document-layout-engine.ts';
 import { createIntersectionObserverConstructor } from './layout-intersection-observer.ts';
 import { createResizeObserverConstructor } from './layout-resize-observer.ts';
 import {
@@ -6,11 +6,14 @@ import {
   PropertyPatches,
 } from './property-patches.ts';
 
-const attachedDocuments = new WeakMap<Document, DocumentAttachment>();
-const attachmentPatches = new WeakMap<DocumentAttachment, PropertyPatches>();
+const attachedDocuments = new WeakMap<Document, DocumentLayoutEngine>();
+const layoutEnginePatches = new WeakMap<
+  DocumentLayoutEngine,
+  PropertyPatches
+>();
 
-export function patchDomApis(attachment: DocumentAttachment): void {
-  const document = attachment.document;
+export function patchDomApis(layoutEngine: DocumentLayoutEngine): void {
+  const document = layoutEngine.document;
   const view = document.defaultView;
 
   if (!view) {
@@ -19,24 +22,24 @@ export function patchDomApis(attachment: DocumentAttachment): void {
     );
   }
 
-  const existingAttachment = attachedDocuments.get(document);
+  const existingLayoutEngine = attachedDocuments.get(document);
 
-  existingAttachment?.detach();
-  attachedDocuments.set(document, attachment);
+  existingLayoutEngine?.detach();
+  attachedDocuments.set(document, layoutEngine);
   const patches = new PropertyPatches();
-  attachmentPatches.set(attachment, patches);
+  layoutEnginePatches.set(layoutEngine, patches);
 
   patches.defineProperty(document, 'elementFromPoint', {
     configurable: true,
     value(this: Document, x: number, y: number) {
-      return attachmentForDocument(this).elementFromPoint(x, y);
+      return layoutEngineForDocument(this).elementFromPoint(x, y);
     },
   });
 
   patches.defineProperty(document, 'elementsFromPoint', {
     configurable: true,
     value(this: Document, x: number, y: number) {
-      return attachmentForDocument(this).elementsFromPoint(x, y);
+      return layoutEngineForDocument(this).elementsFromPoint(x, y);
     },
   });
 
@@ -45,15 +48,15 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patches.defineProperty(view, 'ResizeObserver', {
     configurable: true,
     writable: true,
-    value: createResizeObserverConstructor(attachment),
+    value: createResizeObserverConstructor(layoutEngine),
   });
   patches.defineProperty(view, 'IntersectionObserver', {
     configurable: true,
     writable: true,
-    value: createIntersectionObserverConstructor(attachment),
+    value: createIntersectionObserverConstructor(layoutEngine),
   });
 
-  attachment.setScrollTracking(
+  layoutEngine.setScrollTracking(
     patchScrollOffsets(view.Element.prototype, patches),
   );
 
@@ -73,12 +76,12 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patches.defineProperties(view, {
     innerWidth: {
       configurable: true,
-      get: () => attachmentForDocument(document).getViewport().width,
+      get: () => layoutEngineForDocument(document).getViewport().width,
       set: () => rejectViewportAssignment('innerWidth'),
     },
     innerHeight: {
       configurable: true,
-      get: () => attachmentForDocument(document).getViewport().height,
+      get: () => layoutEngineForDocument(document).getViewport().height,
       set: () => rejectViewportAssignment('innerHeight'),
     },
   });
@@ -86,35 +89,35 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patchElementProperty(patches, htmlElementPrototype, 'offsetWidth', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).offsetWidth(this);
+      return layoutEngineForElement(this).offsetWidth(this);
     },
   });
 
   patchElementProperty(patches, htmlElementPrototype, 'offsetHeight', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).offsetHeight(this);
+      return layoutEngineForElement(this).offsetHeight(this);
     },
   });
 
   patchElementProperty(patches, htmlElementPrototype, 'offsetTop', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).offsetTop(this);
+      return layoutEngineForElement(this).offsetTop(this);
     },
   });
 
   patchElementProperty(patches, htmlElementPrototype, 'offsetLeft', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).offsetLeft(this);
+      return layoutEngineForElement(this).offsetLeft(this);
     },
   });
 
   patchElementProperty(patches, htmlElementPrototype, 'offsetParent', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).offsetParent(this);
+      return layoutEngineForElement(this).offsetParent(this);
     },
   });
 
@@ -123,13 +126,13 @@ export function patchDomApis(attachment: DocumentAttachment): void {
       scrollWidth: {
         configurable: true,
         get(this: Element) {
-          return attachmentForElement(this).scrollWidth(this);
+          return layoutEngineForElement(this).scrollWidth(this);
         },
       },
       scrollHeight: {
         configurable: true,
         get(this: Element) {
-          return attachmentForElement(this).scrollHeight(this);
+          return layoutEngineForElement(this).scrollHeight(this);
         },
       },
     };
@@ -140,14 +143,14 @@ export function patchDomApis(attachment: DocumentAttachment): void {
   patchElementProperty(patches, htmlElementPrototype, 'clientWidth', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).clientWidth(this);
+      return layoutEngineForElement(this).clientWidth(this);
     },
   });
 
   patchElementProperty(patches, htmlElementPrototype, 'clientHeight', {
     configurable: true,
     get(this: Element) {
-      return attachmentForElement(this).clientHeight(this);
+      return layoutEngineForElement(this).clientHeight(this);
     },
   });
 }
@@ -157,35 +160,35 @@ export function isDocumentAttached(document: Document): boolean {
 }
 
 export function debugLayout(window: { document: Document }): string {
-  return attachmentForDocument(window.document).debug();
+  return layoutEngineForDocument(window.document).debug();
 }
 
-export function unpatchDomApis(attachment: DocumentAttachment): void {
-  if (attachedDocuments.get(attachment.document) === attachment) {
-    attachmentPatches.get(attachment)?.restore();
-    attachmentPatches.delete(attachment);
-    attachedDocuments.delete(attachment.document);
+export function unpatchDomApis(layoutEngine: DocumentLayoutEngine): void {
+  if (attachedDocuments.get(layoutEngine.document) === layoutEngine) {
+    layoutEnginePatches.get(layoutEngine)?.restore();
+    layoutEnginePatches.delete(layoutEngine);
+    attachedDocuments.delete(layoutEngine.document);
   }
 }
 
-function attachmentForElement(element: Element): DocumentAttachment {
+function layoutEngineForElement(element: Element): DocumentLayoutEngine {
   const document = element.ownerDocument;
 
   if (!document) {
     throw new Error('Cannot query layout for an element without ownerDocument');
   }
 
-  return attachmentForDocument(document);
+  return layoutEngineForDocument(document);
 }
 
-function attachmentForDocument(document: Document): DocumentAttachment {
-  const attachment = attachedDocuments.get(document);
+function layoutEngineForDocument(document: Document): DocumentLayoutEngine {
+  const layoutEngine = attachedDocuments.get(document);
 
-  if (!attachment) {
+  if (!layoutEngine) {
     throw new Error('No layout engine is attached to this document');
   }
 
-  return attachment;
+  return layoutEngine;
 }
 
 function patchGetBoundingClientRect(
@@ -199,13 +202,13 @@ function patchGetBoundingClientRect(
   patchElementProperty(patches, prototype, 'getBoundingClientRect', {
     configurable: true,
     value(this: Element) {
-      return attachmentForElement(this).getBoundingClientRect(this);
+      return layoutEngineForElement(this).getBoundingClientRect(this);
     },
   });
   patchElementProperty(patches, prototype, 'getClientRects', {
     configurable: true,
     value(this: Element) {
-      return attachmentForElement(this).getClientRects(this);
+      return layoutEngineForElement(this).getClientRects(this);
     },
   });
 }
@@ -230,7 +233,7 @@ function patchScrollIntoView(
   patchElementProperty(patches, prototype, 'scrollIntoView', {
     configurable: true,
     value(this: Element, arg?: boolean | ScrollIntoViewOptions) {
-      attachmentForElement(this).scrollIntoView(this, arg);
+      layoutEngineForElement(this).scrollIntoView(this, arg);
     },
   });
 }
@@ -250,7 +253,7 @@ function patchMatchMedia(view: Window, patches: PropertyPatches): void {
         matches: {
           enumerable: true,
           get: () =>
-            attachmentForDocument(view.document).matchesMediaQuery(media),
+            layoutEngineForDocument(view.document).matchesMediaQuery(media),
         },
         media: {
           enumerable: true,
@@ -352,7 +355,7 @@ function patchScrollOffsets(
 
 function rejectViewportAssignment(property: string): never {
   throw new TypeError(
-    `Cannot assign window.${property} while a layout engine is attached. Use the attachment returned by attachLayoutEngine(): attachment.setViewport({ width, height }).`,
+    `Cannot assign window.${property} while a layout engine is attached. Use the layout engine returned by attachLayoutEngine(): layoutEngine.setViewport({ width, height }).`,
   );
 }
 

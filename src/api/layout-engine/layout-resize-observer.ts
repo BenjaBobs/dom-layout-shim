@@ -1,5 +1,5 @@
 import type { Box } from '../box.ts';
-import type { DocumentAttachment } from './document-attachment.ts';
+import type { DocumentLayoutEngine } from './document-layout-engine.ts';
 
 export type ResizeObservation = {
   box: ResizeObserverBoxOptions;
@@ -12,7 +12,7 @@ export type LayoutResizeObserver = ResizeObserver & {
 };
 
 export function createResizeObserverConstructor(
-  attachment: DocumentAttachment,
+  layoutEngine: DocumentLayoutEngine,
 ): typeof ResizeObserver {
   return class LayoutBackedResizeObserver implements ResizeObserver {
     readonly callback: ResizeObserverCallback;
@@ -23,25 +23,25 @@ export function createResizeObserverConstructor(
         throw new TypeError('ResizeObserver callback must be a function');
       }
       this.callback = callback;
-      attachment.addResizeObserver(this);
+      layoutEngine.addResizeObserver(this);
     }
 
     disconnect(): void {
       this.observations.clear();
-      attachment.resizeObservationsChanged();
+      layoutEngine.resizeObservationsChanged();
     }
 
     observe(target: Element, options: ResizeObserverOptions = {}): void {
-      attachment.assertObservationTarget(target, 'ResizeObserver');
+      layoutEngine.assertObservationTarget(target, 'ResizeObserver');
       const box = options.box ?? 'content-box';
       this.observations.set(target, { box });
-      attachment.resizeObservationsChanged();
+      layoutEngine.resizeObservationsChanged();
     }
 
     unobserve(target: Element): void {
-      attachment.assertObservationTarget(target, 'ResizeObserver');
+      layoutEngine.assertObservationTarget(target, 'ResizeObserver');
       this.observations.delete(target);
-      attachment.resizeObservationsChanged();
+      layoutEngine.resizeObservationsChanged();
     }
   } as unknown as typeof ResizeObserver;
 }

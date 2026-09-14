@@ -1,6 +1,6 @@
 # Taffy Pipeline Roadmap
 
-The layout engine should present one browser-facing attachment API while using
+The layout engine should present one browser-facing layout engine API while using
 Taffy as the primary geometry solver internally. Taffy owns layout geometry
 where it can model the browser behavior. This package owns DOM traversal, CSS
 normalization, measurement inputs, DOM API semantics, and hit testing.
@@ -31,7 +31,7 @@ to `src/css-parity-implementation/`.
 | Canonical geometry | `layout/geometry-record.ts` | Principal boxes, inline fragments, and no-box records derive offset, client, resize, and hit geometry together from numeric inputs. |
 | Snapshot output allocation | `layout/layout-geometry.ts` | Require scroll offsets and principal scroll sizes before completion, supply inline/no-box zero metrics, and reject subsequent scratch writes. |
 | Visual projection | `layout/project-layout.ts` | Read layout geometry and computed styles; return separate visual output without mutating layout or calling the backend/cascade. |
-| Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
+| Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed the layout engine and observers. |
 
 ### Phase invariants
 

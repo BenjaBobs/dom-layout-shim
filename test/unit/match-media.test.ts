@@ -6,19 +6,19 @@ describe('matchMedia', () => {
   it('directs viewport assignments to setViewport in strict and sloppy code', async () => {
     const window = new Window();
     try {
-      const attachment = await attachLayoutEngine({ window });
+      const layoutEngine = await attachLayoutEngine({ window });
       for (const key of ['innerWidth', 'innerHeight'] as const) {
         expect(() => {
           window[key] = 123;
-        }).toThrow('attachment.setViewport({ width, height })');
+        }).toThrow('layoutEngine.setViewport({ width, height })');
         // Function bodies without a strict directive model classic scripts.
         expect(() =>
           new Function('window', `window.${key} = 123`)(window),
-        ).toThrow('attachment.setViewport({ width, height })');
+        ).toThrow('layoutEngine.setViewport({ width, height })');
       }
       expect(window.innerWidth).toBe(1280);
       expect(window.innerHeight).toBe(720);
-      attachment.setViewport({ width: 320, height: 640 });
+      layoutEngine.setViewport({ width: 320, height: 640 });
       expect(window.innerWidth).toBe(320);
       expect(window.innerHeight).toBe(640);
     } finally {
@@ -115,7 +115,7 @@ describe('matchMedia', () => {
     }
   });
 
-  it('uses the latest attachment for each window', async () => {
+  it('uses the latest layout engine for each window', async () => {
     const window = new Window();
 
     try {

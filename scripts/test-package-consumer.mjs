@@ -59,6 +59,7 @@ writeFileSync(
   `import { Window } from 'happy-dom'
 import {
   attachLayoutEngine,
+  type LayoutEngine,
   type UnsupportedCssContext,
 } from 'dom-layout-shim'
 
@@ -71,7 +72,7 @@ window.document.body.innerHTML = \`
   </button>
 \`
 
-await attachLayoutEngine({
+const layoutEngine: LayoutEngine = await attachLayoutEngine({
   window,
   unsupportedCss: {
     onWarning: (warning) => warnings.push(warning),
@@ -95,6 +96,8 @@ if (window.document.elementFromPoint(60, 20) !== button) {
 if (warnings.length !== 1 || warnings[0]?.property !== 'transform') {
   throw new Error('Expected the packaged warning callback to report transform')
 }
+
+layoutEngine.detach()
 `,
 );
 

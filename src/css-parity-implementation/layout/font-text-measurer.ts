@@ -50,7 +50,7 @@ export async function createDocumentFontTextMeasurer(
         break;
       } catch {
         // Try the next declared source. Unavailable fonts retain the configured
-        // deterministic fallback rather than making attachment fail.
+        // deterministic fallback rather than making layout engine setup fail.
       }
     }
   }

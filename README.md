@@ -6,7 +6,7 @@ Deterministic layout and hit testing for fast DOM test harnesses.
 
 This package is an early proof of concept. The core is framework agnostic and
 attaches to DOM-like documents such as happy-dom documents. Layout is computed
-through a Taffy-backed pipeline. At attachment time it discovers supported
+through a Taffy-backed pipeline. When attached, the layout engine discovers supported
 `@font-face` rules and measures text directly from their font data, with a
 deterministic approximation for unmatched families. DOM API patching and hit
 testing are derived from the resulting layout snapshot.
@@ -35,7 +35,7 @@ const target = document.elementFromPoint(
 )
 ```
 
-The attachment patches `getBoundingClientRect()`, `getClientRects()`, `offsetWidth`,
+The layout engine patches `getBoundingClientRect()`, `getClientRects()`, `offsetWidth`,
 `offsetHeight`, `offsetTop`, `offsetLeft`, `offsetParent`, `clientWidth`,
 `clientHeight`, `scrollWidth`, and `scrollHeight` from the same layout snapshot,
 so geometry APIs agree with hit testing.
@@ -111,29 +111,38 @@ The engine currently uses `html` and `body` as its synthetic viewport
 containing block rather than independent boxes, so profile overrides do not yet
 model their own margins, padding, or geometry.
 
-`attachLayoutEngine()` returns the active attachment. Change its viewport
+The returned handle has the public type `LayoutEngine`. TypeScript consumers
+should replace imports of `LayoutEngineAttachment` with `LayoutEngine`:
+
+```ts
+import { attachLayoutEngine, type LayoutEngine } from 'dom-layout-shim'
+const layoutEngine: LayoutEngine = await attachLayoutEngine({ window })
+layoutEngine.detach()
+```
+
+`attachLayoutEngine()` returns the active layout engine. Change its viewport
 without rebuilding the DOM when a test exercises responsive behavior:
 
 ```ts
-const layout = await attachLayoutEngine({ window })
+const layoutEngine = await attachLayoutEngine({ window })
 
-layout.setViewport({ width: 390, height: 844 })
+layoutEngine.setViewport({ width: 390, height: 844 })
 // Layout, innerWidth/innerHeight, and matchMedia() now use the mobile viewport.
 ```
 
 Changing the viewport invalidates cached geometry and dispatches a `resize`
 event on the attached window.
 
-Use `isLayoutEngineAttached(window)` to check attachment state and
-`attachment.detach()` to return the window to its DOM harness:
+Use `isLayoutEngineAttached(window)` to check whether a layout engine is attached and
+`layoutEngine.detach()` to return the window to its DOM harness:
 
 ```ts
 import { attachLayoutEngine, isLayoutEngineAttached } from 'dom-layout-shim'
 
 if (!isLayoutEngineAttached(window)) {
-  const attachment = await attachLayoutEngine({ window })
+  const layoutEngine = await attachLayoutEngine({ window })
   // Run the test using deterministic geometry.
-  attachment.detach()
+  layoutEngine.detach()
   console.log(isLayoutEngineAttached(window)) // false
 }
 ```
@@ -144,14 +153,14 @@ tracking. It disconnects internal mutation observers, removes event listeners,
 cancels pending observer delivery, and clears layout-backed observations and
 caches. Shared prototype hooks remain available to other attached windows;
 detached elements use their native behavior. Calling `detach()` repeatedly is
-safe. `setViewport()` and `flushLayout()` on the detached attachment throw.
-Attaching again replaces the previous attachment; calling the old attachment's
+safe. `setViewport()` and `flushLayout()` on the detached layout engine throw.
+Attaching again replaces the previous layout engine; calling the old layout engine's
 `detach()` cannot disconnect its replacement.
 
 Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
-`TypeError` that points to `attachment.setViewport({ width, height })`. For
+`TypeError` that points to `layoutEngine.setViewport({ width, height })`. For
 example, replace `window.innerWidth = 320` with
-`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
+`layoutEngine.setViewport({ width: 320, height: 640 })`. This also applies in
 non-strict scripts, where an assignment previously could silently do nothing.
 
 ### Observe element resizing
@@ -179,13 +188,13 @@ observer.observe(window.document.querySelector('.panel'))
 Use manual delivery when a test needs an explicit synchronization point:
 
 ```ts
-const layout = await attachLayoutEngine({
+const layoutEngine = await attachLayoutEngine({
   window,
   observers: { delivery: 'manual' },
 })
 
 panel.style.width = '320px'
-layout.flushLayout() // Recomputes and synchronously delivers pending entries.
+layoutEngine.flushLayout() // Recomputes and synchronously delivers pending entries.
 ```
 
 `content-box`, `border-box`, and `device-pixel-content-box` observations are
@@ -229,7 +238,7 @@ window.document.querySelector('article')?.getBoundingClientRect()
 If a reference remains unresolved, the declaration follows the configured
 unsupported CSS policy rather than contributing an incorrect layout value.
 
-The attachment also answers `window.matchMedia()` from that configured
+The layout engine also answers `window.matchMedia()` from that configured
 viewport. It supports screen/all media types, width and height constraints,
 orientation, aspect ratio, query lists, and `not`/`and` combinations.
 Non-viewport media features that the deterministic configuration does not
@@ -323,8 +332,8 @@ and white-space. For example, `word-spacing: 4px` adds four pixels to each
 remaining space when measuring text and deciding where normal text wraps.
 Word spacing accepts `normal` and supported lengths, including negative values;
 script-specific word separators are not modeled.
-Static TTF, OTF, and WOFF sources declared through `@font-face` are loaded at
-attachment time and their glyph advances and kerning drive text measurement.
+Static TTF, OTF, and WOFF sources declared through `@font-face` are loaded when
+the layout engine is attached and their glyph advances and kerning drive text measurement.
 Data URLs and resolvable URL sources are supported; `local()` and WOFF2 sources
 fall through to the next source or deterministic measurement.
 Supported `text-transform` values (`none`, `uppercase`, `lowercase`, and
@@ -366,7 +375,7 @@ await attachLayoutEngine({
 ```
 
 To reduce a warning stream to one adoption-cost number for a test suite, reuse
-an unsupported CSS reporter across its attachments:
+an unsupported CSS reporter across layout engines:
 
 ```ts
 import {
@@ -414,7 +423,7 @@ console.log(combined.unsupportedDeclarationCount)
 Transport each worker's `reporter.getSummary()` as JSON using your test runner's
 collection mechanism. Merging combines equal property/value/reason entries,
 sums occurrences, and sorts and deduplicates their metadata without mutating
-inputs. Warning deduplication still happens per attachment, so occurrences count
+inputs. Warning deduplication still happens per layout engine, so occurrences count
 collected warnings rather than every element or layout query. An empty input
 produces an empty summary.
 Set `unsupportedCss.default` to `'throw'` for strict CI enforcement or

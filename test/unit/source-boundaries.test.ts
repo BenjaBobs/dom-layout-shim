@@ -21,7 +21,7 @@ describe('source boundaries', () => {
     );
     expect(
       dependencies.filter(path =>
-        /taffy|style-resolver|stylesheet-source|apply-declaration|cascade\.ts|inline-formatting|text-lines|attachment/.test(
+        /taffy|style-resolver|stylesheet-source|apply-declaration|cascade\.ts|inline-formatting|text-lines|layout-engine/.test(
           path,
         ),
       ),
@@ -34,7 +34,7 @@ describe('source boundaries', () => {
     );
     expect(
       dependencies.some(path =>
-        /taffy|stylesheet-source|apply-declaration|cascade\.ts|attachment/.test(
+        /taffy|stylesheet-source|apply-declaration|cascade\.ts|layout-engine/.test(
           path,
         ),
       ),
@@ -70,7 +70,7 @@ describe('source boundaries', () => {
     );
     expect(
       dependencies.some(path =>
-        /stylesheet-source|inline-style-source|element-cascade|taffy|attachment/.test(
+        /stylesheet-source|inline-style-source|element-cascade|taffy|layout-engine/.test(
           path,
         ),
       ),
@@ -212,7 +212,7 @@ describe('source boundaries', () => {
     const apiDirectories = directoriesIn('src/api');
     const parityDirectories = directoriesIn('src/css-parity-implementation');
 
-    expect(apiDirectories).toEqual(['attachment', 'browser-dom']);
+    expect(apiDirectories).toEqual(['browser-dom', 'layout-engine']);
     expect(parityDirectories).toEqual([
       'css',
       'geometry',

@@ -39,7 +39,7 @@ import {
 import { patchDomApis, unpatchDomApis } from './patch-dom-apis.ts';
 import { matchesViewportMediaQuery } from './viewport-media-query.ts';
 
-export type DocumentAttachmentOptions = {
+export type DocumentLayoutEngineOptions = {
   document: Document;
   viewport: Viewport;
   unsupportedCss?: UnsupportedCssPolicy;
@@ -50,7 +50,7 @@ export type DocumentAttachmentOptions = {
   observerDelivery: ObserverDelivery;
 };
 
-export class DocumentAttachment {
+export class DocumentLayoutEngine {
   readonly document: Document;
 
   private viewport: Viewport;
@@ -93,7 +93,7 @@ export class DocumentAttachment {
     if (target?.tagName?.toLowerCase() === 'img') this.markDirty();
   };
 
-  constructor(options: DocumentAttachmentOptions) {
+  constructor(options: DocumentLayoutEngineOptions) {
     this.document = options.document;
     this.viewport = options.viewport;
     this.unsupportedCss = options.unsupportedCss;
@@ -766,7 +766,7 @@ export class DocumentAttachment {
 
   private assertAttached(): void {
     if (this.detached) {
-      throw new Error('Cannot use a detached layout engine attachment');
+      throw new Error('Cannot use a detached layout engine');
     }
   }
 }

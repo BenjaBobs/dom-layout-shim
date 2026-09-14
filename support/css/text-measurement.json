@@ -165,7 +165,7 @@
       "notes": [
         {
           "kind": "browser-parity",
-          "text": "Attachment discovers initial document, adopted, and configured stylesheet font faces, selects the first registered family and closest numeric weight, and uses glyph advances plus kerning for intrinsic measurement."
+          "text": "The layout engine discovers initial document, adopted, and configured stylesheet font faces, selects the first registered family and closest numeric weight, and uses glyph advances plus kerning for intrinsic measurement."
         },
         {
           "kind": "limitation",
@@ -186,7 +186,7 @@
       "notes": [
         {
           "kind": "implementation-quirk",
-          "text": "Text-only leaf elements and direct text-plus-`br` leaves are measured through the configured `TextMeasurer`; the default attachment path uses discovered font data with deterministic fallback."
+          "text": "Text-only leaf elements and direct text-plus-`br` leaves are measured through the configured `TextMeasurer`; the default layout engine setup uses discovered font data with deterministic fallback."
         }
       ]
     },

@@ -186,7 +186,7 @@ axis, including supported min/max constraints and flex/grid placement:
 
 ```html
 <svg viewBox="0 0 200 100" style="width: 100px; height: auto"></svg>
-<!-- getBoundingClientRect() reports 100 × 50 after attachment. -->
+<!-- getBoundingClientRect() reports 100 × 50 after attaching the layout engine. -->
 ```
 
 An authored numeric `aspect-ratio` overrides the natural ratio. Image `load` and
@@ -208,7 +208,7 @@ Inherited `text-transform` values `none`, `uppercase`, `lowercase`, and
 `capitalize` are applied to the string passed into default or custom text
 measurement. They do not mutate authored `textContent`.
 
-The default attachment path discovers initial `@font-face` rules. Static TTF,
+The default layout engine setup discovers initial `@font-face` rules. Static TTF,
 OTF, and WOFF data or resolvable URL sources supply deterministic glyph advances
 and kerning; family lists choose the first discovered family and the closest
 numeric weight. `local()`, WOFF2, unavailable, and unmatched sources use the
@@ -235,8 +235,17 @@ orientation, aspect ratio, query lists, `not`, `only`, `and`, and nested media
 rules. Non-matching rules do not enter the cascade. Unsupported media features
 route through the unsupported CSS policy as `@media` / `unsupported-rule`.
 
-`attachLayoutEngine()` returns a `LayoutEngineAttachment`. Calling
-`attachment.setViewport({ width, height })` changes the active viewport without
+The returned handle has the public type `LayoutEngine`. TypeScript consumers
+should replace imports of `LayoutEngineAttachment` with `LayoutEngine`:
+
+```ts
+import { attachLayoutEngine, type LayoutEngine } from 'dom-layout-shim'
+const layoutEngine: LayoutEngine = await attachLayoutEngine({ window })
+layoutEngine.detach()
+```
+
+`attachLayoutEngine()` returns a `LayoutEngine`. Calling
+`layoutEngine.setViewport({ width, height })` changes the active viewport without
 reattaching or rebuilding the DOM. It invalidates cached layout, updates the
 shim-backed `window.innerWidth` and `window.innerHeight` values and subsequent
 `matchMedia()` results, and dispatches a window `resize` event. This allows a
@@ -246,7 +255,7 @@ Attaching also installs a layout-backed `window.ResizeObserver`. It supports
 `content-box`, `border-box`, and `device-pixel-content-box`. Layout remains lazy
 until an observer actively observes a target. Configure deterministic manual
 delivery with `observers: { delivery: 'manual' }`, then call
-`attachment.flushLayout()` after DOM or style changes to recompute layout and
+`layoutEngine.flushLayout()` after DOM or style changes to recompute layout and
 synchronously deliver pending entries. Geometry reads do not deliver observer
 callbacks.
 
@@ -373,9 +382,9 @@ silently discarding the rule. Strict policy errors and warning callback errors
 propagate unchanged.
 
 Assigning `window.innerWidth` or `window.innerHeight` while attached throws a
-`TypeError` that points to `attachment.setViewport({ width, height })`. For
+`TypeError` that points to `layoutEngine.setViewport({ width, height })`. For
 example, replace `window.innerWidth = 320` with
-`attachment.setViewport({ width: 320, height: 640 })`. This also applies in
+`layoutEngine.setViewport({ width: 320, height: 640 })`. This also applies in
 non-strict scripts, where an assignment previously could silently do nothing.
 
 Use `unsupportedCss: { reporter }` to collect warnings directly. The default is
@@ -399,20 +408,20 @@ console.log(combined.unsupportedDeclarationCount)
 Transport each worker's `reporter.getSummary()` as JSON using your test runner's
 collection mechanism. Merging combines equal property/value/reason entries,
 sums occurrences, and sorts and deduplicates their metadata without mutating
-inputs. Warning deduplication still happens per attachment, so occurrences count
+inputs. Warning deduplication still happens per layout engine, so occurrences count
 collected warnings rather than every element or layout query. An empty input
 produces an empty summary.
 
-Use `isLayoutEngineAttached(window)` to check attachment state and
-`attachment.detach()` to return the window to its DOM harness:
+Use `isLayoutEngineAttached(window)` to check whether a layout engine is attached and
+`layoutEngine.detach()` to return the window to its DOM harness:
 
 ```ts
 import { attachLayoutEngine, isLayoutEngineAttached } from 'dom-layout-shim'
 
 if (!isLayoutEngineAttached(window)) {
-  const attachment = await attachLayoutEngine({ window })
+  const layoutEngine = await attachLayoutEngine({ window })
   // Run the test using deterministic geometry.
-  attachment.detach()
+  layoutEngine.detach()
   console.log(isLayoutEngineAttached(window)) // false
 }
 ```
@@ -423,6 +432,6 @@ tracking. It disconnects internal mutation observers, removes event listeners,
 cancels pending observer delivery, and clears layout-backed observations and
 caches. Shared prototype hooks remain available to other attached windows;
 detached elements use their native behavior. Calling `detach()` repeatedly is
-safe. `setViewport()` and `flushLayout()` on the detached attachment throw.
-Attaching again replaces the previous attachment; calling the old attachment's
+safe. `setViewport()` and `flushLayout()` on the detached layout engine throw.
+Attaching again replaces the previous layout engine; calling the old layout engine's
 `detach()` cannot disconnect its replacement.

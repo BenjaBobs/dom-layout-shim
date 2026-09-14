@@ -54,8 +54,8 @@ const budgets: Record<(typeof sizes)[number], ScenarioBudgets> = {
 const memoryInvalidations = 200;
 const memoryGrowthBudgetBytes = 32 * 1024 * 1024;
 
-// Prime the lazily loaded Taffy backend so attachment timings describe document
-// attachment rather than one-time WebAssembly compilation and module loading.
+// Prime the lazily loaded Taffy backend so layout engine setup timings describe document
+// setup rather than one-time WebAssembly compilation and module loading.
 const primer = new Window();
 await attachLayoutEngine({
   window: primer,
