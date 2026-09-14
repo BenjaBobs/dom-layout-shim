@@ -998,7 +998,10 @@ function createSimpleTableLayout(
           width,
           boxSizing: 'border-box' as const,
         };
-        formatting.style = style;
+        state.cellFormatting.set(cell.element, {
+          node: formatting.node,
+          style,
+        });
         state.plan.updateStyle(formatting.node, style);
         computeFormattingRoot(
           formatting.node,

@@ -41,6 +41,15 @@ describe('source boundaries', () => {
     ).toBe(false);
   });
 
+  it('derives canonical geometry without CSS or formatting decisions', () => {
+    const dependencies = runtimeDependencies(
+      'src/css-parity-implementation/layout/geometry-record.ts',
+    );
+    expect(
+      dependencies.map(path => path.slice(path.lastIndexOf('/') + 1)),
+    ).toEqual(['box-metrics.ts']);
+  });
+
   it('derives box metrics only from resolved numeric layout inputs', () => {
     expect(
       runtimeDependencies(

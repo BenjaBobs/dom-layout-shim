@@ -1,5 +1,4 @@
 import type { SupportedStyle } from '../css/supported-style.ts';
-import { emptyBoxInsets } from './box-metrics.ts';
 import {
   type ContainingBlockEnvironment,
   containingBlock,
@@ -42,19 +41,8 @@ export function markElementNoBox(
   element: Element,
   state: LayoutReadState,
 ): void {
-  const box = { x: 0, y: 0, width: 0, height: 0 };
-  state.geometry.record(element, {
-    insets: emptyBoxInsets,
-    rects: box,
-    fragmentRects: [],
-    layoutRects: box,
-    resizeRects: box,
-    normalRects: box,
-    clientRects: box,
-    contentRects: box,
-    hitBoxes: [],
-  });
-  state.geometry.elementScrolls.set(element, readElementScrollOffset(element));
+  state.geometry.record(element, { kind: 'none' });
+  state.geometry.recordScrollOffset(element, readElementScrollOffset(element));
 }
 
 export function markSubtreeDisplayNone(

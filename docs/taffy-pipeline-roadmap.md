@@ -28,7 +28,8 @@ to `src/css-parity-implementation/`.
 | Tree construction and compute | `layout/taffy-layout-source.ts` | Build backend nodes and formatting contexts, including ordinary descendants inside table cells. |
 | Resolved box metrics | `layout/box-metrics.ts`, `layout/taffy/taffy-bindings.ts` | Backend border/padding values feed content/client geometry, scroll sizes, and containing-block calculations; no consumer-specific percentage reconstruction. |
 | Phase capabilities | `layout/layout-state.ts`, `layout/collect-layout.ts` | Construction owns the backend and measurer. Completion captures resolved styles, backend results, and inline fragments. Collection has stored values and fresh scratch state only. |
-| Snapshot output allocation | `layout/layout-geometry.ts` | Require complete element geometry records; collectors cannot write individual output maps. |
+| Canonical geometry | `layout/geometry-record.ts` | Principal boxes, inline fragments, and no-box records derive offset, client, resize, and hit geometry together from numeric inputs. |
+| Snapshot output allocation | `layout/layout-geometry.ts` | Require scroll offsets and principal scroll sizes before completion, supply inline/no-box zero metrics, and reject subsequent scratch writes. |
 | Visual projection | `layout/project-layout.ts` | Read layout geometry and computed styles; return separate visual output without mutating layout or calling the backend/cascade. |
 | Consumer snapshot | `layout/layout-source.ts` | Read-only snapshot maps and arrays feed API attachment and observers. |
 
@@ -46,7 +47,8 @@ to `src/css-parity-implementation/`.
   constraints are finalized; there is no DOM-only queue or all-cell catch-up pass.
 - Backend layout reads are immutable and cached until the next computation. The
   binding owns invalidation; collectors cannot import the raw generated backend.
-- Every formatting context records all geometry outputs together. Anonymous
+- Every formatting context supplies principal boxes, inline fragments, or an
+  explicit no-box record. Shared constructors derive every geometry output. Anonymous
   formatting boxes cannot overwrite their originating DOM element. Replacing an
   element record also replaces its hit fragments.
 - Visual projection returns separate maps and leaves its layout input unchanged.
@@ -59,7 +61,8 @@ to `src/css-parity-implementation/`.
   to their containing block.
 - `test/unit/source-boundaries.test.ts` enforces runtime dependency boundaries;
   `test/unit/layout-projection.test.ts` compares reprojection with a full compute
-  and checks snapshot retention. Browser-observable interactions belong in
+  and checks snapshot retention. `test/unit/geometry-contract.test.ts` owns
+  canonical-record replacement and scroll completion checks. Browser-observable interactions belong in
   `test/browser-parity/cases/`.
 
 ### Focused validation and reading
@@ -81,7 +84,7 @@ suppression are explicit HTML box-generation constraints. Computed blockificatio
 is shared by elements and pseudos, including items flattened through contents.
 
 Table track allocation and inline formatting remain specialized algorithms. They
-must reuse resolved styles and submit complete geometry records. Their existence
+must reuse resolved styles and submit canonical box or fragment records. Their existence
 is not evidence that arbitrary CSS properties belong in those algorithms.
 
 A feature is complete only when its shared semantic owner and affected consumers
